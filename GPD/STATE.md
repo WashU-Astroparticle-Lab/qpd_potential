@@ -19,7 +19,7 @@ See: GPD/PROJECT.md
 **Status:** Executing
 **Last Activity:** Plan 01-01 executed (params + CEvNS benchmark hook)
 
-**Progress:** [█████░░░░░] 50%
+**Progress:** [██████████] 100%
 
 ## Active Calculations
 
@@ -45,6 +45,7 @@ None yet.
 
 ## Accumulated Context
 | Phase 01 P01-01 | 900s | 3 tasks | 8 files |
+| Phase 01 P01-02 | 330s | 3 tasks | 4 files |
 
 ### Decisions
 
@@ -52,6 +53,10 @@ None yet.
 - [Phase 01-conventions-energy-scale-foundation]: Design->parameter mapping locked in code: Ta->Al uses Table II Aluminum column, Al->Hf uses Hafnium column; absorber supplies only Delta_abs.
 - [Phase 01-conventions-energy-scale-foundation]: Hf tau_qp = 400 us adopted (caption/lit) over the 1 ms table cell, flagged MEDIUM.
 - [Phase 01-conventions-energy-scale-foundation]: Ta absorber gap encoded as bulk alpha-Ta BCS assumption 0.68 meV (MEDIUM), film phase flagged for Phase 5.
+- [Phase 01-conventions-energy-scale-foundation]: Saturation ordering fixed as the plateau Gamma_in Hf/Al ratio (3.17x); the 4.75x N_qp-per-eV ratio is the raw yield, not the saturation driver.
+- [Phase 01-conventions-energy-scale-foundation]: Per-design saturation onset energies (~1.27 eV Al / ~0.77 eV Hf) carry the two-exponential peak factor p (0.25 Al / 0.13 Hf); Hf saturates first.
+- [Phase 01-conventions-energy-scale-foundation]: E_rec estimator implemented as an explicit Phase-5 stub (NotImplementedError by default; linear_placeholder=True returns 0.5*E_dep, valid only in the unsaturated regime).
+- [Phase 01-conventions-energy-scale-foundation]: Both censoring variants exposed as a switch at tau_d=40us; the paralyzable-vs-non-paralyzable choice is preserved OPEN as a Phase-5 blocker, not silently chosen.
 
 ### Active Approximations
 

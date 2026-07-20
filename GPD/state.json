@@ -533,7 +533,7 @@
     "status": "Executing",
     "last_activity": "Plan 01-01 executed (params + CEvNS benchmark hook)",
     "last_activity_desc": null,
-    "progress_percent": 50,
+    "progress_percent": 100,
     "paused_at": null
   },
   "active_calculations": [],
@@ -553,6 +553,12 @@
         "duration": "900s",
         "tasks": "3",
         "files": "8"
+      },
+      {
+        "label": "Phase 01 P01-02",
+        "duration": "330s",
+        "tasks": "3",
+        "files": "4"
       }
     ]
   },
@@ -570,6 +576,26 @@
     {
       "phase": "01-conventions-energy-scale-foundation",
       "summary": "Ta absorber gap encoded as bulk alpha-Ta BCS assumption 0.68 meV (MEDIUM), film phase flagged for Phase 5.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Saturation ordering fixed as the plateau Gamma_in Hf/Al ratio (3.17x); the 4.75x N_qp-per-eV ratio is the raw yield, not the saturation driver.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Per-design saturation onset energies (~1.27 eV Al / ~0.77 eV Hf) carry the two-exponential peak factor p (0.25 Al / 0.13 Hf); Hf saturates first.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "E_rec estimator implemented as an explicit Phase-5 stub (NotImplementedError by default; linear_placeholder=True returns 0.5*E_dep, valid only in the unsaturated regime).",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Both censoring variants exposed as a switch at tau_d=40us; the paralyzable-vs-non-paralyzable choice is preserved OPEN as a Phase-5 blocker, not silently chosen.",
       "rationale": null
     }
   ],
@@ -626,5 +652,5 @@
     "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
   },
   "_version": 1,
-  "_synced_at": "2026-07-20T22:09:28.427094+00:00"
+  "_synced_at": "2026-07-20T22:21:42.591864+00:00"
 }
