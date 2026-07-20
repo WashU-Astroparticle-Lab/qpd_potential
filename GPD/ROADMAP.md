@@ -105,9 +105,10 @@ Plans:
 **Goal:** A frozen, versioned Φ(E_ν) table is produced — Huber–Mueller above 2 MeV plus a summation + ²³⁸U(n,γ) neutron-capture extension below 1.8 MeV — with explicit above/below-2-MeV uncertainty bands, normalized to 3 GW_th at 25 m (~7–8×10¹² ν̄/cm²/s).
 **Objectives:** CALC-01
 **Contract Coverage:** advances claim-cevns (flux input) | anchor ref-huber, sub-1.8 MeV region flagged | forbidden proxy: Huber–Mueller truncated/extrapolated at the 1.8 MeV IBD threshold (the sub-IBD flux populates the flagship low-recoil bins)
-**Plans:** 0 plans
+**Plans:** 2 plans
 
-- [ ] TBD (run plan-phase 2 to break down)
+- [ ] 02-01-PLAN.md — Source & assemble the per-fission antineutrino spectrum (Huber–Mueller >2 MeV + seam-matched summation/n-capture <1.8 MeV)
+- [ ] 02-02-PLAN.md — Normalize to 3 GW_th/25 m, freeze versioned CSV with split uncertainty band + Billard-variant switch
 
 ### Phase 3: CEvNS Cross Section & Rate
 
@@ -163,7 +164,7 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | Phase | Plans Complete | Status | Completed |
 | ----- | -------------- | ------ | --------- |
 | 1. Conventions & Energy-Scale Foundation | 2/2 | Complete ✓ | 2026-07-20 |
-| 2. Reactor Flux Model | 0/TBD | Not started | - |
+| 2. Reactor Flux Model | 0/2 | Planned | - |
 | 3. CEvNS Cross Section & Rate | 0/TBD | Not started | - |
 | 4. Muon & Compton Deposited-Energy Spectra | 0/TBD | Not started | - |
 | 5. QPD Response Chain & Energy Reconstruction | 0/TBD | Not started | - |
