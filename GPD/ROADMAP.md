@@ -124,9 +124,11 @@ Plans:
 **Goal:** The two background deposit spectra are computed in deposited energy for the thin wafer — the sea-level muon spectrum (Gaisser–Guan angular flux ⊗ chord-length distribution ⊗ Landau–Vavilov straggling) and the environmental-gamma Compton electron-recoil spectrum (representative U/Th + ⁴⁰K radiogenic spectrum × Ge Compton cross section, thin-target single-scatter, Klein–Nishina continuum) — and validated against the PDG muon flux and Klein–Nishina edge positions.
 **Objectives:** CALC-03, CALC-04, VALD-02, VALD-03
 **Contract Coverage:** advances claim-muon, claim-compton, obs-muon-spectrum, obs-compton-spectrum, test-muon-flux, test-compton-edges, deliv-code (wafer geometry + chord model) | anchors ref-pdg-muon (I_v ≈ 70 m⁻²s⁻¹sr⁻¹, ~1 cm⁻²min⁻¹, Cauchy ⟨ℓ⟩ = 4V/S), ref-environmental-gamma (Heusser lines/flux), Klein–Nishina | forbidden proxies: fp-full-absorption (photopeaks instead of Compton continuum in a thin 2 mm wafer), chord geometry omitted / mean vs MPV dE/dx, angular-pdf bias
-**Plans:** 0 plans
+**Plans:** 3 plans (2 waves)
 
-- [ ] TBD (run plan-phase 4 to break down)
+- [ ] 04-01-PLAN.md — Muon dR/dE_dep: Gaisser–Guan flux × ray–box chord × Landau–Vavilov MPV; VALD-02 integral rate; long-chord high-E tail (wave 1)
+- [ ] 04-02-PLAN.md — Compton electron-recoil dR/dE_dep: sourced radiogenic gamma × Klein–Nishina continuum, thin-target single-scatter; VALD-03 edges + factor-2 rate (wave 1)
+- [ ] 04-03-PLAN.md — Shared-grid assembly, energy closure, pileup stop-condition, combined deposited-energy figure (wave 2)
 
 ### Phase 5: QPD Response Chain & Energy Reconstruction
 
@@ -166,6 +168,6 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | 1. Conventions & Energy-Scale Foundation | 2/2 | Complete ✓ | 2026-07-20 |
 | 2. Reactor Flux Model | 0/2 | Planned | - |
 | 3. CEvNS Cross Section & Rate | 0/TBD | Not started | - |
-| 4. Muon & Compton Deposited-Energy Spectra | 0/TBD | Not started | - |
+| 4. Muon & Compton Deposited-Energy Spectra | 0/3 | Planned | - |
 | 5. QPD Response Chain & Energy Reconstruction | 0/TBD | Not started | - |
 | 6. Fold & Produce Reconstructed-Energy Spectra | 0/TBD | Not started | - |
