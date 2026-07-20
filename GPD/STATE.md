@@ -2,29 +2,28 @@
 
 ## Project Reference
 
-See: GPD/PROJECT.md (updated 2026-07-20)
+See: GPD/PROJECT.md
 
 **Machine-readable scoping contract:** `GPD/state.json` field `project_contract`
 
-**Core research question:** What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton differential rate spectra in reconstructed energy for a 4″×4″×2 mm single-sided Ge wafer read out by QPDs with Ta→Al and Al→Hf trapping designs, given the stated efficiency and bandwidth assumptions?
-**Current focus:** Phase 1 — Conventions & Energy-Scale Foundation
+**Core research question:** [Not set]
+**Current focus:** [Not set]
 
 ## Current Position
 
-**Current Phase:** 1
-**Current Phase Name:** Conventions & Energy-Scale Foundation
-**Total Phases:** 6
-**Current Plan:** 1
-**Total Plans in Phase:** TBD
-**Status:** Ready to plan
-**Last Activity:** 2026-07-20
-**Last Activity Description:** Roadmap created (shallow mode): Phase 1 fully detailed, Phases 2–6 stubbed; 12/12 requirements mapped, all contract items surfaced.
+**Current Phase:** none
+**Current Phase Name:** none
+**Total Phases:** none
+**Current Plan:** none
+**Total Plans in Phase:** none
+**Status:** —
+**Last Activity:** none
 
 **Progress:** [░░░░░░░░░░] 0%
 
 ## Active Calculations
 
-None yet — Phase 1 not yet planned.
+None yet.
 
 ## Intermediate Results
 
@@ -32,10 +31,11 @@ None yet.
 
 ## Open Questions
 
-- [Contract] How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)? (blocks Phase 5; convention must be fixed in Phase 1)
-- [Contract] How should the Ta→Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices? (blocks Phase 5)
-- [Contract] What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment? (feeds Phase 4)
-- [Setup] What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm² sensor density? (contract: single instrumented face, ~10,300 sensors — confirm in Phase 1)
+- What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm^2 sensor density?
+- How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model?
+- How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?
+- How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)?
+- What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment?
 
 ## Performance Metrics
 
@@ -47,36 +47,29 @@ None yet.
 
 ### Decisions
 
-Full log: `GPD/DECISIONS.md`
-
-**Recent high-impact:**
-- [Scoping]: Interpret the two designs as Ta→Al and Al→Hf (absorber→trap); trapping requires Δ_trap < Δ_absorber. Confirmed by user.
-- [Scoping]: 3 GW_th commercial reactor at 25 m; sea-level muon flux with no overburden; 4″×4″×2 mm single-sided wafer (~110 g). Confirmed by user.
-- [Scoping]: Added environmental-gamma Compton channel (representative radiogenic background). Confirmed by user.
+None yet.
 
 ### Active Approximations
 
-| Approximation | Validity Range | Controlling Parameter | Current Value | Status |
-| ------------- | -------------- | --------------------- | ------------- | ------ |
-| Unified phonon scale, no ionization quenching | fieldless phonon calorimeter | — | — | To be locked in Phase 1 |
-| ε ≈ 0.5 deposited-to-signal efficiency (imposed) | forward-model definition, per design | ε | 0.5 (±10–20%) | To be locked in Phase 1 |
-| Freedman SM CEvNS cross section + Helm form factor | E_ν ≲ 50 MeV, reactor recoils | q = √(2MT) | F² > 0.998 | Planned (Phase 3) |
-| Huber–Mueller flux >2 MeV; summation + n-capture <1.8 MeV | data-anchored >2 MeV; model-only <1.8 MeV | E_ν | — | Planned (Phase 2) |
-| Landau/Vavilov straggling (not Moyal for final) | κ-regime dependent | κ | — | Planned (Phase 4) |
-| Bandwidth censoring at 50 kHz / 25 kHz Nyquist | peak tunneling rate | Γ_peak | 25 kHz cap | To be defined in Phase 1, applied in Phase 5 |
+None yet.
 
 **Convention Lock:**
 
-- Natural units: internal cross section ħ=c=1, (ħc)² = 3.894×10⁻²⁸ GeV²·cm² (to be locked Phase 1)
-- Coupling convention: dσ/dT = (G_F² M/4π) Q_W² (1−MT/2E_ν²) F²; Q_W = N−(1−4 sin²θ_W)Z; sin²θ_W = 0.2387 (low-E MS-bar) (to be locked Phase 1)
-- Unit system: detector practical units (eV/keV/MeV, cm, s, counts/kg/day/keV) for I/O
-- Energy scale: unified phonon scale, no ionization quenching (to be locked Phase 1)
+- Metric signature: not_applicable — no relativistic field theory in this detector/rate pipeline
+- Natural units: internal-only (hbar=c=1) for CEvNS cross section; k_B EXPLICIT (not =1); I/O in eV/keV/MeV, counts/kg/day/keV, s, cm/um; (hbar c)^2 = 3.894e-28 GeV^2 cm^2
+- Renormalization scheme: tree-level SM (no loops); only scheme-dependent input is sin2thetaW = 0.2387 (low-energy MS-bar)
+- Coupling convention: CEvNS dsigma/dT = (G_F^2 M/4pi) Q_W^2 (1 - M T/2 E_nu^2) F^2(q^2); prefactor /4pi NOT /8pi; Q_W = N-(1-4 sin2thetaW)Z; sin2thetaW=0.2387 (low-E MSbar); 1-4sin2thetaW=0.0452; Helm F, F(0)=1
+
+*Custom conventions:*
+- Energy Scale Chain: single unified phonon scale, NO ionization quenching, for BOTH NR (CEvNS) and ER (muon/Compton): T=E_nr -> E_ph -> E_dep -> E_rec; E_ph=E_dep-E_stored(defects) (few-% NR-only, 0 for muons/Compton); E_rec(low-E)~=0.5*E_dep; FORBIDDEN: keVee/keVnr mixing, Lindhard/ionization quenching
+- Detector Normalization: Ge 8.29e24 atoms/kg, rho=5.323 g/cm^3, M=72.63 g/mol; wafer 4inx4inx2mm=20.65 cm^3~=110 g, ~10300 sensors 1/mm^2 one face; reactor 3 GW_th (thermal) at 25 m => ~7-8e12 nubar/cm^2/s; adopt 110 g geometry but KEEP per-kg (counts/kg/day) normalization; '1 kg' framing in SUMMARY.md is STALE
+- Efficiency Mapping: eps~=0.5 deposited-to-signal, imposed forward-model definition, SAME baseline both designs with +/-10-20% design-dependent band; Ta->Al and Al->Hf may split to per-design numbers in Phase 5; paper physical estimate eta_ce~=0.3 is an independent cross-reference, NOT baseline
+- Bandwidth Censoring: LOCKED resolving time: 25 kHz max resolvable tunneling rate => 40 us (Nyquist from 50 kHz bw); 20 us at 50 kHz sampling itself (state both); paralyzable-vs-non-paralyzable AND merge-vs-drop kept as EXPLICIT CODE SWITCH (not fixed); OPEN QUESTION BLOCKS Phase 5; both variants must be implementable
+- Cevns Benchmark Target: Phase-3 unit test: FULL Q_W => sigma(Ge,4 MeV)~=1.0e-40 cm^2 (canonical); N-only quick-check ~1.1e-40 cm^2 (1.08e-40, ~20% tol); coefficient sigma~=4.22e-45 N^2 (E_nu/MeV)^2 cm^2; closed form sigma_tot=G_F^2 Q_W^2 E_nu^2/4pi; PITFALLS.md ~1e-42 value is WRONG (100x)
 
 ### Propagated Uncertainties
 
-| Quantity | Current Value | Uncertainty | Last Updated (Phase) | Method |
-| -------- | ------------- | ----------- | -------------------- | ------ |
-| -        | -             | -           | -                    | -      |
+None yet.
 
 ### Pending Todos
 
@@ -84,15 +77,13 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 5, HIGH risk] QPD saturated-regime reconstruction has no literature anchor at any energy; Ta superconductor parameters (Δ, DOS, T_c) absent from `materials.yaml` — must be added with citation. Run `gpd:research-phase` before planning Phase 5.
-- [Phase 2] Sub-1.8 MeV reactor flux is never-measured; needs a summation-dataset decision and a separate ≳10–20% uncertainty band.
-- [Phase 1] Censoring convention (merge vs drop; paralyzable vs non-paralyzable) must be fixed before the Phase-5 response matrix is built.
+None
 
 ## Session Continuity
 
-**Last session:** 2026-07-20
-**Stopped at:** Roadmap created; awaiting Phase 1 planning
-**Resume file:** GPD/ROADMAP.md
+**Last session:** none
+**Stopped at:** none
+**Resume file:** none
 **Last result ID:** none
-**Hostname:** —
-**Platform:** darwin
+**Hostname:** none
+**Platform:** none
