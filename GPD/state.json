@@ -1,8 +1,8 @@
 {
   "project_reference": {
     "project_md_updated": null,
-    "core_research_question": null,
-    "current_focus": null
+    "core_research_question": "Reactor-CEvNS, cosmic-muon, and environmental-gamma Compton spectra in reconstructed energy for a 4\"\u00d74\"\u00d72mm single-sided Ge wafer read out by QPDs (Ta\u2192Al and Al\u2192Hf designs).",
+    "current_focus": "Phase 1 \u2014 Conventions & Energy-Scale Foundation"
   },
   "project_contract": {
     "schema_version": 1,
@@ -525,15 +525,15 @@
     }
   },
   "position": {
-    "current_phase": null,
-    "current_phase_name": null,
-    "total_phases": null,
-    "current_plan": null,
-    "total_plans_in_phase": null,
-    "status": null,
-    "last_activity": null,
+    "current_phase": "1",
+    "current_phase_name": "Conventions & Energy-Scale Foundation",
+    "total_phases": 6,
+    "current_plan": "01-01",
+    "total_plans_in_phase": 2,
+    "status": "Executing",
+    "last_activity": "Plan 01-01 executed (params + CEvNS benchmark hook)",
     "last_activity_desc": null,
-    "progress_percent": 0,
+    "progress_percent": 50,
     "paused_at": null
   },
   "active_calculations": [],
@@ -547,9 +547,32 @@
   ],
   "resolved_questions": [],
   "performance_metrics": {
-    "rows": []
+    "rows": [
+      {
+        "label": "Phase 01 P01-01",
+        "duration": "900s",
+        "tasks": "3",
+        "files": "8"
+      }
+    ]
   },
-  "decisions": [],
+  "decisions": [
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Design->parameter mapping locked in code: Ta->Al uses Table II Aluminum column, Al->Hf uses Hafnium column; absorber supplies only Delta_abs.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Hf tau_qp = 400 us adopted (caption/lit) over the 1 ms table cell, flagged MEDIUM.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Ta absorber gap encoded as bulk alpha-Ta BCS assumption 0.68 meV (MEDIUM), film phase flagged for Phase 5.",
+      "rationale": null
+    }
+  ],
   "approximations": [],
   "convention_lock": {
     "metric_signature": "not_applicable \u2014 no relativistic field theory in this detector/rate pipeline",
@@ -598,8 +621,10 @@
     }
   },
   "contract_alignment": {
-    "confirmed_at": null,
-    "confirmed_contract_hash": null,
-    "confirmed_context_hash": null
-  }
+    "confirmed_at": "2026-07-20T21:56:24.017799+00:00",
+    "confirmed_contract_hash": "sha256:8aba34ccb645a2a564e70e462a5ddde82f0b00727295397da3ead966e235e364",
+    "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
+  },
+  "_version": 1,
+  "_synced_at": "2026-07-20T22:09:28.427094+00:00"
 }

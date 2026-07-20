@@ -6,20 +6,20 @@ See: GPD/PROJECT.md
 
 **Machine-readable scoping contract:** `GPD/state.json` field `project_contract`
 
-**Core research question:** [Not set]
-**Current focus:** [Not set]
+**Core research question:** Reactor-CEvNS, cosmic-muon, and environmental-gamma Compton spectra in reconstructed energy for a 4"×4"×2mm single-sided Ge wafer read out by QPDs (Ta→Al and Al→Hf designs).
+**Current focus:** Phase 1 — Conventions & Energy-Scale Foundation
 
 ## Current Position
 
-**Current Phase:** none
-**Current Phase Name:** none
-**Total Phases:** none
-**Current Plan:** none
-**Total Plans in Phase:** none
-**Status:** —
-**Last Activity:** none
+**Current Phase:** 1
+**Current Phase Name:** Conventions & Energy-Scale Foundation
+**Total Phases:** 6
+**Current Plan:** 01-01
+**Total Plans in Phase:** 2
+**Status:** Executing
+**Last Activity:** Plan 01-01 executed (params + CEvNS benchmark hook)
 
-**Progress:** [░░░░░░░░░░] 0%
+**Progress:** [█████░░░░░] 50%
 
 ## Active Calculations
 
@@ -44,10 +44,14 @@ None yet.
 | -     | -        | -     | -     |
 
 ## Accumulated Context
+| Phase 01 P01-01 | 900s | 3 tasks | 8 files |
 
 ### Decisions
 
-None yet.
+
+- [Phase 01-conventions-energy-scale-foundation]: Design->parameter mapping locked in code: Ta->Al uses Table II Aluminum column, Al->Hf uses Hafnium column; absorber supplies only Delta_abs.
+- [Phase 01-conventions-energy-scale-foundation]: Hf tau_qp = 400 us adopted (caption/lit) over the 1 ms table cell, flagged MEDIUM.
+- [Phase 01-conventions-energy-scale-foundation]: Ta absorber gap encoded as bulk alpha-Ta BCS assumption 0.68 meV (MEDIUM), film phase flagged for Phase 5.
 
 ### Active Approximations
 

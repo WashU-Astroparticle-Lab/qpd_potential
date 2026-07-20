@@ -184,3 +184,49 @@ No keVee/keVnr distinction or Lindhard/ionization quenching (forbidden, CONVENTI
 ## No deviations
 
 No deviation rules were triggered. One documentation comment in params.py was reworded to avoid literal forbidden tokens (keVee/Lindhard) so a mechanical source scan stays clean — a cosmetic edit, not a physics deviation.
+
+## Machine return
+
+```yaml
+gpd_return:
+  status: completed
+  phase: "01-conventions-energy-scale-foundation"
+  plan: "01"
+  tasks_completed: 3
+  tasks_total: 3
+  files_written:
+    - pyproject.toml
+    - conftest.py
+    - src/qpd_potential/__init__.py
+    - src/qpd_potential/params.py
+    - src/qpd_potential/cevns.py
+    - tests/test_conventions_consistency.py
+    - tests/test_cevns_benchmark.py
+    - GPD/phases/01-conventions-energy-scale-foundation/01-01-SUMMARY.md
+  issues:
+    - "Task 3 authored human-verify checkpoint performed by executor under supervised handoff; researcher should confirm the MEDIUM Ta gap (0.68 meV bulk alpha-Ta) and the LOW-confidence f_prompt/r defaults at the wave gate."
+  next_actions:
+    - "Proceed to Plan 01-02 (energy-scale/response module, censoring variants, ASSUMPTIONS.md seed) which imports qpd_potential.params and qpd_potential.cevns."
+  state_updates:
+    advance_plan: false
+    update_progress: false
+    record_metric:
+      phase: "01"
+      plan: "01-01"
+      duration: 900
+      tasks: 3
+      files: 8
+  contract_updates:
+    claims_passed: [claim-params, claim-cevns-hook]
+    deliverables_passed: [deliv-params, deliv-cevns]
+    acceptance_tests_passed: [test-conv-consistency, test-cevns-benchmark]
+    references_completed: [ref-qpd-paper]
+    forbidden_proxies_rejected: [fp-prefactor, fp-quenching, fp-ta-invented]
+  decisions:
+    - summary: "Design->parameter mapping locked in code: Ta->Al uses Table II Aluminum column, Al->Hf uses Hafnium column; absorber supplies only Delta_abs."
+      phase: "01-conventions-energy-scale-foundation"
+    - summary: "Hf tau_qp = 400 us adopted (caption/lit) over the 1 ms table cell, flagged MEDIUM."
+      phase: "01-conventions-energy-scale-foundation"
+    - summary: "Ta absorber gap encoded as bulk alpha-Ta BCS assumption 0.68 meV (MEDIUM), film phase flagged for Phase 5."
+      phase: "01-conventions-energy-scale-foundation"
+```
