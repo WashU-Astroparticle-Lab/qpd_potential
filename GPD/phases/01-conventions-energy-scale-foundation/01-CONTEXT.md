@@ -83,8 +83,8 @@ Requirements: CONV-01
 
 - **Low deposited energy (per sensor):** peak Γ_in ≪ 25 kHz ⇒ no censoring ⇒ E_rec ≈ 0.5·E_dep (linear, unsaturated). Must hold for CEvNS and most Compton events.
 - **High deposited energy (per sensor):** peak Γ_in > 25 kHz ⇒ censoring active ⇒ E_rec compresses / saturates. Must appear for the muon channel.
-- **Equal-split limit (f_prompt → 0):** if all energy diffuses evenly, per-sensor rates fall below 25 kHz for almost all events ⇒ saturation should nearly disappear. A useful sanity knob: turning off localization should remove the muon compression feature.
-- **Hf vs Al:** for the same E_sensor, Hf's smaller Δ_tr gives ~5–10× higher N_qp and Γ_in ⇒ Hf saturates at a lower deposited energy than Al. The crossover-energy ordering (E_cross^Hf < E_cross^Al) must come out of Phase 5.
+- **Equal-split limit (f_prompt → 0), keV-scale deposits:** for CEvNS/Compton-scale deposits (~tens of eV to a few keV), spreading energy evenly over ~10,300 sensors drops per-sensor rates below 25 kHz ⇒ saturation disappears for those channels. The saturation on/off discriminator lives at the **keV scale**, not the muon scale. **Correction (checker, 2026-07-20):** at true muon energies (≳1.5 MeV), equal-split still gives ~150–500 eV/sensor ≫ the ~1 eV onset, so **muons saturate even under equal-split** — localization sets the *degree/number of saturated sensors*, not the existence of muon saturation. The earlier "equal-split removes the muon compression feature" claim was arithmetically wrong.
+- **Hf vs Al:** Hf's smaller Δ_tr gives a ~4.75× higher N_qp per eV, but its ~10× larger V_tr and ~6.7× larger K (Table II) partly cancel, so the saturation-driving **Γ_in ratio is ~3.2×** (not 5–10×). Saturation ordering must be derived from Γ_in, giving E_cross^Hf < E_cross^Al (Hf saturates first). Phase 5 confirms the crossover energies (~0.8 eV Hf, ~1.3 eV Al at the sensor level).
 
 </limiting_cases>
 
@@ -111,8 +111,8 @@ Requirements: CONV-01
 
 - **Weakest anchor:** the localized+diffuse sharing model has no direct thin-wafer measurement behind it; `f_prompt` and `r` are the least-constrained numbers in the whole pipeline, and the muon spectrum shape depends strongly on them.
 - **Unvalidated assumptions:** collapsing the muon track to a point (overstates saturation); lumped ε applying equally to both designs; trap-gap quantum; Table II K/V_tr transferring to this wafer.
-- **Competing explanation:** an apparent muon "saturation feature" could be an artifact of the point-collapse + localization choice rather than real readout physics — the equal-split sanity limit must be checked to distinguish them.
-- **Disconfirming check:** if turning localization off (equal-split limit) still shows strong saturation, or if turning it on shows none at plausible `f_prompt`, the sharing model is mis-specified.
+- **Competing explanation:** the *shape/degree* of the muon compression (how many sensors saturate, the compression factor) could be an artifact of the point-collapse + localization choice rather than real readout physics. (Note: the *existence* of muon saturation is robust — it survives even the equal-split limit — so only the degree is model-dependent.) The keV-scale (CEvNS/Compton) saturation on/off behavior is the sensitive discriminator for the sharing model.
+- **Disconfirming check:** if a keV-scale deposit saturates under equal-split (f_prompt → 0), or if plausible `f_prompt` gives no localized enhancement of saturation degree at the muon scale, the sharing model is mis-specified.
 - **False progress to reject:** a clean-looking muon compression feature that is actually driven entirely by the arbitrary point-collapse; reconstructed spectra shown before the low-E linearity limit (E_rec ≈ 0.5·E_dep) is verified.
 
 </skeptical_review>
