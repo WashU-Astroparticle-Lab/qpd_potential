@@ -56,9 +56,23 @@ None yet.
 **Convention Lock:**
 
 - Metric signature: not_applicable — no relativistic field theory in this detector/rate pipeline
+- Fourier convention: not_applicable
 - Natural units: internal-only (hbar=c=1) for CEvNS cross section; k_B EXPLICIT (not =1); I/O in eV/keV/MeV, counts/kg/day/keV, s, cm/um; (hbar c)^2 = 3.894e-28 GeV^2 cm^2
+- Gauge choice: not_applicable
+- Regularization scheme: not_applicable
 - Renormalization scheme: tree-level SM (no loops); only scheme-dependent input is sin2thetaW = 0.2387 (low-energy MS-bar)
+- Coordinate system: Cartesian wafer frame: x,y in-plane 4in x 4in face, z through 2mm thickness; sensors on one z-face
+- Spin basis: not_applicable
+- State normalization: not_applicable
 - Coupling convention: CEvNS dsigma/dT = (G_F^2 M/4pi) Q_W^2 (1 - M T/2 E_nu^2) F^2(q^2); prefactor /4pi NOT /8pi; Q_W = N-(1-4 sin2thetaW)Z; sin2thetaW=0.2387 (low-E MSbar); 1-4sin2thetaW=0.0452; Helm F, F(0)=1
+- Index positioning: not_applicable
+- Time ordering: not_applicable
+- Commutation convention: not_applicable
+- Levi-Civita sign: not_applicable
+- Generator normalization: not_applicable
+- Covariant derivative sign: not_applicable
+- Gamma matrix convention: not_applicable
+- Creation/annihilation order: not_applicable
 
 *Custom conventions:*
 - Energy Scale Chain: single unified phonon scale, NO ionization quenching, for BOTH NR (CEvNS) and ER (muon/Compton): T=E_nr -> E_ph -> E_dep -> E_rec; E_ph=E_dep-E_stored(defects) (few-% NR-only, 0 for muons/Compton); E_rec(low-E)~=0.5*E_dep; FORBIDDEN: keVee/keVnr mixing, Lindhard/ionization quenching
