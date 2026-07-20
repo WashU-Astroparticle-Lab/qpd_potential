@@ -34,7 +34,7 @@ This stage-1 study computes the reactor-CEvNS, cosmic-ray-muon, and environmenta
 
 ## Phases
 
-- [ ] **Phase 1: Conventions & Energy-Scale Foundation** — Fix the T→E_ph→E_dep→E_rec bookkeeping (no quenching), CEvNS prefactor/units, and the bandwidth-censoring convention.
+- [x] **Phase 1: Conventions & Energy-Scale Foundation** — Fix the T→E_ph→E_dep→E_rec bookkeeping (no quenching), CEvNS prefactor/units, and the bandwidth-censoring convention. ✓ verified passed (15/15)
 - [ ] **Phase 2: Reactor Flux Model** — Frozen Φ(E_ν) table: Huber–Mueller >2 MeV + summation/n-capture <1.8 MeV with an explicit uncertainty band.
 - [ ] **Phase 3: CEvNS Cross Section & Rate** — Per-isotope-summed dR/dT_dep on Ge, benchmarked against Billard Table 1 and the closed-form total cross section.
 - [ ] **Phase 4: Muon & Compton Deposited-Energy Spectra** — Muon (Gaisser–Guan ⊗ chord ⊗ Landau–Vavilov) and Compton (Klein–Nishina continuum) deposited-energy spectra, validated against flux anchors.
@@ -97,8 +97,8 @@ This stage-1 study computes the reactor-CEvNS, cosmic-ray-muon, and environmenta
 
 Plans:
 
-- [ ] 01-01-PLAN.md — Parameter foundation (Table II, gaps, constants, sharing defaults) + CEvNS closed-form benchmark hook + CONVENTIONS.md consistency verification
-- [ ] 01-02-PLAN.md — Energy-scale/response module (yield → Γ_in → both censoring variants switch, E_rec Phase-5 stub) + limiting-case tests + ASSUMPTIONS.md seed
+- [x] 01-01-PLAN.md — Parameter foundation (Table II, gaps, constants, sharing defaults) + CEvNS closed-form benchmark hook + CONVENTIONS.md consistency verification
+- [x] 01-02-PLAN.md — Energy-scale/response module (yield → Γ_in → both censoring variants switch, E_rec Phase-5 stub) + limiting-case tests + ASSUMPTIONS.md seed
 
 ### Phase 2: Reactor Flux Model
 
@@ -162,7 +162,7 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 
 | Phase | Plans Complete | Status | Completed |
 | ----- | -------------- | ------ | --------- |
-| 1. Conventions & Energy-Scale Foundation | 0/2 | Planned | - |
+| 1. Conventions & Energy-Scale Foundation | 2/2 | Complete ✓ | 2026-07-20 |
 | 2. Reactor Flux Model | 0/TBD | Not started | - |
 | 3. CEvNS Cross Section & Rate | 0/TBD | Not started | - |
 | 4. Muon & Compton Deposited-Energy Spectra | 0/TBD | Not started | - |

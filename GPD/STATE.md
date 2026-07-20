@@ -7,17 +7,17 @@ See: GPD/PROJECT.md
 **Machine-readable scoping contract:** `GPD/state.json` field `project_contract`
 
 **Core research question:** Reactor-CEvNS, cosmic-muon, and environmental-gamma Compton spectra in reconstructed energy for a 4"×4"×2mm single-sided Ge wafer read out by QPDs (Ta→Al and Al→Hf designs).
-**Current focus:** Phase 1 — Conventions & Energy-Scale Foundation
+**Current focus:** Phase 1 complete ✓ — next: Phase 2 (Reactor Flux Model) and Phase 4 (Muon & Compton) can start
 
 ## Current Position
 
 **Current Phase:** 1
 **Current Phase Name:** Conventions & Energy-Scale Foundation
 **Total Phases:** 6
-**Current Plan:** 01-01
+**Current Plan:** 01-02
 **Total Plans in Phase:** 2
-**Status:** Executing
-**Last Activity:** Plan 01-01 executed (params + CEvNS benchmark hook)
+**Status:** Phase 1 complete (verified passed 15/15, HIGH)
+**Last Activity:** Phase 1 executed and verified — qpd_potential package (params, cevns, energy_scale), 26/26 tests, CONVENTIONS.md + ASSUMPTIONS.md
 
 **Progress:** [██████████] 100%
 
