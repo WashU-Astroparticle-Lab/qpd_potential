@@ -1,5 +1,7 @@
 # Research Summary
 
+> **⚠️ Geometry superseded (2026-07-20, post-survey):** This survey was written against an earlier "1 kg monolithic Ge crystal" framing. The project geometry was subsequently revised to a **4″×4″×2 mm single-sided Ge wafer (~110 g)** with ~10,300 QPD sensors at 1/mm², and an **environmental-gamma Compton channel** was added as a third spectrum. Per-kg rate normalization (counts·kg⁻¹·day⁻¹) is retained for benchmark comparison. The physics inputs, methods, pitfalls, and phase logic below all remain valid; only the target mass, muon chord geometry (thin wafer ⇒ shorter vertical deposits, long near-horizontal chords), and channel count changed. Authoritative geometry lives in `GPD/PROJECT.md`, `GPD/REQUIREMENTS.md`, and `GPD/CONVENTIONS.md` (Section D).
+
 **Project:** QPD Particle-Physics Potential — Reactor-CEvNS + Cosmic-Muon Reconstructed-Energy Spectra in a 1 kg Ge Crystal
 **Domain:** Reactor CEvNS, sea-level cosmic-ray muons, superconducting quasiparticle (parity) sensors
 **Researched:** 2026-07-20
