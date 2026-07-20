@@ -34,6 +34,8 @@ None yet.
 - What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm^2 sensor density?
 - How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model?
 - How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?
+- How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)?
+- What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment?
 
 ## Performance Metrics
 

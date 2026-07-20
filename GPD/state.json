@@ -7,25 +7,26 @@
   "project_contract": {
     "schema_version": 1,
     "scope": {
-      "question": "What are the reactor-CEvNS and cosmic-ray-muon differential rate spectra in reconstructed energy for a 1 kg monolithic Ge crystal read out by QPDs with Ta->Al and Al->Hf trapping designs?",
+      "question": "What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton differential rate spectra in reconstructed energy for a 4 inch x 4 inch x 2 mm single-sided Ge wafer read out by QPDs with Ta->Al and Al->Hf trapping designs?",
       "in_scope": [
-        "Reactor CEvNS differential rate spectrum in reconstructed energy for a 3 GWth commercial reactor at 25 m standoff with a 4-isotope Huber-Mueller-like antineutrino spectrum",
-        "Sea-level cosmic-ray muon energy-deposit spectrum in reconstructed energy for a single monolithic 1 kg Ge crystal",
+        "Reactor CEvNS differential rate spectrum in reconstructed energy for a 3 GWth commercial reactor at 25 m standoff with a 4-isotope Huber-Mueller-like antineutrino spectrum plus an explicit sub-1.8 MeV treatment",
+        "Cosmic-ray muon energy-deposit spectrum in reconstructed energy for the thin wafer, including chord-length geometry (short vertical crossings and long near-horizontal chords) and Landau-Vavilov straggling",
+        "Compton-scattering electron-recoil spectrum in reconstructed energy from a representative environmental radiogenic gamma background (U/Th chains plus K-40 lines and continuum) in the thin wafer",
         "Detector response model: deposited energy to ~50% signal efficiency, trapped quasiparticle number, EMG-profiled tunneling burst, 50 kHz bandwidth-limited reconstruction with perfect tunneling identification",
         "Both trapping designs: Ta absorber to Al trap/junction and Al absorber to Hf trap/junction",
-        "QPD sensor density of 1 per mm^2 on the crystal surface"
+        "Detector geometry: 4 inch x 4 inch x 2 mm Ge wafer (about 110 g), single instrumented face with QPD sensor density of 1 per mm^2 (about 10300 sensors)"
       ],
       "out_of_scope": [
         "G4CMP phonon-transport simulation (deferred to a later stage)",
         "Dark-matter sensitivity projections (later milestone)",
         "Imperfect quasiparticle-tunneling identification and readout-noise modeling",
-        "Backgrounds other than cosmic-ray muons",
+        "Neutron-induced nuclear-recoil backgrounds and other backgrounds beyond cosmic-ray muons and environmental-gamma Compton scattering",
         "Detector geometry and sensor-layout optimization"
       ],
       "unresolved_questions": [
-        "What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm^2 sensor density?",
-        "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model?",
-        "How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?"
+        "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)?",
+        "How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?",
+        "What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment?"
       ]
     },
     "context_intake": {
@@ -38,27 +39,30 @@
         "/Users/lanqingyuan/Documents/GitHub/qpd/src/qpd/simulator/quasiparticle_bursts.py"
       ],
       "known_good_baselines": [
-        "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035 (Ge CEvNS reactor rate predictions)",
-        "Particle Data Group Review of Particle Physics: sea-level muon flux of about 1 muon per cm^2 per minute"
+        "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035 (Ge CEvNS reactor rate predictions, Table 1: 0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr)",
+        "CONUS+ Collaboration, Nature 643, 1229 (2025), arXiv:2501.05206 (observed reactor CEvNS on Ge at 3.6 GWth, 20.7 m)"
       ],
       "context_gaps": [
-        "Instrumented surface area and per-sensor energy split for the 1 kg crystal not yet fixed",
-        "Ta->Al device tunneling parameters (K, Gamma_out, tau_qp) not tabulated in the QPD paper"
+        "Ta->Al device tunneling parameters (K, Gamma_out, tau_qp) not tabulated in the QPD paper",
+        "Absolute environmental gamma flux normalization for the Compton channel not yet fixed"
       ],
       "crucial_inputs": [
         "100% phonon collection with ~50% overall deposited-energy-to-signal efficiency",
         "50 kHz signal bandwidth: tunneling faster than the ~25 kHz Nyquist rate is unresolvable",
         "Perfect identification of quasiparticle tunneling events",
-        "Single monolithic 1 kg Ge crystal",
-        "QPD sensor density of 1 per mm^2",
+        "4 inch x 4 inch x 2 mm single-sided Ge wafer, about 110 g",
+        "QPD sensor density of 1 per mm^2 on one face, about 10300 sensors",
         "Commercial 3 GWth reactor at 25 m standoff",
         "Sea-level muon flux with no overburden",
-        "Exponentially-modified-Gaussian pulse template from the qpd repo"
+        "Representative environmental radiogenic gamma background for the Compton channel",
+        "Exponentially-modified-Gaussian pulse template from the qpd repo",
+        "Unified phonon energy scale with no ionization quenching for nuclear and electron recoils"
       ]
     },
     "approach_policy": {
       "formulations": [
         "Freedman CEvNS differential cross section with Helm form factor on natural Ge folded with a 4-isotope reactor antineutrino spectrum",
+        "Klein-Nishina Compton scattering of a representative environmental gamma spectrum, thin-target single-scatter dominated, on Ge",
         "Analytic and Monte-Carlo response chain from deposited energy to bandwidth-limited reconstructed energy using the QPD paper pulse model and the qpd-repo EMG template"
       ],
       "allowed_estimator_families": [
@@ -73,7 +77,7 @@
       "forbidden_fit_families": [],
       "stop_and_rethink_conditions": [
         "The CEvNS reconstructed spectrum falls entirely below the effective threshold for both designs",
-        "Muon-induced pileup at sea level makes quiescent reconstruction impossible at 50 kHz bandwidth"
+        "Muon-induced or gamma-induced pileup at sea level makes quiescent reconstruction impossible at 50 kHz bandwidth"
       ]
     },
     "observables": [
@@ -81,7 +85,7 @@
         "id": "obs-cevns-spectrum",
         "name": "Reactor CEvNS differential rate spectrum",
         "kind": "curve",
-        "definition": "Differential CEvNS event rate versus reconstructed energy for the 1 kg Ge QPD detector",
+        "definition": "Differential CEvNS event rate versus reconstructed energy for the Ge QPD wafer",
         "regime": null,
         "units": "counts/kg/day/keV"
       },
@@ -89,7 +93,15 @@
         "id": "obs-muon-spectrum",
         "name": "Cosmic-ray muon spectrum",
         "kind": "curve",
-        "definition": "Differential cosmic-ray muon event rate versus reconstructed energy for the same detector",
+        "definition": "Differential cosmic-ray muon event rate versus reconstructed energy for the same wafer, including chord-length geometry",
+        "regime": null,
+        "units": "counts/kg/day/keV"
+      },
+      {
+        "id": "obs-compton-spectrum",
+        "name": "Environmental-gamma Compton spectrum",
+        "kind": "curve",
+        "definition": "Differential Compton electron-recoil event rate versus reconstructed energy from environmental radiogenic gammas in the wafer",
         "regime": null,
         "units": "counts/kg/day/keV"
       },
@@ -131,7 +143,7 @@
       },
       {
         "id": "claim-muon",
-        "statement": "The sea-level muon spectrum in reconstructed energy is computed for both designs with the bandwidth-saturation regime made explicit, and the integral muon rate matches the PDG sea-level flux through the crystal",
+        "statement": "The sea-level muon spectrum in reconstructed energy is computed for both designs with the chord-length geometry and bandwidth-saturation regime made explicit, and the integral muon rate matches the PDG sea-level flux through the wafer",
         "claim_kind": "result",
         "observables": [
           "obs-muon-spectrum",
@@ -146,6 +158,31 @@
         ],
         "references": [
           "ref-pdg-muon"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      },
+      {
+        "id": "claim-compton",
+        "statement": "The Compton electron-recoil spectrum from a representative environmental radiogenic gamma background is computed in reconstructed energy for the wafer, showing Compton continua and edges on the unified phonon energy scale",
+        "claim_kind": "result",
+        "observables": [
+          "obs-compton-spectrum",
+          "obs-energy-response"
+        ],
+        "deliverables": [
+          "deliv-fig-spectra",
+          "deliv-code"
+        ],
+        "acceptance_tests": [
+          "test-compton-edges"
+        ],
+        "references": [
+          "ref-qpd-paper",
+          "ref-environmental-gamma"
         ],
         "parameters": [],
         "hypotheses": [],
@@ -183,9 +220,10 @@
       {
         "id": "deliv-fig-spectra",
         "kind": "figure",
-        "path": "artifacts/stage1/cevns_muon_spectra.pdf",
-        "description": "CEvNS and muon differential rate spectra versus reconstructed energy for both trapping designs",
+        "path": "artifacts/stage1/reconstructed_energy_spectra.pdf",
+        "description": "CEvNS, muon, and Compton differential rate spectra versus reconstructed energy for both trapping designs",
         "must_contain": [
+          "all three channels: CEvNS, muon, Compton",
           "both trapping designs",
           "counts/kg/day/keV normalization"
         ]
@@ -196,16 +234,18 @@
         "path": "artifacts/stage1/energy_response.pdf",
         "description": "Reconstructed versus deposited energy response with the saturation onset marked",
         "must_contain": [
-          "saturation onset"
+          "saturation onset",
+          "both trapping designs"
         ]
       },
       {
         "id": "deliv-code",
         "kind": "code",
         "path": "src/",
-        "description": "Python implementation of the CEvNS and muon spectrum calculation and the QPD response pipeline",
+        "description": "Python implementation of the CEvNS, muon, and Compton spectrum calculations and the QPD response pipeline",
         "must_contain": [
-          "response chain from deposited to reconstructed energy"
+          "response chain from deposited to reconstructed energy",
+          "wafer geometry and chord-length model"
         ]
       },
       {
@@ -214,7 +254,8 @@
         "path": "artifacts/stage1/ASSUMPTIONS.md",
         "description": "Assumptions and results note for the stage-1 rough estimate",
         "must_contain": [
-          "stated efficiency and bandwidth assumptions"
+          "stated efficiency and bandwidth assumptions",
+          "wafer geometry and gamma-background assumptions"
         ]
       }
     ],
@@ -223,8 +264,8 @@
         "id": "test-cevns-benchmark",
         "subject": "claim-cevns",
         "kind": "benchmark",
-        "procedure": "Compare the integrated CEvNS rate above threshold against the Ge reactor predictions of Billard et al. (2017), rescaled to 3 GWth at 25 m",
-        "pass_condition": "Agreement within a factor of 2",
+        "procedure": "Reproduce Billard et al. (2017) Table 1 Ge rates under their assumptions, then rescale to 3 GWth at 25 m and compare",
+        "pass_condition": "Billard Table 1 reproduced within about 20 percent and rescaled rate consistent within a factor of 2",
         "evidence_required": [
           "deliv-fig-spectra",
           "ref-cevns-benchmark"
@@ -235,11 +276,23 @@
         "id": "test-muon-flux",
         "subject": "claim-muon",
         "kind": "consistency",
-        "procedure": "Integrate the muon event rate through the crystal and compare with the PDG sea-level flux times the crystal geometric acceptance",
+        "procedure": "Integrate the muon event rate through the wafer and compare with the PDG sea-level flux times the wafer geometric acceptance",
         "pass_condition": "Agreement within about 30 percent",
         "evidence_required": [
           "deliv-code",
           "ref-pdg-muon"
+        ],
+        "automation": "hybrid"
+      },
+      {
+        "id": "test-compton-edges",
+        "subject": "claim-compton",
+        "kind": "limiting_case",
+        "procedure": "Check that Compton edges appear at the Klein-Nishina energies E_edge = 2 E_gamma^2 / (m_e c^2 + 2 E_gamma) for the assumed gamma lines and that the total interaction rate matches the assumed flux times the Ge Compton cross section over the wafer",
+        "pass_condition": "Compton edges at predicted energies and interaction rate within a factor of about 2 of the flux-times-cross-section estimate",
+        "evidence_required": [
+          "deliv-fig-spectra",
+          "ref-environmental-gamma"
         ],
         "automation": "hybrid"
       },
@@ -259,7 +312,7 @@
       {
         "id": "ref-qpd-paper",
         "kind": "paper",
-        "locator": "K. Ramanathan et al., APS Open Science 1, 000013 (2026), DOI 10.1103/kqd2-spb1",
+        "locator": "K. Ramanathan et al., APS Open Science 1, 000013 (2026), DOI 10.1103/kqd2-spb1, arXiv:2405.17192",
         "aliases": [
           "QPD paper"
         ],
@@ -268,6 +321,7 @@
         "applies_to": [
           "claim-cevns",
           "claim-muon",
+          "claim-compton",
           "claim-response"
         ],
         "carry_forward_to": [
@@ -330,7 +384,7 @@
         "kind": "paper",
         "locator": "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035",
         "aliases": [
-          "Ricochet Chooz rate predictions"
+          "Billard Ge reactor rates"
         ],
         "role": "benchmark",
         "why_it_matters": "Published Ge CEvNS reactor rate prediction used as the normalization cross-check",
@@ -350,12 +404,12 @@
       {
         "id": "ref-pdg-muon",
         "kind": "paper",
-        "locator": "Particle Data Group, Review of Particle Physics, cosmic-rays section (sea-level muon flux)",
+        "locator": "R. L. Workman et al. (Particle Data Group), Prog. Theor. Exp. Phys. 2022, 083C01 (2022), Cosmic Rays review",
         "aliases": [
           "PDG muon flux"
         ],
         "role": "benchmark",
-        "why_it_matters": "Anchor for the integral sea-level muon rate through the crystal",
+        "why_it_matters": "Anchor for the integral sea-level muon rate through the wafer",
         "applies_to": [
           "claim-muon"
         ],
@@ -366,6 +420,28 @@
         "must_surface": true,
         "required_actions": [
           "compare",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-environmental-gamma",
+        "kind": "paper",
+        "locator": "G. Heusser, Annu. Rev. Nucl. Part. Sci. 45, 543 (1995), Low-Radioactivity Background Techniques",
+        "aliases": [
+          "Heusser environmental radioactivity"
+        ],
+        "role": "background",
+        "why_it_matters": "Reference for the environmental radiogenic gamma lines and flux used to drive the Compton channel",
+        "applies_to": [
+          "claim-compton"
+        ],
+        "carry_forward_to": [
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "use",
           "cite"
         ]
       }
@@ -380,8 +456,14 @@
       {
         "id": "fp-no-saturation",
         "subject": "claim-muon",
-        "proxy": "Muon spectrum computed without the 50 kHz bandwidth saturation model",
-        "reason": "Saturation dominates the muon response and omitting it would look like progress while skipping the decisive physics"
+        "proxy": "Muon spectrum computed without the 50 kHz bandwidth saturation model or without chord-length geometry",
+        "reason": "Saturation and thin-wafer geometry shape the muon response and omitting them would look like progress while skipping the decisive physics"
+      },
+      {
+        "id": "fp-full-absorption",
+        "subject": "claim-compton",
+        "proxy": "Treating gamma deposits as full-energy photopeaks instead of the Compton continuum expected in a thin 2 mm wafer",
+        "reason": "In a thin wafer gammas predominantly single-Compton-scatter and escape, so the continuum, not photopeaks, is the physical signal"
       }
     ],
     "links": [
@@ -404,6 +486,15 @@
         ]
       },
       {
+        "id": "link-compton",
+        "source": "claim-compton",
+        "target": "deliv-fig-spectra",
+        "relation": "supports",
+        "verified_by": [
+          "test-compton-edges"
+        ]
+      },
+      {
         "id": "link-response",
         "source": "claim-response",
         "target": "deliv-fig-response",
@@ -416,17 +507,20 @@
     "uncertainty_markers": {
       "weakest_anchors": [
         "The lumped ~50% deposited-to-signal efficiency replaces the paper's design-dependent efficiency chain",
-        "Ta->Al device tunneling parameters are extrapolated rather than tabulated in the QPD paper"
+        "Ta->Al device tunneling parameters are extrapolated rather than tabulated in the QPD paper",
+        "The absolute environmental gamma flux normalization for the Compton channel is a representative assumption, not a site measurement"
       ],
       "unvalidated_assumptions": [
         "Perfect quasiparticle-tunneling identification",
-        "Uniform phonon-energy sharing among QPD sensors on the crystal",
-        "qpd-repo EMG template parameters apply to a 1 kg Ge crystal"
+        "Uniform phonon-energy sharing among the ~10300 QPD sensors on the single instrumented face",
+        "qpd-repo EMG template parameters apply to a Ge wafer",
+        "Thin-wafer single-Compton-scatter dominance for the gamma background"
       ],
       "competing_explanations": [],
       "disconfirming_observations": [
         "Computed total CEvNS rate disagrees with published Ge reactor predictions by more than an order of magnitude",
-        "The response chain shows no saturation even when tunneling rates far exceed the 25 kHz Nyquist limit"
+        "The response chain shows no saturation even when tunneling rates far exceed the 25 kHz Nyquist limit",
+        "Compton edges appear at energies inconsistent with the Klein-Nishina prediction"
       ]
     }
   },
@@ -447,7 +541,9 @@
   "open_questions": [
     "What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm^2 sensor density?",
     "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model?",
-    "How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?"
+    "How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?",
+    "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)?",
+    "What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment?"
   ],
   "resolved_questions": [],
   "performance_metrics": {
