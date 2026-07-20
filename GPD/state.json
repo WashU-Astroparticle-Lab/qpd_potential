@@ -1,0 +1,503 @@
+{
+  "project_reference": {
+    "project_md_updated": null,
+    "core_research_question": null,
+    "current_focus": null
+  },
+  "project_contract": {
+    "schema_version": 1,
+    "scope": {
+      "question": "What are the reactor-CEvNS and cosmic-ray-muon differential rate spectra in reconstructed energy for a 1 kg monolithic Ge crystal read out by QPDs with Ta->Al and Al->Hf trapping designs?",
+      "in_scope": [
+        "Reactor CEvNS differential rate spectrum in reconstructed energy for a 3 GWth commercial reactor at 25 m standoff with a 4-isotope Huber-Mueller-like antineutrino spectrum",
+        "Sea-level cosmic-ray muon energy-deposit spectrum in reconstructed energy for a single monolithic 1 kg Ge crystal",
+        "Detector response model: deposited energy to ~50% signal efficiency, trapped quasiparticle number, EMG-profiled tunneling burst, 50 kHz bandwidth-limited reconstruction with perfect tunneling identification",
+        "Both trapping designs: Ta absorber to Al trap/junction and Al absorber to Hf trap/junction",
+        "QPD sensor density of 1 per mm^2 on the crystal surface"
+      ],
+      "out_of_scope": [
+        "G4CMP phonon-transport simulation (deferred to a later stage)",
+        "Dark-matter sensitivity projections (later milestone)",
+        "Imperfect quasiparticle-tunneling identification and readout-noise modeling",
+        "Backgrounds other than cosmic-ray muons",
+        "Detector geometry and sensor-layout optimization"
+      ],
+      "unresolved_questions": [
+        "What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm^2 sensor density?",
+        "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model?",
+        "How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?"
+      ]
+    },
+    "context_intake": {
+      "must_read_refs": [
+        "ref-qpd-paper"
+      ],
+      "must_include_prior_outputs": [],
+      "user_asserted_anchors": [
+        "DOI 10.1103/kqd2-spb1 (QPD paper, Ramanathan et al. 2026)",
+        "/Users/lanqingyuan/Documents/GitHub/qpd/src/qpd/simulator/quasiparticle_bursts.py"
+      ],
+      "known_good_baselines": [
+        "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035 (Ge CEvNS reactor rate predictions)",
+        "Particle Data Group Review of Particle Physics: sea-level muon flux of about 1 muon per cm^2 per minute"
+      ],
+      "context_gaps": [
+        "Instrumented surface area and per-sensor energy split for the 1 kg crystal not yet fixed",
+        "Ta->Al device tunneling parameters (K, Gamma_out, tau_qp) not tabulated in the QPD paper"
+      ],
+      "crucial_inputs": [
+        "100% phonon collection with ~50% overall deposited-energy-to-signal efficiency",
+        "50 kHz signal bandwidth: tunneling faster than the ~25 kHz Nyquist rate is unresolvable",
+        "Perfect identification of quasiparticle tunneling events",
+        "Single monolithic 1 kg Ge crystal",
+        "QPD sensor density of 1 per mm^2",
+        "Commercial 3 GWth reactor at 25 m standoff",
+        "Sea-level muon flux with no overburden",
+        "Exponentially-modified-Gaussian pulse template from the qpd repo"
+      ]
+    },
+    "approach_policy": {
+      "formulations": [
+        "Freedman CEvNS differential cross section with Helm form factor on natural Ge folded with a 4-isotope reactor antineutrino spectrum",
+        "Analytic and Monte-Carlo response chain from deposited energy to bandwidth-limited reconstructed energy using the QPD paper pulse model and the qpd-repo EMG template"
+      ],
+      "allowed_estimator_families": [
+        "Direct spectrum folding and Monte-Carlo sampling of the response chain"
+      ],
+      "forbidden_estimator_families": [
+        "G4CMP phonon-transport simulation"
+      ],
+      "allowed_fit_families": [
+        "EMG pulse-template fits for energy reconstruction"
+      ],
+      "forbidden_fit_families": [],
+      "stop_and_rethink_conditions": [
+        "The CEvNS reconstructed spectrum falls entirely below the effective threshold for both designs",
+        "Muon-induced pileup at sea level makes quiescent reconstruction impossible at 50 kHz bandwidth"
+      ]
+    },
+    "observables": [
+      {
+        "id": "obs-cevns-spectrum",
+        "name": "Reactor CEvNS differential rate spectrum",
+        "kind": "curve",
+        "definition": "Differential CEvNS event rate versus reconstructed energy for the 1 kg Ge QPD detector",
+        "regime": null,
+        "units": "counts/kg/day/keV"
+      },
+      {
+        "id": "obs-muon-spectrum",
+        "name": "Cosmic-ray muon spectrum",
+        "kind": "curve",
+        "definition": "Differential cosmic-ray muon event rate versus reconstructed energy for the same detector",
+        "regime": null,
+        "units": "counts/kg/day/keV"
+      },
+      {
+        "id": "obs-energy-response",
+        "name": "Energy response curve",
+        "kind": "curve",
+        "definition": "Reconstructed energy versus deposited energy per trapping design, including 50 kHz bandwidth saturation",
+        "regime": null,
+        "units": null
+      }
+    ],
+    "claims": [
+      {
+        "id": "claim-cevns",
+        "statement": "The reactor CEvNS spectrum in reconstructed energy is computed for both trapping designs and its total rate agrees with published Ge reactor predictions within a factor of about 2",
+        "claim_kind": "result",
+        "observables": [
+          "obs-cevns-spectrum",
+          "obs-energy-response"
+        ],
+        "deliverables": [
+          "deliv-fig-spectra",
+          "deliv-code"
+        ],
+        "acceptance_tests": [
+          "test-cevns-benchmark"
+        ],
+        "references": [
+          "ref-qpd-paper",
+          "ref-huber",
+          "ref-cevns-benchmark"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      },
+      {
+        "id": "claim-muon",
+        "statement": "The sea-level muon spectrum in reconstructed energy is computed for both designs with the bandwidth-saturation regime made explicit, and the integral muon rate matches the PDG sea-level flux through the crystal",
+        "claim_kind": "result",
+        "observables": [
+          "obs-muon-spectrum",
+          "obs-energy-response"
+        ],
+        "deliverables": [
+          "deliv-fig-spectra",
+          "deliv-code"
+        ],
+        "acceptance_tests": [
+          "test-muon-flux"
+        ],
+        "references": [
+          "ref-pdg-muon"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      },
+      {
+        "id": "claim-response",
+        "statement": "The reconstructed-versus-deposited energy response, including saturation from the 25 kHz maximum resolvable tunneling rate, is derived for both trapping designs",
+        "claim_kind": "result",
+        "observables": [
+          "obs-energy-response"
+        ],
+        "deliverables": [
+          "deliv-fig-response",
+          "deliv-code",
+          "deliv-note"
+        ],
+        "acceptance_tests": [
+          "test-response-limits"
+        ],
+        "references": [
+          "ref-qpd-paper",
+          "ref-qpd-repo"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      }
+    ],
+    "deliverables": [
+      {
+        "id": "deliv-fig-spectra",
+        "kind": "figure",
+        "path": "artifacts/stage1/cevns_muon_spectra.pdf",
+        "description": "CEvNS and muon differential rate spectra versus reconstructed energy for both trapping designs",
+        "must_contain": [
+          "both trapping designs",
+          "counts/kg/day/keV normalization"
+        ]
+      },
+      {
+        "id": "deliv-fig-response",
+        "kind": "figure",
+        "path": "artifacts/stage1/energy_response.pdf",
+        "description": "Reconstructed versus deposited energy response with the saturation onset marked",
+        "must_contain": [
+          "saturation onset"
+        ]
+      },
+      {
+        "id": "deliv-code",
+        "kind": "code",
+        "path": "src/",
+        "description": "Python implementation of the CEvNS and muon spectrum calculation and the QPD response pipeline",
+        "must_contain": [
+          "response chain from deposited to reconstructed energy"
+        ]
+      },
+      {
+        "id": "deliv-note",
+        "kind": "note",
+        "path": "artifacts/stage1/ASSUMPTIONS.md",
+        "description": "Assumptions and results note for the stage-1 rough estimate",
+        "must_contain": [
+          "stated efficiency and bandwidth assumptions"
+        ]
+      }
+    ],
+    "acceptance_tests": [
+      {
+        "id": "test-cevns-benchmark",
+        "subject": "claim-cevns",
+        "kind": "benchmark",
+        "procedure": "Compare the integrated CEvNS rate above threshold against the Ge reactor predictions of Billard et al. (2017), rescaled to 3 GWth at 25 m",
+        "pass_condition": "Agreement within a factor of 2",
+        "evidence_required": [
+          "deliv-fig-spectra",
+          "ref-cevns-benchmark"
+        ],
+        "automation": "hybrid"
+      },
+      {
+        "id": "test-muon-flux",
+        "subject": "claim-muon",
+        "kind": "consistency",
+        "procedure": "Integrate the muon event rate through the crystal and compare with the PDG sea-level flux times the crystal geometric acceptance",
+        "pass_condition": "Agreement within about 30 percent",
+        "evidence_required": [
+          "deliv-code",
+          "ref-pdg-muon"
+        ],
+        "automation": "hybrid"
+      },
+      {
+        "id": "test-response-limits",
+        "subject": "claim-response",
+        "kind": "limiting_case",
+        "procedure": "Check the low-energy limit (reconstructed energy equals 0.5 times deposited energy within statistical scatter) and the high-energy limit (response saturates once the tunneling rate exceeds 25 kHz)",
+        "pass_condition": "Both limiting behaviors reproduced by the pipeline",
+        "evidence_required": [
+          "deliv-fig-response"
+        ],
+        "automation": "hybrid"
+      }
+    ],
+    "references": [
+      {
+        "id": "ref-qpd-paper",
+        "kind": "paper",
+        "locator": "K. Ramanathan et al., APS Open Science 1, 000013 (2026), DOI 10.1103/kqd2-spb1",
+        "aliases": [
+          "QPD paper"
+        ],
+        "role": "method",
+        "why_it_matters": "Defines the QPD detection concept, efficiency chain, pulse model, and Table II device parameters",
+        "applies_to": [
+          "claim-cevns",
+          "claim-muon",
+          "claim-response"
+        ],
+        "carry_forward_to": [
+          "planning",
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "read",
+          "use",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-qpd-repo",
+        "kind": "prior_artifact",
+        "locator": "/Users/lanqingyuan/Documents/GitHub/qpd/src/qpd/simulator/quasiparticle_bursts.py",
+        "aliases": [
+          "qpd repo EMG template"
+        ],
+        "role": "method",
+        "why_it_matters": "Canonical exponentially-modified-Gaussian tunneling-burst template to reuse for the pulse model",
+        "applies_to": [
+          "claim-response"
+        ],
+        "carry_forward_to": [
+          "planning",
+          "execution"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "read",
+          "use"
+        ]
+      },
+      {
+        "id": "ref-huber",
+        "kind": "paper",
+        "locator": "P. Huber, Phys. Rev. C 84, 024617 (2011), arXiv:1106.0687",
+        "aliases": [
+          "Huber reactor spectra"
+        ],
+        "role": "method",
+        "why_it_matters": "Reactor antineutrino spectrum input for the CEvNS flux calculation",
+        "applies_to": [
+          "claim-cevns"
+        ],
+        "carry_forward_to": [
+          "execution"
+        ],
+        "must_surface": false,
+        "required_actions": [
+          "use",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-cevns-benchmark",
+        "kind": "paper",
+        "locator": "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035",
+        "aliases": [
+          "Ricochet Chooz rate predictions"
+        ],
+        "role": "benchmark",
+        "why_it_matters": "Published Ge CEvNS reactor rate prediction used as the normalization cross-check",
+        "applies_to": [
+          "claim-cevns"
+        ],
+        "carry_forward_to": [
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "compare",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-pdg-muon",
+        "kind": "paper",
+        "locator": "Particle Data Group, Review of Particle Physics, cosmic-rays section (sea-level muon flux)",
+        "aliases": [
+          "PDG muon flux"
+        ],
+        "role": "benchmark",
+        "why_it_matters": "Anchor for the integral sea-level muon rate through the crystal",
+        "applies_to": [
+          "claim-muon"
+        ],
+        "carry_forward_to": [
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "compare",
+          "cite"
+        ]
+      }
+    ],
+    "forbidden_proxies": [
+      {
+        "id": "fp-deposited-only",
+        "subject": "claim-cevns",
+        "proxy": "Reporting spectra in deposited energy only without the reconstruction and bandwidth model",
+        "reason": "The decisive output is the spectrum in reconstructed energy"
+      },
+      {
+        "id": "fp-no-saturation",
+        "subject": "claim-muon",
+        "proxy": "Muon spectrum computed without the 50 kHz bandwidth saturation model",
+        "reason": "Saturation dominates the muon response and omitting it would look like progress while skipping the decisive physics"
+      }
+    ],
+    "links": [
+      {
+        "id": "link-cevns",
+        "source": "claim-cevns",
+        "target": "deliv-fig-spectra",
+        "relation": "supports",
+        "verified_by": [
+          "test-cevns-benchmark"
+        ]
+      },
+      {
+        "id": "link-muon",
+        "source": "claim-muon",
+        "target": "deliv-fig-spectra",
+        "relation": "supports",
+        "verified_by": [
+          "test-muon-flux"
+        ]
+      },
+      {
+        "id": "link-response",
+        "source": "claim-response",
+        "target": "deliv-fig-response",
+        "relation": "supports",
+        "verified_by": [
+          "test-response-limits"
+        ]
+      }
+    ],
+    "uncertainty_markers": {
+      "weakest_anchors": [
+        "The lumped ~50% deposited-to-signal efficiency replaces the paper's design-dependent efficiency chain",
+        "Ta->Al device tunneling parameters are extrapolated rather than tabulated in the QPD paper"
+      ],
+      "unvalidated_assumptions": [
+        "Perfect quasiparticle-tunneling identification",
+        "Uniform phonon-energy sharing among QPD sensors on the crystal",
+        "qpd-repo EMG template parameters apply to a 1 kg Ge crystal"
+      ],
+      "competing_explanations": [],
+      "disconfirming_observations": [
+        "Computed total CEvNS rate disagrees with published Ge reactor predictions by more than an order of magnitude",
+        "The response chain shows no saturation even when tunneling rates far exceed the 25 kHz Nyquist limit"
+      ]
+    }
+  },
+  "position": {
+    "current_phase": null,
+    "current_phase_name": null,
+    "total_phases": null,
+    "current_plan": null,
+    "total_plans_in_phase": null,
+    "status": null,
+    "last_activity": null,
+    "last_activity_desc": null,
+    "progress_percent": 0,
+    "paused_at": null
+  },
+  "active_calculations": [],
+  "intermediate_results": [],
+  "open_questions": [
+    "What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm^2 sensor density?",
+    "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model?",
+    "How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?"
+  ],
+  "resolved_questions": [],
+  "performance_metrics": {
+    "rows": []
+  },
+  "decisions": [],
+  "approximations": [],
+  "convention_lock": {
+    "metric_signature": null,
+    "fourier_convention": null,
+    "natural_units": null,
+    "gauge_choice": null,
+    "regularization_scheme": null,
+    "renormalization_scheme": null,
+    "coordinate_system": null,
+    "spin_basis": null,
+    "state_normalization": null,
+    "coupling_convention": null,
+    "index_positioning": null,
+    "time_ordering": null,
+    "commutation_convention": null,
+    "levi_civita_sign": null,
+    "generator_normalization": null,
+    "covariant_derivative_sign": null,
+    "gamma_matrix_convention": null,
+    "creation_annihilation_order": null,
+    "custom_conventions": {}
+  },
+  "propagated_uncertainties": [],
+  "pending_todos": [],
+  "blockers": [],
+  "continuation": {
+    "schema_version": 1,
+    "handoff": {
+      "resume_file": null,
+      "stopped_at": null,
+      "last_result_id": null,
+      "recorded_at": null,
+      "recorded_by": null
+    },
+    "bounded_segment": null,
+    "machine": {
+      "recorded_at": null,
+      "hostname": null,
+      "platform": null
+    }
+  },
+  "contract_alignment": {
+    "confirmed_at": null,
+    "confirmed_contract_hash": null,
+    "confirmed_context_hash": null
+  }
+}
