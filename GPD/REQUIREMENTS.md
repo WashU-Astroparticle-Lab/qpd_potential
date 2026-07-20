@@ -57,17 +57,19 @@
 
 ## Traceability
 
+Roadmap: `GPD/ROADMAP.md` (6 phases, created 2026-07-20). Coverage: 12/12 requirements mapped to exactly one primary phase; no orphans, no duplicates.
+
 | REQ-ID | Phase | Status |
 | ------ | ----- | ------- |
-| CONV-01 | 1 | Planned |
-| CALC-01 | 2 | Planned |
-| CALC-02 | 3 | Planned |
-| CALC-03 | 4 | Planned |
-| CALC-04 | 4 | Planned |
-| SIMU-01 | 5 | Planned |
-| SIMU-02 | 5 | Planned |
-| SIMU-03 | 6 | Planned |
-| VALD-01 | 3 | Planned |
-| VALD-02 | 4 | Planned |
-| VALD-03 | 4 | Planned |
-| VALD-04 | 5 | Planned |
+| CONV-01 | 1 — Conventions & Energy-Scale Foundation | Ready to plan |
+| CALC-01 | 2 — Reactor Flux Model | Planned |
+| CALC-02 | 3 — CEvNS Cross Section & Rate | Planned |
+| CALC-03 | 4 — Muon & Compton Deposited-Energy Spectra | Planned |
+| CALC-04 | 4 — Muon & Compton Deposited-Energy Spectra | Planned |
+| SIMU-01 | 5 — QPD Response Chain & Energy Reconstruction | Planned |
+| SIMU-02 | 5 — QPD Response Chain & Energy Reconstruction | Planned |
+| SIMU-03 | 6 — Fold & Produce Reconstructed-Energy Spectra | Planned |
+| VALD-01 | 3 — CEvNS Cross Section & Rate | Planned |
+| VALD-02 | 4 — Muon & Compton Deposited-Energy Spectra | Planned |
+| VALD-03 | 4 — Muon & Compton Deposited-Energy Spectra | Planned |
+| VALD-04 | 5 — QPD Response Chain & Energy Reconstruction | Planned |
