@@ -1,0 +1,16 @@
+# QPD Phase-2 reactor flux model -- Huber-Mueller per-fission antineutrino spectrum coefficients
+# Model: S_i(E_nu) = exp( sum_{p=1..6} alpha_p * E_nu^{p-1} )   [nu-bar / fission / MeV], E_nu in MeV
+# Validity: ~2-8 MeV (conversion/summation fit range). Do NOT apply below ~1.8 MeV (undefined; see summation extension).
+# FETCH-NOT-INVENT provenance: every coefficient row was extracted from the primary arXiv e-print source
+#   (LaTeX table / author fit files), NOT transcribed from memory. See provenance column + fetch_note.
+#   Huber 235U/239Pu/241Pu : arXiv:1106.0687 (P. Huber, PRC 84, 024617 (2011)), Table III,
+#       verbatim from author e-print files 0602U235-fit.txt / 0602Pu239-fit.txt / 0602Pu241-fit.txt.
+#   Mueller 238U           : arXiv:1101.2663 (Mueller et al., PRC 83, 054615 (2011)), Table VI, k=238U row,
+#       verbatim from e-print source nu_conv_spec_PRC.tex.
+# NOTE: Huber (not Mueller) coefficients are used for the three fissile isotopes -- this is the canonical
+#   "Huber-Mueller" combination. Mueller's own 235U/239Pu/241Pu fit differs and is deliberately NOT used here.
+isotope,alpha1,alpha2,alpha3,alpha4,alpha5,alpha6,source,arxiv_id,table,fetch_note
+235U,4.367,-4.577,2.100,-5.294e-1,6.186e-2,-2.777e-3,"Huber PRC 84 024617 (2011)",1106.0687,"Table III","e-print file 0602U235-fit.txt"
+238U,4.833e-1,1.927e-1,-1.283e-1,-6.762e-3,2.233e-3,-1.536e-4,"Mueller et al. PRC 83 054615 (2011)",1101.2663,"Table VI (k=238U)","e-print nu_conv_spec_PRC.tex"
+239Pu,4.757,-5.392,2.563,-6.596e-1,7.820e-2,-3.536e-3,"Huber PRC 84 024617 (2011)",1106.0687,"Table III","e-print file 0602Pu239-fit.txt"
+241Pu,2.990,-2.882,1.278,-3.343e-1,3.905e-2,-1.754e-3,"Huber PRC 84 024617 (2011)",1106.0687,"Table III","e-print file 0602Pu241-fit.txt"
