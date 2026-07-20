@@ -93,11 +93,12 @@ This stage-1 study computes the reactor-CEvNS, cosmic-ray-muon, and environmenta
 4. The 50 kHz / 25 kHz bandwidth-censoring convention is written down as an explicit, testable rule (merge vs drop; paralyzable vs non-paralyzable), so that the Phase-5 response matrix has an unambiguous saturation definition; if the rule cannot be fixed physically, both variants are recorded as a switch and flagged as an open question blocking Phase 5.
 5. All conventions are dimensionally checked and consistent with ref-qpd-paper efficiency-chain and pulse-model definitions; the unified-scale/no-quenching decision and bandwidth/efficiency assumptions are written into the assumptions note seed.
 
-**Plans:** TBD (run `gpd:plan-phase 1` to break down)
+**Plans:** 2 plans
 
 Plans:
 
-- [ ] 1-01: TBD (run plan-phase 1 to break down)
+- [ ] 01-01-PLAN.md — Parameter foundation (Table II, gaps, constants, sharing defaults) + CEvNS closed-form benchmark hook + CONVENTIONS.md consistency verification
+- [ ] 01-02-PLAN.md — Energy-scale/response module (yield → Γ_in → both censoring variants switch, E_rec Phase-5 stub) + limiting-case tests + ASSUMPTIONS.md seed
 
 ### Phase 2: Reactor Flux Model
 
@@ -161,7 +162,7 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 
 | Phase | Plans Complete | Status | Completed |
 | ----- | -------------- | ------ | --------- |
-| 1. Conventions & Energy-Scale Foundation | 0/TBD | Ready to plan | - |
+| 1. Conventions & Energy-Scale Foundation | 0/2 | Planned | - |
 | 2. Reactor Flux Model | 0/TBD | Not started | - |
 | 3. CEvNS Cross Section & Rate | 0/TBD | Not started | - |
 | 4. Muon & Compton Deposited-Energy Spectra | 0/TBD | Not started | - |
