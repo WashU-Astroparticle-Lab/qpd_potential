@@ -1,0 +1,287 @@
+---
+phase: 05-qpd-response-chain-energy-reconstruction
+plan: 02
+plan_contract_ref: GPD/phases/05-qpd-response-chain-energy-reconstruction/05-02-PLAN.md#/contract
+title: "Monte-Carlo response matrix R(E_rec|E_dep): both designs x both censoring variants, linear->saturated, + deliv-fig-response"
+date: 2026-07-21
+status: completed
+depth: full
+completed: 2026-07-21
+one_liner: "R(E_rec|E_dep) built per design (Ta->Al, Al->Hf) for BOTH censoring variants by uniform log-E_dep importance sampling on the Phase-4 grid (584 cols, 10.14 eV->197 MeV, 80/decade); peak-cell MC error <=~1.8% at N_s=5000 with 1/sqrt(N_s) scaling; columns normalize to 1; non_paralyzable PLATEAUS (~35/27 keV) vs paralyzable ROLLS OVER (~3.3/2.6 keV) at the muon end (~3-4 orders below 0.5*E_dep); deliverable figure + npz with seed/provenance; time-over-saturation kept as a labeled secondary."
+provides:
+  - "qpd_potential.response_matrix — MC driver assembling R(E_rec|E_dep) per design/variant by uniform importance sampling in log E_dep; reuses Plan 05-01 response.py (event-count mapping, censored_count estimator, MUST-USE ref-qpd-repo EMG template, calibrate_C); aggregate off-spot ensemble; per-cell error bookkeeping; stable crc32 reproducibility; npz + figure output"
+  - "artifacts/stage1/response_matrix_TaAl.npz, response_matrix_AlHf.npz — four count-integral R matrices (2 designs x 2 variants) + labeled time-over-saturation secondary, with E_dep/E_rec grid edges, per-cell counts + relative MC error, median/16-84 band, and seed/f_prompt/r/N_s provenance header; columns sum to 1"
+  - "artifacts/stage1/energy_response.pdf — deliv-fig-response: E_rec vs E_dep (median + band), both designs, both variants, saturation onset marked, saturated region delimited, no-anchor / instrument-artifact caveats"
+  - "tests/test_response_matrix.py — 21 acceptance tests (convergence, span, both-variants, repro, aggregate-vs-explicit off-spot, eventcount mapping, variant divergence, no-linear-ramp, tos-secondary); 188/188 project tests pass"
+contract_results:
+  claims:
+    claim-response-matrix:
+      status: passed
+      summary: "R(E_rec|E_dep) built per design for BOTH censoring variants by uniform importance sampling in log E_dep on the Phase-4 grid (584 columns, 10.14 eV -> 197 MeV = 2e5 keV, 80 bins/decade), spanning the CEvNS floor through the deep-saturated muon tail. Each column histograms N_s=5000 forward realizations of E_rec=C*sum_i N_obs,i and normalizes to unit probability; the peak (well-populated) cell converges to <=~1.8% with clean 1/sqrt(N_s) scaling; per-cell relative MC error stored, sparse straddle-bins flagged. Reuses Plan 05-01 response.py (no re-implementation): event-count mapping ec=INT Gamma_in dt (Pitfall 1), analytic censored_count as the per-class MEAN, the MUST-USE ref-qpd-repo QuasiparticleBurstModel EMG event train in the feasible regime, and calibrate_C fixing the low-E slope 0.5."
+      linked_ids: [deliv-matrix-code, deliv-R-taal, deliv-R-alhf, test-convergence, test-span, test-both-variants, test-repro, ref-qpd-paper, ref-qpd-repo]
+    claim-response-figure:
+      status: passed
+      summary: "deliv-fig-response shows E_rec vs E_dep (median + 16-84% band) for BOTH designs and BOTH censoring variants over 10 eV -> 197 MeV, with the per-design saturation onset marked (crossover ~53/32 eV) and the saturated region delimited (on-spot bend -> whole-array plateau ~19/11 keV), under an explicit NO-benchmark caveat. non_paralyzable E_rec PLATEAUS (~35 keV Ta->Al / ~27 keV Al->Hf) while paralyzable ROLLS OVER (peaks then declines to ~3.3/2.6 keV) -- the variants diverge qualitatively at the muon end; no curve ramps linearly to tens of MeV, and the ceiling pile-up is labeled an instrument artifact."
+      linked_ids: [deliv-fig-response, deliv-R-taal, deliv-R-alhf, test-fig-content, test-variant-divergence, ref-qpd-paper]
+  deliverables:
+    deliv-matrix-code:
+      status: passed
+      path: src/qpd_potential/response_matrix.py
+      summary: "MC driver: uniform log-E_dep importance sampling on the Phase-4 grid; both non_paralyzable and paralyzable R per design; aggregate off-spot ensemble (~10,287 identical sensors as one multinomial/Poisson draw per realization, only ~pi r^2 on-spot sensors individual); feasible-regime MUST-USE EMG event-train realization -> per-sensor pmf, deep-saturation registered-count Poisson about the analytic mean (EMG train O(1e8) events infeasible), per-class mean pinned to the validated analytic estimator so the response CURVE has no kink; per-cell MC error diagnostic; seed+params metadata header; labeled time-over-saturation SECONDARY never auto-switched. Stable crc32 sub-seeding => reproducible across processes."
+      linked_ids: [claim-response-matrix, test-convergence, test-span, test-repro, test-both-variants]
+    deliv-R-taal:
+      status: passed
+      path: artifacts/stage1/response_matrix_TaAl.npz
+      summary: "Ta->Al R(E_rec|E_dep) for both censoring variants with E_dep/E_rec grid edges + centers, per-cell counts, per-cell relative MC error, median/16-84 band, saturation onset + whole-array plateau E_dep, the labeled tos secondary, and a JSON seed/parameter/provenance header. Columns normalize to 1."
+      linked_ids: [claim-response-matrix, claim-response-figure, test-span, test-both-variants]
+    deliv-R-alhf:
+      status: passed
+      path: artifacts/stage1/response_matrix_AlHf.npz
+      summary: "Al->Hf R(E_rec|E_dep) for both censoring variants, same schema/provenance as the Ta->Al file. Columns normalize to 1; Hf onset/plateau lower than Ta->Al (Hf saturates first)."
+      linked_ids: [claim-response-matrix, claim-response-figure, test-span, test-both-variants]
+    deliv-fig-response:
+      status: passed
+      path: artifacts/stage1/energy_response.pdf
+      summary: "E_rec vs E_dep (median + 16-84% band), both designs, both censoring variants, saturation onset marked (dotted verticals), saturated region shaded (onset -> whole-array plateau), 0.5*E_dep low-E calibration line drawn as consistency (not validation), and caveat box: NO literature anchor on the saturated-regime shape, ceiling pile-up = instrument artifact (Pitfall 5)."
+      linked_ids: [claim-response-figure, test-fig-content, test-variant-divergence]
+  acceptance_tests:
+    test-convergence:
+      status: passed
+      summary: "Per-cell relative MC error is 1/sqrt(cell count); the peak (well-populated) cell is <=~1.8% at N_s=5000 for probe columns (30 eV, 120 eV, 1 keV, 1 MeV), and quadrupling N_s halves the peak error (0.0163->0.0115 = 1/sqrt(2)-scaling; test_convergence_poisson_scaling). Per-cell error stored in the npz; bin-straddling columns leave a minor (<~20%) flagged tail bin."
+      linked_ids: [claim-response-matrix, deliv-matrix-code, deliv-R-taal, deliv-R-alhf]
+    test-span:
+      status: passed
+      summary: "E_dep grid = data/combined_dRdEdep.csv log grid exactly: 584 points, 10.14 eV -> 1.9714e8 eV (2e5 keV), 80.0 bins/decade -- so R composes with the Phase-4 deposit spectra (and covers the CEvNS 5-3200 eV_nr band except the sub-threshold 5-10 eV sliver). Every E_dep column of R (both variants, both designs) sums to 1 to 1e-12."
+      linked_ids: [claim-response-matrix, deliv-R-taal, deliv-R-alhf]
+    test-both-variants:
+      status: passed
+      summary: "Four count-integral baseline matrices exist (Ta->Al x {non_paralyzable, paralyzable}, Al->Hf x {non_paralyzable, paralyzable}), each shape (161, 584). Guards fp-single-censoring: the OPEN switch is carried, never silently closed to the coded default."
+      linked_ids: [claim-response-matrix, deliv-R-taal, deliv-R-alhf]
+    test-repro:
+      status: passed
+      summary: "Same seed + params reproduce R bit-for-bit within a process (array_equal) AND across separate interpreters (identical MD5) -- the driver uses stable crc32 design/variant sub-seeding, NOT the per-process-salted builtin hash. Metadata header carries seed, N_s, M_pool, f_prompt, r, n_sensors, tau_d, grid range, and the estimator string."
+      linked_ids: [claim-response-matrix, deliv-matrix-code]
+    test-fig-content:
+      status: passed
+      summary: "energy_response.pdf present (~65 KB) and visually confirmed (checkpoint self-review): both designs, both censoring variants, marked saturation onset, delimited saturated region, 0.5*E_dep calibration line, and the no-benchmark / instrument-artifact caveat box. The ceiling pile-up is labeled an instrument artifact, not a physical peak (fp-ceiling-peak guarded)."
+      linked_ids: [claim-response-figure, deliv-fig-response]
+    test-variant-divergence:
+      status: passed
+      summary: "At the muon end (197 MeV) non_paralyzable E_rec plateaus (bounded, <2x growth over the top decade; ~35/27 keV) while paralyzable rolls over (interior peak then decline; ~3.3/2.6 keV), a >~10x separation -- confirming the OPEN paralyzable/non-paralyzable switch is physically carried (Pitfall 3). The rollover DEPTH is design-dependent (shallower for Hf), an explicit uncertainty marker."
+      linked_ids: [claim-response-figure, deliv-fig-response, deliv-R-taal, deliv-R-alhf]
+  references:
+    ref-qpd-paper:
+      status: completed
+      completed_actions: [read, use, cite]
+      missing_actions: []
+      summary: "Ramanathan et al. (2026) Table II device constants + Eq. 4 two-exponential pulse are consumed transitively via params.py / energy_scale.py / response.py (the forward chain the MC driver calls) and cited in the module docstrings and this summary. The paper specifies NO saturated-regime reconstruction -- that is this phase's novelty -- so no mid-range benchmark is claimed."
+    ref-qpd-repo:
+      status: completed
+      completed_actions: [use]
+      missing_actions: []
+      summary: "The MUST-USE QuasiparticleBurstModel EMG burst template (qpd.simulator.quasiparticle_bursts) is invoked directly in emg_count_pool via response.emg_pulse_params + response.censor_event_train, so the Pitfall-1 event-count mapping (ec = INT Gamma_in dt fed to expected_n_qp) survives into every feasible-regime R column."
+  forbidden_proxies:
+    fp-single-censoring:
+      status: rejected
+      notes: "Both non_paralyzable AND paralyzable R are produced for each design (4 matrices, test-both-variants) and both appear on the figure; the switch is carried, not closed to the coded non_paralyzable default."
+    fp-no-saturation:
+      status: rejected
+      notes: "Muon-end median E_rec is ~3.5e-4 (non_par) / ~3e-5 (paralyzable) of 0.5*E_dep and bounded to tens of keV (test_no_linear_ramp_fp_no_saturation); no curve ramps linearly to tens of MeV. The plateau/rollover IS the modeled saturation, driven by the analytic censored_count estimator validated in Plan 05-01."
+    fp-ceiling-peak:
+      status: rejected
+      notes: "The muon pile-up at the plateau ceiling is explicitly annotated on the figure as an INSTRUMENT ARTIFACT of the modeled saturation, not a physical spectral feature (Pitfall 5); the saturated region is shaded/delimited."
+    fp-tos-autoswitch:
+      status: rejected
+      notes: "The time-over-saturation estimator is stored as a clearly LABELED SECONDARY (tos_t_over_s) and is NEVER blended into or auto-switched with the count-integral baseline R (test_tos_secondary_labeled_not_switched); tau_qp held fixed, no anchor, kept separate so the saturation boundary stays visible."
+  uncertainty_markers:
+    weakest_anchors:
+      - "The saturated-regime response SHAPE (bend region + plateau/rollover approach) is a model prediction with NO literature anchor at any energy; validation is limiting-cases + calibration-consistency only"
+      - "The paralyzable rollover DEPTH at the muon end is model-dependent (dead-time model = the OPEN switch); shallow for Hf (~8%) vs Ta->Al (~28%)"
+      - "Per-cell convergence is a Poisson floor; a bin-straddling column can leave a minor (<~20%) tail cell above the 3% target -- flagged, not hidden"
+    unvalidated_assumptions:
+      - "f_prompt (0.3) / r (2 sensors) sharing parameters carried from Plan 05-01 are LOW-confidence exposed knobs that set the crossover scale"
+      - "In deep saturation the EMG event train (O(1e8) events) is infeasible; the per-sensor registered-count fluctuation is modeled Poisson about the analytic mean (spread ~1e-3 of the column mean there, so immaterial), with the per-class mean pinned to the validated analytic estimator"
+      - "EMG (Normal+Exp) reproduces the count + peak-rate invariants of the two-exponential pulse, not its exact shape (Hf peak factor 0.1337 vs recorded 0.13)"
+    competing_explanations:
+      - "Paralyzable vs non_paralyzable censoring (CONVENTIONS F) is an OPEN switch, carried not closed; the muon-tail shape (plateau vs rollover) depends on it"
+      - "The labeled time-over-saturation secondary would recover a slow log-rising high-E ordering, but is unvalidated (tau_qp fixed) and kept out of the baseline"
+    disconfirming_observations:
+      - "An R column that does not normalize to 1, or an E_dep grid not matching the Phase-4 grid, would break the Phase-6 fold (checked: columns sum to 1 to 1e-12; grid matches to 80.0 bins/decade)"
+      - "Indistinguishable muon-end shapes for the two censoring variants would mean the switch is not carried (checked: non_par ~10x above paralyzable at 197 MeV)"
+      - "E_rec rising linearly through the muon range with no plateau/rollover would mean censoring / the event-count mapping is broken -> ROADMAP Phase-5 stop condition (checked: does NOT trigger; E_rec ~3-4 orders below 0.5*E_dep)"
+comparison_verdicts:
+  - subject_id: claim-response-matrix
+    subject_kind: claim
+    subject_role: supporting
+    comparison_kind: cross_method
+    metric: relative_error
+    threshold: "<= 0.01"
+    verdict: pass
+    notes: "Internal cross-check (not a literature benchmark): the MC column mean E_rec agrees with the independent Plan 05-01 analytic count-integral estimator (response.E_rec) to <=0.2% across the full grid, confirming the response CURVE = the validated deliverable estimator. No external mid-range benchmark exists (stated no-anchor caveat)."
+---
+
+# Plan 05-02 Summary — Monte-Carlo Response Matrix R(E_rec | E_dep)
+
+## What was done
+
+Assembled the bandwidth-limited transfer function **R(E_rec | E_dep)** — the normalized
+conditional distribution of reconstructed energy given a deposit — **per design**
+(Ta→Al, Al→Hf) and **per censoring variant** (non_paralyzable, paralyzable), spanning the
+CEvNS sub-keV floor through the 197 MeV cosmic-muon tail. R (not a folded spectrum) is the
+deliverable; folding the deposit spectra is Phase 6.
+
+The driver `src/qpd_potential/response_matrix.py` **reuses the Plan 05-01 forward chain**
+without re-implementing it: the Pitfall-1 event-count mapping `ec = ∫Γ_in dt = K·τ_qp·N_qp/V_tr`
+(`response.expected_event_count`), the analytic dead-time `response.censored_count` as the
+per-class mean, the **MUST-USE ref-qpd-repo `QuasiparticleBurstModel` EMG template** for the
+tunneling-event realization, and `response.calibrate_C` fixing the low-E slope 0.5.
+
+**Task 1 (`implement`, `59508f3`):** MC driver + 4 R matrices + labeled tos secondary → npz;
+21 tests.
+**Task 2 (`figure`, `ebc7110`):** deliv-fig-response.
+**Task 3 (checkpoint:human-verify):** self-assessed against all acceptance tests below;
+**satisfied, pending orchestrator/researcher review** (autonomous run — not blocked, per the
+spawn directive).
+
+## Conventions in effect
+
+| Item | Value |
+| --- | --- |
+| Units | energy eV internal (axes keV); time s; rate Hz (CONVENTIONS A) |
+| Energy scale | single unified phonon scale, NO quenching; E_rec(low-E)≈0.5·E_dep (CONVENTIONS B/E) |
+| Saturation | 40 µs resolving time = 25 kHz ceiling LOCKED (CONVENTIONS F) |
+| Censoring | paralyzable AND non_paralyzable BOTH carried (OPEN switch, CONVENTIONS F) |
+| R normalization | each E_dep column sums to 1 over E_rec bins (incl. underflow) |
+
+## Monte-Carlo strategy (honest)
+
+For each E_dep column (uniform importance sampling in **log** E_dep on the Phase-4 grid),
+N_s=5000 forward realizations of the **summed** censored count over the ~10,300-sensor array
+give the conditional distribution of `E_rec = C·total_N_obs`. Per realization the ~πr² on-spot
+sensors and the ~10,287 identical off-spot sensors are drawn as an **aggregate ensemble**
+(one multinomial/Poisson draw per class per realization — never a 10,300-sensor loop).
+
+The per-sensor observed-count distribution is:
+- **ec ≤ 2000** (linear → mild saturation, feasible): the MUST-USE EMG event train →
+  empirical per-sensor pmf; the class sum is multinomial over that pmf.
+- **ec > 2000** (deep saturation): the EMG event train is O(10⁸) events and **infeasible** to
+  materialize; the bounded registered count (~pulse_duration/τ_d ~ O(10²)/sensor) is modeled
+  Poisson about the analytic mean. Here the relative spread of the summed E_rec is ~10⁻³, so
+  the column is ~a delta and the model choice is immaterial.
+
+In **both** branches the per-class mean is pinned to the analytic `response.censored_count`
+(the validated Plan 05-01 estimator), so the response **curve** (median E_rec vs E_dep) is
+exactly the analytic estimator — **continuous across the branch, no kink** — while the branch
+sets only the fluctuation **shape**. Fast dead-time censoring (searchsorted jumps, O(n_registered))
+makes saturated trains tractable; semantics cross-checked against `response.censor_event_train`.
+
+## Key physics results (match Plan 05-01)
+
+- **Saturation onset (crossover default point):** Ta→Al ~52.9 eV, Al→Hf ~32.1 eV; whole-array
+  plateau ~18.6 / ~11.3 keV. Hf saturates first. [CONFIDENCE: MEDIUM — f_prompt-dominated]
+- **non_paralyzable plateau (muon end, 197 MeV):** E_rec ~34.8 keV (Ta→Al) / ~26.9 keV (Al→Hf),
+  monotone, ~3.5×10⁻⁴ of 0.5·E_dep. [CONFIDENCE: MEDIUM — model prediction, no benchmark]
+- **paralyzable rollover:** peaks (~4.2 / ~2.8 keV near ~30–40 keV E_dep) then declines to
+  ~3.3 / ~2.6 keV at the muon end, ~3×10⁻⁵ of the linear line. [CONFIDENCE: MEDIUM]
+- **Variant divergence:** non_par ≈10× above paralyzable at 197 MeV — the OPEN switch is
+  physically carried (Pitfall 3).
+- **Convergence:** peak (well-populated) cell ≤~1.8% at N_s=5000; clean 1/√N_s scaling
+  (0.0163→0.0115 on 4× samples); per-cell error stored; straddle-bins flagged. [CONFIDENCE: HIGH]
+- **Cross-check:** MC column mean E_rec agrees with the independent analytic estimator
+  (`response.E_rec`) to ≤0.2% across the full grid (internal cross_method, not a literature
+  benchmark). [CONFIDENCE: HIGH]
+
+## Stop condition
+
+Checked and **does not trigger**: E_rec plateaus/rolls over ~3–4 orders below 0.5·E_dep at the
+muon tail (no linear-to-MeV ramp; fp-no-saturation guarded).
+
+## Deviations
+
+None requiring researcher sign-off. Two documented routine (balanced-autonomy) choices:
+(1) a stable **crc32** design/variant sub-seed replaces Python's per-process-salted `hash()` so
+the driver reproduces R bit-for-bit across processes (test-repro requirement); (2) the
+**EC_EMG_MAX=2000** feasibility split between the MUST-USE EMG realization and the
+deep-saturation Poisson model — necessary because the EMG event train is O(10⁸) events in the
+muon tail, with the per-class mean pinned to the validated analytic estimator so no kink is
+introduced. Both are documented in the module header, this summary, and the npz provenance.
+
+## Verification
+
+188/188 project tests pass (`pytest`); 21 new in `tests/test_response_matrix.py`. Columns
+normalize to 1; the E_dep grid matches data/combined_dRdEdep.csv to 80.0 bins/decade; both
+censoring variants present per design; aggregate off-spot matches an explicit ~10,300-sensor
+EMG loop within MC tolerance; reproducible under the recorded seed across processes; the
+time-over-saturation estimator is a labeled secondary never auto-switched. Frozen
+data/flux/*.csv restored to pristine after the test run.
+
+## Self-Check: PASSED
+
+- Deliverables exist: response_matrix_TaAl.npz, response_matrix_AlHf.npz, energy_response.pdf, response_matrix.py, test_response_matrix.py — all FOUND.
+- Checkpoints present: 59508f3 (Task 1), ebc7110 (Task 2).
+- Numerical results reproducible: cross-process MD5 identical; MC mean = analytic estimator ≤0.2%.
+- Figure up to date: regenerated from the committed npz after the stable-seed rebuild.
+- Convention consistency: ASSERT_CONVENTION line matches params/energy_scale/response.
+- Contract coverage: every claim / deliverable / acceptance-test / reference / forbidden-proxy ID has an explicit entry above.
+
+## Machine-readable return
+
+```yaml
+gpd_return:
+  status: completed
+  phase: "05"
+  plan: "02"
+  tasks_completed: 3
+  tasks_total: 3
+  duration_seconds: 2400
+  files_written:
+    - src/qpd_potential/response_matrix.py
+    - tests/test_response_matrix.py
+    - artifacts/stage1/response_matrix_TaAl.npz
+    - artifacts/stage1/response_matrix_AlHf.npz
+    - artifacts/stage1/energy_response.pdf
+    - GPD/phases/05-qpd-response-chain-energy-reconstruction/05-02-SUMMARY.md
+  contract_updates:
+    claims_passed: [claim-response-matrix, claim-response-figure]
+    acceptance_tests_passed:
+      - test-convergence
+      - test-span
+      - test-both-variants
+      - test-repro
+      - test-fig-content
+      - test-variant-divergence
+    forbidden_proxies_rejected:
+      - fp-single-censoring
+      - fp-no-saturation
+      - fp-ceiling-peak
+      - fp-tos-autoswitch
+  decisions:
+    - summary: "R(E_rec|E_dep) built per design x both censoring variants by uniform log-E_dep importance sampling on the Phase-4 grid (584 cols, 10.14 eV->197 MeV, 80/decade); reuses Plan 05-01 response.py (no re-implementation)."
+      phase: "05"
+    - summary: "Aggregate off-spot ensemble (~10,287 sensors as one multinomial/Poisson draw per realization); on-spot ~pi r^2 sensors individual; per-class mean pinned to analytic censored_count so the response curve = the validated Plan 05-01 estimator."
+      phase: "05"
+    - summary: "Feasibility split EC_EMG_MAX=2000: MUST-USE ref-qpd-repo EMG event train where feasible (CEvNS/low-E), deep-saturation registered-count Poisson (EMG train O(1e8) events infeasible; relative spread ~1e-3 there)."
+      phase: "05"
+    - summary: "Convergence: peak well-populated cell <=~1.8% at N_s=5000, clean 1/sqrt(N_s) scaling; columns normalize to 1; per-cell MC error stored; straddle-bins flagged. Stable crc32 sub-seeding => reproducible across processes."
+      phase: "05"
+    - summary: "Muon-end E_rec: non_paralyzable plateau ~34.8 keV (Ta->Al)/~26.9 keV (Al->Hf); paralyzable rollover ~3.3/~2.6 keV; both ~3-4 orders below 0.5*E_dep (fp-no-saturation). Onset ~52.9/32.1 eV, plateau ~18.6/11.3 keV; Hf first."
+      phase: "05"
+    - summary: "Time-over-saturation kept as a LABELED SECONDARY (tos_t_over_s), never auto-switched into the baseline (fp-tos-autoswitch); ceiling pile-up labeled an instrument artifact on the figure (fp-ceiling-peak)."
+      phase: "05"
+    - summary: "Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); Phase-5 stop-condition does NOT trigger."
+      phase: "05"
+  issues:
+    - "Saturated-regime response SHAPE has NO literature anchor at any energy; mid-curve is a model prediction (limiting-cases + calibration-consistency only). No mid-range benchmark claimed."
+    - "Deep-saturation per-sensor fluctuation modeled Poisson about the analytic mean because the EMG event train (O(1e8) events) is infeasible there; relative spread ~1e-3 of the column mean, so immaterial, but it is a modeled (not realized) spread."
+    - "Paralyzable rollover DEPTH is design-dependent (Hf ~8% vs Ta->Al ~28%) -- dead-time model is the OPEN switch; f_prompt/r are LOW-confidence knobs setting the crossover scale."
+  next_actions:
+    - "Proceed to Phase 6 (SIMU-03): fold the CEvNS / muon / Compton deposit spectra through R(E_rec|E_dep) on the shared grid to produce reconstructed-energy spectra."
+    - "Researcher/orchestrator: verify the response figure, the convergence diagnostic, and the both-variant muon-end divergence (Phase-5 final deliverable gate)."
+  state_updates:
+    record_metric:
+      phase: "05"
+      plan: "02"
+      duration: 2400
+      tasks: 3
+      files: 6
+```
