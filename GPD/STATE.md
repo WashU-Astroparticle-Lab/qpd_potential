@@ -55,6 +55,7 @@ None yet.
 | Phase 05 P05-01 | 2700s | 3 tasks | 4 files |
 | Phase 05 P05-02 | 2400s | 3 tasks | 6 files |
 | Phase 06 P06-01 | 1500s | 3 tasks | 5 files |
+| Phase 06 P06-02 | 360s | 3 tasks | 5 files |
 
 ### Decisions
 
@@ -107,6 +108,11 @@ None yet.
 - [Phase 06]: Fold conserves counts per channel per design: muon/Compton rel <=2.2e-16 (unit-sum R columns), CEvNS rel <=1.3e-16; CEvNS rebin total 9.6e-5 vs trapz, above-50-eV 67.67 vs 67.752 (0.12%).
 - [Phase 06]: Reconstructed peaks (non-paralyzable): CEvNS ~42 eV (0.5*E_dep, sub-keV), muon 18.8/15.0 keV, Compton 16.8/13.3 keV (Ta->Al/Al->Hf); muon MeV deposits saturate to tens of keV (fp-deposited-only guarded).
 - [Phase 06]: CEvNS 5-10.14 eV low edge retained (7.27 cts/kg/day) via exact E_rec=0.5*E_dep, not dropped (fp-drop-lowE-cevns); only R_non_paralyzable folded (fp-paralyzable-swap).
+- [Phase 06]: deliv-fig-spectra rendered: dR/dE_rec vs E_rec (log-log, counts/kg/day/keV), CEvNS/muon/Compton + total, both designs, from the committed 06-01 CSVs; reconstructed axis not deposited (fp-deposited-only); non-paralyzable only, no paralyzable overlay (fp-paralyzable-swap).
+- [Phase 06]: Saturation delimited on E_rec axis (fp-no-saturation-mark): onset (E_dep ~52.9/32.1 eV -> E_rec ~23/14 eV) + whole-array plateau (~18.6/11.3 keV E_dep -> ~4.1/2.5 keV E_rec) shaded; muon pile-up marked at 18.8/15.0 keV E_rec, inside the plateau band -> muon shown reconstructed entirely in saturation.
+- [Phase 06]: Mapping panel reuses Phase-5 E_rec_median_non_paralyzable vs E_dep_centers (both designs) with the 0.5*E_dep calibration line + onset/plateau markers; not recomputed.
+- [Phase 06]: ASSUMPTIONS.md finalized: censoring OPEN switch retired to RESOLVED non-paralyzable (CONVENTIONS F closed, USER 2026-07-21); Phase-4 gamma-background note + Phase-6 fold addendum added; four caveats + compact stage-1 results (Billard 2.4%, CEvNS ~68/kg/day >50 eV_nr dep, muon 1.37 Hz, pileup 3.3e-5); no live OPEN switch (fp-note-stale).
+- [Phase 06]: Stage-1 milestone CLOSED by Plan 06-02.
 
 ### Active Approximations
 
