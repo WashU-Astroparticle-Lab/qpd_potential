@@ -49,6 +49,7 @@ None yet.
 | Phase 02 P02-01 | 5400s | 3 tasks | 13 files |
 | Phase 02 P02-02 | 3600s | 3 tasks | 9 files |
 | Phase 03 P03-01 | 3600s | 3 tasks | 6 files |
+| Phase 03 P03-02 | 2400s | 3 tasks | 7 files |
 
 ### Decisions
 
@@ -71,6 +72,10 @@ None yet.
 - [Phase 03-cevns-cross-section-rate]: dR/dT = 67.8 counts/kg/day above 50 eV_nr at OUR 3 GW_th/25 m config — genuine physics (~90x Billard's 0.76 at 8.54 GW/400 m, matching the geometry/power ratio). >20% backtrack trigger NOT met; absolute Billard/CONUS+ comparison deferred to 03-02 via the k~=0.0111 rescale.
 - [Phase 03-cevns-cross-section-rate]: Helm F^2 (Lewin-Smith): 0.9963 at 200 eV, 0.9639 at 2 keV endpoint; turning F off shifts integrated rate 0.38%. CONVENTIONS 'F^2>0.998' = dominant sub-200 eV regime; 0.964 = rare E_nu~8-10 MeV tail. Reconciled to avoid downstream misflag.
 - [Phase 03-cevns-cross-section-rate]: Ge isotope abundances = IUPAC/CIAAW representative number fractions (MEDIUM); M_i=A*931.494 MeV; 73Ge axial term ~1/N^2 not modeled (stated assumption).
+- [Phase 03-cevns-cross-section-rate]: Derived Billard renormalization k=(P_B/P_v)(d_v/d_B)^2: single-source (8.54 GW/400 m) 0.011120 vs two-core (4.27 GW at 355.39 & 468.76 m) 0.011092, agree 0.25%; k-rescaled Billard integral flux 5.10e10 nu cm^-2 s^-1. Both powers thermal (GW_th), distance squared (fp-gwe-gwth rejected).
+- [Phase 03-cevns-cross-section-rate]: Billard 2017 Table 1 reproduced WITH k: 0.7415/0.5009/0.2567 counts/kg/day above 50/100/200 eV_nr vs 0.76/0.51/0.26 (-2.4/-1.8/-1.3%, all <2.5%, well inside ~20%). WITHOUT k the fold overshoots by exactly 1/k=89.9x (66.7/45.0/23.1). 100/200 eV bins <2% so no ROADMAP backtrack. Per-isotope Ge sum (fp-lumped-A-billard rejected).
+- [Phase 03-cevns-cross-section-rate]: CONUS+ coarse factor-2 cross-check: flagship (67.75/kg/day >50 eV) and Billard Table 1 both rescaled to CONUS+ config (3.6 GW_th/20.7 m) give 118.6 vs 119.6, ratio 0.99. Two independently-normalized flux models agree at a common config. eV_ee quenching caveat -> coarse scale check only, MEDIUM confidence.
+- [Phase 03-cevns-cross-section-rate]: Flux band propagation: rigorous 1-sigma band 3.4% (>=95 eV, matches well-anchored 2-5% high-E flux) rising to 6.2%/9.8% at 50/20 eV_nr; sub-1.8 MeV toggle localizes the placeholder systematic below ~95 eV (E_min(95 eV)~1.78 MeV): sub-1.8 rate fraction 17.8% at 50 eV, 33.8% at 20 eV, ~0 above 95 eV, T>200 eV unchanged <1e-3. The plan's 20-25% guess is corrected (finding, not a bug).
 
 ### Active Approximations
 
