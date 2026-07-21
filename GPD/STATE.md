@@ -32,10 +32,9 @@ None yet.
 ## Open Questions
 
 - What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm^2 sensor density?
-- How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model?
-- How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?
-- How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)?
-- What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment?
+- [RESOLVED Phase 5] Saturated-regime reconstruction: non-paralyzable dead-time model (count-integral estimator; plateau = saturation). User decision 2026-07-21.
+- [RESOLVED Phase 5] Ta->Al tunneling params: Table II Al-trap column; Ta absorber gap is a binary trapping gate (α-Ta ratio 3.58≥2), response numerically independent of it above the gate.
+- What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment? [Phase 4: sourced from Heusser 1995 with a factor-2 site-dependent band; edges exact, total rate MEDIUM.]
 
 ## Performance Metrics
 
@@ -103,6 +102,7 @@ None yet.
 - [Phase 05]: Muon-end E_rec: non_paralyzable plateau ~34.8 keV (Ta->Al)/~26.9 keV (Al->Hf); paralyzable rollover ~3.3/~2.6 keV; both ~3-4 orders below 0.5*E_dep (fp-no-saturation). Onset ~52.9/32.1 eV, plateau ~18.6/11.3 keV; Hf first.
 - [Phase 05]: Time-over-saturation kept as a LABELED SECONDARY (tos_t_over_s), never auto-switched into the baseline (fp-tos-autoswitch); ceiling pile-up labeled an instrument artifact on the figure (fp-ceiling-peak).
 - [Phase 05]: Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); Phase-5 stop-condition does NOT trigger.
+- [Phase 05 / USER DECISION 2026-07-21]: **Censoring switch RESOLVED to non-paralyzable project-wide** (CONVENTIONS F closed). User accepted Phase 5 and chose non_paralyzable for the rest of the project after both variants were computed. params.DEFAULT_CENSORING already = "non_paralyzable"; Phase 6 + downstream use it as the single canonical variant. Paralyzable R matrices retained in response_matrix_*.npz as a sensitivity, not a live switch. Operative high-E response = the plateau (~34.8/26.8 keV muon tail).
 
 ### Active Approximations
 

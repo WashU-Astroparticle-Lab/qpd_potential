@@ -143,7 +143,7 @@ These are recorded in the SUMMARYs' `uncertainty_markers` and `ASSUMPTIONS.md`; 
 
 3. **Crossover rides on low-confidence sharing parameters.** f_prompt and r have no thin-wafer QPD measurement; they set the crossover scale, hence the ~3-orders-of-magnitude band rather than a single number. The default point (52.9/32.1 eV) is a *choice of nominal*, not a measured value.
 
-4. **The paralyzable vs non-paralyzable censoring switch is OPEN.** Per CONVENTIONS §F it cannot be closed from first principles; both variants are carried through R and the figure. They differ most at the muon end (plateau vs rollover). Any downstream (Phase 6) result inherits this as a switch.
+4. **The paralyzable vs non-paralyzable censoring switch — RESOLVED (2026-07-21).** It cannot be closed from first principles, but by user decision at this Phase-5 review the project now **lives in non-paralyzable** (CONVENTIONS §F; `params.DEFAULT_CENSORING = "non_paralyzable"`). Both variants were computed in Phase 5; the paralyzable R matrices remain in `response_matrix_*.npz` as a retained sensitivity/alternative, but Phase 6 and downstream use **non-paralyzable** as the single canonical variant. The plateau (~34.8/26.8 keV at the muon tail) is therefore the operative high-E response; the paralyzable rollover is no longer carried as a live switch.
 
 If you're comfortable with these four being *documented model limitations of a stage-1 study* (not silent assumptions), Phase 5 is sound. If any of them needs to be tightened before you'd trust the deliverable, that's the place to push back.
 

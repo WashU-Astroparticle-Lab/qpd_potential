@@ -38,7 +38,7 @@ This stage-1 study computes the reactor-CEvNS, cosmic-ray-muon, and environmenta
 - [x] **Phase 2: Reactor Flux Model** — Frozen Φ(E_ν) table: Huber–Mueller >2 MeV + summation/n-capture <1.8 MeV with an explicit uncertainty band.
 - [x] **Phase 3: CEvNS Cross Section & Rate** — Per-isotope-summed dR/dT_dep on Ge, benchmarked against Billard Table 1 and the closed-form total cross section.
 - [x] **Phase 4: Muon & Compton Deposited-Energy Spectra** — Muon (Gaisser–Guan ⊗ chord ⊗ Landau–Vavilov) and Compton (Klein–Nishina continuum) deposited-energy spectra, validated against flux anchors.
-- [ ] **Phase 5: QPD Response Chain & Energy Reconstruction** — Per-design response matrix R(E_rec | E_dep) spanning linear and saturated regimes; locate the crossover deposit energy.
+- [x] **Phase 5: QPD Response Chain & Energy Reconstruction** — Per-design response matrix R(E_rec | E_dep) spanning linear and saturated regimes; locate the crossover deposit energy.
 - [ ] **Phase 6: Fold & Produce Reconstructed-Energy Spectra** — Fold all three deposit spectra through R to deliver the reconstructed-energy figures for both designs.
 
 ## Phase Dependencies
@@ -171,5 +171,5 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | 2. Reactor Flux Model | 2/2 | Complete ✓ (caveat: sub-1.8 MeV model placeholder, band-covered) | 2026-07-20 |
 | 3. CEvNS Cross Section & Rate | 2/2 | Complete ✓ (Billard within 2.4%; sub-1.8 MeV band-covered) | 2026-07-21 |
 | 4. Muon & Compton Deposited-Energy Spectra | 3/3 | Complete ✓ (VALD-02/03 met; gamma-flux band-covered) | 2026-07-21 |
-| 5. QPD Response Chain & Energy Reconstruction | 2/2 | Executed — pending user verification | - |
+| 5. QPD Response Chain & Energy Reconstruction | 2/2 | Complete ✓ (user-verified; non-paralyzable adopted) | 2026-07-21 |
 | 6. Fold & Produce Reconstructed-Energy Spectra | 0/TBD | Not started | - |

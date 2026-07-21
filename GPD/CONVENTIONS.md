@@ -168,20 +168,25 @@ reconstructed in the linear regime.
 
 ---
 
-## F. Bandwidth-Censoring Convention — contradiction C1 (partially resolved; OPEN switch)
+## F. Bandwidth-Censoring Convention — contradiction C1 (RESOLVED 2026-07-21: non-paralyzable)
 
 | Field            | Value                                                                                   |
 | ---------------- | --------------------------------------------------------------------------------------- |
 | **Resolving time (LOCKED)** | 25 kHz maximum resolvable tunneling rate ⇒ **40 µs** (Nyquist from 50 kHz bandwidth). The 50 kHz sampling itself corresponds to **20 µs** — state BOTH clearly. |
-| **Censoring rule (OPEN SWITCH)** | Paralyzable-vs-non-paralyzable AND merge-vs-drop kept as an EXPLICIT CODE SWITCH — NOT fixed now |
-| **Introduced**   | Phase 1                                                                                  |
-| **Rationale**    | The resolving time is fixed by the electronics (Nyquist). The dead-time model (paralyzable vs non-paralyzable) and event-handling (merge vs drop) cannot be fixed from electronics reasoning alone, so both variants must remain implementable rather than silently chosen. |
+| **Censoring rule (RESOLVED)** | **non-paralyzable** dead-time model: m = Γ/(1 + Γ·τ_d), plateau at 1/τ_d = 25 kHz. This is the canonical convention for the rest of the project. |
+| **Introduced**   | Phase 1 (as an OPEN switch)                                                              |
+| **Resolved**     | Phase 5 review (2026-07-21) — user decision to adopt non-paralyzable project-wide.       |
+| **Rationale**    | The dead-time model cannot be fixed from electronics reasoning alone (both paralyzable and non-paralyzable are defensible idealizations of the real bandwidth-limited readout). The user closed the choice by decision after seeing both variants computed in Phase 5: **non-paralyzable is the project baseline going forward.** |
 
-> ⚠️ **OPEN QUESTION — BLOCKS Phase 5.** The paralyzable-vs-non-paralyzable and merge-vs-drop
-> choice is recorded as an explicit switch, not a decision. Both variants MUST be implementable
-> in the Phase-5 response-matrix code. This open question must be resolved before the Phase-5
-> saturation definition can be finalized. Do NOT silently pick one. (Matches ROADMAP.md Phase-1
-> risk and backtracking trigger, and SUMMARY.md open question "censoring rule".)
+> ✅ **RESOLVED (2026-07-21).** Was an OPEN switch blocking Phase 5. Both variants were implemented
+> and computed in Phase 5 (`response.py`, `response_matrix.py`; the paralyzable R matrices remain in
+> `artifacts/stage1/response_matrix_*.npz` as a computed alternative). By **user decision at the
+> Phase-5 review**, the project now **lives in non-paralyzable** (`params.DEFAULT_CENSORING = "non_paralyzable"`,
+> which already matched): Phase 6 and any downstream work use non-paralyzable as the single canonical
+> variant. The paralyzable results are retained as a sensitivity/alternative, not carried as a live
+> switch into the final deliverables. The separate merge-vs-drop event-handling question did not arise
+> as load-bearing in Phase 5 (the count-integral estimator integrates observed events; no merge/drop
+> ambiguity affected the response) — non-paralyzable count censoring is the operative rule.
 
 **Time values:** 1 / 25 kHz = 40 µs (Nyquist resolving time); 1 / 50 kHz = 20 µs (sampling interval).
 
@@ -281,9 +286,10 @@ Verified interacting pairs (all within the detector/rate domain; no QFT pairs ap
 | Resolving time 40 µs (F) | E_dep→E_rec saturation (B, F) | saturation onset when peak Γ > 25 kHz (1/40 µs) | ✓ consistent |
 | k_B explicit (A.3) | QP tunneling K ∝ k_B T (G) | k_B appears explicitly in Γ_in ≈ K·n_qp | ✓ consistent |
 
-No internal inconsistencies found. The one genuinely OPEN item is the paralyzable-vs-non-paralyzable /
-merge-vs-drop switch (Section F), recorded as a switch and flagged as blocking Phase 5 — NOT an
-inconsistency, but an undetermined choice preserved as an explicit code switch by design.
+No internal inconsistencies found. The formerly-OPEN item — the paralyzable-vs-non-paralyzable /
+merge-vs-drop switch (Section F) — was **RESOLVED at the Phase-5 review (2026-07-21)** by user decision
+to adopt **non-paralyzable** project-wide. Both variants were computed in Phase 5; non-paralyzable is
+now the single canonical convention for Phase 6 and downstream. No open convention items remain.
 
 ---
 
@@ -292,3 +298,4 @@ inconsistency, but an undetermined choice preserved as an explicit code switch b
 | Date | Change | Rationale |
 | ---- | ------ | --------- |
 | 2026-07-20 | Initial establishment (Phase 1, CONV-01). Sections A–H locked; C1 censoring switch left OPEN. | User-approved convention set from interactive-mode proposal. |
+| 2026-07-21 | Section F censoring switch RESOLVED → **non-paralyzable** project-wide. | User decision at Phase-5 review after both variants were computed; closes the last OPEN convention item. |
