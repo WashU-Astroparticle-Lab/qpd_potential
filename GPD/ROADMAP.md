@@ -147,9 +147,10 @@ Plans:
 **Goal:** The CEvNS, muon, and Compton deposit spectra are folded through the response matrix R to deliver the reconstructed-energy differential rate spectra (counts/kg/day/keV) for both trapping designs, with the saturation region delimited and the true→reconstructed mapping plotted, completing the deliverable figures and assumptions note.
 **Objectives:** SIMU-03
 **Contract Coverage:** advances deliv-fig-spectra (all three channels, both designs, counts/kg/day/keV normalization), deliv-code, deliv-note | anchors — (consumes upstream frozen inputs) | forbidden proxy: fp-deposited-only (reporting spectra in deposited energy only without the reconstruction/bandwidth model — the decisive output is reconstructed energy)
-**Plans:** 0 plans
+**Plans:** 2 plans
 
-- [ ] TBD (run plan-phase 6 to break down)
+- [ ] 06-01-PLAN.md — Fold pipeline: CEvNS counts-conserving rebin + fold all 3 channels × both designs through R_non_paralyzable → reconstructed-spectra CSVs + counts-conservation/low-edge/E_rec-axis tests (SIMU-03, deliv-code, wave 1)
+- [ ] 06-02-PLAN.md — deliv-fig-spectra (E_rec axis, all 3 channels, both designs, saturation delimited, true→reconstructed mapping panel) + finalize ASSUMPTIONS.md (deliv-note); closes stage-1 (wave 2, depends 06-01)
 
 ## Backtracking Triggers
 
@@ -172,4 +173,4 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | 3. CEvNS Cross Section & Rate | 2/2 | Complete ✓ (Billard within 2.4%; sub-1.8 MeV band-covered) | 2026-07-21 |
 | 4. Muon & Compton Deposited-Energy Spectra | 3/3 | Complete ✓ (VALD-02/03 met; gamma-flux band-covered) | 2026-07-21 |
 | 5. QPD Response Chain & Energy Reconstruction | 2/2 | Complete ✓ (user-verified; non-paralyzable adopted) | 2026-07-21 |
-| 6. Fold & Produce Reconstructed-Energy Spectra | 0/TBD | Not started | - |
+| 6. Fold & Produce Reconstructed-Energy Spectra | 0/2 | Planned | - |
