@@ -252,5 +252,29 @@ any spectrum computation or per-design crossover energy (Phases 3–6).
 
 ---
 
+---
+
+## Addendum (Phase 2, Plan 02-02) — sub-1.8 MeV reactor-flux shape limitation
+
+The frozen reactor flux `data/flux/reactor_flux_v1.0.csv` normalizes to
+∫Φ dE = 7.50×10¹² ν̄·cm⁻²·s⁻¹ at 3 GW_th / 25 m (target 7–8×10¹²), with the >2 MeV
+shape data-anchored to Huber/Mueller and cross-checked against published Huber ²³⁵U
+within the band. **Open limitation, carried honestly:** the sub-1.8 MeV per-isotope
+fission *summation* SHAPE remains a seam-anchored **MODEL PLACEHOLDER**. The citable
+primary reference for this region is **Kopeikin, Phys. At. Nucl. 75, 143 (2012)**, and
+the placeholder is qualitatively consistent with it (rising toward low E, bounded), but
+a **machine-readable Kopeikin-2012 per-isotope table could not be sourced in-environment**
+(the 2012 paper is Springer-only; no arXiv table; Huber/Mueller tabulations stop at 2 MeV).
+No Kopeikin table was fabricated. The model dependence is covered by a **wide, split
+uncertainty band** (2–5% above 2 MeV → 20% on 1.0–1.8 MeV → 25% below 1.0 MeV), NOT a
+uniform band. The absolute *integral* rests on the well-anchored ~6 ν̄/fission and ~205 MeV/
+fission (good to a few %); the real residual risk is the sub-IBD flux *shape*, which only
+matters for the lowest-recoil CEvNS bins downstream. Replace with a digitized
+Kopeikin-2012 / Estienne-Fallot / CONFLUX table when one becomes machine-sourceable.
+
+_Phase-2 addendum authored under Plan 02-02; does not supersede the Phase-1 lock._
+
+---
+
 _Phase: 01-conventions-energy-scale-foundation · Plan 01-02 · Seeded 2026-07-20_
 _Authoritative lock: `GPD/CONVENTIONS.md`. This note flags assumptions and confidence; it does not supersede the lock._
