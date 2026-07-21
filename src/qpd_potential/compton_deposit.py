@@ -158,19 +158,34 @@ class ComptonSpectrum:
     counts_per_kg_day: float    # integral of dR/dE_dep dE (energy closure)
 
 
-def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720) -> ComptonSpectrum:
+def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720,
+                   batch_size: int = 5_000_000) -> ComptonSpectrum:
     """Assemble the Compton electron-recoil dR/dE_dep on the shared log E_dep grid.
 
     For each sourced line: sample T_e ~ Klein-Nishina (angle -> kinematics), weight
     by the single-scatter rate R_i, histogram onto the shared grid in counts/kg/day/keV.
+
+    Each line's ``n_per_line`` rejection samples are drawn in batches of at most
+    ``batch_size`` and the (per-bin count histogram, sum w, sum w^2) accumulators are
+    summed across batches, so only ONE batch is ever held in memory (the same pattern
+    as ``muon_deposit.run_muon_mc``). Per-batch RNG streams are spawned deterministically
+    from the master ``seed`` via ``np.random.SeedSequence(seed).spawn(...)``, so the full
+    result is exactly reproducible for a given ``(n_per_line, seed, batch_size)``. This
+    is a STATISTICS-ONLY control: the physics (S(x,Z) binding, kinematics, rates, grid)
+    is unchanged; larger ``n_per_line`` only shrinks the per-bin MC error.
     """
-    rng = np.random.default_rng(seed)
     lines = cs.load_gamma_lines()
 
     edges = shared_energy_grid()
     centers = np.sqrt(edges[:-1] * edges[1:])
     dwidth = np.diff(edges)
     per_day = 86400.0 / cs.MASS_KG           # Hz -> counts/kg/day
+
+    batch_size = int(batch_size)
+    n_batches_per_line = int(np.ceil(n_per_line / batch_size))
+    # Deterministic child streams for every (line, batch); reproducible for a given
+    # (n_per_line, seed, batch_size). Independent of how batching is chunked physically.
+    child_seeds = np.random.SeedSequence(seed).spawn(len(lines) * n_batches_per_line)
 
     sumw = np.zeros(centers.size)
     sumw2 = np.zeros(centers.size)
@@ -179,7 +194,7 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720) -> ComptonSp
     total_rate = 0.0
     total_free = 0.0
     total_anchor = 0.0
-    for ln in lines:
+    for li, ln in enumerate(lines):
         R_free = line_interaction_rate_hz(ln.flux_cm2_s, ln.energy_keV)  # Hz (free KN)
         f_bind = binding_suppression(ln.energy_keV)                     # <= 1
         R_i = R_free * f_bind                                            # Hz (bound incoh)
@@ -188,16 +203,23 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720) -> ComptonSp
         total_free += R_free
         total_anchor += A_i
 
-        te = sample_electron_recoil(ln.energy_keV, n_per_line, rng)      # keV
         w = R_i * per_day / n_per_line                                   # cts/kg/day per sample
-        h, _ = np.histogram(te, bins=edges)
-        h2 = h.astype(float)
-        sumw += h2 * w
-        sumw2 += h2 * w * w
+        remaining = n_per_line
+        te_max = 0.0
+        for b in range(n_batches_per_line):
+            n_b = int(min(batch_size, remaining))
+            rng = np.random.default_rng(child_seeds[li * n_batches_per_line + b])
+            te = sample_electron_recoil(ln.energy_keV, n_b, rng)         # keV
+            h, _ = np.histogram(te, bins=edges)
+            h2 = h.astype(float)
+            sumw += h2 * w
+            sumw2 += h2 * w * w
+            te_max = max(te_max, float(te.max()))
+            remaining -= n_b
 
         e_g.append(ln.energy_keV)
         e_edge.append(float(cs.compton_edge_kev(ln.energy_keV)))
-        e_edge_s.append(float(te.max()))
+        e_edge_s.append(te_max)
         r_line.append(R_i)
 
     dRdE = sumw / dwidth

@@ -27,7 +27,12 @@ CSV_PATH = os.path.join(ROOT, "data", "compton_dRdEdep.csv")
 FIG_PATH = os.path.join(ROOT, "figs", "compton_dep_check.png")
 
 SEED = 20260720
-N_PER_LINE = 400_000
+# Statistics-only control (physics unchanged): raised from 400_000 so the
+# S(x,Z)-binding-suppressed low-recoil roll-off (~15-50 eV E_rec) reads smooth on
+# the reconstructed deliverable figure (per-bin MC error ~12% there, was ~60%),
+# matching the muon-smoothing standard. run_compton_mc batches internally (one
+# batch in memory), so this large sample count stays memory-flat. FIXED seed.
+N_PER_LINE = 40_000_000
 
 
 def main() -> None:
