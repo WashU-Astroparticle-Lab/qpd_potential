@@ -213,3 +213,51 @@ coefficient was used; the only shortfall is an honestly-recorded data-sourcing g
 - Tests: `tests/test_flux_assembly.py`
 
 ## Self-Check: PASSED
+
+## Orchestrator Return Envelope
+
+Checkpoint reviewed and accepted by the orchestrator: the sourced Huber–Mueller (>2 MeV) + ²³⁸U(n,γ) spine and assembly machinery are accepted; the sub-1.8 MeV summation shape is a documented, band-covered model limitation (pre-anticipated in the ROADMAP risk register) carried forward to Plan 02-02 for Kopeikin-2012-grounded sourcing and the separate below-2-MeV uncertainty band.
+
+```yaml
+gpd_return:
+  status: completed
+  phase: "02-reactor-flux-model"
+  plan: "01"
+  tasks_completed: 3
+  tasks_total: 3
+  files_written:
+    - src/flux/huber_mueller.py
+    - src/flux/summation_ncapture.py
+    - src/flux/assemble_spectrum.py
+    - data/flux/hm_coefficients.csv
+    - data/flux/summation_spectra.csv
+    - data/flux/ncapture_238U.csv
+    - data/flux/perfission_spectrum.csv
+    - tests/test_flux_assembly.py
+    - GPD/phases/02-reactor-flux-model/figures/seam_continuity.png
+    - GPD/phases/02-reactor-flux-model/02-01-SUMMARY.md
+  issues:
+    - "Sub-1.8 MeV per-isotope summation table not machine-sourceable in-environment; seam-anchored non-negative placeholder used and flagged (ref-summation to be grounded in Kopeikin 2012 in Plan 02-02). Pre-anticipated ROADMAP risk; covered by the below-2-MeV uncertainty band."
+  next_actions:
+    - "Plan 02-02: ground sub-1.8 MeV in Kopeikin 2012, normalize to 3 GW_th/25 m (~7-8e12), freeze versioned CSV with split band."
+  state_updates:
+    advance_plan: false
+    update_progress: false
+    record_metric:
+      phase: "02"
+      plan: "02-01"
+      duration: 5400
+      tasks: 3
+      files: 13
+  contract_updates:
+    claims_passed: [claim-perfission-spectrum]
+    acceptance_tests_passed: [test-hm-unit, test-integral-yields, test-seam-continuity]
+    forbidden_proxies_rejected: [fp-truncate-ibd, fp-invented-coeffs, fp-negative-spline]
+  decisions:
+    - summary: "Huber(235/239/241)+Mueller(238U) coefficients fetched from primary arXiv e-prints with provenance; reconstructed 235U within 0.73%/0.13% of published Huber at 3/5 MeV."
+      phase: "02-reactor-flux-model"
+    - summary: "238U(n,gamma) shape from sourced AME2020 Q-values, normalized to 0.6/fission (Kopeikin 2004)."
+      phase: "02-reactor-flux-model"
+    - summary: "Sub-1.8 MeV fission summation is a flagged seam-anchored non-negative placeholder pending Kopeikin-2012 grounding in 02-02; NOT invented, NOT truncated. Covered by the below-2-MeV uncertainty band (pre-anticipated ROADMAP risk)."
+      phase: "02-reactor-flux-model"
+```
