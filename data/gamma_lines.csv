@@ -1,0 +1,52 @@
+# Environmental radiogenic gamma line list for the Phase-4 Compton channel (Plan 04-02).
+# DOCUMENTED TUNABLE INPUT -- every intensity/flux row carries provenance + an uncertainty band.
+# Guards fp-invented-flux: NO per-line flux is assigned from memory.
+#
+# WHAT IS FIXED NUCLEAR DATA (HIGH confidence):
+#   * energy_keV            -- line energy, ENSDF/LNHB evaluated nuclear data.
+#   * p_gamma               -- gamma emission probability per PARENT decay,
+#                             DDEP/LNHB evaluated decay data (per-decay yield).
+# WHAT IS SOURCED / SITE-DEPENDENT (MEDIUM confidence, tunable):
+#   * flux_cm2_s            -- absolute per-line flux [cm^-2 s^-1]. Absolute
+#                             normalization ANCHORED to a cited measured spectrum:
+#                             LABChico environmental gamma survey (Eur. Phys. J.
+#                             Plus, 2022), reporting 40K 1460.8 keV = 0.036 and
+#                             208Tl 2614.5 keV = 0.0016 cm^-2 s^-1 (as recorded in
+#                             GPD/phases/04-.../4-RESEARCH.md, Literature Landscape).
+#                             Heusser, Annu. Rev. Nucl. Part. Sci. 45, 543 (1995) is
+#                             the canonical review context (ref-environmental-gamma).
+# HOW SIBLING LINES ARE SET (documented, not invented):
+#   * Th-232 chain: sibling 208Tl lines scaled from the measured 208Tl 2614.5 keV
+#     anchor by the DDEP intra-chain emission-probability ratio; 228Ac lines by the
+#     228Ac/208Tl cross-emitter ratio (232Th->208Tl alpha branch b=0.3594, secular
+#     equilibrium). "Th-232-decay-equivalent flux" Phi_Th = 4.463e-3 cm^-2 s^-1.
+#   * U-238 chain: NO directly cited line flux was available. DOCUMENTED ASSUMPTION
+#     (flux_source=assume_U_eq_Th): 238U-chain decay activity ~ 232Th-chain, i.e.
+#     Phi_U = Phi_Th = 4.463e-3; 214Bi/214Pb line fluxes = Phi_U * p_gamma. Carries a
+#     factor-~2 (flux_unc_frac=1.0) band -- this is the weakest anchor (see
+#     uncertainty_markers). Tune Phi_U to re-normalize the U-chain edges.
+#
+# Integral flux of these DISCRETE lines = 0.0485 cm^-2 s^-1, a SUBSET of the full
+# environmental flux (0.1-0.5 cm^-2 s^-1 underground per LNGS/LABChico/HPGe surveys;
+# the balance is the scattered continuum + minor lines, dropped in the baseline).
+# VALD-03 leans on edge POSITIONS (from energy_keV, HIGH) + total rate to factor ~2
+# (tolerant of the flux-normalization uncertainty).
+#
+# columns: energy_keV, isotope, chain, p_gamma, p_gamma_source, flux_cm2_s, flux_unc_frac, flux_source
+energy_keV,isotope,chain,p_gamma,p_gamma_source,flux_cm2_s,flux_unc_frac,flux_source
+1460.822,K40,K-40,0.1067,DDEP_LNHB_per_decay,3.600000e-02,0.5,LABChico_EPJP2022_measured_anchor
+2614.511,Tl208,Th-232,0.9975,DDEP_LNHB_per_decay,1.600000e-03,0.5,LABChico_EPJP2022_measured_anchor
+583.191,Tl208,Th-232,0.8500,DDEP_LNHB_per_decay,1.363409e-03,0.5,scaled_from_Tl2614_anchor_by_DDEP_ratio
+860.564,Tl208,Th-232,0.1247,DDEP_LNHB_per_decay,2.000201e-04,0.5,scaled_from_Tl2614_anchor_by_DDEP_ratio
+510.770,Tl208,Th-232,0.2260,DDEP_LNHB_per_decay,3.625063e-04,0.5,scaled_from_Tl2614_anchor_by_DDEP_ratio
+911.204,Ac228,Th-232,0.2580,DDEP_LNHB_per_decay,1.151460e-03,0.5,scaled_from_Tl2614_anchor_by_DDEP_ratio
+968.971,Ac228,Th-232,0.1580,DDEP_LNHB_per_decay,7.051574e-04,0.5,scaled_from_Tl2614_anchor_by_DDEP_ratio
+338.320,Ac228,Th-232,0.1127,DDEP_LNHB_per_decay,5.029826e-04,0.5,scaled_from_Tl2614_anchor_by_DDEP_ratio
+609.316,Bi214,U-238,0.4549,DDEP_LNHB_per_decay,2.030229e-03,1.0,assume_U_eq_Th_Phi_times_p_gamma
+1764.494,Bi214,U-238,0.1531,DDEP_LNHB_per_decay,6.832886e-04,1.0,assume_U_eq_Th_Phi_times_p_gamma
+1120.287,Bi214,U-238,0.1491,DDEP_LNHB_per_decay,6.654365e-04,1.0,assume_U_eq_Th_Phi_times_p_gamma
+1238.110,Bi214,U-238,0.0579,DDEP_LNHB_per_decay,2.584090e-04,1.0,assume_U_eq_Th_Phi_times_p_gamma
+2204.210,Bi214,U-238,0.0489,DDEP_LNHB_per_decay,2.182418e-04,1.0,assume_U_eq_Th_Phi_times_p_gamma
+351.932,Pb214,U-238,0.3560,DDEP_LNHB_per_decay,1.588836e-03,1.0,assume_U_eq_Th_Phi_times_p_gamma
+295.224,Pb214,U-238,0.1842,DDEP_LNHB_per_decay,8.220886e-04,1.0,assume_U_eq_Th_Phi_times_p_gamma
+241.997,Pb214,U-238,0.0743,DDEP_LNHB_per_decay,3.316025e-04,1.0,assume_U_eq_Th_Phi_times_p_gamma

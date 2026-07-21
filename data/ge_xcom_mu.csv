@@ -1,0 +1,18 @@
+# Frozen NIST XCOM total mass attenuation coefficient mu/rho for germanium (Z=32).
+# Source: NIST X-Ray Mass Attenuation Coefficients, Germanium
+#   (Hubbell & Seltzer, NIST Standard Reference Database 126), ref-nist-xcom.
+# These four points are the values pinned in the plan (04-02-PLAN, known_good_baselines)
+# and 4-RESEARCH.md; they bracket the Compton-dominated MeV regime of the radiogenic
+# lines. compton_source.py interpolates LOG-LOG between them and extrapolates LOG-LOG
+# (mild, ~<1.3x in E) below 0.6 MeV (down to ~0.29 MeV, 214Pb 295 keV) and above
+# 2.0 MeV (up to ~2.61 MeV, 208Tl 2614.5 keV); the extrapolation is documented, not
+# additional "data". At these energies total mu/rho is Compton(incoherent)-dominated
+# (~85-100%), so total mu/rho is a slightly-conservative proxy for the Compton
+# interaction probability used in the thin-target single-scatter weight.
+#
+# columns: energy_MeV, mu_over_rho_cm2_g
+energy_MeV,mu_over_rho_cm2_g
+0.6,0.0745
+1.0,0.0573
+1.25,0.0510
+2.0,0.0409
