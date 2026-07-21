@@ -601,6 +601,12 @@
         "duration": "240s",
         "tasks": "2",
         "files": "5"
+      },
+      {
+        "label": "Phase 05 P05-01",
+        "duration": "2700s",
+        "tasks": "3",
+        "files": "4"
       }
     ]
   },
@@ -759,6 +765,36 @@
       "phase": "04-muon-compton-deposited-energy-spectra",
       "summary": "Pileup stop-condition: R_tot=1.634 Hz (muon 1.366 + Compton 0.268), occupancy R*tau=3.27e-5 (20us/50kHz sample) / 6.54e-5 (40us/25kHz resolving), R/50kHz=3.27e-5; non-paralyzable dead-time 6.5e-5, paralyzable live fraction 0.999935; mean interval 0.612 s ~ 1.5e4 resolving times. Occupancy << 1 -> stop-condition NOT triggered, quiescent reconstruction not precluded. Within-event muon ~197 MeV saturation flagged for Phase 5. Guards fp-pileup-unchecked.",
       "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Count-integral estimator adopted (D-estimator): E_rec=C*sum N_obs with a single global per-design C fixed to slope 0.5; plateau IS the modeled saturation.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Event-count mapping locked (Pitfall 1): expected_n_qp = INT Gamma_in dt = K*tau_qp*N_qp/V_tr (0.03x N_qp Al / 0.008x Hf), NOT the trapped count.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Crossover reported as a band: default ~52.9 eV (Ta->Al) / ~32.1 eV (Al->Hf), equal-split anchor ~13.1/7.9 keV, whole-array plateau ~18.6/11.3 keV; Hf first.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Muon-tail E_rec: non_paralyzable plateau ~35 keV (Ta->Al)/~27 keV (Al->Hf); paralyzable rollover ~3.3/~2.6 keV; both >3 orders below the linear line.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Ta gap handled as a binary trapping gate (ratio 3.58>=2, T_c gate 2.5 K); response invariant to Delta_abs in alpha-phase; beta-Ta design-invalidating; no film value fabricated.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); stop-condition does NOT trigger.",
+      "rationale": null
     }
   ],
   "approximations": [],
@@ -814,5 +850,5 @@
     "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
   },
   "_version": 1,
-  "_synced_at": "2026-07-21T02:23:55.935611+00:00"
+  "_synced_at": "2026-07-21T06:46:36.275973+00:00"
 }
