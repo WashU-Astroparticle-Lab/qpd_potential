@@ -54,6 +54,7 @@ None yet.
 | Phase 04 P04-03 | 240s | 2 tasks | 5 files |
 | Phase 05 P05-01 | 2700s | 3 tasks | 4 files |
 | Phase 05 P05-02 | 2400s | 3 tasks | 6 files |
+| Phase 06 P06-01 | 1500s | 3 tasks | 5 files |
 
 ### Decisions
 
@@ -103,6 +104,9 @@ None yet.
 - [Phase 05]: Time-over-saturation kept as a LABELED SECONDARY (tos_t_over_s), never auto-switched into the baseline (fp-tos-autoswitch); ceiling pile-up labeled an instrument artifact on the figure (fp-ceiling-peak).
 - [Phase 05]: Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); Phase-5 stop-condition does NOT trigger.
 - [Phase 05 / USER DECISION 2026-07-21]: **Censoring switch RESOLVED to non-paralyzable project-wide** (CONVENTIONS F closed). User accepted Phase 5 and chose non_paralyzable for the rest of the project after both variants were computed. params.DEFAULT_CENSORING already = "non_paralyzable"; Phase 6 + downstream use it as the single canonical variant. Paralyzable R matrices retained in response_matrix_*.npz as a sensitivity, not a live switch. Operative high-E response = the plateau (~34.8/26.8 keV muon tail).
+- [Phase 06]: Fold conserves counts per channel per design: muon/Compton rel <=2.2e-16 (unit-sum R columns), CEvNS rel <=1.3e-16; CEvNS rebin total 9.6e-5 vs trapz, above-50-eV 67.67 vs 67.752 (0.12%).
+- [Phase 06]: Reconstructed peaks (non-paralyzable): CEvNS ~42 eV (0.5*E_dep, sub-keV), muon 18.8/15.0 keV, Compton 16.8/13.3 keV (Ta->Al/Al->Hf); muon MeV deposits saturate to tens of keV (fp-deposited-only guarded).
+- [Phase 06]: CEvNS 5-10.14 eV low edge retained (7.27 cts/kg/day) via exact E_rec=0.5*E_dep, not dropped (fp-drop-lowE-cevns); only R_non_paralyzable folded (fp-paralyzable-swap).
 
 ### Active Approximations
 

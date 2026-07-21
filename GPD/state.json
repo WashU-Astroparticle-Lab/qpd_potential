@@ -540,10 +540,9 @@
   "intermediate_results": [],
   "open_questions": [
     "What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm^2 sensor density?",
-    "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model?",
-    "How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?",
-    "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)?",
-    "What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment?"
+    "[RESOLVED Phase 5] Saturated-regime reconstruction: non-paralyzable dead-time model (count-integral estimator; plateau = saturation). User decision 2026-07-21.",
+    "[RESOLVED Phase 5] Ta->Al tunneling params: Table II Al-trap column; Ta absorber gap is a binary trapping gate (\u03b1-Ta ratio 3.58\u22652), response numerically independent of it above the gate.",
+    "What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment? [Phase 4: sourced from Heusser 1995 with a factor-2 site-dependent band; edges exact, total rate MEDIUM.]"
   ],
   "resolved_questions": [],
   "performance_metrics": {
@@ -613,6 +612,12 @@
         "duration": "2400s",
         "tasks": "3",
         "files": "6"
+      },
+      {
+        "label": "Phase 06 P06-01",
+        "duration": "1500s",
+        "tasks": "3",
+        "files": "5"
       }
     ]
   },
@@ -836,6 +841,26 @@
       "phase": "05",
       "summary": "Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); Phase-5 stop-condition does NOT trigger.",
       "rationale": null
+    },
+    {
+      "phase": "05 / USER DECISION 2026-07-21",
+      "summary": "**Censoring switch RESOLVED to non-paralyzable project-wide** (CONVENTIONS F closed). User accepted Phase 5 and chose non_paralyzable for the rest of the project after both variants were computed. params.DEFAULT_CENSORING already = \"non_paralyzable\"; Phase 6 + downstream use it as the single canonical variant. Paralyzable R matrices retained in response_matrix_*.npz as a sensitivity, not a live switch. Operative high-E response = the plateau (~34.8/26.8 keV muon tail).",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "Fold conserves counts per channel per design: muon/Compton rel <=2.2e-16 (unit-sum R columns), CEvNS rel <=1.3e-16; CEvNS rebin total 9.6e-5 vs trapz, above-50-eV 67.67 vs 67.752 (0.12%).",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "Reconstructed peaks (non-paralyzable): CEvNS ~42 eV (0.5*E_dep, sub-keV), muon 18.8/15.0 keV, Compton 16.8/13.3 keV (Ta->Al/Al->Hf); muon MeV deposits saturate to tens of keV (fp-deposited-only guarded).",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "CEvNS 5-10.14 eV low edge retained (7.27 cts/kg/day) via exact E_rec=0.5*E_dep, not dropped (fp-drop-lowE-cevns); only R_non_paralyzable folded (fp-paralyzable-swap).",
+      "rationale": null
     }
   ],
   "approximations": [],
@@ -891,5 +916,5 @@
     "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
   },
   "_version": 1,
-  "_synced_at": "2026-07-21T07:21:35.514113+00:00"
+  "_synced_at": "2026-07-21T21:13:09.051209+00:00"
 }
