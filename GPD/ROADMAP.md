@@ -35,7 +35,7 @@ This stage-1 study computes the reactor-CEvNS, cosmic-ray-muon, and environmenta
 ## Phases
 
 - [x] **Phase 1: Conventions & Energy-Scale Foundation** — Fix the T→E_ph→E_dep→E_rec bookkeeping (no quenching), CEvNS prefactor/units, and the bandwidth-censoring convention. ✓ verified passed (15/15)
-- [ ] **Phase 2: Reactor Flux Model** — Frozen Φ(E_ν) table: Huber–Mueller >2 MeV + summation/n-capture <1.8 MeV with an explicit uncertainty band.
+- [x] **Phase 2: Reactor Flux Model** — Frozen Φ(E_ν) table: Huber–Mueller >2 MeV + summation/n-capture <1.8 MeV with an explicit uncertainty band.
 - [ ] **Phase 3: CEvNS Cross Section & Rate** — Per-isotope-summed dR/dT_dep on Ge, benchmarked against Billard Table 1 and the closed-form total cross section.
 - [ ] **Phase 4: Muon & Compton Deposited-Energy Spectra** — Muon (Gaisser–Guan ⊗ chord ⊗ Landau–Vavilov) and Compton (Klein–Nishina continuum) deposited-energy spectra, validated against flux anchors.
 - [ ] **Phase 5: QPD Response Chain & Energy Reconstruction** — Per-design response matrix R(E_rec | E_dep) spanning linear and saturated regimes; locate the crossover deposit energy.
@@ -107,8 +107,8 @@ Plans:
 **Contract Coverage:** advances claim-cevns (flux input) | anchor ref-huber, sub-1.8 MeV region flagged | forbidden proxy: Huber–Mueller truncated/extrapolated at the 1.8 MeV IBD threshold (the sub-IBD flux populates the flagship low-recoil bins)
 **Plans:** 2 plans
 
-- [ ] 02-01-PLAN.md — Source & assemble the per-fission antineutrino spectrum (Huber–Mueller >2 MeV + seam-matched summation/n-capture <1.8 MeV)
-- [ ] 02-02-PLAN.md — Normalize to 3 GW_th/25 m, freeze versioned CSV with split uncertainty band + Billard-variant switch
+- [x] 02-01-PLAN.md — Source & assemble the per-fission antineutrino spectrum (Huber–Mueller >2 MeV + seam-matched summation/n-capture <1.8 MeV)
+- [x] 02-02-PLAN.md — Normalize to 3 GW_th/25 m, freeze versioned CSV with split uncertainty band + Billard-variant switch
 
 ### Phase 3: CEvNS Cross Section & Rate
 
@@ -166,7 +166,7 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | Phase | Plans Complete | Status | Completed |
 | ----- | -------------- | ------ | --------- |
 | 1. Conventions & Energy-Scale Foundation | 2/2 | Complete ✓ | 2026-07-20 |
-| 2. Reactor Flux Model | 0/2 | Planned | - |
+| 2. Reactor Flux Model | 2/2 | Complete ✓ (caveat: sub-1.8 MeV model placeholder, band-covered) | 2026-07-20 |
 | 3. CEvNS Cross Section & Rate | 0/TBD | Not started | - |
 | 4. Muon & Compton Deposited-Energy Spectra | 0/3 | Planned | - |
 | 5. QPD Response Chain & Energy Reconstruction | 0/TBD | Not started | - |
