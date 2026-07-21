@@ -103,6 +103,63 @@ BENCHMARK_ISOTOPE = {
 }
 
 # --------------------------------------------------------------------------- #
+# Natural germanium isotope table (Phase 3, Plan 03-01)                        #
+# --------------------------------------------------------------------------- #
+# The per-isotope CEvNS sum is the decisive physics (forbidden proxy fp-lumped-A:
+# a single lumped A=72.63 smooths the five-step T_max endpoint structure). Z=32
+# for all; N=38/40/41/42/44 -> A=70/72/73/74/76.
+#
+# Number (atom) abundances are the IUPAC/CIAAW representative isotopic
+# composition of natural Ge (Meija et al., Pure Appl. Chem. 88, 293 (2016),
+# CIAAW 2013 "representative" column): 70Ge 20.57%, 72Ge 27.45%, 73Ge 7.75%,
+# 74Ge 36.50%, 76Ge 7.73% (atom %). They sum to 1.0000. [MEDIUM confidence:
+# representative values, small isotope-abundance spread across sources.]
+#
+# Nuclear mass M_i is taken as A_i * u with u = 931.494 MeV (the CONVENTIONS/plan
+# spec; binding-energy / electron-mass corrections are <~1e-3 and irrelevant at
+# the CEvNS kinematic-factor level of ~T/E_nu ~ 1e-3).
+#
+# N_target,i = x_i * GE_ATOMS_PER_KG (sum = 8.29e24 /kg), consistent with the
+# Section D per-kg normalization (1000 g / 72.63 g/mol * N_A).
+
+_U_MEV = 931.494  # atomic mass unit in MeV (CODATA; matches CONVENTIONS)
+
+
+@dataclass(frozen=True)
+class GeIsotope:
+    """A single natural-Ge isotope for the CEvNS per-isotope sum.
+
+    A          : mass number (used for the Helm nuclear radius c ~ A^{1/3})
+    Z, N       : proton / neutron numbers (Z=32 for all Ge)
+    abundance  : number (atom) fraction, dimensionless (sum over isotopes = 1)
+    M_MeV      : nuclear mass = A * 931.494 MeV
+    name       : label ("70Ge", ...)
+    """
+
+    A: int
+    Z: int
+    N: int
+    abundance: float
+    M_MeV: float
+    name: str
+
+
+GE_ISOTOPES = (
+    GeIsotope(70, 32, 38, 0.2057, 70 * _U_MEV, "70Ge"),
+    GeIsotope(72, 32, 40, 0.2745, 72 * _U_MEV, "72Ge"),
+    GeIsotope(73, 32, 41, 0.0775, 73 * _U_MEV, "73Ge"),
+    GeIsotope(74, 32, 42, 0.3650, 74 * _U_MEV, "74Ge"),
+    GeIsotope(76, 32, 44, 0.0773, 76 * _U_MEV, "76Ge"),
+)
+
+# Helm form-factor parameters (Lewin & Smith, Astropart. Phys. 6, 87 (1996),
+# Appendix): a = 0.52 fm (surface diffuseness), s = 0.90 fm (skin thickness),
+# c(A) = 1.23 A^{1/3} - 0.60 fm; R_0^2 = c^2 + (7/3) pi^2 a^2 - 5 s^2.
+HELM_A_FM = 0.52
+HELM_S_FM = 0.90
+HBAR_C_MEV_FM = 197.327  # hbar c in MeV*fm (q[fm^-1] = q[MeV] / 197.327)
+
+# --------------------------------------------------------------------------- #
 # Detector / normalization constants (CONVENTIONS Section D)                   #
 # --------------------------------------------------------------------------- #
 
