@@ -217,3 +217,40 @@ def test_cevns_reconstructs_low():
         cev = rep["designs"][design]["cevns"]
         assert cev["peak_Erec_keV"] < 1.0  # sub-keV reconstruction
         assert cev["integrated_rate_cts_per_kg_day"] > 0.0
+
+
+# --------------------------------------------------------------------------- #
+# Plan 06-02 deliverable figure (deliv-fig-spectra / deliv-fig-code)          #
+#   test-saturation-delimited -> make_spectra_figure renders with the          #
+#   saturation E_rec images ordered (onset < plateau < muon pile-up).          #
+# --------------------------------------------------------------------------- #
+
+
+def test_make_spectra_figure_renders(tmp_path):
+    """deliv-fig-code: make_spectra_figure produces a non-empty PDF from the
+    committed CSVs + npz mapping arrays (no fold re-run)."""
+    _require("Ta->Al")
+    _require("Al->Hf")
+    out = tmp_path / "fig.pdf"
+    p = fold.make_spectra_figure(out_path=str(out))
+    assert os.path.exists(p)
+    assert os.path.getsize(p) > 1000
+
+
+def test_saturation_erec_images_ordered():
+    """test-saturation-delimited: the E_rec image of the on-spot onset lies
+    below the whole-array plateau image, which lies below the muon pile-up --
+    the saturation region is a real, ordered band on the E_rec axis."""
+    for design in DESIGNS:
+        _require(design)
+        z = fold.load_design(design)
+        cen = z["E_dep_centers_eV"]
+        med = z["E_rec_median_non_paralyzable_eV"]
+        onset = float(z["saturation_onset_Edep_eV"])
+        plateau = float(z["whole_array_plateau_Edep_eV"])
+        er_onset = fold._erec_of_edep(onset, cen, med) / 1e3
+        er_plateau = fold._erec_of_edep(plateau, cen, med) / 1e3
+        mu_peak = fold._MUON_PEAK_keV[design]
+        assert 0.0 < er_onset < er_plateau < mu_peak
+        # muon lands in the saturated (plateau) region -> shown under saturation
+        assert mu_peak > er_plateau

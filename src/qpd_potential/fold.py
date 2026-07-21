@@ -480,6 +480,224 @@ def landing_report(designs: Optional[tuple] = None) -> dict:
     return report
 
 
+# --------------------------------------------------------------------------- #
+# Deliverable figure (Plan 06-02, deliv-fig-spectra)                           #
+#                                                                              #
+# Renders the RECONSTRUCTED-energy spectra dR/dE_rec vs E_rec for all three    #
+# channels (CEvNS, muon, Compton) and BOTH designs (Ta->Al, Al->Hf) in         #
+# counts/kg/day/keV, from the Plan 06-01 reconstructed_spectra_*.csv, and      #
+# reuses the Phase-5 npz mapping curve (E_rec_median_non_paralyzable_eV vs     #
+# E_dep_centers_eV) for the true->reconstructed panel.  The saturation region  #
+# is delimited on the E_rec axis (fp-no-saturation-mark) and the x-axis is     #
+# RECONSTRUCTED energy, never deposited (fp-deposited-only).  Only the         #
+# non-paralyzable deliverable is drawn (fp-paralyzable-swap).                   #
+# --------------------------------------------------------------------------- #
+
+SPECTRA_FIG_FILE = "reconstructed_energy_spectra.pdf"
+
+# Reconstructed-energy landing peaks (Plan 06-01 landing_report), keV.
+_MUON_PEAK_keV = {"Ta->Al": 18.8, "Al->Hf": 15.0}
+
+_CH_STYLE = {
+    "cevns": {"color": "#1f77b4", "label": "CEvNS (reactor)"},
+    "muon": {"color": "#d62728", "label": "cosmic muon"},
+    "compton": {"color": "#2ca02c", "label": "environmental $\\gamma$ (Compton)"},
+}
+_DESIGN_LS = {"Ta->Al": "-", "Al->Hf": "--"}
+
+
+def _read_recon_csv(design: str, art_dir: str = _ARTIFACT_DIR) -> dict:
+    """Load a Plan 06-01 reconstructed_spectra_*.csv into named arrays."""
+    path = os.path.join(art_dir, RECON_FILE[design])
+    rows = np.asarray(_read_numeric_rows(path), dtype=float)
+    keys = [
+        "E_rec_keV",
+        "cevns_dRdErec", "cevns_band_lo", "cevns_band_hi",
+        "muon_dRdErec", "muon_band_lo", "muon_band_hi",
+        "compton_dRdErec", "compton_band_lo", "compton_band_hi",
+        "total_dRdErec",
+    ]
+    return {k: rows[:, i] for i, k in enumerate(keys)}
+
+
+def _erec_of_edep(E_dep_eV, E_dep_centers, E_rec_median):
+    """Interpolate E_rec (eV) at a deposited energy via the Phase-5 median
+    non-paralyzable mapping curve, in log-log space."""
+    lx = np.log(np.asarray(E_dep_eV, float))
+    return np.exp(np.interp(lx, np.log(E_dep_centers), np.log(E_rec_median)))
+
+
+def _mask_pos(x, y):
+    """Return (x, y) keeping only strictly-positive y (log-axis safe)."""
+    x = np.asarray(x, float)
+    y = np.asarray(y, float)
+    m = y > 0.0
+    return x[m], y[m]
+
+
+def make_spectra_figure(
+    out_path: Optional[str] = None,
+    art_dir: str = _ARTIFACT_DIR,
+    designs: tuple = ("Ta->Al", "Al->Hf"),
+) -> str:
+    """Render deliv-fig-spectra: reconstructed-energy spectra (all 3 channels,
+    both designs) + saturation delimitation + true->reconstructed mapping panel.
+
+    Reads the committed reconstructed_spectra_*.csv (Plan 06-01) and the Phase-5
+    response_matrix_*.npz mapping arrays; does NOT re-run the fold.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.gridspec import GridSpec
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+
+    if out_path is None:
+        out_path = os.path.join(art_dir, SPECTRA_FIG_FILE)
+
+    spectra = {d: _read_recon_csv(d, art_dir) for d in designs}
+    npz = {d: dict(np.load(os.path.join(art_dir, rm.DESIGN_FILE[d]))) for d in designs}
+
+    # E_rec image of the two saturation E_dep scales, per design.
+    sat = {}
+    for d in designs:
+        z = npz[d]
+        cen = z["E_dep_centers_eV"]
+        med = z["E_rec_median_non_paralyzable_eV"]
+        onset_ed = float(z["saturation_onset_Edep_eV"])
+        plateau_ed = float(z["whole_array_plateau_Edep_eV"])
+        sat[d] = {
+            "onset_Erec_keV": float(_erec_of_edep(onset_ed, cen, med)) / 1e3,
+            "plateau_Erec_keV": float(_erec_of_edep(plateau_ed, cen, med)) / 1e3,
+            "onset_Edep_eV": onset_ed,
+            "plateau_Edep_eV": plateau_ed,
+            "cen": cen,
+            "med": med,
+        }
+
+    fig = plt.figure(figsize=(12.5, 9.2))
+    gs = GridSpec(2, 2, figure=fig, height_ratios=[1.0, 0.92],
+                  hspace=0.30, wspace=0.22,
+                  left=0.075, right=0.975, top=0.935, bottom=0.075)
+
+    # ---- Panels A/B: spectra per design ------------------------------------ #
+    ymin, ymax = 1e-3, 1e9
+    xmin, xmax = 1e-3, 1e2  # keV
+    for col, d in enumerate(designs):
+        ax = fig.add_subplot(gs[0, col])
+        s = spectra[d]
+        E = s["E_rec_keV"]
+        # saturation shading (E_dep > onset -> reconstructed under saturation)
+        o = sat[d]["onset_Erec_keV"]
+        p = sat[d]["plateau_Erec_keV"]
+        ax.axvspan(o, xmax, color="0.86", zorder=0)
+        ax.axvspan(p, xmax, color="0.72", zorder=0)
+        mu_peak = _MUON_PEAK_keV[d]
+        ax.axvline(mu_peak, color="#d62728", ls=":", lw=1.3, zorder=1)
+        # bands
+        xb, lo = _mask_pos(E, s["cevns_band_lo"])
+        _, hi = _mask_pos(E, s["cevns_band_hi"])
+        if xb.size:
+            ax.fill_between(xb, lo, hi, color=_CH_STYLE["cevns"]["color"],
+                            alpha=0.22, lw=0, zorder=2)
+        xb, lo = _mask_pos(E, s["compton_band_lo"])
+        _, hi = _mask_pos(E, s["compton_band_hi"])
+        if xb.size:
+            ax.fill_between(xb, lo, hi, color=_CH_STYLE["compton"]["color"],
+                            alpha=0.18, lw=0, zorder=2)
+        xb, lo = _mask_pos(E, s["muon_band_lo"])
+        _, hi = _mask_pos(E, s["muon_band_hi"])
+        if xb.size:
+            ax.fill_between(xb, lo, hi, color=_CH_STYLE["muon"]["color"],
+                            alpha=0.18, lw=0, zorder=2)
+        # central curves
+        for ch in ("cevns", "muon", "compton"):
+            xx, yy = _mask_pos(E, s[f"{ch}_dRdErec"])
+            ax.plot(xx, yy, color=_CH_STYLE[ch]["color"], lw=1.8,
+                    label=_CH_STYLE[ch]["label"], zorder=4)
+        xx, yy = _mask_pos(E, s["total_dRdErec"])
+        ax.plot(xx, yy, color="0.15", lw=1.1, ls="-", label="total", zorder=3)
+
+        ax.annotate("muon pile-up\n(saturated)", xy=(mu_peak, 3e5),
+                    xytext=(mu_peak * 0.14, 3e7),
+                    fontsize=8.5, color="#d62728", ha="center",
+                    arrowprops=dict(arrowstyle="->", color="#d62728", lw=1.0))
+        ax.set_xscale("log"); ax.set_yscale("log")
+        ax.set_xlim(xmin, xmax); ax.set_ylim(ymin, ymax)
+        ax.set_xlabel(r"reconstructed energy $E_{\rm rec}$  [keV]")
+        if col == 0:
+            ax.set_ylabel(r"$dR/dE_{\rm rec}$  [counts kg$^{-1}$ day$^{-1}$ keV$^{-1}$]")
+        ax.set_title(f"({'ab'[col]}) {d}   (non-paralyzable)", fontsize=11)
+        ax.grid(True, which="major", alpha=0.25)
+        if col == 0:
+            ax.legend(loc="lower left", fontsize=8.0, framealpha=0.9, ncol=1)
+
+    # ---- Panel C: true->reconstructed mapping ------------------------------ #
+    axm = fig.add_subplot(gs[1, 0])
+    for d in designs:
+        cen = sat[d]["cen"]
+        med = sat[d]["med"]
+        axm.plot(cen, med, ls=_DESIGN_LS[d], color="0.15", lw=1.8,
+                 label=f"{d}: median $E_{{\\rm rec}}(E_{{\\rm dep}})$")
+        oe = sat[d]["onset_Edep_eV"]; pe = sat[d]["plateau_Edep_eV"]
+        axm.axvline(oe, color="#ff7f0e", ls=_DESIGN_LS[d], lw=1.0, alpha=0.8)
+        axm.axvline(pe, color="#8c564b", ls=_DESIGN_LS[d], lw=1.0, alpha=0.8)
+    ed = np.array([5.0, 5e5])
+    axm.plot(ed, 0.5 * ed, color="#1f77b4", ls=":", lw=1.4,
+             label=r"linear calib. $E_{\rm rec}=0.5\,E_{\rm dep}$")
+    axm.set_xscale("log"); axm.set_yscale("log")
+    axm.set_xlim(5.0, 2.5e8); axm.set_ylim(1.0, 1e5)
+    axm.set_xlabel(r"deposited energy $E_{\rm dep}$  [eV]")
+    axm.set_ylabel(r"reconstructed $E_{\rm rec}$  [eV]")
+    axm.set_title("(c) true$\\rightarrow$reconstructed mapping (Phase-5 non-paralyzable "
+                  "response; reused)", fontsize=10)
+    axm.grid(True, which="major", alpha=0.25)
+    axm.legend(loc="upper left", fontsize=7.6, framealpha=0.9)
+    axm.text(0.985, 0.05,
+             "orange = on-spot saturation onset ($\\sim$53/32 eV)\n"
+             "brown = whole-array plateau ($\\sim$18.6/11.3 keV)",
+             transform=axm.transAxes, ha="right", va="bottom", fontsize=7.2,
+             bbox=dict(boxstyle="round", fc="white", ec="0.7", alpha=0.9))
+
+    # ---- Panel D: caveat / honest-landing box ------------------------------ #
+    axc = fig.add_subplot(gs[1, 1]); axc.axis("off")
+    caveat = (
+        "Honest caveats (stage-1):\n"
+        "• Axis is RECONSTRUCTED energy $E_{\\rm rec}$, not deposited.\n"
+        "• NO literature anchor for the saturated-regime shape;\n"
+        "  validation is limiting-cases-only. The muon channel is\n"
+        "  reconstructed ENTIRELY in saturation — its tens-of-keV\n"
+        "  pile-up is an instrument artifact of the modelled ceiling,\n"
+        "  NOT a physical spectral line.\n"
+        "• CEvNS reconstructs to TENS OF eV $E_{\\rm rec}$ (peak $\\sim$42 eV,\n"
+        "  $\\sim$85% below 100 eV); the flagship signal sits very low.\n"
+        "• Bands: CEvNS 1$\\sigma$ reactor-flux; Compton factor-2\n"
+        "  site-dependent $\\gamma$ flux; muon $\\pm$30% normalization.\n"
+        "• Grey shading = deposits in saturation ($E_{\\rm dep}>$ onset);\n"
+        "  darker = whole-array plateau. Non-paralyzable is the\n"
+        "  deliverable (CONVENTIONS §F resolved 2026-07-21)."
+    )
+    axc.text(0.0, 0.98, caveat, transform=axc.transAxes, ha="left", va="top",
+             fontsize=8.8, family="sans-serif",
+             bbox=dict(boxstyle="round", fc="#fffbe6", ec="#e0c000", alpha=0.95))
+    sat_legend = [
+        Patch(fc="0.86", ec="none", label="saturation region ($E_{\\rm dep}>$ onset)"),
+        Patch(fc="0.72", ec="none", label="whole-array plateau region"),
+        Line2D([0], [0], color="#d62728", ls=":", lw=1.3, label="muon $E_{\\rm rec}$ pile-up"),
+    ]
+    axc.legend(handles=sat_legend, loc="lower left", fontsize=8.2,
+               framealpha=0.9, title="saturation delimitation")
+
+    fig.suptitle(
+        "Reconstructed-energy differential-rate spectra — QPD Ge wafer "
+        "(4$''\\times$4$''\\times$2 mm, $\\sim$110 g, per-kg), stage-1 deliverable",
+        fontsize=12.5, y=0.982)
+    fig.savefig(out_path)
+    plt.close(fig)
+    return out_path
+
+
 def run_all(write: bool = True) -> dict:
     return {name: run_fold(name, write=write) for name in rm.DESIGN_FILE}
 
