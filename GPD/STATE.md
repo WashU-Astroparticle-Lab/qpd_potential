@@ -50,6 +50,7 @@ None yet.
 | Phase 02 P02-02 | 3600s | 3 tasks | 9 files |
 | Phase 03 P03-01 | 3600s | 3 tasks | 6 files |
 | Phase 03 P03-02 | 2400s | 3 tasks | 7 files |
+| Phase 04 P04-01 | 2700s | 3 tasks | 9 files |
 
 ### Decisions
 
@@ -76,6 +77,9 @@ None yet.
 - [Phase 03-cevns-cross-section-rate]: Billard 2017 Table 1 reproduced WITH k: 0.7415/0.5009/0.2567 counts/kg/day above 50/100/200 eV_nr vs 0.76/0.51/0.26 (-2.4/-1.8/-1.3%, all <2.5%, well inside ~20%). WITHOUT k the fold overshoots by exactly 1/k=89.9x (66.7/45.0/23.1). 100/200 eV bins <2% so no ROADMAP backtrack. Per-isotope Ge sum (fp-lumped-A-billard rejected).
 - [Phase 03-cevns-cross-section-rate]: CONUS+ coarse factor-2 cross-check: flagship (67.75/kg/day >50 eV) and Billard Table 1 both rescaled to CONUS+ config (3.6 GW_th/20.7 m) give 118.6 vs 119.6, ratio 0.99. Two independently-normalized flux models agree at a common config. eV_ee quenching caveat -> coarse scale check only, MEDIUM confidence.
 - [Phase 03-cevns-cross-section-rate]: Flux band propagation: rigorous 1-sigma band 3.4% (>=95 eV, matches well-anchored 2-5% high-E flux) rising to 6.2%/9.8% at 50/20 eV_nr; sub-1.8 MeV toggle localizes the placeholder systematic below ~95 eV (E_min(95 eV)~1.78 MeV): sub-1.8 rate fraction 17.8% at 50 eV, 33.8% at 20 eV, ~0 above 95 eV, T>200 eV unchanged <1e-3. The plan's 20-25% guess is corrected (finding, not a bug).
+- [Phase 04-muon-compton-deposited-energy-spectra]: Muon dR/dE_dep folded from Gaisser-Guan flux (P1-P5 verbatim, arXiv:1509.06176) x analytic ray-box chord (Cauchy <ell>=0.385 cm reproduced to 0.03%) x Landau-Vavilov MPV. Integral rate 1.366 +/- 0.005 Hz (deterministic quadrature 1.415 Hz), within ~15% of PDG 1.5-2 Hz (VALD-02). Surface-flux measure I*A_proj*sin(theta) validated by J_horiz=pi*I_v/2 to 0.01%.
+- [Phase 04-muon-compton-deposited-energy-spectra]: Landau-Vavilov MPV computed in code (not memorized): vertical-chord xi=0.0721 MeV (PDG 0.072), Delta_p=1.232 MeV strictly below mean 1.459 MeV. Custom Landau inverse-CDF sampler (mode -0.22278); deposit=Delta_p+xi*(lambda-lambda_mode) so sampled mode=Delta_p; NOT mean, NOT Moyal. kappa=xi/T_max<0.07 for all chords -> Landau/mild-Vavilov. Guards fp-mean-not-mpv.
+- [Phase 04-muon-compton-deposited-energy-spectra]: Long near-horizontal chords importance-sampled (zenith uniform in [0,pi/2] with reweighting) so the deposit tail is resolved to ~197 MeV (66 bins >30 MeV) - the Phase-5 saturation input. Deposits on the unified phonon E_dep scale, NO quenching, no keVee/keVnr (electron recoil, zero Frenkel correction). Guards fp-angular-bias, fp-quenching-muon.
 
 ### Active Approximations
 

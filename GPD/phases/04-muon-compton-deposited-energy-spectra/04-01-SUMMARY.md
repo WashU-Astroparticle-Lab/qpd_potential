@@ -74,7 +74,7 @@ All deliverable files exist; three atomic commits recorded (162214f, 4813d2f, c4
 
 ```yaml
 gpd_return:
-  status: checkpoint
+  status: completed
   phase: "04"
   plan: "01"
   tasks_completed: 3
