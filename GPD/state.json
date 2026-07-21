@@ -595,6 +595,12 @@
         "duration": "2100s",
         "tasks": "3",
         "files": "10"
+      },
+      {
+        "label": "Phase 04 P04-03",
+        "duration": "240s",
+        "tasks": "2",
+        "files": "5"
       }
     ]
   },
@@ -738,6 +744,21 @@
       "phase": "04-muon-compton-deposited-energy-spectra",
       "summary": "Gamma flux table is a DOCUMENTED TUNABLE input, not invented: line energies + DDEP emission probabilities = nuclear data; absolute flux anchored to cited LABChico EPJP2022 measured spectrum (40K 0.036, 208Tl 2614.5 0.0016 cm^-2 s^-1); Th siblings scaled by DDEP intra-chain ratios; U chain via documented Phi_U=Phi_Th assumption (factor-2 band). NIST XCOM Ge mu/rho frozen (4 cited points, log-log interp). Unified phonon scale, no quenching. Guards fp-invented-flux, fp-quenching-compton.",
       "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Muon and Compton deposited-energy spectra assembled on the byte-identical shared log E_dep grid (584 bins, 0.01 keV -> 197 MeV; np.array_equal True, max rel dev 0.0; centers = geometric means of shared_energy_grid() edges to 5e-7). Combined table data/combined_dRdEdep.csv (muon+Compton+total) and figs/phase4_deposited_spectra.png emitted; deposited (phonon) energy only, NO E_rec fold. Guards fp-grid-mismatch, fp-reconstructed-not-deposited.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Energy closure per channel: int dR/dE_dep dE = rate_Hz*86400/mass_kg (mass 0.1099 kg). Muon 1.0729e6 vs 1.0737e6 -> ratio 0.99928 (+/-3.6e-3 MC, 0.07% sub-grid-floor shortfall); Compton 2.1105e5 vs 2.1105e5 -> 0.99997; total-spectrum closure 0.9994. Rates parsed from CSV headers (1.3657 / 0.26846 Hz), not hard-coded. First-moment deposited power reported as a physical diagnostic (mean deposit muon 2.33 MeV > 1.46 MeV vertical, Compton 589 keV), explicitly not an independent number.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Pileup stop-condition: R_tot=1.634 Hz (muon 1.366 + Compton 0.268), occupancy R*tau=3.27e-5 (20us/50kHz sample) / 6.54e-5 (40us/25kHz resolving), R/50kHz=3.27e-5; non-paralyzable dead-time 6.5e-5, paralyzable live fraction 0.999935; mean interval 0.612 s ~ 1.5e4 resolving times. Occupancy << 1 -> stop-condition NOT triggered, quiescent reconstruction not precluded. Within-event muon ~197 MeV saturation flagged for Phase 5. Guards fp-pileup-unchecked.",
+      "rationale": null
     }
   ],
   "approximations": [],
@@ -793,5 +814,5 @@
     "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
   },
   "_version": 1,
-  "_synced_at": "2026-07-21T02:14:55.371929+00:00"
+  "_synced_at": "2026-07-21T02:23:55.935611+00:00"
 }
