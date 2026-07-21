@@ -36,7 +36,7 @@ This stage-1 study computes the reactor-CEvNS, cosmic-ray-muon, and environmenta
 
 - [x] **Phase 1: Conventions & Energy-Scale Foundation** — Fix the T→E_ph→E_dep→E_rec bookkeeping (no quenching), CEvNS prefactor/units, and the bandwidth-censoring convention. ✓ verified passed (15/15)
 - [x] **Phase 2: Reactor Flux Model** — Frozen Φ(E_ν) table: Huber–Mueller >2 MeV + summation/n-capture <1.8 MeV with an explicit uncertainty band.
-- [ ] **Phase 3: CEvNS Cross Section & Rate** — Per-isotope-summed dR/dT_dep on Ge, benchmarked against Billard Table 1 and the closed-form total cross section.
+- [x] **Phase 3: CEvNS Cross Section & Rate** — Per-isotope-summed dR/dT_dep on Ge, benchmarked against Billard Table 1 and the closed-form total cross section.
 - [ ] **Phase 4: Muon & Compton Deposited-Energy Spectra** — Muon (Gaisser–Guan ⊗ chord ⊗ Landau–Vavilov) and Compton (Klein–Nishina continuum) deposited-energy spectra, validated against flux anchors.
 - [ ] **Phase 5: QPD Response Chain & Energy Reconstruction** — Per-design response matrix R(E_rec | E_dep) spanning linear and saturated regimes; locate the crossover deposit energy.
 - [ ] **Phase 6: Fold & Produce Reconstructed-Energy Spectra** — Fold all three deposit spectra through R to deliver the reconstructed-energy figures for both designs.
@@ -117,8 +117,8 @@ Plans:
 **Contract Coverage:** advances claim-cevns, obs-cevns-spectrum (deposited-energy precursor), test-cevns-benchmark, deliv-code | anchors ref-cevns-benchmark (Billard Table 1: 0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr), CONUS+ baseline, ref-huber | forbidden proxy: (ħc)² omission, /4π vs /8π, GW_e vs GW_th, lumped A instead of per-isotope endpoints
 **Plans:** 2 plans
 
-- [ ] 03-01-PLAN.md — Extend cevns.py with Helm FF, per-isotope dσ/dT, 5-isotope Ge table, and flux fold → dR/dT CSV; closed-form σ_tot + benchmark + closure + convergence (CALC-02, wave 1)
-- [ ] 03-02-PLAN.md — VALD-01: Billard Table-1 reproduction with the k≈0.0111 rescale (~20%), CONUS+ factor-2, flux-band propagation + deposited-energy figure (wave 2, depends 03-01)
+- [x] 03-01-PLAN.md — Extend cevns.py with Helm FF, per-isotope dσ/dT, 5-isotope Ge table, and flux fold → dR/dT CSV; closed-form σ_tot + benchmark + closure + convergence (CALC-02, wave 1)
+- [x] 03-02-PLAN.md — VALD-01: Billard Table-1 reproduction with the k≈0.0111 rescale (~20%), CONUS+ factor-2, flux-band propagation + deposited-energy figure (wave 2, depends 03-01)
 
 ### Phase 4: Muon & Compton Deposited-Energy Spectra
 
@@ -168,7 +168,7 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | ----- | -------------- | ------ | --------- |
 | 1. Conventions & Energy-Scale Foundation | 2/2 | Complete ✓ | 2026-07-20 |
 | 2. Reactor Flux Model | 2/2 | Complete ✓ (caveat: sub-1.8 MeV model placeholder, band-covered) | 2026-07-20 |
-| 3. CEvNS Cross Section & Rate | 0/2 | Planned | - |
+| 3. CEvNS Cross Section & Rate | 2/2 | Complete ✓ (Billard within 2.4%; sub-1.8 MeV band-covered) | 2026-07-21 |
 | 4. Muon & Compton Deposited-Energy Spectra | 0/3 | Planned | - |
 | 5. QPD Response Chain & Energy Reconstruction | 0/TBD | Not started | - |
 | 6. Fold & Produce Reconstructed-Energy Spectra | 0/TBD | Not started | - |

@@ -1,5 +1,5 @@
 # QPD Phase-2 Plan 02-02 -- BILLARD-2017 CLOSURE VARIANT (validation, NOT the flagship)
-# generated: 2026-07-20   git_sha: 394a4fe
+# generated: 2026-07-20   git_sha: 82dc7af
 # Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035.
 # Assumptions reproduced: Huber-Mueller spectra held CONSTANT below 2 MeV; fission
 #   fractions 235U/239Pu/238U/241Pu = 55.6/32.6/7.1/4.7 % (isotope-labelled).
