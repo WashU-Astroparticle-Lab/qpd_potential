@@ -227,24 +227,24 @@ class MuonSpectrum:
     n_samples: int
 
 
-def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
-                e_min_gev: float = 0.2, e_max_gev: float = 1.0e5) -> MuonSpectrum:
-    """Fold Gaisser-Guan flux (x) ray-box chord (x) Landau-Vavilov MPV deposit
-    into the muon dR/dE_dep on the shared grid [counts/kg/day/keV].
+# Near-vertical MPV accumulation grid (theta < 5 deg deposits, MeV).
+_VERT_MPV_NBINS = 400
+_VERT_MPV_RANGE = (0.3, 2.5)
 
-    Importance-sampling measure:
-      integrand of R = int I(E,theta) A_proj(Omega) sin(theta) dtheta dphi dE
-      proposal q = q(theta) q(phi) q(E), q(theta)=2/pi (uniform in [0,pi/2],
-      oversamples the horizon), q(phi)=1/2pi, q(E) ~ E^{-2.7}.
-      weight W_i = I A_proj sin(theta) / q  -> R = mean(W_i) [Hz].
-    Each muon deposits D_i(ell_i) [MeV]; the W_i-weighted histogram is dR/dE_dep.
+
+def _mc_batch(n: int, rng: np.random.Generator, edges: np.ndarray,
+              e_min_gev: float, e_max_gev: float):
+    """Sample one batch of n muons and return its (partial) accumulators.
+
+    Returns sumw, sumw2 (weighted histograms on `edges`), the running weight
+    sums (Sum W, Sum W^2 over VALID samples), and the near-vertical fine
+    histogram (theta < 5 deg deposits) with its count -- all extensive, so the
+    caller simply adds batch results together. Only this batch is held in memory.
     """
-    rng = np.random.default_rng(seed)
-
     # --- sample (theta, phi, E) from the proposal ------------------------- #
-    theta = rng.uniform(0.0, np.pi / 2.0, n_samples)  # q_theta = 2/pi
-    phi = rng.uniform(0.0, 2.0 * np.pi, n_samples)     # q_phi = 1/2pi
-    E, pdfE = muon_flux.sample_energy(n_samples, rng, e_min_gev, e_max_gev)
+    theta = rng.uniform(0.0, np.pi / 2.0, n)  # q_theta = 2/pi
+    phi = rng.uniform(0.0, 2.0 * np.pi, n)    # q_phi = 1/2pi
+    E, pdfE = muon_flux.sample_energy(n, rng, e_min_gev, e_max_gev)
 
     cth = np.cos(theta)
     sth = np.sin(theta)
@@ -266,32 +266,94 @@ def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
     weight = weight[valid]
     dep_kev = dep_mev[valid] * 1.0e3
     theta_v = theta[valid]
-    ell_v = ell[valid]
-
-    # --- integral rate ----------------------------------------------------- #
-    rate_hz = float(weight.sum() / n_samples)
-    rate_err_hz = float(np.sqrt((weight ** 2).sum()) / n_samples)
-
-    # --- histogram -> dR/dE_dep [counts/kg/day/keV] ----------------------- #
-    edges = shared_energy_grid()
-    centers = np.sqrt(edges[:-1] * edges[1:])
-    dwidth = np.diff(edges)
-    per_sample = 86400.0 / (n_samples * wafer_geometry.MASS_KG)  # Hz -> cts/kg/day
 
     sumw, _ = np.histogram(dep_kev, bins=edges, weights=weight)
     sumw2, _ = np.histogram(dep_kev, bins=edges, weights=weight ** 2)
+    sum_w = float(weight.sum())
+    sum_w2 = float((weight ** 2).sum())
+
+    # near-vertical (theta < 5 deg) fine histogram over the MPV peak region.
+    near_vert = theta_v < np.deg2rad(5.0)
+    dv = dep_kev[near_vert] / 1.0e3  # MeV
+    vhist, _ = np.histogram(dv, bins=_VERT_MPV_NBINS, range=_VERT_MPV_RANGE)
+    n_near_vert = int(near_vert.sum())
+
+    return sumw, sumw2, sum_w, sum_w2, vhist, n_near_vert
+
+
+def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
+                e_min_gev: float = 0.2, e_max_gev: float = 1.0e5,
+                batch_size: int = 5_000_000) -> MuonSpectrum:
+    """Fold Gaisser-Guan flux (x) ray-box chord (x) Landau-Vavilov MPV deposit
+    into the muon dR/dE_dep on the shared grid [counts/kg/day/keV].
+
+    Importance-sampling measure:
+      integrand of R = int I(E,theta) A_proj(Omega) sin(theta) dtheta dphi dE
+      proposal q = q(theta) q(phi) q(E), q(theta)=2/pi (uniform in [0,pi/2],
+      oversamples the horizon), q(phi)=1/2pi, q(E) ~ E^{-2.7}.
+      weight W_i = I A_proj sin(theta) / q  -> R = mean(W_i) [Hz].
+    Each muon deposits D_i(ell_i) [MeV]; the W_i-weighted histogram is dR/dE_dep.
+
+    BATCHED ACCUMULATION (memory-bounded, reproducible at large N): the samples
+    are drawn in batches of at most `batch_size`, holding only one batch in
+    memory at a time, while the extensive accumulators (weighted histograms,
+    Sum W, Sum W^2, near-vertical fine histogram) are summed across batches. Per-
+    batch RNG streams are spawned deterministically from the master `seed` via
+    np.random.SeedSequence(seed).spawn(n_batches), so the full result for a given
+    (n_samples, seed, batch_size) is exactly reproducible. The histogram, rate,
+    and MC errors are IDENTICAL in construction to the single-pass estimator
+    (all accumulators are sums), only the sampling is chunked -- the physics,
+    weighting, grid, and Landau/chord/flux models are unchanged.
+    """
+    if n_samples < 1:
+        raise ValueError("n_samples must be >= 1")
+    batch_size = int(batch_size)
+    n_batches = int(np.ceil(n_samples / batch_size))
+    child_seeds = np.random.SeedSequence(seed).spawn(n_batches)
+
+    edges = shared_energy_grid()
+    centers = np.sqrt(edges[:-1] * edges[1:])
+    dwidth = np.diff(edges)
+    nb = edges.size - 1
+
+    sumw = np.zeros(nb)
+    sumw2 = np.zeros(nb)
+    sum_w = 0.0
+    sum_w2 = 0.0
+    vhist = np.zeros(_VERT_MPV_NBINS)
+    n_near_vert = 0
+
+    remaining = n_samples
+    for b in range(n_batches):
+        n_b = int(min(batch_size, remaining))
+        remaining -= n_b
+        rng = np.random.default_rng(child_seeds[b])
+        bw, bw2, sw, sw2, bvh, bnv = _mc_batch(
+            n_b, rng, edges, e_min_gev, e_max_gev
+        )
+        sumw += bw
+        sumw2 += bw2
+        sum_w += sw
+        sum_w2 += sw2
+        vhist += bvh
+        n_near_vert += bnv
+
+    # --- integral rate ----------------------------------------------------- #
+    rate_hz = float(sum_w / n_samples)
+    rate_err_hz = float(np.sqrt(sum_w2) / n_samples)
+
+    # --- histogram -> dR/dE_dep [counts/kg/day/keV] ----------------------- #
+    per_sample = 86400.0 / (n_samples * wafer_geometry.MASS_KG)  # Hz -> cts/kg/day
     dRdE = sumw * per_sample / dwidth
     dRdE_err = np.sqrt(sumw2) * per_sample / dwidth
 
     # --- near-vertical MPV (theta < 5 deg -> chord ~ 0.20 cm) -------------- #
-    near_vert = theta_v < np.deg2rad(5.0)
-    if np.count_nonzero(near_vert) > 1000:
-        dv = dep_kev[near_vert] / 1.0e3  # MeV
-        # Fine histogram over the peak region + light smoothing for a stable mode.
-        hist, be = np.histogram(dv, bins=400, range=(0.3, 2.5))
+    if n_near_vert > 1000:
+        be = np.linspace(_VERT_MPV_RANGE[0], _VERT_MPV_RANGE[1], _VERT_MPV_NBINS + 1)
         bc = 0.5 * (be[1:] + be[:-1])
+        # Fine histogram over the peak region + light smoothing for a stable mode.
         kernel = np.ones(7) / 7.0
-        smooth = np.convolve(hist, kernel, mode="same")
+        smooth = np.convolve(vhist, kernel, mode="same")
         vertical_mpv = float(bc[np.argmax(smooth)])
     else:
         vertical_mpv = float("nan")

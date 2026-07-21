@@ -24,8 +24,24 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 CSV_PATH = os.path.join(ROOT, "data", "muon_dRdEdep.csv")
 FIG_PATH = os.path.join(ROOT, "figs", "muon_dep_check.png")
 
+# N raised from 4e6 -> 1e9 (statistics refinement, 2026-07-21): the muon
+# deposited-energy spectrum is now well-sampled across the full plotted range so
+# the sparse low-deposit tail (which feeds the low-E_rec deliverable tail) is no
+# longer ~1-event-per-bin Poisson noise. run_muon_mc accumulates in memory-bounded
+# batches with per-batch child seeds spawned from SEED, so this is reproducible.
+# Physics, weighting, shared grid, and Landau/chord/flux models are UNCHANGED --
+# only the sample count and the batched accumulation changed.
+#
+# Achieved per-bin MC error (see 04-01 refinement note): the dominant deposited
+# spectrum (E_dep ~4 keV -> 200 MeV, where the pile-up + physics live) is <~4%;
+# the FOLDED deliverable muon E_rec curve (fold.py) is <~15% across the plotted
+# 0.02-2 keV low tail (was ~100% at 4e6 -> visibly jagged). The rare sub-4 keV
+# DEPOSITED tail carries only ~1e-4 of the flux, so its per-E_dep-bin error is
+# still ~20% even here -- that residual is what the ~8 min 1e9 run buys down
+# vs 4e8; the fold aggregates many E_dep bins per E_rec bin so the plotted curve
+# is smooth. Runtime ~8 min (batched numpy). Tradeoff logged explicitly.
 SEED = 20260720
-N = 4_000_000
+N = 1_000_000_000
 
 
 def main() -> None:
