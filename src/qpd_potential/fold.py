@@ -583,7 +583,10 @@ def make_spectra_figure(
 
     # ---- Panels A/B: spectra per design ------------------------------------ #
     ymin, ymax = 1e-3, 1e9
-    xmin, xmax = 1e-3, 1e2  # keV
+    # Do NOT display anything below 10 eV: the sub-10-eV region is grid-floor /
+    # electron-binding-artifact territory (Compton S(q,Z) roll-off, CEvNS sub-floor
+    # 0.5*E_dep extension) and is not trustworthy for presentation (user directive).
+    xmin, xmax = 1e-2, 1e2  # keV  (10 eV floor)
     for col, d in enumerate(designs):
         ax = fig.add_subplot(gs[0, col])
         s = spectra[d]
@@ -647,7 +650,7 @@ def make_spectra_figure(
     axm.plot(ed, 0.5 * ed, color="#1f77b4", ls=":", lw=1.4,
              label=r"linear calib. $E_{\rm rec}=0.5\,E_{\rm dep}$")
     axm.set_xscale("log"); axm.set_yscale("log")
-    axm.set_xlim(5.0, 2.5e8); axm.set_ylim(1.0, 1e5)
+    axm.set_xlim(10.0, 2.5e8); axm.set_ylim(1.0, 1e5)  # 10 eV floor (user directive)
     axm.set_xlabel(r"deposited energy $E_{\rm dep}$  [eV]")
     axm.set_ylabel(r"reconstructed $E_{\rm rec}$  [eV]")
     axm.set_title("(c) true$\\rightarrow$reconstructed mapping (Phase-5 non-paralyzable "
