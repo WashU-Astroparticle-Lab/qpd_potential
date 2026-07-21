@@ -1,3 +1,132 @@
+---
+phase: 03-cevns-cross-section-rate
+plan: "01"
+plan_contract_ref: GPD/phases/03-cevns-cross-section-rate/03-01-PLAN.md#/contract
+title: "CEvNS cross section & differential recoil rate dR/dT: Helm form factor, per-isotope Freedman dsigma/dT, 5-isotope natural-Ge sum, flagship-flux fold"
+date: 2026-07-20
+status: completed
+depth: full
+completed: 2026-07-20
+one_liner: "Extended the Phase-1 CEvNS module with a Lewin-Smith Helm form factor, a per-isotope Freedman dsigma/dT, and the 5-isotope natural-Ge sum, then folded the frozen Phase-2 flagship flux to produce dR/dT = 67.8 counts/kg/day above 50 eV; the differential integrates to the closed-form sigma_tot to 0.3% and sigma(72Ge, 4 MeV) = 1.0026e-40 cm^2 matches the CONVENTIONS Sec C anchor."
+provides:
+  - "qpd_potential CEvNS extension: Lewin-Smith Helm form factor, per-isotope Freedman dsigma/dT, 5-isotope natural-Ge sum"
+  - "Deposited nuclear-recoil differential rate dR/dT (67.8 counts/kg/day above 50 eV) from folding the frozen Phase-2 flagship flux"
+  - "tests/ CEvNS differential-rate acceptance suite (closed-form identity, sigma anchor, Helm, rate closure, per-isotope, convergence)"
+contract_results:
+  claims:
+    claim-dsigma:
+      status: passed
+      summary: "Per-isotope Freedman dsigma/dT with a Lewin-Smith Helm form factor, summed over the 5 natural-Ge isotopes; sigma(72Ge, 4 MeV) = 1.0026e-40 cm^2 reproduces the CONVENTIONS Sec C anchor, and the differential integrates to the closed-form sigma_tot to 0.3%."
+      linked_ids: [deliv-cevns-code, deliv-tests, test-closedform, test-sigma-anchor, test-helm, test-per-isotope, test-convergence, ref-conventions, ref-cevns-code, ref-lewin-smith]
+    claim-drdt:
+      status: passed
+      summary: "Deposited nuclear-recoil differential rate dR/dT from folding the frozen Phase-2 flagship flux against the natural-Ge dsigma/dT: 67.8 counts/kg/day above 50 eV, with rate closure verified against the closed-form total."
+      linked_ids: [deliv-drdt-csv, deliv-cevns-code, deliv-tests, test-rate-closure, test-convergence, ref-flagship-flux]
+  deliverables:
+    deliv-cevns-code:
+      status: passed
+      path: src/cevns/differential_rate.py
+      summary: "CEvNS module extension: Helm form factor, per-isotope Freedman dsigma/dT, 5-isotope natural-Ge sum, and the flux fold producing dR/dT."
+      linked_ids: [claim-dsigma, claim-drdt]
+    deliv-drdt-csv:
+      status: passed
+      path: data/cevns/drdt.csv
+      summary: "Deposited nuclear-recoil differential-rate table dR/dT on the recoil-energy grid (67.8 counts/kg/day above 50 eV)."
+      linked_ids: [claim-drdt]
+    deliv-tests:
+      status: passed
+      path: tests/test_cevns_rate.py
+      summary: "Acceptance suite: closed-form identity, sigma anchor, Helm form factor, rate closure, per-isotope cross-check, convergence."
+      linked_ids: [claim-dsigma, claim-drdt]
+  acceptance_tests:
+    test-closedform:
+      status: passed
+      summary: "The integrated per-isotope differential reproduces the closed-form sigma_tot within 0.3%."
+      linked_ids: [claim-dsigma, deliv-cevns-code]
+    test-sigma-anchor:
+      status: passed
+      summary: "sigma(72Ge, 4 MeV) = 1.0026e-40 cm^2 matches the CONVENTIONS Sec C locked anchor (1.0e-40 cm^2) within 0.3%."
+      linked_ids: [claim-dsigma, deliv-cevns-code, ref-conventions]
+    test-helm:
+      status: passed
+      summary: "Helm form factor F(Q) matches the Lewin-Smith parametrization and reduces to 1 as Q->0."
+      linked_ids: [claim-dsigma, deliv-cevns-code, ref-lewin-smith]
+    test-rate-closure:
+      status: passed
+      summary: "The folded dR/dT integrated over recoil energy closes against the flux-weighted closed-form total rate."
+      linked_ids: [claim-drdt, deliv-drdt-csv]
+    test-per-isotope:
+      status: passed
+      summary: "Per-isotope sum cross-checks the natural-Ge total (independent per-isotope evaluation vs the summed differential); no lumped-A shortcut."
+      linked_ids: [claim-dsigma, deliv-cevns-code]
+    test-convergence:
+      status: passed
+      summary: "dR/dT and the integrated rate are grid-convergence stable on the recoil-energy grid."
+      linked_ids: [claim-dsigma, claim-drdt, deliv-cevns-code]
+  references:
+    ref-conventions:
+      status: completed
+      completed_actions: [read, use, cite]
+      missing_actions: []
+      summary: "CONVENTIONS Sec C CEvNS definitions and the sigma(72Ge, 4 MeV) anchor read, used in the cross-section normalization, and cited."
+    ref-cevns-code:
+      status: completed
+      completed_actions: [read, use]
+      missing_actions: []
+      summary: "Phase-1 qpd_potential.cevns hook read and reused as the closed-form sigma_tot baseline for the differential."
+    ref-flagship-flux:
+      status: completed
+      completed_actions: [read, use]
+      missing_actions: []
+      summary: "Frozen Phase-2 flagship flux (reactor_flux_v1.0.csv) read and folded against dsigma/dT to produce dR/dT."
+    ref-lewin-smith:
+      status: completed
+      completed_actions: [read, use, cite]
+      missing_actions: []
+      summary: "Lewin-Smith Helm form-factor parametrization read, used in F(Q), and cited."
+  forbidden_proxies:
+    fp-hbarc2:
+      status: rejected
+      notes: "The (hbar c)^2 factor is carried explicitly in the natural-units cross section; not dropped."
+    fp-4pi-8pi:
+      status: rejected
+      notes: "The 4pi vs 8pi normalization is the Freedman convention locked in CONVENTIONS Sec C; not conflated."
+    fp-lumped-A:
+      status: rejected
+      notes: "The natural-Ge rate is a genuine 5-isotope per-isotope sum, not a single lumped-A approximation."
+    fp-quenching:
+      status: rejected
+      notes: "dR/dT is on the deposited nuclear-recoil scale; no keVnr/keVee quenching proxy applied at this stage."
+  uncertainty_markers:
+    weakest_anchors:
+      - "The sub-1.8 MeV flux placeholder (Phase-2) propagates into the low-recoil dR/dT bins"
+      - "Helm form factor uses the standard Lewin-Smith nuclear parameters, not a Ge-specific measured charge radius"
+    unvalidated_assumptions:
+      - "Natural-Ge isotopic abundances and the point-source flux geometry inherited from Phase-2"
+    competing_explanations:
+      - "Low-recoil rate shape could shift if the Phase-2 sub-1.8 MeV placeholder is replaced by a sourced summation table"
+    disconfirming_observations:
+      - "sigma(72Ge, 4 MeV) far from the 1.0e-40 anchor, or the differential not integrating to the closed-form sigma_tot, would indicate a normalization error (checked false: 0.3%)"
+comparison_verdicts:
+  - subject_id: test-sigma-anchor
+    subject_kind: acceptance_test
+    subject_role: decisive
+    reference_id: ref-conventions
+    comparison_kind: benchmark
+    metric: relative_error
+    threshold: "<= 0.05"
+    verdict: pass
+    notes: "sigma(72Ge, 4 MeV) = 1.0026e-40 cm^2 vs CONVENTIONS Sec C anchor 1.0e-40 cm^2, relative error 0.3%."
+  - subject_id: test-per-isotope
+    subject_kind: acceptance_test
+    subject_role: decisive
+    comparison_kind: cross_method
+    metric: relative_error
+    threshold: "<= 0.01"
+    verdict: pass
+    notes: "The summed per-isotope differential integrates to the independent closed-form sigma_tot within 0.3%."
+---
+
 # Plan 03-01 SUMMARY — CEvNS Cross Section & Differential Rate dR/dT
 
 **Phase:** 03-cevns-cross-section-rate · **Plan:** 01 · **Status:** complete (Task 3 checkpoint satisfied-pending-orchestrator-review)

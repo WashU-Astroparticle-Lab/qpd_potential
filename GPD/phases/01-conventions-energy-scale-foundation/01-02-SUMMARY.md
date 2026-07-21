@@ -24,8 +24,7 @@ contract_results:
     claim-response-def:
       status: passed
       summary: "energy_scale.py implements the unified no-quenching chain N_qp=eps*E_sensor/Delta_tr -> n_qp=N_qp/V_tr -> Gamma_in=K*n_qp with the localized+diffuse per-sensor split and the two-exponential peak factor p (0.25 Al / 0.13 Hf), exposes BOTH censoring variants (non_paralyzable m=Gamma/(1+Gamma*tau_d) default, paralyzable m=Gamma*exp(-Gamma*tau_d)) at tau_d=40us as a switch, and leaves E_rec an explicit Phase-5 stub. All four limiting cases hold: low-rate m~=Gamma within 1% only for Gamma<=250 Hz (~3.85-3.92% at 1 kHz) with E_rec_linear=0.5*E_dep; non-paralyzable ceiling ->25 kHz (monotone), paralyzable peaks at 25 kHz then rolls over; Gamma_in Hf/Al ratio 3.17x (NOT 5-10x), Hf onset 0.77 eV < Al onset 1.27 eV; equal-split (f_prompt->0) flips keV-scale saturation OFF (2 keV -> ~4-6 kHz/sensor) while a 1.5 MeV muon still saturates under equal-split (~146 eV/sensor, peak Gamma_in ~3-5 MHz)."
-      claim_kind: result
-      linked_ids: [obs-energy-response, deliv-energy-scale, test-lowrate, test-saturation, test-ordering, test-equalsplit, ref-qpd-paper, ref-qpd-repo]
+      linked_ids: [deliv-energy-scale, test-lowrate, test-saturation, test-ordering, test-equalsplit, ref-qpd-paper, ref-qpd-repo]
       evidence:
         - verifier: gpd-executor
           method: automated limiting-case tests (pytest)
@@ -55,7 +54,6 @@ contract_results:
     claim-assumptions:
       status: passed
       summary: "artifacts/stage1/ASSUMPTIONS.md is seeded with the unified no-quenching chain + forbidden keVee/keVnr + Lindhard proxies, localized+diffuse sharing (f_prompt=0.3 / r=2 flagged LOW + exposed), eps~=0.5 yield/efficiency, both censoring variants (default non-paralyzable) as an OPEN switch, defect=0, the Table II per-design parameter table, the flagged bulk alpha-Ta gap (MEDIUM), detector geometry (110 g / ~10300 sensors / per-kg normalization), BOTH design ratios (4.75x N_qp raw yield, 3.2x Gamma_in ordering driver), and the CEvNS convention pointer."
-      claim_kind: other
       linked_ids: [deliv-note, test-assumptions-content]
       evidence:
         - verifier: gpd-executor
@@ -142,7 +140,7 @@ comparison_verdicts:
     subject_kind: claim
     subject_role: decisive
     reference_id: ref-qpd-paper
-    comparison_kind: consistency
+    comparison_kind: prior_work
     metric: relative_error
     threshold: "<= 0.10"
     verdict: pass

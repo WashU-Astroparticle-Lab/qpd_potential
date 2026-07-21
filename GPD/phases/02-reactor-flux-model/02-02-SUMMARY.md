@@ -27,7 +27,7 @@ contract_results:
     claim-frozen-flux:
       status: passed
       summary: "The frozen Phi(E_nu) table (data/flux/reactor_flux_v1.0.csv) normalizes to int Phi dE = 7.50e12 nu-bar cm^-2 s^-1 at 3 GW_th and 25 m (inside the authoritative 7-8e12 band), via R_f = P_th/<E_f> = 9.10e19 fissions/s with <E_f> = 205.8 MeV effective thermal (Ma 2013, not total Q) and a single 1/(4 pi d^2) geometry factor at d=2500 cm. It carries a per-bin uncertainty band SPLIT at ~1.8-2 MeV (2-5% data-anchored above 2 MeV; 10% at the seam; 20-25% model-only below 1.8 MeV) with region_flag in {above_2MeV, seam, below_1p8MeV}; the above-2-MeV computed 235U flux agrees with the published Huber 235U tabulation to <4.4% (within band) over 2-7 MeV; and the Billard-variant switch (HM held constant below 2 MeV, fission fractions 55.6/32.6/7.1/4.7 isotope-labelled) emits a distinct table (4.59e12) ready for the Phase-3 Billard Table-1 reproduction. Absolute normalization independently cross-checked against Hayes-Vogel: emission = 1.96e20 nu-bar s^-1 GW_th^-1 (~2e20). CAVEAT (does not fail the claim): the sub-1.8 MeV fission SHAPE remains a seam-anchored MODEL PLACEHOLDER cited to Kopeikin 2012 as the consistent reference model; a machine-readable Kopeikin-2012 per-isotope table was not sourceable in-environment, honestly covered by the wide (20-25%) below-1.8 band."
-      linked_ids: [obs-integral-flux, deliv-frozen-csv, deliv-normalization-code, deliv-overlay-fig, test-normalization, test-csv-schema, test-band-split, test-billard-variant, ref-huber, ref-cevns-benchmark, ref-ma, ref-hayes-vogel]
+      linked_ids: [deliv-frozen-csv, deliv-normalization-code, deliv-overlay-fig, test-normalization, test-csv-schema, test-band-split, test-billard-variant, ref-huber, ref-cevns-benchmark, ref-ma, ref-hayes-vogel]
       evidence:
         - verifier: gpd-executor
           method: "dimensioned normalization chain + integral flux (pytest test-normalization)"
@@ -67,17 +67,12 @@ contract_results:
       status: passed
       path: src/flux/normalization.py
       summary: "R_f = P_th/<E_f> with <E_f> effective thermal (Ma 2013) via effective_energy_per_fission (asserts 195-220 MeV, rejecting total-Q); fission_rate with power-relative dimensioned assert; geometry_factor 1/(4 pi d^2) at d=2500 cm; absolute_flux multiplies the already-per-fission spectrum by R_f and geometry exactly once; emission_rate_per_gwth for the Hayes-Vogel anchor. All forbidden-proxy traps guarded in tests/test_flux_normalization.py (10 tests)."
-      linked_ids: [claim-frozen-flux, obs-integral-flux, test-normalization]
+      linked_ids: [claim-frozen-flux, test-normalization]
     deliv-overlay-fig:
       status: passed
       path: GPD/phases/02-reactor-flux-model/figures/flux_overlay.png
       summary: "Phi(E_nu) total (log-y) with the shaded split band, the computed 235U flux contribution (dashed), and the published Huber 235U tabulation (points) overlaid; the seam band 1.8-2.0 MeV marked. Points sit on the computed 235U curve above 2 MeV; the band visibly widens below 1.8 MeV."
       linked_ids: [claim-frozen-flux, test-band-split, ref-huber]
-  observables:
-    obs-integral-flux:
-      status: passed
-      summary: "int Phi(E_nu) dE = 7.503e12 nu-bar cm^-2 s^-1 at 3 GW_th, 25 m (authoritative target 7-8e12; ~25% below the loose CALC-01 1e13, as expected)."
-      linked_ids: [claim-frozen-flux, deliv-normalization-code, test-normalization]
   acceptance_tests:
     test-normalization:
       status: passed
@@ -137,8 +132,8 @@ contract_results:
       - "Integral flux off from ~7-8e12 by >2x, a constant (non-widening) band across the seam, components not summing to the total, or the Billard fractions mislabelled (238U<->239Pu swap) -- none observed (7.50e12; band 2-5%->25%; additivity 3e-7; 239Pu 0.326 > 238U 0.071)."
 
 comparison_verdicts:
-  - subject_id: obs-integral-flux
-    subject_kind: observable
+  - subject_id: test-normalization
+    subject_kind: acceptance_test
     subject_role: decisive
     reference_id: ref-hayes-vogel
     comparison_kind: benchmark
@@ -159,7 +154,7 @@ comparison_verdicts:
     subject_kind: claim
     subject_role: decisive
     reference_id: ref-cevns-benchmark
-    comparison_kind: reproducibility
+    comparison_kind: prior_work
     metric: variant_distinctness
     threshold: "constant below 2 MeV + Billard fractions labelled; distinct from flagship"
     verdict: pass

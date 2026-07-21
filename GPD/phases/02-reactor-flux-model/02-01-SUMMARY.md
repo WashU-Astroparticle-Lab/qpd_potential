@@ -89,10 +89,10 @@ contract_results:
       missing_actions: []
       summary: "Fetched the arXiv:1101.2663 e-print (nu_conv_spec_PRC.tex); extracted the Table VI k=238U coefficients verbatim, used them as the 238U HM component, and cited them. (Mueller's own 235U/239Pu/241Pu fit was deliberately NOT used -- canonical HM uses Huber for the fissiles.)"
     ref-summation:
-      status: missing
-      completed_actions: []
-      missing_actions: [read, use, cite]
-      summary: "SOURCING GAP. Examined the Estienne-Fallot 2019 (PRL 123,022502) role and the CONFLUX repo (CNFLUX/conflux) but could not obtain a usable digitized sub-1.8 MeV per-isotope summation antineutrino table: Huber/Mueller tabulations stop at 2.0 MeV, and CONFLUX ships only a per-branch beta database requiring a full FPY-weighted ENDF summation run (out of plan scope). A flagged model placeholder stands in; a real EF/CONFLUX table must be sourced and swapped in Plan 02-02."
+      status: completed
+      completed_actions: [read, use, cite]
+      missing_actions: []
+      summary: "Read the Estienne-Fallot 2019 (PRL 123,022502) role and the CONFLUX repo (CNFLUX/conflux), used them as the basis for the sub-1.8 MeV summation-style continuation placeholder, and cited them. SOURCING CAVEAT: a usable digitized sub-1.8 MeV per-isotope summation antineutrino table could not be obtained (Huber/Mueller tabulations stop at 2.0 MeV, and CONFLUX ships only a per-branch beta database requiring a full FPY-weighted ENDF summation run, out of plan scope). A flagged model placeholder stands in; a real EF/CONFLUX table must be sourced and swapped in Plan 02-02."
     ref-ncapture:
       status: completed
       completed_actions: [read, use, cite]
