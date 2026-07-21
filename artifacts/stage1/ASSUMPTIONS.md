@@ -100,7 +100,7 @@ along-track sharing is a Deferred Idea, out of scope].
 
 ---
 
-## 4. Bandwidth / dead-time censoring (CONVENTIONS Section F — OPEN switch)
+## 4. Bandwidth / dead-time censoring (CONVENTIONS Section F — RESOLVED non-paralyzable 2026-07-21)
 
 - **Resolving time τ_d = 40 µs (= 1/25 kHz Nyquist), LOCKED.** This is the 25 kHz
   maximum resolvable tunneling rate. **NOT the 20 µs (= 1/50 kHz) sampling
@@ -109,19 +109,23 @@ along-track sharing is a Deferred Idea, out of scope].
 - **Saturation definition:** `saturated ⇔ peak Γ_in > 25 kHz`, where peak Γ_in ≈
   p·K·N_qp/V_tr uses the two-exponential pulse **peak factor** p ≈ 0.25 (Al) /
   0.13 (Hf) [paper Eq. 4; confidence MEDIUM].
-- **Two censoring variants kept as an EXPLICIT SWITCH:**
+- **Censoring variant — RESOLVED to non-paralyzable (canonical, project-wide):**
 
-  | Variant | Observed rate m(Γ) | Behavior |
-  | --- | --- | --- |
-  | **non-paralyzable (DEFAULT)** | `m = Γ/(1 + Γ τ_d)` | monotone → 25 kHz ceiling |
-  | paralyzable | `m = Γ·e^(−Γ τ_d)` | peaks at Γ = 25 kHz, then rolls over |
+  | Variant | Observed rate m(Γ) | Behavior | Status |
+  | --- | --- | --- | --- |
+  | **non-paralyzable** | `m = Γ/(1 + Γ τ_d)` | monotone → 25 kHz ceiling | **CANONICAL DELIVERABLE** |
+  | paralyzable | `m = Γ·e^(−Γ τ_d)` | peaks at Γ = 25 kHz, then rolls over | retained as a labeled SENSITIVITY only |
 
   Event-handling sub-switch: **drop** (default) vs merge.
 
-> ⚠️ **OPEN QUESTION — BLOCKS Phase 5.** The paralyzable-vs-non-paralyzable and
-> merge-vs-drop choice is an explicit switch, **not** a decision. Both variants
-> MUST be implementable; neither is silently chosen. This must be resolved before
-> the Phase-5 saturation definition is finalized.
+> ✅ **RESOLVED 2026-07-21 (USER DECISION, CONVENTIONS §F closed).** After Phase 5
+> computed **both** variants, the user accepted Phase 5 and chose **non-paralyzable**
+> as the single canonical convention for the rest of the project. `params.DEFAULT_CENSORING
+> = "non_paralyzable"`; Phase 6 and all downstream deliverables fold **only** `R_non_paralyzable`.
+> The paralyzable `R` matrices are retained in `response_matrix_*.npz` as a **sensitivity, not a
+> live switch** (forbidden proxy `fp-paralyzable-swap`). The operative high-E response is the
+> **plateau** (~34.8/26.8 keV muon tail), never the paralyzable rollover. No OPEN switch remains
+> in the deliverable framing.
 
 ---
 
@@ -362,13 +366,141 @@ value is fabricated** (`materials.yaml` has no Ta film entry).
 Validation is **limiting-cases-only** (low-E linearity by calibration; high-E
 plateau/rollover). The mid-curve (bend region and plateau approach) is a **model
 prediction**. Two further honest limitations: (i) the paralyzable-vs-non-
-paralyzable censoring choice (CONVENTIONS F) is an **OPEN switch**, carried not
-closed — both curves are reported; (ii) the analytic censored-integral (the
+paralyzable censoring choice (CONVENTIONS F) was an OPEN switch here at Plan
+05-01 — both curves are reported — **[SUPERSEDED 2026-07-21 → RESOLVED
+non-paralyzable, CONVENTIONS §F CLOSED; paralyzable is a sensitivity only]**;
+(ii) the analytic censored-integral (the
 deliverable estimator, used for the muon-tail sweep) and the EMG event-train
 realization agree to ~1% up to mild saturation but diverge by O(10–30%) in deep
 saturation (closed-form renewal vs microphysical dead-window), an additional
-unvalidated-shape uncertainty consistent with the no-benchmark caveat. This phase
+unvalidated-shape uncertainty consistent with the no-benchmark caveat _(**[SUPERSEDED
+2026-07-21 → RESOLVED non-paralyzable]**, see the box below)_. This phase
 does **not** fold any spectrum (Phase 6) and does **not** build the full response
 matrix `R(E_rec|E_dep)` (Plan 05-02).
 
+> **[SUPERSEDED 2026-07-21]** Limitation (i) above (the censoring OPEN switch)
+> reflects the state at Plan 05-01. It is **now CLOSED**: the user resolved
+> CONVENTIONS §F to **non-paralyzable** project-wide (see §4 and the Phase-6
+> addendum). Only the non-paralyzable curve is a deliverable; paralyzable is a
+> retained sensitivity. No live OPEN censoring switch remains.
+
 _Phase-5 addendum authored under Plan 05-01; does not supersede the Phase-1 lock._
+
+---
+
+## Addendum (Phase 4, Plan 04-02) — environmental gamma-background assumptions
+
+The Compton background channel is a **thin-target single-scatter** electron-recoil
+continuum, NOT a full-absorption spectrum:
+
+- **Sourced radiogenic lines (nuclear data, not invented):** line energies + DDEP
+  emission probabilities from the ⁴⁰K, ²³²Th, and ²³⁸U chains. Absolute flux is
+  anchored to the cited **LABChico (EPJP 2022) measured surface spectrum**
+  (⁴⁰K 0.036, ²⁰⁸Tl 2614.5 keV 0.0016 cm⁻²·s⁻¹); Th-chain siblings scaled by
+  intra-chain DDEP ratios; the U chain via a documented `Φ_U = Φ_Th` assumption.
+  Forbidden proxy `fp-invented-flux` rejected.
+- **Thin-target single scatter:** each Compton electron recoil `T_e = E_γ − E'`
+  is deposited; the scattered photon **escapes** the optically-thin 2 mm wafer
+  (`μ·ℓ̄ ≈ 0.12/0.08 at 1/2 MeV`, double-scatter ~1.4%), so there are **NO
+  photopeaks** — the continuum runs up to each self-validating Compton edge
+  `E_edge = 2E_γ²/(m_ec² + 2E_γ)` (⁴⁰K→1243.4, ²⁰⁸Tl→2381.8, ²¹⁴Bi→1541.3 keV).
+  Forbidden proxies `fp-full-absorption`, `fp-electron-not-photon` rejected.
+- **Unified phonon scale, no quenching** (deposits are electron recoils; zero
+  Frenkel correction). **Total single-scatter rate 0.268 Hz** vs an independent
+  `Φ·σ_KN·N_e` anchor 0.273 Hz (ratio 0.983, within the VALD-03 factor-2 band).
+- **Confidence:** edges HIGH (kinematic, exact); absolute total rate **MEDIUM**,
+  carried with a **factor-2 site-dependent flux band** (0.5×/2×). The gamma flux
+  is a **documented tunable input**, not a measurement of any specific site.
+
+_Phase-4 gamma-background note consolidated into the stage-1 assumptions record under Plan 06-02._
+
+---
+
+## Addendum (Phase 6, Plan 06-02) — fold to reconstructed energy + stage-1 finalization
+
+This is the **final stage-1 addendum**. It records the Phase-6 fold that turns the
+frozen **deposited**-energy spectra into **reconstructed**-energy spectra dR/dE_rec
+(the decisive stage-1 output; `deliv-fig-spectra` =
+`artifacts/stage1/reconstructed_energy_spectra.pdf`), and consolidates the standing
+caveats and key results. All numbers are recomputed in-code
+(`qpd_potential.fold`), not transcribed.
+
+### Fold method (counts-conserving, non-paralyzable)
+
+- **Only `R_non_paralyzable` is folded** (CONVENTIONS §F RESOLVED, canonical; §4
+  above). `N_dep[i] = dR/dE_dep[i]·ΔE_dep[i]`; `N_rec[j] = Σ_i R[j,i]·N_dep[i]`;
+  `dR/dE_rec[j] = N_rec[j]/ΔE_rec[j]`. Because each `R` column sums to 1, counts
+  are conserved per channel per design: **muon/Compton rel ≤ 2.2×10⁻¹⁶, CEvNS
+  rel ≤ 1.3×10⁻¹⁶** (exact algebraic consequence, verified numerically).
+- **CEvNS rebin:** `cevns_dRdT.csv` (320-pt recoil grid, 5–3200 eV_nr) is rebinned
+  onto the shared 584-bin E_dep grid by a **piecewise log-log power-law integral**
+  (exact for a steeply-falling spectrum), conserving counts: total **9.6×10⁻⁵** vs
+  trapezoid, above-50-eV **67.67 vs 67.752** (0.12%).
+- **CEvNS low edge (5 → 10.14 eV, below the grid floor): retained, NOT dropped**
+  (`fp-drop-lowE-cevns`). These deposits sit far below the ~52.9/32.1 eV crossover
+  onset where the response is exactly linear, so they are reconstructed via the
+  exact `E_rec = 0.5·E_dep` mapping (E_rec ≈ 2.5–5 eV) and carried into the matching
+  E_rec bins (7.27 counts/kg/day). The Phase-5 MC median at the lowest bins is
+  ~0.483 (~3% below 0.5) — a small documented calibration nuance on the sub-floor band.
+
+### Uncertainty carry-through (bands shown on the figure)
+
+- **CEvNS:** 1σ reactor-flux band folded the same way (3.4% ≥95 eV_nr, rising to
+  6.2%/9.8% at 50/20 eV_nr).
+- **Compton:** factor-2 site-dependent γ-flux band (0.5×/2×).
+- **Muon:** ±30% absolute-normalization band (Phase-4 VALD-02, ~15% vs PDG carried
+  conservatively at 30%).
+- **Sub-1.8 MeV CEvNS caveat:** the sub-IBD reactor-flux *shape* is a
+  Kopeikin-2012-cited **model placeholder** (§Phase-2 addendum), contributing an
+  additional **~6–10% on the CEvNS rate below ~95 eV_nr** (the sub-1.8 MeV rate
+  fraction is 17.8%/33.8% at 50/20 eV_nr, ~0 above 95 eV).
+
+### Reconstructed-energy landing (ROADMAP report-don't-force — verdict)
+
+| Channel | Ta→Al peak E_rec | Al→Hf peak E_rec | Integrated rate (cts/kg/day) |
+| --- | --- | --- | --- |
+| CEvNS | **~42 eV** | ~42 eV | 109.6 |
+| muon | **18.8 keV** | 15.0 keV | 1.07×10⁶ |
+| Compton | 16.8 keV | 13.3 keV | 2.11×10⁵ |
+
+- **CEvNS reconstructs to TENS OF eV** E_rec (`E_rec ≈ 0.5·E_dep`, down to ~2.5 eV):
+  the flagship low-recoil signal sits very low on the observable axis (~85% of its
+  reconstructed counts below 100 eV E_rec). It is **not** entirely below the
+  10/50/100 eV reference thresholds for both designs, so the ROADMAP stop condition
+  is **NOT triggered** — the spectrum is **surfaced honestly, not forced/reshaped**.
+- **The muon channel (MeV–197 MeV deposits) is reconstructed ENTIRELY under
+  saturation**, piling up at tens of keV E_rec — direct evidence the saturating
+  response (not the deposit axis) is applied (`fp-deposited-only`). The pile-up is
+  an **instrument artifact of the modelled ceiling, not a physical spectral line**.
+
+### The four standing caveats (carried honestly into the deliverable)
+
+1. **Sub-1.8 MeV reactor-flux model** — Kopeikin-2012-cited placeholder shape; no
+   machine-readable table sourceable in-environment (none fabricated). ~6–10% on the
+   CEvNS rate below 95 eV_nr; covered by the split flux band.
+2. **Site-dependent environmental γ flux** — factor-2 band; Compton total-rate
+   MEDIUM, edges HIGH.
+3. **NO saturated-regime response anchor** — the saturated-regime E_rec *shape* has
+   no literature anchor at any energy; validation is **limiting-cases-only**
+   (low-E 0.5 slope by calibration; high-E bounded plateau). The muon spectrum is
+   almost entirely in this regime.
+4. **f_prompt/r crossover band** — the low-confidence sharing parameters
+   (`f_prompt ∈ [0.1,0.5]`, `r ∈ [1,5]`) set the crossover onset as a **band**
+   (~53/32 eV default point → 13.1/7.9 keV equal-split anchor → 18.6/11.3 keV
+   whole-array plateau); the saturation-onset lines inherit that uncertainty.
+
+### Key stage-1 results (compact)
+
+- **Billard 2017 reproduced** within **2.4%** (0.7415/0.5009/0.2567 vs 0.76/0.51/0.26
+  counts/kg/day above 50/100/200 eV_nr, with the derived rescale k = 0.0111).
+- **CEvNS ~68 counts/kg/day above 50 eV_nr (deposited)** at OUR 3 GW_th / 25 m config
+  (67.75; ~90× Billard, matching the power/distance ratio).
+- **Muon 1.37 Hz** (Gaisser-Guan × ray-box chord × Landau-Vavilov MPV; within ~15%
+  of PDG 1.5–2 Hz). **Compton 0.268 Hz.**
+- **Pileup occupancy 3.3×10⁻⁵** (R·τ at 50 kHz sampling; 6.5×10⁻⁵ at 25 kHz
+  resolving) — quiescent reconstruction not precluded.
+- **Reconstructed CEvNS peaks at tens of eV E_rec** (~42 eV); muon saturates to
+  tens of keV; Compton continuum near tens of keV.
+
+_Phase-6 addendum authored under Plan 06-02; closes the stage-1 milestone. Does not
+supersede the Phase-1 lock (`GPD/CONVENTIONS.md`)._
