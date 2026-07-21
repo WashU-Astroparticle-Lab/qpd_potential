@@ -137,9 +137,10 @@ Plans:
 **Objectives:** SIMU-01, SIMU-02, VALD-04
 **Contract Coverage:** advances claim-response, obs-energy-response, deliv-fig-response (saturation onset marked, both designs), deliv-code, test-response-limits (E_rec ≈ 0.5·E_dep low-E; saturation once tunneling rate > 25 kHz) | anchors ref-qpd-paper (pulse model, efficiency chain, Table II), ref-qpd-repo (must-use EMG burst template) | forbidden proxy: fp-no-saturation (no bandwidth-saturation modeling; linear rate→energy extrapolated across the muon range fakes a peak at the ceiling)
 **Risk:** HIGH — the saturated-regime reconstruction has no published result at any energy; Ta superconductor parameters are absent from `materials.yaml`. Run `gpd:research-phase` before planning.
-**Plans:** 0 plans
+**Plans:** 2 plans
 
-- [ ] TBD (run plan-phase 5 to break down)
+- [ ] 05-01-PLAN.md — Real count-integral E_rec estimator + forward realization (scaffold + MUST-USE EMG template) + per-design crossover E_dep band + VALD-04 limits + Ta trapping gate + stop-condition (SIMU-01, wave 1)
+- [ ] 05-02-PLAN.md — MC response matrix R(E_rec|E_dep), both designs × both censoring variants, ≤~3%/cell convergence + deliv-fig-response (SIMU-02, wave 2, depends 05-01)
 
 ### Phase 6: Fold & Produce Reconstructed-Energy Spectra
 
@@ -170,5 +171,5 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | 2. Reactor Flux Model | 2/2 | Complete ✓ (caveat: sub-1.8 MeV model placeholder, band-covered) | 2026-07-20 |
 | 3. CEvNS Cross Section & Rate | 2/2 | Complete ✓ (Billard within 2.4%; sub-1.8 MeV band-covered) | 2026-07-21 |
 | 4. Muon & Compton Deposited-Energy Spectra | 3/3 | Complete ✓ (VALD-02/03 met; gamma-flux band-covered) | 2026-07-21 |
-| 5. QPD Response Chain & Energy Reconstruction | 0/TBD | Not started | - |
+| 5. QPD Response Chain & Energy Reconstruction | 0/2 | Planned | - |
 | 6. Fold & Produce Reconstructed-Energy Spectra | 0/TBD | Not started | - |
