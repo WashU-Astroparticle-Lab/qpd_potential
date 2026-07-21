@@ -48,6 +48,7 @@ None yet.
 | Phase 01 P01-02 | 330s | 3 tasks | 4 files |
 | Phase 02 P02-01 | 5400s | 3 tasks | 13 files |
 | Phase 02 P02-02 | 3600s | 3 tasks | 9 files |
+| Phase 03 P03-01 | 3600s | 3 tasks | 6 files |
 
 ### Decisions
 
@@ -66,6 +67,10 @@ None yet.
 - [Phase 02-reactor-flux-model]: Frozen data/flux/reactor_flux_v1.0.csv with 7-col additive schema, SPLIT band (2-5% >2 MeV -> 20-25% <1.8 MeV, non-uniform), region flags, and version/git-sha/normalization/provenance/integral-check header.
 - [Phase 02-reactor-flux-model]: Billard-2017 closure variant (HM constant below 2 MeV, fractions 55.6/32.6/7.1/4.7 isotope-labelled, no 238U<->239Pu swap) emitted as a distinct table (4.59e12) for the Phase-3 Billard Table-1 reproduction.
 - [Phase 02-reactor-flux-model]: Sub-1.8 MeV shape kept as a Kopeikin-2012-cited placeholder (no machine-readable Kopeikin table sourceable; none fabricated), covered by the wide low-E band; limitation documented in CSV header, SUMMARY, and ASSUMPTIONS.md.
+- [Phase 03-cevns-cross-section-rate]: Per-isotope exact kinematics: E_min^(i)(T)=(T+sqrt(T^2+2 M_i T))/2, T_max^(i)=2E_nu^2/(M_i+2E_nu); PCHIP log-flux interp + adaptive quad fold. sigma(72Ge,4MeV)=1.0026e-40 (0.26% from anchor); closed-form identity to <=6e-8.
+- [Phase 03-cevns-cross-section-rate]: dR/dT = 67.8 counts/kg/day above 50 eV_nr at OUR 3 GW_th/25 m config — genuine physics (~90x Billard's 0.76 at 8.54 GW/400 m, matching the geometry/power ratio). >20% backtrack trigger NOT met; absolute Billard/CONUS+ comparison deferred to 03-02 via the k~=0.0111 rescale.
+- [Phase 03-cevns-cross-section-rate]: Helm F^2 (Lewin-Smith): 0.9963 at 200 eV, 0.9639 at 2 keV endpoint; turning F off shifts integrated rate 0.38%. CONVENTIONS 'F^2>0.998' = dominant sub-200 eV regime; 0.964 = rare E_nu~8-10 MeV tail. Reconciled to avoid downstream misflag.
+- [Phase 03-cevns-cross-section-rate]: Ge isotope abundances = IUPAC/CIAAW representative number fractions (MEDIUM); M_i=A*931.494 MeV; 73Ge axial term ~1/N^2 not modeled (stated assumption).
 
 ### Active Approximations
 

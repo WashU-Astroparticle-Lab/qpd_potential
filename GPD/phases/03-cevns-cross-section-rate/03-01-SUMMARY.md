@@ -114,10 +114,14 @@ gpd_return:
     - "Orchestrator: review Task-3 checkpoint items (closed-form residuals <0.1%, sigma anchor 1.0026e-40, Helm F^2 200 eV/2 keV, five endpoint steps, low-vs-high-T band widths) and confirm the differential before 03-02."
     - "Plan 03-02: reproduce Billard Table 1 and resolve the absolute rate-normalization ('tens vs ~1') question, including the k-rescale."
   decisions:
-    - "Used exact E_min^(i)(T) = (T + sqrt(T^2 + 2 M_i T))/2 and T_max^(i) = 2E_nu^2/(M_i+2E_nu) per isotope; sqrt(M_i T/2) only for anchors."
-    - "PCHIP interpolation of log(flux) (monotone, non-negative, ring-free) + adaptive scipy quad over E_nu on each isotope's [E_min^(i)(T), E_max] domain."
-    - "Uncertainty band = propagated absolute 1-sigma flux band: Sum_i N_i int Phi*rel_unc*dsigma_i/dT dE * 86400 (folding Phi*(1+rel) minus Phi); widest at low T where the 20-25% below-1.8-MeV band dominates."
-    - "Ge isotope abundances taken as IUPAC/CIAAW representative number fractions (MEDIUM); M_i = A*931.494 MeV per plan spec."
+    - summary: "Per-isotope exact kinematics: E_min^(i)(T)=(T+sqrt(T^2+2 M_i T))/2, T_max^(i)=2E_nu^2/(M_i+2E_nu); PCHIP log-flux interp + adaptive quad fold. sigma(72Ge,4MeV)=1.0026e-40 (0.26% from anchor); closed-form identity to <=6e-8."
+      phase: "03-cevns-cross-section-rate"
+    - summary: "dR/dT = 67.8 counts/kg/day above 50 eV_nr at OUR 3 GW_th/25 m config — genuine physics (~90x Billard's 0.76 at 8.54 GW/400 m, matching the geometry/power ratio). >20% backtrack trigger NOT met; absolute Billard/CONUS+ comparison deferred to 03-02 via the k~=0.0111 rescale."
+      phase: "03-cevns-cross-section-rate"
+    - summary: "Helm F^2 (Lewin-Smith): 0.9963 at 200 eV, 0.9639 at 2 keV endpoint; turning F off shifts integrated rate 0.38%. CONVENTIONS 'F^2>0.998' = dominant sub-200 eV regime; 0.964 = rare E_nu~8-10 MeV tail. Reconciled to avoid downstream misflag."
+      phase: "03-cevns-cross-section-rate"
+    - summary: "Ge isotope abundances = IUPAC/CIAAW representative number fractions (MEDIUM); M_i=A*931.494 MeV; 73Ge axial term ~1/N^2 not modeled (stated assumption)."
+      phase: "03-cevns-cross-section-rate"
   contract_updates:
     claims_passed: [claim-dsigma, claim-drdt]
     acceptance_tests_passed: [test-closedform, test-sigma-anchor, test-helm, test-rate-closure, test-per-isotope, test-convergence]
@@ -126,13 +130,9 @@ gpd_return:
     advance_plan: false
     update_progress: false
     record_metric:
-      sigma_72Ge_4MeV_cm2: 1.0026e-40
-      closedform_max_rel: 6.0e-8
-      rate_closure_rel: 3.0e-3
-      helm_F2_200eV: 0.9963
-      helm_F2_2keV: 0.9639
-      formfactor_rate_shift_frac: 0.0038
-      dRdT_above_50eV_counts_per_kg_per_day: 67.8
-      dRdT_above_200eV_counts_per_kg_per_day: 23.4
-      tests_passed: 71
+      phase: "03"
+      plan: "03-01"
+      duration: 3600
+      tasks: 3
+      files: 6
 ```
