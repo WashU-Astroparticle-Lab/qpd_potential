@@ -37,7 +37,7 @@ This stage-1 study computes the reactor-CEvNS, cosmic-ray-muon, and environmenta
 - [x] **Phase 1: Conventions & Energy-Scale Foundation** — Fix the T→E_ph→E_dep→E_rec bookkeeping (no quenching), CEvNS prefactor/units, and the bandwidth-censoring convention. ✓ verified passed (15/15)
 - [x] **Phase 2: Reactor Flux Model** — Frozen Φ(E_ν) table: Huber–Mueller >2 MeV + summation/n-capture <1.8 MeV with an explicit uncertainty band.
 - [x] **Phase 3: CEvNS Cross Section & Rate** — Per-isotope-summed dR/dT_dep on Ge, benchmarked against Billard Table 1 and the closed-form total cross section.
-- [ ] **Phase 4: Muon & Compton Deposited-Energy Spectra** — Muon (Gaisser–Guan ⊗ chord ⊗ Landau–Vavilov) and Compton (Klein–Nishina continuum) deposited-energy spectra, validated against flux anchors.
+- [x] **Phase 4: Muon & Compton Deposited-Energy Spectra** — Muon (Gaisser–Guan ⊗ chord ⊗ Landau–Vavilov) and Compton (Klein–Nishina continuum) deposited-energy spectra, validated against flux anchors.
 - [ ] **Phase 5: QPD Response Chain & Energy Reconstruction** — Per-design response matrix R(E_rec | E_dep) spanning linear and saturated regimes; locate the crossover deposit energy.
 - [ ] **Phase 6: Fold & Produce Reconstructed-Energy Spectra** — Fold all three deposit spectra through R to deliver the reconstructed-energy figures for both designs.
 
@@ -127,9 +127,9 @@ Plans:
 **Contract Coverage:** advances claim-muon, claim-compton, obs-muon-spectrum, obs-compton-spectrum, test-muon-flux, test-compton-edges, deliv-code (wafer geometry + chord model) | anchors ref-pdg-muon (I_v ≈ 70 m⁻²s⁻¹sr⁻¹, ~1 cm⁻²min⁻¹, Cauchy ⟨ℓ⟩ = 4V/S), ref-environmental-gamma (Heusser lines/flux), Klein–Nishina | forbidden proxies: fp-full-absorption (photopeaks instead of Compton continuum in a thin 2 mm wafer), chord geometry omitted / mean vs MPV dE/dx, angular-pdf bias
 **Plans:** 3 plans (2 waves)
 
-- [ ] 04-01-PLAN.md — Muon dR/dE_dep: Gaisser–Guan flux × ray–box chord × Landau–Vavilov MPV; VALD-02 integral rate; long-chord high-E tail (wave 1)
-- [ ] 04-02-PLAN.md — Compton electron-recoil dR/dE_dep: sourced radiogenic gamma × Klein–Nishina continuum, thin-target single-scatter; VALD-03 edges + factor-2 rate (wave 1)
-- [ ] 04-03-PLAN.md — Shared-grid assembly, energy closure, pileup stop-condition, combined deposited-energy figure (wave 2)
+- [x] 04-01-PLAN.md — Muon dR/dE_dep: Gaisser–Guan flux × ray–box chord × Landau–Vavilov MPV; VALD-02 integral rate; long-chord high-E tail (wave 1)
+- [x] 04-02-PLAN.md — Compton electron-recoil dR/dE_dep: sourced radiogenic gamma × Klein–Nishina continuum, thin-target single-scatter; VALD-03 edges + factor-2 rate (wave 1)
+- [x] 04-03-PLAN.md — Shared-grid assembly, energy closure, pileup stop-condition, combined deposited-energy figure (wave 2)
 
 ### Phase 5: QPD Response Chain & Energy Reconstruction
 
@@ -169,6 +169,6 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | 1. Conventions & Energy-Scale Foundation | 2/2 | Complete ✓ | 2026-07-20 |
 | 2. Reactor Flux Model | 2/2 | Complete ✓ (caveat: sub-1.8 MeV model placeholder, band-covered) | 2026-07-20 |
 | 3. CEvNS Cross Section & Rate | 2/2 | Complete ✓ (Billard within 2.4%; sub-1.8 MeV band-covered) | 2026-07-21 |
-| 4. Muon & Compton Deposited-Energy Spectra | 0/3 | Planned | - |
+| 4. Muon & Compton Deposited-Energy Spectra | 3/3 | Complete ✓ (VALD-02/03 met; gamma-flux band-covered) | 2026-07-21 |
 | 5. QPD Response Chain & Energy Reconstruction | 0/TBD | Not started | - |
 | 6. Fold & Produce Reconstructed-Energy Spectra | 0/TBD | Not started | - |
