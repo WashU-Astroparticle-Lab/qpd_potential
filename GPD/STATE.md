@@ -46,6 +46,8 @@ None yet.
 ## Accumulated Context
 | Phase 01 P01-01 | 900s | 3 tasks | 8 files |
 | Phase 01 P01-02 | 330s | 3 tasks | 4 files |
+| Phase 02 P02-01 | 5400s | 3 tasks | 13 files |
+| Phase 02 P02-02 | 3600s | 3 tasks | 9 files |
 
 ### Decisions
 
@@ -57,6 +59,13 @@ None yet.
 - [Phase 01-conventions-energy-scale-foundation]: Per-design saturation onset energies (~1.27 eV Al / ~0.77 eV Hf) carry the two-exponential peak factor p (0.25 Al / 0.13 Hf); Hf saturates first.
 - [Phase 01-conventions-energy-scale-foundation]: E_rec estimator implemented as an explicit Phase-5 stub (NotImplementedError by default; linear_placeholder=True returns 0.5*E_dep, valid only in the unsaturated regime).
 - [Phase 01-conventions-energy-scale-foundation]: Both censoring variants exposed as a switch at tau_d=40us; the paralyzable-vs-non-paralyzable choice is preserved OPEN as a Phase-5 blocker, not silently chosen.
+- [Phase 02-reactor-flux-model]: Huber(235/239/241)+Mueller(238U) coefficients fetched from primary arXiv e-prints with provenance; reconstructed 235U within 0.73%/0.13% of published Huber at 3/5 MeV.
+- [Phase 02-reactor-flux-model]: 238U(n,gamma) shape from sourced AME2020 Q-values, normalized to 0.6/fission (Kopeikin 2004).
+- [Phase 02-reactor-flux-model]: Sub-1.8 MeV fission summation is a flagged seam-anchored non-negative placeholder pending Kopeikin-2012 grounding in 02-02; NOT invented, NOT truncated. Covered by the below-2-MeV uncertainty band (pre-anticipated ROADMAP risk).
+- [Phase 02-reactor-flux-model]: Normalization chain R_f=P_th/<E_f>=9.10e19 fissions/s (3 GW_th, effective-thermal <E_f>=205.8 MeV Ma-2013 NOT total Q) x 1/(4 pi d^2) at d=2500 cm applied ONCE; int Phi dE=7.50e12 nu-bar/cm2/s, emission 1.96e20/s/GW_th (Hayes-Vogel ~2e20).
+- [Phase 02-reactor-flux-model]: Frozen data/flux/reactor_flux_v1.0.csv with 7-col additive schema, SPLIT band (2-5% >2 MeV -> 20-25% <1.8 MeV, non-uniform), region flags, and version/git-sha/normalization/provenance/integral-check header.
+- [Phase 02-reactor-flux-model]: Billard-2017 closure variant (HM constant below 2 MeV, fractions 55.6/32.6/7.1/4.7 isotope-labelled, no 238U<->239Pu swap) emitted as a distinct table (4.59e12) for the Phase-3 Billard Table-1 reproduction.
+- [Phase 02-reactor-flux-model]: Sub-1.8 MeV shape kept as a Kopeikin-2012-cited placeholder (no machine-readable Kopeikin table sourceable; none fabricated), covered by the wide low-E band; limitation documented in CSV header, SUMMARY, and ASSUMPTIONS.md.
 
 ### Active Approximations
 
