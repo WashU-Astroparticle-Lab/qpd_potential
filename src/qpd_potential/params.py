@@ -152,6 +152,47 @@ GE_ISOTOPES = (
     GeIsotope(76, 32, 44, 0.0773, 76 * _U_MEV, "76Ge"),
 )
 
+# --------------------------------------------------------------------------- #
+# Billard (2017) reproduction geometry (Phase 3, Plan 03-02, VALD-01)          #
+# --------------------------------------------------------------------------- #
+# The frozen billard_variant.csv carries Billard's SPECTRAL SHAPE but at OUR
+# 3 GW_th / 25 m normalization; Billard's Table 1 is at Chooz's 8.54 GW combined
+# thermal power at ~400 m (two cores at 355.39 & 468.76 m, 4.27 GW each). The
+# variant flux MUST be renormalized by k = (P_B/P_v)*(G_B/G_v) approx 0.0111
+# before it reproduces 0.76/0.51/0.26 counts/kg/day. Both powers are THERMAL
+# (GW_th, NOT GW_e); a GW_e or double-count error corrupts k (forbidden proxy
+# fp-gwe-gwth).
+BILLARD_POWER_GW = Param(
+    8.54,
+    "GW_th",
+    "Chooz combined thermal power; Billard 2017 (arXiv:1612.09035) Table 1 caption",
+    "HIGH",
+)
+BILLARD_DISTANCE_M = Param(
+    400.0,
+    "m",
+    "Billard 2017 Table 1 caption effective single-source detector distance",
+    "HIGH",
+)
+BILLARD_CORE_DISTANCES_M = (355.39, 468.76)  # two Chooz cores (Billard text)
+BILLARD_CORE_POWER_GW = 4.27  # per core (8.54 / 2); Billard text
+
+# CONUS+ configuration (Nature 643, 1229 (2025), arXiv:2501.05206): Ge CEvNS at
+# 3.6 GW_th, 20.7 m. Secondary factor-~2 anchor; CONUS+ reports eV_ee (needs a
+# quenching model), so the comparison is a coarse rate-scale cross-check only.
+CONUS_POWER_GW = Param(
+    3.6,
+    "GW_th",
+    "CONUS+ reactor thermal power; Nature 643, 1229 (2025), arXiv:2501.05206",
+    "HIGH",
+)
+CONUS_DISTANCE_M = Param(
+    20.7,
+    "m",
+    "CONUS+ detector standoff; Nature 643, 1229 (2025), arXiv:2501.05206",
+    "HIGH",
+)
+
 # Helm form-factor parameters (Lewin & Smith, Astropart. Phys. 6, 87 (1996),
 # Appendix): a = 0.52 fm (surface diffuseness), s = 0.90 fm (skin thickness),
 # c(A) = 1.23 A^{1/3} - 0.60 fm; R_0^2 = c^2 + (7/3) pi^2 a^2 - 5 s^2.

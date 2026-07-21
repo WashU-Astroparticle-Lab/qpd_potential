@@ -192,7 +192,23 @@ class ReactorFlux:
     threshold; rel_uncertainty is piecewise so it is linearly interpolated.
     """
 
-    def __init__(self, csv_path: str = _DEFAULT_FLUX_CSV):
+    def __init__(
+        self,
+        csv_path: str = _DEFAULT_FLUX_CSV,
+        scale: float = 1.0,
+        e_min_cut_MeV: float | None = None,
+        rel_col: int = 5,
+    ):
+        """Load a frozen flux CSV.
+
+        scale         : multiplicative renormalization of Phi (e.g. the Billard
+                        k approx 0.0111 geometry+power rescale of the variant flux).
+        e_min_cut_MeV : if set, Phi is forced to 0 below this E_nu (the sub-1.8-MeV
+                        toggle for the band test); does NOT affect E_min/E_max.
+        rel_col       : column index of the fractional flux uncertainty; the
+                        Billard-variant CSV has no rel_uncertainty column, so pass
+                        rel_col=None to zero it (band is not used for that fold).
+        """
         E, phi, rel = [], [], []
         with open(csv_path) as fh:
             for line in fh:
@@ -204,11 +220,13 @@ class ReactorFlux:
                 cols = line.split(",")
                 E.append(float(cols[0]))
                 phi.append(float(cols[1]))
-                rel.append(float(cols[5]))
+                rel.append(0.0 if rel_col is None else float(cols[rel_col]))
         self.E = np.asarray(E)
         self.phi = np.asarray(phi)
         self.rel = np.asarray(rel)
         self.csv_path = csv_path
+        self.scale = scale
+        self.e_min_cut_MeV = e_min_cut_MeV
         self.E_min = float(self.E.min())
         self.E_max = float(self.E.max())
         if np.any(self.phi <= 0.0):
@@ -216,10 +234,12 @@ class ReactorFlux:
         self._log_phi = PchipInterpolator(self.E, np.log(self.phi), extrapolate=False)
 
     def flux(self, E_nu_MeV: float) -> float:
-        """Phi(E_nu) [nu cm^-2 s^-1 MeV^-1]; 0 outside the tabulated grid."""
+        """Phi(E_nu) [nu cm^-2 s^-1 MeV^-1]; 0 outside the grid or below the cut."""
         if E_nu_MeV < self.E_min or E_nu_MeV > self.E_max:
             return 0.0
-        return float(np.exp(self._log_phi(E_nu_MeV)))
+        if self.e_min_cut_MeV is not None and E_nu_MeV < self.e_min_cut_MeV:
+            return 0.0
+        return self.scale * float(np.exp(self._log_phi(E_nu_MeV)))
 
     def rel_uncertainty(self, E_nu_MeV: float) -> float:
         """Fractional flux uncertainty at E_nu (linear interp of the split band)."""
@@ -319,6 +339,196 @@ def integrated_rate_direct(flux=None, use_form_factor=False, T_floor_keV=0.0):
 def recoil_grid_eV(n=300, T_min_eV=5.0, T_max_eV=3200.0):
     """Log-spaced deposited nuclear-recoil energy grid [eV_nr]."""
     return np.logspace(np.log10(T_min_eV), np.log10(T_max_eV), n)
+
+
+# =========================================================================== #
+# Phase 3, Plan 03-02: Billard (2017) Table-1 reproduction (VALD-01)           #
+# =========================================================================== #
+#
+# The frozen billard_variant.csv carries Billard's SPECTRAL SHAPE at OUR
+# 3 GW_th / 25 m normalization (int Phi = 4.586e12). Billard's Table 1 is at
+# Chooz's 8.54 GW combined thermal power at ~400 m (two cores at 355.39 &
+# 468.76 m, 4.27 GW each). Folding the variant AS-STORED overshoots Table 1 by
+# ~90x (forbidden proxy fp-billard-norm). It MUST first be renormalized by
+#   k = (P_B/P_v) * (G_B/G_v),  G = point-source 1/(4 pi d^2) geometry factor.
+# Both powers are THERMAL (GW_th, not GW_e); fp-gwe-gwth.
+
+_BILLARD_VARIANT_CSV = os.path.join(
+    os.path.dirname(__file__), "..", "..", "data", "flux",
+    "reactor_flux_billard_variant.csv",
+)
+
+# Billard Table 1 targets: counts/kg/day above 50 / 100 / 200 eV_nr.
+BILLARD_TABLE1 = {50.0: 0.76, 100.0: 0.51, 200.0: 0.26}
+
+
+def billard_k_factor():
+    """Derive the Billard geometry+power renormalization k, two ways.
+
+    k = (P_B / P_v) * (G_B / G_v), with G the point-source 1/(4 pi d^2) factor.
+    The 4 pi cancels in the ratio; distances only enter as (d_v / d_B)^2, so any
+    consistent length unit works. Evaluated as:
+      single-source : k = (P_B/P_v) * (d_v / d_B)^2               (8.54 GW at 400 m)
+      two-core      : k = [P1/d1^2 + P2/d2^2] / [P_v / d_v^2]     (355.39 & 468.76 m)
+
+    Returns dict with k_single, k_two_core, rel_diff (should be <1%), and the
+    k-rescaled Billard integral flux (should be ~5.1e10 nu cm^-2 s^-1).
+    """
+    P_B = params.BILLARD_POWER_GW.value
+    d_B = params.BILLARD_DISTANCE_M.value
+    P_v = params.REACTOR_POWER.value      # 3.0 GW_th (our config)
+    d_v = params.STANDOFF.value           # 25.0 m (our config)
+
+    k_single = (P_B / P_v) * (d_v / d_B) ** 2
+
+    d1, d2 = params.BILLARD_CORE_DISTANCES_M
+    P_core = params.BILLARD_CORE_POWER_GW
+    G_two = P_core / d1**2 + P_core / d2**2       # ~ two-core geometry factor
+    G_v = P_v / d_v**2
+    k_two_core = G_two / G_v
+
+    rel_diff = abs(k_single - k_two_core) / k_two_core
+
+    # Billard-variant stored integral flux at our config (from the CSV header).
+    variant_int_flux = 4.5861e12
+    return {
+        "k_single": k_single,
+        "k_two_core": k_two_core,
+        "rel_diff": rel_diff,
+        "rescaled_integral_flux": k_single * variant_int_flux,
+    }
+
+
+def billard_variant_flux(k: float | None = None):
+    """ReactorFlux for the Billard-variant CSV, renormalized by k (default k_single).
+
+    The variant CSV has no rel_uncertainty column, so rel is zeroed (the band is
+    not used for the Billard fold).
+    """
+    if k is None:
+        k = billard_k_factor()["k_single"]
+    return ReactorFlux(_BILLARD_VARIANT_CSV, scale=k, rel_col=None)
+
+
+def integrated_rate_above(
+    flux, T_floor_eV, T_max_eV=3300.0, n=4000, use_form_factor=True
+):
+    """Integrated CEvNS rate above a deposited-recoil threshold [counts/kg/day].
+
+    R(>T_floor) = int_{T_floor}^{T_max} (dR/dT) dT on a log-spaced T grid (trapz).
+    T in eV_nr; dR/dT summed over the five Ge isotopes with the Helm form factor.
+    """
+    Tg = np.logspace(np.log10(T_floor_eV), np.log10(T_max_eV), n)
+    dr = np.array(
+        [differential_rate(t * 1e-3, flux, use_form_factor) for t in Tg]
+    )
+    return float(np.trapz(dr, Tg * 1e-3))
+
+
+def reproduce_billard(thresholds=(50.0, 100.0, 200.0), n=2000):
+    """Reproduce Billard Table 1 with and without the k-rescale.
+
+    Returns dict: k, rates_with_k, rates_without_k, overshoot_factor (per
+    threshold), and percent agreement vs BILLARD_TABLE1. The without-k run folds
+    the variant at its stored 3 GW_th/25 m normalization to demonstrate the ~90x
+    overshoot (the forbidden proxy fp-billard-norm, kept only as a regression).
+    """
+    kinfo = billard_k_factor()
+    k = kinfo["k_single"]
+    flux_k = billard_variant_flux(k)
+    flux_nok = billard_variant_flux(1.0)
+
+    rates_with_k, rates_without_k, overshoot, pct = {}, {}, {}, {}
+    for T0 in thresholds:
+        rk = integrated_rate_above(flux_k, T0, n=n)
+        rn = integrated_rate_above(flux_nok, T0, n=n)
+        rates_with_k[T0] = rk
+        rates_without_k[T0] = rn
+        overshoot[T0] = rn / rk
+        if T0 in BILLARD_TABLE1:
+            pct[T0] = 100.0 * (rk - BILLARD_TABLE1[T0]) / BILLARD_TABLE1[T0]
+    return {
+        "k": k,
+        "k_info": kinfo,
+        "rates_with_k": rates_with_k,
+        "rates_without_k": rates_without_k,
+        "overshoot_factor": overshoot,
+        "percent_vs_billard": pct,
+    }
+
+
+def conus_rescale_check(T_floor_eV=50.0, flux=None):
+    """Coarse factor-~2 CONUS+ cross-check of the flagship absolute rate scale.
+
+    Rescales BOTH the flagship (flux v1.0, 3 GW_th/25 m) rate and Billard's
+    Table-1 rate to the CONUS+ config (3.6 GW_th, 20.7 m) by (P/P')(d'/d)^2 and
+    compares. Two INDEPENDENTLY-normalized flux models (our HM+summation+ncapture
+    flagship vs Billard's HM-flat variant) predicting the same Ge CEvNS scale is
+    the cross-check. CAVEAT: CONUS+ reports eV_ee (ionization) and needs a
+    quenching model, so this is a coarse rate-scale check, NOT a direct match.
+    """
+    if flux is None:
+        flux = ReactorFlux()  # flagship v1.0
+    P_v = params.REACTOR_POWER.value
+    d_v = params.STANDOFF.value
+    P_c = params.CONUS_POWER_GW.value
+    d_c = params.CONUS_DISTANCE_M.value
+
+    R_flagship = integrated_rate_above(flux, T_floor_eV)
+    geom_ours_to_conus = (P_c / P_v) * (d_v / d_c) ** 2
+    R_ours_at_conus = R_flagship * geom_ours_to_conus
+
+    P_B = params.BILLARD_POWER_GW.value
+    d_B = params.BILLARD_DISTANCE_M.value
+    geom_bill_to_conus = (P_c / P_B) * (d_B / d_c) ** 2
+    R_billard_at_conus = BILLARD_TABLE1[T_floor_eV] * geom_bill_to_conus
+
+    return {
+        "R_flagship_ours": R_flagship,
+        "R_ours_at_conus": R_ours_at_conus,
+        "R_billard_at_conus": R_billard_at_conus,
+        "ratio": R_ours_at_conus / R_billard_at_conus,
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Flux-band propagation + sub-1.8-MeV sensitivity (Plan 03-02 Task 2)          #
+# --------------------------------------------------------------------------- #
+
+
+def fractional_band(T_keV, flux):
+    """Fractional 1-sigma flux-uncertainty band on dR/dT (dimensionless).
+
+    band_frac(T) = differential_rate_band(T) / differential_rate(T), i.e. the
+    flux-weighted propagation of the split rel_uncertainty column. This is the
+    HONEST propagated band; it does NOT reach the per-E 20-25% sub-1.8-MeV width
+    because the well-anchored (2-5%) >1.8 MeV flux dominates the rate integrand
+    at every recoil energy (see sub18_sensitivity_fraction for the placeholder's
+    actual weight in the rate).
+    """
+    tot = differential_rate(T_keV, flux, use_form_factor=True)
+    if tot <= 0.0:
+        return 0.0
+    return differential_rate_band(T_keV, flux) / tot
+
+
+def sub18_sensitivity_fraction(T_keV, flux=None):
+    """Fraction of dR/dT(T) drawn from the sub-1.8-MeV placeholder flux.
+
+    = 1 - dR/dT(E_nu >= 1.8 MeV) / dR/dT(all E_nu). This is the honest measure of
+    how much the Phase-2 sub-1.8-MeV placeholder influences a given recoil bin:
+    it is 0 for T where E_min(T) >= 1.8 MeV (T >~ 95 eV_nr) and grows below that.
+    """
+    if flux is None:
+        flux = ReactorFlux()
+    tot = differential_rate(T_keV, flux, use_form_factor=True)
+    if tot <= 0.0:
+        return 0.0
+    flux_cut = ReactorFlux(
+        flux.csv_path, scale=flux.scale, e_min_cut_MeV=1.8
+    )
+    above = differential_rate(T_keV, flux_cut, use_form_factor=True)
+    return 1.0 - above / tot
 
 
 def build_dRdT_table(flux=None, n_grid=300):
