@@ -278,3 +278,97 @@ _Phase-2 addendum authored under Plan 02-02; does not supersede the Phase-1 lock
 
 _Phase: 01-conventions-energy-scale-foundation · Plan 01-02 · Seeded 2026-07-20_
 _Authoritative lock: `GPD/CONVENTIONS.md`. This note flags assumptions and confidence; it does not supersede the lock._
+
+---
+
+## Addendum (Phase 5, Plan 05-01) — QPD response chain, count-integral E_rec estimator, crossover band
+
+Phase 5 turns the Phase-1 forward-chain scaffold into a working per-design
+reconstructed-energy response (`src/qpd_potential/response.py`). It implements
+the deliberately-stubbed `E_rec` estimator as a **calibrated count-integral
+estimator** and reports the linear→saturated crossover as a **band**. All numbers
+below are recomputed in-code (`response.crossover_band`, `response.sweep_E_rec`),
+not transcribed.
+
+### Estimator (D-estimator decision, exercised)
+
+`E_rec = C · Σ_i N_obs,i`, where `N_obs,i` is the censored tunneling-**event**
+count on sensor `i` and `C` is a **single global per-design constant** fixed once
+by requiring `dE_rec/dE_dep = ε = 0.5` on a deeply-linear deposit (default
+`E_dep_cal = 0.01 eV`, no sensor saturated). Consequences:
+
+- **Low-E linearity is calibration-consistency, NOT independent validation**
+  (Pitfall 2 / `fp-calib-as-validation`): the low-E test passes by construction
+  because `C` is fixed by that same slope. The genuinely tested content is the
+  saturation onset and the plateau/rollover level.
+- **Event-count mapping (Pitfall 1 / `fp-eventcount`):** the value fed to the
+  MUST-USE `QuasiparticleBurstModel.expected_n_qp` is the tunneling-**event**
+  count `∫Γ_in dt = K·τ_qp·N_qp/V_tr` (0.03·N_qp for Al, 0.008·N_qp for Hf),
+  **not** the trapped-QP count `N_qp`. The two-exponential pulse is verified
+  self-consistent with the recorded peak factors: `∫g dt = 1` and
+  `τ_qp·max(g) = p` (0.2500 Al, 0.1337 Hf ≈ recorded 0.13).
+- **The plateau IS the modeled saturation (`fp-no-saturation`):** the estimator
+  is NOT a linear rate→energy extrapolation.
+
+### VALD-04 limiting cases (the ONLY validation available — no saturated-regime benchmark exists)
+
+| Regime | non_paralyzable | paralyzable |
+| --- | --- | --- |
+| Low E (below onset) | `E_rec ≈ 0.5·E_dep` (calibration-consistency) | same |
+| 197 MeV muon tail | E_rec **plateaus** (monotone, bounded): ≈ **35 keV (Ta→Al) / 27 keV (Al→Hf)**, growing only logarithmically | E_rec **rolls over**: peaks ~keV then declines to ≈ **3.3 keV / 2.6 keV** |
+| vs linear line | `E_rec/(0.5·E_dep) ≈ 3.5×10⁻⁴` at 197 MeV | `≈ 3×10⁻⁵` |
+
+In BOTH variants `E_rec` does **not** track the linear `0.5·E_dep` line into the
+tens-of-MeV range. The **stop-condition** (ROADMAP Phase-5) is checked and does
+**not** trigger: at 197 MeV `peak Γ_in` exceeds the 25 kHz ceiling by ~10⁶–10⁷×
+and the count-integral **does** saturate. A no-censoring scratch run confirms the
+plateau has teeth (uncensored `E_rec = 0.5·E_dep` exactly, no plateau).
+
+### Crossover deposit energy = a BAND per design, NOT a single number (SIMU-01; `fp-crossover-point`)
+
+The crossover `E_dep` (on-spot `peak Γ_in = 25 kHz`) is dominated by the
+LOW-confidence sharing parameters `f_prompt ∈ [0.1,0.5]`, `r ∈ [1,5]`:
+
+| Design | E_sensor onset | **Default point** (f_prompt=0.3, r=2) — *SIMU-01 "explicit design number"* | Scan band [0.1,0.5]×[1,5] | **Equal-split upper anchor** (f_prompt→0) | Whole-array plateau (default) |
+| --- | --- | --- | --- | --- | --- |
+| Ta→Al (Al trap) | 1.27 eV | **≈ 53 eV** | 8.0 eV – 0.93 keV | ≈ **13.1 keV** | ≈ 18.6 keV |
+| Al→Hf (Hf trap) | 0.77 eV | **≈ 32 eV** | 4.8 eV – 0.57 keV | ≈ **7.9 keV** | ≈ 11.3 keV |
+
+**The default point (~53/32 eV) is SIMU-01's explicit design number; the ~3-order
+band is the honest uncertainty.** **Hf saturates before Al** (lower onset) at
+every point in the scan. **Two saturation scales** (both stated on any response
+figure): (1) the *on-spot bend* at tens of eV (the ~πr² on-spot sensors saturate;
+`E_rec` bends by ≤ f_prompt); (2) the *whole-array plateau* at ~10–20 keV (even
+the diffuse per-sensor share reaches onset → all ~10,300 sensors saturated →
+muon deposits pile up at the plateau/rollover ceiling — an **instrument artifact
+of the modeled saturation, not a physical spectral line**).
+
+### Ta absorber gap = a BINARY trapping gate, NOT a smooth response band (`fp-ta-band`)
+
+`Δ_abs(Ta)` enters the response arithmetic **nowhere** — yield, rate, and onset
+all use the **Al trap gap** `Δ_tr = 190 µeV`. The Ta→Al response is therefore
+numerically **invariant** to `Δ_abs` within α-phase (verified: crossover and
+`E_rec` unchanged for `Δ_abs ∈ {0.5, 0.68, 0.9} meV`). The only Ta-gap dependence
+is the **binary trapping gate** `Δ_abs/Δ_tr ≥ 2` (asserted in code), i.e.
+`T_c ≥ 380 µeV/(1.764 k_B) ≈ 2.5 K`. The cited bulk **α-Ta** baseline
+(`Δ_abs = 0.68 meV`, ratio **3.58**, `T_c = 4.48 K`) passes; **β-Ta**
+(`T_c ~0.5–2.7 K`) would fail and **invalidate the design premise**. This is a
+design-invalidating risk, **not** a continuous ± band, and **no β-Ta film gap
+value is fabricated** (`materials.yaml` has no Ta film entry).
+
+### Weakest anchor / no-benchmark caveat (carried honestly)
+
+**The saturated-regime response SHAPE has NO literature anchor at any energy.**
+Validation is **limiting-cases-only** (low-E linearity by calibration; high-E
+plateau/rollover). The mid-curve (bend region and plateau approach) is a **model
+prediction**. Two further honest limitations: (i) the paralyzable-vs-non-
+paralyzable censoring choice (CONVENTIONS F) is an **OPEN switch**, carried not
+closed — both curves are reported; (ii) the analytic censored-integral (the
+deliverable estimator, used for the muon-tail sweep) and the EMG event-train
+realization agree to ~1% up to mild saturation but diverge by O(10–30%) in deep
+saturation (closed-form renewal vs microphysical dead-window), an additional
+unvalidated-shape uncertainty consistent with the no-benchmark caveat. This phase
+does **not** fold any spectrum (Phase 6) and does **not** build the full response
+matrix `R(E_rec|E_dep)` (Plan 05-02).
+
+_Phase-5 addendum authored under Plan 05-01; does not supersede the Phase-1 lock._
