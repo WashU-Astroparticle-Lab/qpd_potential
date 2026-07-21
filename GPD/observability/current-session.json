@@ -1,0 +1,11 @@
+{
+  "session_id": "20260721T065655-33151-76ac4e",
+  "started_at": "2026-07-21T06:56:55.232352+00:00",
+  "last_event_at": "2026-07-21T07:20:06.237209+00:00",
+  "cwd": "/Users/lanqingyuan/Documents/GitHub/qpd_potential/.claude/worktrees/qpd-cevns-muon-spectrum-aaa8da",
+  "source": "python",
+  "pid": 33151,
+  "command": "observe event",
+  "status": "active",
+  "metadata": {}
+}

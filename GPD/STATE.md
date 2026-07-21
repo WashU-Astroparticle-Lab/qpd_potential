@@ -54,6 +54,7 @@ None yet.
 | Phase 04 P04-02 | 2100s | 3 tasks | 10 files |
 | Phase 04 P04-03 | 240s | 2 tasks | 5 files |
 | Phase 05 P05-01 | 2700s | 3 tasks | 4 files |
+| Phase 05 P05-02 | 2400s | 3 tasks | 6 files |
 
 ### Decisions
 
@@ -95,6 +96,13 @@ None yet.
 - [Phase 05]: Muon-tail E_rec: non_paralyzable plateau ~35 keV (Ta->Al)/~27 keV (Al->Hf); paralyzable rollover ~3.3/~2.6 keV; both >3 orders below the linear line.
 - [Phase 05]: Ta gap handled as a binary trapping gate (ratio 3.58>=2, T_c gate 2.5 K); response invariant to Delta_abs in alpha-phase; beta-Ta design-invalidating; no film value fabricated.
 - [Phase 05]: Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); stop-condition does NOT trigger.
+- [Phase 05]: R(E_rec|E_dep) built per design x both censoring variants by uniform log-E_dep importance sampling on the Phase-4 grid (584 cols, 10.14 eV->197 MeV, 80/decade); reuses Plan 05-01 response.py (no re-implementation).
+- [Phase 05]: Aggregate off-spot ensemble (~10,287 sensors as one multinomial/Poisson draw per realization); on-spot ~pi r^2 sensors individual; per-class mean pinned to analytic censored_count so the response curve = the validated Plan 05-01 estimator.
+- [Phase 05]: Feasibility split EC_EMG_MAX=2000: MUST-USE ref-qpd-repo EMG event train where feasible (CEvNS/low-E), deep-saturation registered-count Poisson (EMG train O(1e8) events infeasible; relative spread ~1e-3 there).
+- [Phase 05]: Convergence: peak well-populated cell <=~1.8% at N_s=5000, clean 1/sqrt(N_s) scaling; columns normalize to 1; per-cell MC error stored; straddle-bins flagged. Stable crc32 sub-seeding => reproducible across processes.
+- [Phase 05]: Muon-end E_rec: non_paralyzable plateau ~34.8 keV (Ta->Al)/~26.9 keV (Al->Hf); paralyzable rollover ~3.3/~2.6 keV; both ~3-4 orders below 0.5*E_dep (fp-no-saturation). Onset ~52.9/32.1 eV, plateau ~18.6/11.3 keV; Hf first.
+- [Phase 05]: Time-over-saturation kept as a LABELED SECONDARY (tos_t_over_s), never auto-switched into the baseline (fp-tos-autoswitch); ceiling pile-up labeled an instrument artifact on the figure (fp-ceiling-peak).
+- [Phase 05]: Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); Phase-5 stop-condition does NOT trigger.
 
 ### Active Approximations
 

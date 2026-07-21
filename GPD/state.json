@@ -607,6 +607,12 @@
         "duration": "2700s",
         "tasks": "3",
         "files": "4"
+      },
+      {
+        "label": "Phase 05 P05-02",
+        "duration": "2400s",
+        "tasks": "3",
+        "files": "6"
       }
     ]
   },
@@ -795,6 +801,41 @@
       "phase": "05",
       "summary": "Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); stop-condition does NOT trigger.",
       "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "R(E_rec|E_dep) built per design x both censoring variants by uniform log-E_dep importance sampling on the Phase-4 grid (584 cols, 10.14 eV->197 MeV, 80/decade); reuses Plan 05-01 response.py (no re-implementation).",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Aggregate off-spot ensemble (~10,287 sensors as one multinomial/Poisson draw per realization); on-spot ~pi r^2 sensors individual; per-class mean pinned to analytic censored_count so the response curve = the validated Plan 05-01 estimator.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Feasibility split EC_EMG_MAX=2000: MUST-USE ref-qpd-repo EMG event train where feasible (CEvNS/low-E), deep-saturation registered-count Poisson (EMG train O(1e8) events infeasible; relative spread ~1e-3 there).",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Convergence: peak well-populated cell <=~1.8% at N_s=5000, clean 1/sqrt(N_s) scaling; columns normalize to 1; per-cell MC error stored; straddle-bins flagged. Stable crc32 sub-seeding => reproducible across processes.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Muon-end E_rec: non_paralyzable plateau ~34.8 keV (Ta->Al)/~26.9 keV (Al->Hf); paralyzable rollover ~3.3/~2.6 keV; both ~3-4 orders below 0.5*E_dep (fp-no-saturation). Onset ~52.9/32.1 eV, plateau ~18.6/11.3 keV; Hf first.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Time-over-saturation kept as a LABELED SECONDARY (tos_t_over_s), never auto-switched into the baseline (fp-tos-autoswitch); ceiling pile-up labeled an instrument artifact on the figure (fp-ceiling-peak).",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); Phase-5 stop-condition does NOT trigger.",
+      "rationale": null
     }
   ],
   "approximations": [],
@@ -850,5 +891,5 @@
     "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
   },
   "_version": 1,
-  "_synced_at": "2026-07-21T06:46:36.275973+00:00"
+  "_synced_at": "2026-07-21T07:21:35.514113+00:00"
 }
