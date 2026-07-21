@@ -178,8 +178,9 @@ BILLARD_CORE_DISTANCES_M = (355.39, 468.76)  # two Chooz cores (Billard text)
 BILLARD_CORE_POWER_GW = 4.27  # per core (8.54 / 2); Billard text
 
 # CONUS+ configuration (Nature 643, 1229 (2025), arXiv:2501.05206): Ge CEvNS at
-# 3.6 GW_th, 20.7 m. Secondary factor-~2 anchor; CONUS+ reports eV_ee (needs a
-# quenching model), so the comparison is a coarse rate-scale cross-check only.
+# 3.6 GW_th, 20.7 m. Secondary factor-~2 anchor; CONUS+ reports on the ionization
+# (eV_ee) scale and needs an ionization-yield conversion, so the comparison is a
+# coarse rate-scale cross-check only (see cevns.conus_rescale_check for the caveat).
 CONUS_POWER_GW = Param(
     3.6,
     "GW_th",

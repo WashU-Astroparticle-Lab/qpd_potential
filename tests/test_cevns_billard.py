@@ -106,3 +106,88 @@ def test_conus_factor2():
     # Flagship absolute scale is the genuine reactor-CEvNS tens/kg/day (geometry
     # ratio ~90x Billard's 0.76), not ~1.
     assert 30.0 < c["R_flagship_ours"] < 120.0, c["R_flagship_ours"]
+
+
+# --------------------------------------------------------------------------- #
+# test-band: flux-uncertainty band widths + sub-1.8-MeV toggle                 #
+# --------------------------------------------------------------------------- #
+#
+# HONEST FINDING (surfaced to the orchestrator): the plan's claim-band guessed a
+# "wide 20-25%" propagated band below ~95 eV_nr. The rigorous flux-weighted 1-sigma
+# propagation does NOT reach 20-25% -- it is ~3.4% above 200 eV, rising to ~6% at
+# 50 eV and ~10% at 20 eV -- because the well-anchored (2-5%) >1.8 MeV flux
+# dominates the RATE integrand at every recoil energy; the sub-1.8-MeV placeholder
+# is only 18% (50 eV) to 34% (20 eV) of the rate. The QUALITATIVE claim holds
+# (band widens below ~95 eV, narrow above ~200 eV; the sub-1.8 sensitivity is
+# localized below ~95 eV), so these tests assert the TRUE behavior, not the guessed
+# magnitude. (No fp-hide-band: both the band AND the sub-1.8 fraction are reported.)
+
+
+def test_band_narrow_above_200eV():
+    """Propagated 1-sigma band is narrow (2-5%) for T >~ 200 eV_nr."""
+    f = cevns.ReactorFlux()
+    for T_eV in (200.0, 300.0, 500.0, 1000.0):
+        b = cevns.fractional_band(T_eV * 1e-3, f)
+        assert 0.02 <= b <= 0.06, f"T={T_eV:.0f} eV band {b:.3f} not in narrow 2-5%"
+
+
+def test_band_widens_below_95eV():
+    """Band widens monotonically as T drops below the ~95 eV_nr boundary."""
+    f = cevns.ReactorFlux()
+    b20 = cevns.fractional_band(0.020, f)
+    b50 = cevns.fractional_band(0.050, f)
+    b200 = cevns.fractional_band(0.200, f)
+    assert b50 > b200, f"band not wider at 50 eV ({b50:.3f}) than 200 eV ({b200:.3f})"
+    assert b20 > b50, f"band not wider at 20 eV ({b20:.3f}) than 50 eV ({b50:.3f})"
+    # The widening is real but modest (does NOT reach 20-25%; documented finding).
+    assert b50 < 0.15
+
+
+def test_sub18_toggle_localized_below_95eV():
+    """Zeroing flux below 1.8 MeV changes T<95 eV bins substantially and leaves
+    T>200 eV bins essentially unchanged (E_min(95 eV) approx 1.78 MeV)."""
+    f = cevns.ReactorFlux()
+    # Below 95 eV: substantial sub-1.8-MeV weight in the rate.
+    assert cevns.sub18_sensitivity_fraction(0.020, f) > 0.25
+    assert cevns.sub18_sensitivity_fraction(0.050, f) > 0.10
+    # At/above the boundary: negligible (well-anchored >1.8 MeV flux only).
+    assert cevns.sub18_sensitivity_fraction(0.095, f) < 1e-2
+    for T_eV in (200.0, 500.0):
+        assert cevns.sub18_sensitivity_fraction(T_eV * 1e-3, f) < 1e-3, T_eV
+
+
+def test_toggle_leaves_high_T_rate_unchanged():
+    """The explicit e_min_cut=1.8 MeV fold reproduces the full dR/dT for T>200 eV."""
+    f = cevns.ReactorFlux()
+    f_cut = cevns.ReactorFlux(f.csv_path, e_min_cut_MeV=1.8)
+    for T_eV in (200.0, 500.0):
+        full = cevns.differential_rate(T_eV * 1e-3, f)
+        cut = cevns.differential_rate(T_eV * 1e-3, f_cut)
+        assert abs(full - cut) / full < 1e-3, f"T={T_eV:.0f} eV changed by toggle"
+
+
+def test_csv_band_column_consistent():
+    """deliv-drdt-band-csv: the 03-01 CSV band column matches the live fold."""
+    import os
+
+    csv = os.path.join(
+        os.path.dirname(__file__), "..", "artifacts", "stage1", "cevns_dRdT.csv"
+    )
+    rows = []
+    with open(csv) as fh:
+        for line in fh:
+            if line.startswith("#") or line.startswith("T_eV"):
+                continue
+            rows.append([float(x) for x in line.split(",")])
+    arr = np.array(rows)
+    T_eV = arr[:, 0]
+    total_csv = arr[:, 6]  # dRdT_total
+    band_csv = arr[:, 7]   # dRdT_band_1sigma
+    f = cevns.ReactorFlux()
+    # Spot-check three rows spanning the band-widening boundary.
+    for T in (40.0, 100.0, 400.0):
+        j = int(np.argmin(np.abs(T_eV - T)))
+        tot = cevns.differential_rate(T_eV[j] * 1e-3, f)
+        band = cevns.differential_rate_band(T_eV[j] * 1e-3, f)
+        assert abs(tot - total_csv[j]) / total_csv[j] < 1e-3
+        assert abs(band - band_csv[j]) / band_csv[j] < 1e-3
