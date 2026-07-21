@@ -9,27 +9,11 @@ contract_results:
     claim-muon-spectrum:
       status: passed
       summary: "Plan 04-01. Muon dR/dE_dep = Gaisser-Guan surface flux (x) analytic ray-box chord (x) Landau-Vavilov MPV, unified phonon scale, no quenching. INDEPENDENTLY RECOMPUTED: Cauchy 4V/S=0.3848 cm and space-diagonal 14.370 cm reproduced from geometry; vertical-chord xi=0.0721 MeV (PDG 0.072) and Delta_p=1.22-1.23 MeV (own PDG-formula + Sternheimer-Ge delta) strictly BELOW mean 1.4585 MeV=1.370*rho*0.20; a fresh 600k-sample MC (independent seed) gives tail to 197.1 MeV and vertical MPV 1.227 MeV. Deposit uses the Landau mode (Delta_p), NOT mean, NOT Moyal."
-      linked_ids: [obs-muon-dep, deliv-muon-code, deliv-muon-csv, test-cauchy, test-jhoriz, test-mpv, test-hetail, ref-gaisser, ref-pdg-muon]
+      linked_ids: [deliv-muon-code, deliv-muon-csv, test-cauchy, test-jhoriz, test-mpv, test-hetail, ref-gaisser, ref-pdg-muon]
     claim-muon-rate:
       status: passed
       summary: "Plan 04-01, VALD-02. Integral muon rate through the wafer 1.3657 Hz (stored, 4M MC); my independent 600k-sample MC (seed 999) gives 1.376 +/- 0.013 Hz -- consistent within MC error. PDG anchor: reproduced I_v(E>1GeV)=60.5 m^-2 s^-1 sr^-1 (PDG ~70, ~15% low within the known inter-experiment spread); horizontal-flux top-face estimate J*A_top ~= 1.7 Hz, so 1.37 Hz is ~20% below, within the VALD-02 ~30% window."
-      linked_ids: [obs-muon-dep, deliv-muon-code, test-muon-rate, ref-pdg-muon]
-    claim-compton-spectrum:
-      status: passed
-      summary: "Plan 04-02, CALC-04/VALD-03. Klein-Nishina angle-sampled ELECTRON recoil T_e=E_gamma-E' continuum (scattered photon escapes), thin-target single-scatter, unified phonon scale, no quenching. INDEPENDENTLY RECOMPUTED: edges E_edge=2E^2/(m_ec^2+2E) from scratch = 1243.36/2381.76/1541.31 keV for 40K/208Tl/214Bi, matching code+claims exactly; the MC sampled-max T_e per line equals E_edge to <0.01 keV (self-validating). NO photopeak: dRdE at E_gamma=2614.5 is 0; the only nonzero bin above the max edge is the single bin [2375.5,2444.9] keV straddling the 2381.76 edge (discretization, not a line). KN Thomson limit 8pi r_e^2/3=6.652e-25 and sigma_KN(1 MeV)=2.112e-25 reproduced."
-      linked_ids: [obs-compton-dep, deliv-compton-code, deliv-compton-csv, test-compton-edges, test-continuum-not-peaks, test-single-scatter, test-compton-convergence, ref-klein-nishina, ref-environmental-gamma, ref-nist-xcom]
-    claim-compton-flux-provenance:
-      status: passed
-      summary: "Plan 04-02. Every row of data/gamma_lines.csv carries flux_source + flux_unc_frac: line energies are ENSDF/LNHB nuclear data, p_gamma DDEP/LNHB per-decay, absolute flux anchored to the cited LABChico EPJP2022 measured spectrum (40K 0.036, 208Tl 2614.5 0.0016 cm^-2 s^-1), Th siblings scaled by DDEP intra-chain ratios, U chain via the DOCUMENTED assume_U_eq_Th (Phi_U=Phi_Th) with a factor-2 (unc_frac=1.0) band. No intensity or flux invented from memory. Weakest anchor (site-dependent absolute flux) explicitly disclosed."
-      linked_ids: [deliv-gamma-lines, test-flux-provenance, ref-environmental-gamma]
-    claim-phase4-assembly:
-      status: passed
-      summary: "Plan 04-03. Both channels on the byte-identical shared log E_dep grid (584 bins, 0.01 keV->200 MeV): assemble() reports grid max rel deviation 0.0. Energy closure independently reproduced: muon int dR/dE_dep dE / (rate*86400/mass) = 0.99928, Compton = 0.99997. Deposited (phonon) energy only, no E_rec fold. Rates parsed from CSV headers, not hard-coded."
-      linked_ids: [obs-phase4-spectra, deliv-assembly-code, deliv-spectra-fig, test-shared-grid, test-energy-closure, ref-qpd-paper]
-    claim-pileup-stopcondition:
-      status: passed
-      summary: "Plan 04-03. R_tot=1.6342 Hz (muon 1.3657 + Compton 0.2685); occupancy R*20us=3.27e-5 @50 kHz sample, R*40us=6.54e-5 @25 kHz resolving, R/50kHz=3.27e-5; non-paralyzable dead-time 6.5e-5, paralyzable live fraction 0.999935; mean interval 0.61 s. Occupancy << 1 -> stop_condition_triggered=False, quiescent reconstruction not precluded. Robust to the factor-2 gamma-flux band (Compton is <17% of R_tot). Within-event muon ~197 MeV saturation flagged for Phase 5, not modeled here."
-      linked_ids: [deliv-assembly-code, test-pileup, ref-qpd-paper]
+      linked_ids: [deliv-muon-code, test-muon-rate, ref-pdg-muon]
   deliverables:
     deliv-muon-code:
       status: passed
@@ -41,31 +25,6 @@ contract_results:
       path: data/muon_dRdEdep.csv
       summary: "dR/dE_dep on the shared log grid, counts/kg/day/keV; header records integral_muon_rate_Hz=1.3657 +/- 0.0049, vertical MPV 1.2323 < mean 1.4585, n=4M. Tail resolved to ~197 MeV."
       linked_ids: [claim-muon-spectrum]
-    deliv-compton-code:
-      status: passed
-      path: src/qpd_potential/compton_deposit.py
-      summary: "compton_source.py (provenance line loader, frozen NIST XCOM Ge mu/rho log-log interp, single-scatter P=1-exp(-mu*ell_bar), sigma_KN, compton_edge) and compton_deposit.py (KN dsigma/dOmega rejection sampler -> kinematic T_e -> shared-grid histogram). Continuum-only, ell_bar=0.385 cm pinned in P, double-scatter, and rate anchor. No stubs; reproduced live."
-      linked_ids: [claim-compton-spectrum]
-    deliv-compton-csv:
-      status: passed
-      path: data/compton_dRdEdep.csv
-      summary: "dR/dE_dep on the shared grid; header records total_single_scatter_rate_Hz=2.6846e-01, anchor 2.7305e-01 (ratio 0.983), integral 2.1105e5 counts/kg/day (closure). Reproduced by an independent 200k/line MC."
-      linked_ids: [claim-compton-spectrum]
-    deliv-gamma-lines:
-      status: passed
-      path: data/gamma_lines.csv
-      summary: "16 radiogenic lines (K-40, Th-232, U-238 chains); every row has energy (nuclear data), p_gamma (DDEP/LNHB), flux_cm2_s, flux_unc_frac, and flux_source provenance. Integral discrete-line flux 0.0485 cm^-2 s^-1 (subset of 0.1-0.5 environmental). Plus data/ge_xcom_mu.csv (4 cited NIST points)."
-      linked_ids: [claim-compton-flux-provenance]
-    deliv-assembly-code:
-      status: passed
-      path: src/qpd_potential/deposited_spectra.py
-      summary: "Loads both CSVs, asserts shared grid (fp-grid-mismatch guard), computes per-channel energy closure and the pileup occupancy vs 50 kHz, emits combined table + figure. Rates parsed from headers. Independent run reproduces closures 0.99928/0.99997 and occupancy 3.27e-5."
-      linked_ids: [claim-phase4-assembly, claim-pileup-stopcondition]
-    deliv-spectra-fig:
-      status: passed
-      path: figs/phase4_deposited_spectra.png
-      summary: "Log-log combined muon + Compton + total dR/dE_dep on the deposited-energy axis (present, 3 phase-4 figures on disk), Compton edges and the ~197 MeV muon tail marked, closure/occupancy annotated. Underlying arrays independently verified; pixels not machine-read."
-      linked_ids: [claim-phase4-assembly]
   acceptance_tests:
     test-cauchy:
       status: passed
@@ -87,38 +46,6 @@ contract_results:
       status: passed
       summary: "VALD-02: integral rate 1.366 Hz vs the PDG top-face J*A_top ~1.7 Hz (~20% low) and vs the 1.5-2 Hz anchor, within the ~30% window. I_v=60.5 m^-2 s^-1 sr^-1 reproduced (~15% under the nominal 70, inside the inter-experiment spread)."
       linked_ids: [claim-muon-rate, deliv-muon-code, ref-pdg-muon]
-    test-compton-edges:
-      status: passed
-      summary: "VALD-03 edges: independent E_edge formula gives 1243.36/2381.76/1541.31 keV (40K/208Tl/214Bi), matching claims to <0.2 keV; MC sampled-max T_e equals E_edge per line to <0.01 keV (self-validating). All 16 lines checked."
-      linked_ids: [claim-compton-spectrum, deliv-compton-csv, ref-klein-nishina]
-    test-continuum-not-peaks:
-      status: passed
-      summary: "No photopeak: dRdE at E_gamma=2614.5 keV is exactly 0; highest nonzero bin center is 2409.96 keV, the single edge-straddling bin [2375.5,2444.9] containing the 2381.76 edge. Deposit is the electron-recoil continuum rising to each edge. Guards fp-full-absorption."
-      linked_ids: [claim-compton-spectrum, deliv-compton-csv]
-    test-single-scatter:
-      status: passed
-      summary: "mu*ell_bar on the pinned Cauchy chord = 0.1174 (1 MeV), 0.0838 (2 MeV); double-scatter (mu*ell_bar)^2 = 0.0138 (1.4%); normal-incidence mu*t=0.061 demo only. Total rate 0.2685 Hz vs flux*sigma_KN*N_e anchor 0.2731 Hz, ratio 0.983 (within VALD-03 factor 2). Same ell_bar in P, double-scatter, and rate."
-      linked_ids: [claim-compton-spectrum, deliv-compton-code, ref-nist-xcom]
-    test-compton-convergence:
-      status: passed
-      summary: "Edge positions and total rate stable under 2x samples (independent 200k/line seed reproduces 0.26846 Hz and edges to <0.01 keV); edge-adjacent bins non-empty. pytest test_compton_channel green."
-      linked_ids: [claim-compton-spectrum, deliv-compton-csv, deliv-compton-code]
-    test-flux-provenance:
-      status: passed
-      summary: "Every intensity/flux row in gamma_lines.csv traces to LABChico EPJP2022 anchor, DDEP scaling, or the documented assume_U_eq_Th assumption with an uncertainty band; line energies match nuclear data. No un-sourced value. pytest test_compton_source green."
-      linked_ids: [claim-compton-flux-provenance, deliv-gamma-lines, ref-environmental-gamma]
-    test-shared-grid:
-      status: passed
-      summary: "muon and Compton E_dep grids identical: assemble() grid max rel deviation 0.0 (np.array_equal). 584 bins, 0.01 keV->200 MeV, geometric-mean centers. Guards fp-grid-mismatch."
-      linked_ids: [claim-phase4-assembly, deliv-assembly-code]
-    test-energy-closure:
-      status: passed
-      summary: "int dR/dE_dep dE vs rate*86400/mass_kg: muon ratio 0.99928, Compton 0.99997. Independently reproduced. Per-kg normalization (mass 0.1099 kg) consistent both channels."
-      linked_ids: [claim-phase4-assembly, deliv-assembly-code, deliv-spectra-fig]
-    test-pileup:
-      status: passed
-      summary: "Occupancy R*tau computed explicitly: 3.27e-5 (20us/50kHz), 6.54e-5 (40us/25kHz), R/50kHz=3.27e-5, all << 1 -> no event-level pileup, stop-condition NOT triggered; within-event muon saturation flagged for Phase 5. Guards fp-pileup-unchecked."
-      linked_ids: [claim-pileup-stopcondition, deliv-assembly-code, ref-qpd-paper]
   references:
     ref-pdg-muon:
       status: completed
@@ -130,26 +57,6 @@ contract_results:
       completed_actions: [read, use, cite]
       missing_actions: []
       summary: "Guan et al. arXiv:1509.06176 modified-Gaisser flux: P1-P5=0.102573/-0.068287/0.958633/0.0407253/0.817285 and the prefactor/bracket taken verbatim (verified against METHODS.md), used in dI_dE, cited in the module header."
-    ref-environmental-gamma:
-      status: completed
-      completed_actions: [use, cite]
-      missing_actions: []
-      summary: "Heusser (1995) used as the canonical review context; per-line flux normalization anchored to the cited LABChico EPJP2022 measured spectrum. Provenance column on every gamma_lines.csv row. Absolute flux is the acknowledged weakest anchor (MEDIUM)."
-    ref-klein-nishina:
-      status: completed
-      completed_actions: [use, cite]
-      missing_actions: []
-      summary: "Klein-Nishina dsigma/dOmega angle-sampled -> kinematic T_e; edge E_edge=2E^2/(m_ec^2+2E) self-validated (sampled max = edge). Thomson limit and sigma_KN(1 MeV) reproduced. Cited in compton_deposit/compton_source."
-    ref-nist-xcom:
-      status: completed
-      completed_actions: [use, compare, cite]
-      missing_actions: []
-      summary: "NIST XCOM Ge mu/rho (0.0745/0.0573/0.0510/0.0409 at 0.6/1.0/1.25/2.0 MeV) frozen in ge_xcom_mu.csv with provenance, log-log interpolated; mu*ell_bar=0.117@1MeV/0.084@2MeV reproduced. Cited."
-    ref-qpd-paper:
-      status: completed
-      completed_actions: [read, use, cite]
-      missing_actions: []
-      summary: "Ramanathan et al. 2026 (arXiv:2405.17192) 50 kHz/25 kHz bandwidth used for the pileup occupancy and the within-event saturation criterion. Cited in deposited_spectra."
   forbidden_proxies:
     fp-mean-not-mpv:
       status: rejected
@@ -160,53 +67,6 @@ contract_results:
     fp-quenching-muon:
       status: rejected
       notes: "Muon deposit is an electron recoil on the unified phonon E_dep scale, no Lindhard/ionization quenching, no keVee/keVnr split (CONVENTIONS Section B)."
-    fp-full-absorption:
-      status: rejected
-      notes: "Electron-recoil continuum only; dRdE at every E_gamma is 0, highest nonzero bin is the edge-straddling bin at the 208Tl edge. Optically thin (mu*ell_bar~0.12, mu*t~0.06): scattered photon escapes. No photopeaks."
-    fp-invented-flux:
-      status: rejected
-      notes: "No per-line flux from memory: LABChico measured anchor + DDEP intra-chain scaling + documented assume_U_eq_Th (factor-2 band). Provenance on every row."
-    fp-electron-not-photon:
-      status: rejected
-      notes: "Deposit = T_e = E_gamma - E' (electron recoil), not E_gamma and not E'. Edge falls at max T_e, self-validated per line."
-    fp-quenching-compton:
-      status: rejected
-      notes: "Compton deposit on the unified phonon scale, zero defect correction, no keVee/keVnr (CONVENTIONS Section B)."
-    fp-reconstructed-not-deposited:
-      status: rejected
-      notes: "Deliverable is deposited (phonon) energy dR/dE_dep; no QPD response / E_rec fold applied here (that is Phase 5). Deposited axis explicit in figure and headers."
-    fp-grid-mismatch:
-      status: rejected
-      notes: "assert_shared_grid gives max rel deviation 0.0 (np.array_equal True) between the two channel grids before co-addition; 584 shared bins."
-    fp-pileup-unchecked:
-      status: rejected
-      notes: "Occupancy R*tau=3.27e-5 (50 kHz) / 6.54e-5 (25 kHz) COMPUTED, not asserted; stop-condition explicitly evaluated (False)."
-  comparison_verdicts:
-    cmp-muon-rate-pdg:
-      subject_role: decisive
-      kind: benchmark
-      verdict: agree
-      summary: "Muon wafer rate 1.366 Hz (independent 600k MC 1.376 +/- 0.013) vs PDG horizontal-flux top-face estimate ~1.7 Hz and the 1.5-2 Hz anchor: ~20% low, within the VALD-02 ~30% window. I_v=60.5 m^-2 s^-1 sr^-1 reproduced (~15% under nominal 70, inside inter-experiment spread). MEDIUM (flux normalization is the weakest anchor)."
-    cmp-compton-edges:
-      subject_role: decisive
-      kind: limiting_case
-      verdict: agree
-      summary: "Independent 2E^2/(m_ec^2+2E) = 1243.36/2381.76/1541.31 keV matches code+claims exactly; MC sampled-max T_e = E_edge per line to <0.01 keV. Edge positions HIGH confidence."
-    cmp-compton-rate:
-      subject_role: decisive
-      kind: cross_method
-      verdict: agree
-      summary: "Single-scatter rate 0.2685 Hz vs the independent flux*sigma_KN*N_e anchor 0.2731 Hz, ratio 0.983, within VALD-03 factor 2. Absolute magnitude inherits the site-dependent gamma-flux band (MEDIUM); the factor-2 target is met regardless of the absolute normalization."
-    cmp-energy-closure:
-      subject_role: decisive
-      kind: consistency
-      verdict: agree
-      summary: "int dR/dE_dep dE / (rate*86400/mass) = 0.99928 (muon), 0.99997 (Compton); grids byte-identical (max rel dev 0.0). Independently reproduced."
-    cmp-pileup-occupancy:
-      subject_role: decisive
-      kind: consistency
-      verdict: agree
-      summary: "R_tot*tau = 3.27e-5 (50 kHz) << 1: no event-level pileup, stop-condition not triggered. Robust to the factor-2 Compton band. Within-event muon saturation flagged for Phase 5."
   uncertainty_markers:
     weakest_anchors:
       - "Absolute environmental gamma flux is site-dependent and NOT locked: normalization anchored to the cited LABChico EPJP2022 spectrum with a factor-2 band, and the U-238 chain uses the documented assume_U_eq_Th assumption. Compton total rate is therefore MEDIUM confidence; Compton EDGE positions are HIGH (nuclear-data energies). VALD-03 only requires factor 2, which is met (ratio 0.983)."
@@ -222,11 +82,16 @@ contract_results:
       - "Muon rate off 1.5-2 Hz by >2x or PDG by >30% (checked false: 1.37 Hz, ~20%). Sampled MPV equal to or above the mean (checked false: 1.23 < 1.46). No deposits above a few MeV (checked false: tail to 197 MeV)."
       - "A photopeak at any E_gamma (checked false: dRdE(2614.5)=0). An edge away from 2E^2/(m_ec^2+2E) (checked false: <0.01 keV). Compton rate off >factor 2 from flux*sigma_KN*N_e (checked false: ratio 0.983)."
       - "Channel grids not matching (checked false: max rel dev 0.0). A channel not integrating to its rate (checked false: 0.999). Occupancy approaching unity (checked false: 3e-5)."
-  expert_review:
-    - item: "Absolute environmental gamma flux normalization and U-238/Th-232 chain balance for a specific surface reactor-site deployment"
-      domain: "low-background gamma spectroscopy / environmental radioactivity"
-      why: "The Compton total rate (0.27 Hz) and hence the Compton contribution to the pileup margin scale linearly with the assumed absolute flux, which is a documented tunable input (LABChico anchor + assume_U_eq_Th, factor-2 band). Automated checks confirm the SHAPE (edges HIGH, continuum, single-scatter, provenance) and that VALD-03's factor-2 rate target is met, but the absolute site normalization is a domain/measurement judgment for precision use. Non-blocking for a stage-1 deposited-energy estimate."
-      expected: "Either accept the LABChico-anchored flux + factor-2 band as adequate for stage 1, or supply a site-specific measured gamma spectrum (and a real U-chain flux) to replace assume_U_eq_Th."
+comparison_verdicts:
+  - subject_id: test-muon-rate
+    subject_kind: acceptance_test
+    subject_role: decisive
+    reference_id: ref-pdg-muon
+    comparison_kind: benchmark
+    metric: relative_error
+    threshold: "within ~30% (VALD-02)"
+    verdict: pass
+    notes: "Muon wafer rate 1.366 Hz (independent 600k MC 1.376 +/- 0.013) vs PDG horizontal-flux top-face estimate ~1.7 Hz and the 1.5-2 Hz anchor: ~20% low, within the VALD-02 ~30% window. I_v=60.5 m^-2 s^-1 sr^-1 reproduced (~15% under nominal 70, inside inter-experiment spread). MEDIUM (flux normalization is the weakest anchor)."
 ---
 
 <!-- ASSERT_CONVENTION: metric_signature=not_applicable, fourier_convention=not_applicable, natural_units=internal-only (hbar=c=1) for CEvNS cross section; k_B EXPLICIT (not =1); I/O in eV/keV/MeV, counts/kg/day/keV, s, cm/um; (hbar c)^2 = 3.894e-28 GeV^2 cm^2 -->
@@ -254,6 +119,21 @@ Phase goal: *compute the muon and Compton deposited-energy spectra for the thin 
 All goal elements are established. Output is DEPOSITED (phonon) energy; the QPD response / reconstruction is Phase 5, correctly out of scope. The two caveats (absolute gamma flux, muon flux normalization) are the pre-declared weakest anchors and are baked into the VALD tolerances (factor 2 / 30%), which pass regardless.
 
 ## 2. Contract Coverage
+
+### Frontmatter scope, Plans 04-02 / 04-03 verification, and expert review (relocated from frontmatter)
+<!-- frontmatter contract_results is bound to the single Plan 04-01 contract; the Plan 04-02/04-03 ledger + expert-review item below were relocated here from frontmatter to satisfy the one-plan-per-verification schema -->
+
+The machine-readable `contract_results` ledger in this file's frontmatter is bound to the single Plan 04-01 contract (`04-01-PLAN.md#/contract`), as the validator resolves one plan contract per verification. **Plans 04-02 (Compton) and 04-03 (assembly + pileup) are fully verified and their machine-readable ledgers live in `04-02-SUMMARY.md` and `04-03-SUMMARY.md`.** For the record, verified independently here:
+
+- `claim-compton-spectrum` (PASS): Klein-Nishina electron-recoil T_e continuum (scattered photon escapes, no photopeaks), thin-target single-scatter, unified phonon scale; edges 2E^2/(m_ec^2+2E) = 1243.36/2381.76/1541.31 keV (40K/208Tl/214Bi), MC sampled-max T_e = edge to <0.01 keV; dRdE(2614.5 keV)=0. Deliverables `deliv-compton-code`, `deliv-compton-csv`; tests `test-compton-edges`, `test-continuum-not-peaks`, `test-single-scatter`, `test-compton-convergence`; refs `ref-klein-nishina`, `ref-nist-xcom`; forbidden proxies `fp-full-absorption`, `fp-electron-not-photon`, `fp-quenching-compton` rejected.
+- `claim-compton-flux-provenance` (PASS): every gamma_lines.csv row carries flux_source + flux_unc_frac (ENSDF/LNHB energies, DDEP p_gamma, LABChico EPJP2022 anchor, documented assume_U_eq_Th factor-2 band); no invented flux. Deliverable `deliv-gamma-lines`; test `test-flux-provenance`; ref `ref-environmental-gamma`; forbidden proxy `fp-invented-flux` rejected.
+- `claim-phase4-assembly` (PASS): both channels on the byte-identical shared grid (max rel deviation 0.0); energy closure muon 0.99928 / Compton 0.99997. Deliverables `deliv-assembly-code`, `deliv-spectra-fig`; tests `test-shared-grid`, `test-energy-closure`; ref `ref-qpd-paper`; forbidden proxies `fp-reconstructed-not-deposited`, `fp-grid-mismatch` rejected.
+- `claim-pileup-stopcondition` (PASS): R_tot=1.6342 Hz, occupancy R*tau = 3.27e-5 (50 kHz) / 6.54e-5 (25 kHz) << 1, stop-condition NOT triggered; within-event muon ~197 MeV saturation flagged for Phase 5. Test `test-pileup`; forbidden proxy `fp-pileup-unchecked` rejected.
+- Decisive 04-02/04-03 comparisons (in their SUMMARY ledgers): Compton edges (limiting case, agree); single-scatter rate 0.2685 vs 0.2731 Hz anchor, ratio 0.983 (cross_method, within VALD-03 factor 2); energy closure 0.99928/0.99997 (consistency); pileup occupancy 3.27e-5 << 1 (consistency).
+
+**Expert review requested (non-blocking; overall `status: passed`):** Absolute environmental gamma flux normalization and U-238/Th-232 chain balance for a specific surface reactor-site deployment (domain: low-background gamma spectroscopy / environmental radioactivity). The Compton total rate (0.27 Hz) scales linearly with the assumed absolute flux, a documented tunable input (LABChico anchor + assume_U_eq_Th, factor-2 band). Automated checks confirm the SHAPE (edges HIGH, continuum, single-scatter, provenance) and that VALD-03's factor-2 rate target is met, but the absolute site normalization is a domain/measurement judgment for precision use. Expected: accept the LABChico-anchored flux + factor-2 band as adequate for stage 1, or supply a site-specific measured gamma spectrum (and a real U-chain flux) to replace assume_U_eq_Th.
+
+### Combined coverage
 
 **Combined primary contract targets (claims + deliverables + acceptance_tests): 26/26 VERIFIED** (6 claims, 7 deliverables, 13 acceptance tests). References **6/6 completed**; forbidden proxies **10/10 rejected**; key links (link-muon-spectrum, link-muon-rate, link-compton-spectrum, link-compton-provenance, link-assembly, link-pileup) **6/6** verified. No `suggested_contract_checks` outstanding.
 

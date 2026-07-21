@@ -6,14 +6,6 @@ score: "21/21"
 plan_contract_ref: GPD/phases/03-cevns-cross-section-rate/03-02-PLAN.md#/contract
 contract_results:
   claims:
-    claim-dsigma:
-      status: passed
-      summary: "Plan 03-01. Per-isotope Freedman dsigma_i/dT with Helm F and /(4pi)+(hbar c)^2 discipline integrates to the closed-form sigma_tot(E_nu,32,N_i). INDEPENDENTLY RECOMPUTED from scratch (own constants + own scipy.quad, no cevns import): int dsigma/dT dT (F=1) vs sigma_tot at E=4 MeV gives rel = 1.3e-8 to 1.5e-8 across all five isotopes (<<0.1% requirement). sigma(72Ge,4 MeV) full Q_W = 1.0026e-40 cm^2 (CONVENTIONS anchor ~1.0e-40, +0.26%); N-only quick check 1.079e-40. Helm F(0)=1.000000000000, F^2(200 eV,72Ge)=0.99634, F^2(2 keV)=0.96390 -- all reproduce the CSV-header and code values exactly."
-      linked_ids: [deliv-cevns-code, deliv-drdt-csv, deliv-tests, test-closedform, test-sigma-anchor, test-helm, ref-conventions, ref-cevns-code, ref-lewin-smith]
-    claim-drdt:
-      status: passed
-      summary: "Plan 03-01. Per-isotope-summed dR/dT on natural Ge, folding the frozen flagship flux over the five isotopes on their own [E_min^(i)(T), E_max] kinematic domains, in DEPOSITED nuclear-recoil energy. Independently reproduced: flagship integrated rate above 50 eV = 67.752 counts/kg/day (matches CSV header 67.752 and conus R_flagship 67.75). Rate-closure int(dR/dT)dT vs direct Sum_i N_i int Phi sigma_tot,i agrees (CSV: 119.06 vs 119.42, rel 3.0e-3 < 1% trapz truncation). Per-isotope T_max endpoints span 2.82 keV (76Ge) to 3.07 keV (70Ge) -- five distinct steps -- vs a single 2.955 keV lumped-A=72.63 endpoint (fp-lumped-A rejected)."
-      linked_ids: [deliv-drdt-csv, deliv-cevns-code, deliv-tests, test-rate-closure, test-per-isotope, test-convergence, ref-flagship-flux, ref-cevns-code]
     claim-billard:
       status: passed
       summary: "Plan 03-02, VALD-01 decisive benchmark. INDEPENDENTLY REPRODUCED by folding the Billard-variant CSV with my own dsigma/dT and my own k. k_single=(8.54/3)(25/400)^2=0.011120 and two-core k=0.011092 agree to 0.25% (<1%); k-rescaled integral flux 5.10e10. WITH k the per-isotope Ge sum gives 0.7415/0.5009/0.2567 counts/kg/day above 50/100/200 eV_nr vs Billard Table 1 0.76/0.51/0.26 (-2.4/-1.8/-1.3%, all <2.5% << 20% tolerance). WITHOUT k the fold overshoots by a uniform 89.9x = 1/k (66.68/45.05/23.09) -- fp-billard-norm regression. Both powers thermal (GW_th), distance squared (fp-gwe-gwth rejected). ROADMAP >20% backtrack trigger NOT met (100/200 eV bins <2%)."
@@ -23,21 +15,6 @@ contract_results:
       summary: "Plan 03-02. VERIFIED IN MECHANISM WITH A DOCUMENTED MAGNITUDE CORRECTION. CONUS+ cross-check: flagship and Billard-Table-1 both rescaled to CONUS+ config give ratio 0.99 (within factor 2; eV_ee quenching caveat -> coarse scale check). Flux-band propagation independently reproduced: fractional 1sigma band = 3.5% (200 eV), 6.2% (50 eV), 9.8% (20 eV); sub-1.8-MeV rate fraction = ~0 (>=95 eV), 17.8% (50 eV), 33.8% (20 eV). The band WIDENS below ~95 eV and is narrow above 200 eV, and the sub-1.8 toggle is localized below ~95 eV (T>200 eV unchanged <1e-3) -- the QUALITATIVE claim holds exactly. The plan's guessed '20-25% below 95 eV' MAGNITUDE is NOT reproduced (true band 6-10%): the well-anchored (2-5%) >1.8 MeV flux dominates the rate integrand at every recoil. This is an honest downward refinement from actual computation, reported as BOTH the band and the sub-1.8 fraction (no fp-hide-band), not a failure. Recommend orchestrator reword claim-band."
       linked_ids: [deliv-dep-figure, deliv-drdt-band-csv, deliv-billard-tests, test-conus, test-band, ref-conus, ref-flagship-flux-v2]
   deliverables:
-    deliv-cevns-code:
-      status: passed
-      path: src/qpd_potential/cevns.py
-      summary: "helm_form_factor (scipy.special.spherical_jn, q in fm^-1 with the x->0 limit guarded), per-isotope dsigma_dT with /(4pi)+(hbar c)^2 and clamped 0<T<=T_max window, 5-isotope Ge table via params, exact T_max^(i)/E_min^(i) kinematics, ReactorFlux PCHIP-log fold, differential_rate + closure + band + Billard reproduction. All constants pulled from params.py (no hardcoded G_F/HBARC2/prefactor/sin2thetaW). Imports cleanly; independently re-derived values match line for line."
-      linked_ids: [claim-dsigma, claim-drdt]
-    deliv-drdt-csv:
-      status: passed
-      path: artifacts/stage1/cevns_dRdT.csv
-      summary: "8 columns (T_eV_nr, 5 per-isotope dRdT, dRdT_total, dRdT_band_1sigma) on a 320-point 5-3200 eV_nr grid; provenance header records flux v1.0/git_sha, closure 119.06 vs 119.42 (rel 3.0e-3), sigma anchor 1.0026e-40, F^2 values, and rate>50eV 67.752. counts/kg/day/keV, deposited eV_nr (no quenching). Spot-checked rows reproduce the live fold (<1e-3, test_csv_band_column_consistent)."
-      linked_ids: [claim-drdt, claim-band]
-    deliv-tests:
-      status: passed
-      path: tests/test_cevns_differential.py
-      summary: "Closed-form identity (per isotope, E in {2,4,8} MeV, <1e-3), sigma anchor, Helm F(0)=1 + endpoint magnitude + dimensionless-q guard, rate closure (<1%), per-isotope-vs-lumped-A step structure, convergence (<1%), flux non-negativity. Runs green."
-      linked_ids: [claim-dsigma, claim-drdt]
     deliv-billard-report:
       status: passed
       path: artifacts/stage1/BILLARD_REPRODUCTION.md
@@ -59,30 +36,6 @@ contract_results:
       summary: "11 tests: k-derivation two-way, Billard within 20% WITH k, 100/200 backtrack guard, without-k ~90x regression, CONUS+ factor-2, band narrow>200eV, band widens<95eV, sub-1.8 toggle localized, high-T toggle-invariance, CSV band consistency. All pass. Tests assert the TRUE band behavior (widening + localization), not the plan-guessed 20-25% magnitude."
       linked_ids: [claim-billard, claim-band]
   acceptance_tests:
-    test-closedform:
-      status: passed
-      summary: "Independently recomputed: int dsigma_i/dT dT (F=1) over 0..T_max vs sigma_tot(E,32,N_i) at E=4 MeV gives rel 1.3e-8..1.5e-8 for all five isotopes; pytest parametrizes E in {2,4,8} MeV, all <1e-3. Decisive normalization anchor for /(4pi)+(hbar c)^2+kinematic-factor."
-      linked_ids: [claim-dsigma, deliv-cevns-code, deliv-tests, ref-cevns-code]
-    test-sigma-anchor:
-      status: passed
-      summary: "sigma(72Ge,4 MeV) full Q_W = 1.0026e-40 cm^2 (independently reproduced), +0.26% vs the 1.0e-40 CONVENTIONS Sec C anchor, inside the ~20% window. Backtrack trigger not met."
-      linked_ids: [claim-dsigma, ref-conventions]
-    test-helm:
-      status: passed
-      summary: "F(0)=1.000000000000 to machine precision (3 j1(x)/x -> 1 limit); F^2(200 eV,72Ge)=0.99634 (>0.99); F^2(2 keV)=0.96390 (recorded endpoint tail); q(200 eV,72Ge) built from sqrt(2MT) is O(0.01-0.1) fm^-1 (dimensionless-q guard passes). All independently reproduced."
-      linked_ids: [claim-dsigma, deliv-cevns-code, deliv-tests]
-    test-rate-closure:
-      status: passed
-      summary: "int(dR/dT)dT (F=1) vs direct Sum_i N_i int Phi sigma_tot,i: CSV header 119.06 vs 119.42 counts/kg/day, rel 3.0e-3 < 1% (trapz T-truncation). Confirms the fold unit chain [atoms/kg][cm^2/keV][nu cm^-2 s^-1 MeV^-1]dE_nu x86400 -> counts/kg/day/keV."
-      linked_ids: [claim-drdt, deliv-cevns-code, deliv-drdt-csv]
-    test-per-isotope:
-      status: passed
-      summary: "Per-isotope T_max endpoints 2.82-3.07 keV (5 distinct steps) vs a single 2.955 keV lumped-A=72.63 endpoint; at a T between the heaviest and lightest endpoint at least one isotope is kinematically closed and one open (stepped structure), and the summed rate differs from lumped-A by >2%. fp-lumped-A rejected."
-      linked_ids: [claim-drdt, deliv-cevns-code, deliv-drdt-csv]
-    test-convergence:
-      status: passed
-      summary: "Integrated rate above 50 eV stable <1% under grid refinement (n=120 vs 240); PCHIP log-flux interpolation non-negative over 2000 samples (no ringing). My own n=1200 fold gives 67.752, matching the artifact."
-      linked_ids: [claim-drdt, deliv-cevns-code, deliv-drdt-csv]
     test-k-derivation:
       status: passed
       summary: "k=(P_B/P_v)(G_B/G_v): single-source (8.54 GW/400 m) 0.011120 vs two-core (4.27 GW at 355.39 & 468.76 m) 0.011092 agree 0.25% (<1%); k-rescaled Billard integral flux 5.10e10 nu cm^-2 s^-1 (target ~5.1e10). Guard brackets k in [0.006,0.05]: a 1/d error -> ~0.18, a GW_e error -> ~0.004 (fp-gwe-gwth rejected). Independently reproduced."
@@ -100,26 +53,6 @@ contract_results:
       summary: "PASSED AS IMPLEMENTED (asserts true behavior), WITH A DOCUMENTED PLAN-MAGNITUDE CORRECTION. Band narrow 3.5-4.8% for T>=200 eV (matches '2-5%'); widens below 95 eV (6.2% at 50 eV, 9.8% at 20 eV, all <15%); sub-1.8-MeV zeroing changes T<95 eV substantially (>25% at 20 eV, >10% at 50 eV) and leaves T>200 eV unchanged (<1e-3). All independently reproduced. The plan pass_condition literal '20-25% below 95 eV' is NOT met (true 6-10%); the implemented test correctly asserts the widening+localization structure instead. See comparison verdict cmp-band-magnitude."
       linked_ids: [claim-band, deliv-dep-figure, deliv-drdt-band-csv, ref-flagship-flux-v2]
   references:
-    ref-conventions:
-      status: completed
-      completed_actions: [read, use, cite]
-      missing_actions: []
-      summary: "CONVENTIONS Sec C used verbatim: dsigma/dT=(G_F^2 M/4pi)Q_W^2(1-MT/2E^2)F^2(hbar c)^2, Q_W=N-(1-4 sin2thetaW)Z, sin2thetaW=0.2387, (hbar c)^2=3.894e-28, Helm F(0)=1. Not re-chosen; cited in module + CSV headers. sigma anchor +0.26% confirms it."
-    ref-cevns-code:
-      status: completed
-      completed_actions: [read, use]
-      missing_actions: []
-      summary: "Phase-1 weak_charge/sigma_tot/sigma_tot_MeV reused as the independent closed-form normalization; the differential integrates back to them to 1e-8."
-    ref-flagship-flux:
-      status: completed
-      completed_actions: [read, use]
-      missing_actions: []
-      summary: "data/flux/reactor_flux_v1.0.csv (FROZEN, int Phi = 7.50e12, 3 GW_th/25 m) folded via PCHIP-log; total + rel_uncertainty columns consumed for rate and band."
-    ref-lewin-smith:
-      status: completed
-      completed_actions: [read, use, cite]
-      missing_actions: []
-      summary: "Lewin-Smith Helm parameterization (c=1.23 A^1/3-0.60, a=0.52, s=0.90, R_0^2=c^2+(7/3)pi^2 a^2-5 s^2) implemented exactly; F(0)=1 and F^2 magnitudes reproduced. Cited in code + params."
     ref-billard:
       status: completed
       completed_actions: [compare, cite]
@@ -141,18 +74,6 @@ contract_results:
       missing_actions: []
       summary: "The v1.0 split rel_uncertainty column (2-5% >2 MeV, 20-25% <1.8 MeV) read and propagated into the dR/dT band; the RATE-weighted propagation yields 6-10% below 95 eV because the well-anchored high-E flux dominates the integrand."
   forbidden_proxies:
-    fp-hbarc2:
-      status: rejected
-      notes: "(hbar c)^2=3.894e-28 present and mandatory; omitting it leaves sigma=2.575e-13 GeV^-2, i.e. ~2.6e27x too large vs the 1e-40 cm^2 anchor. My independent recompute requires the factor to land at 1.0026e-40."
-    fp-4pi-8pi:
-      status: rejected
-      notes: "/(4pi) confirmed: gives 1.003e-40. /(8pi) would give 5.013e-41 (0.50x), failing the 20% window around 1e-40 -- a decisive discriminator, and the code/params use 4*pi."
-    fp-lumped-A:
-      status: rejected
-      notes: "Per-isotope sum on distinct T_max endpoints (70Ge 3.07 keV ... 76Ge 2.82 keV) vs a single lumped-A=72.63 endpoint 2.955 keV; test-per-isotope asserts the stepped structure and >2% difference."
-    fp-quenching:
-      status: rejected
-      notes: "Output axis is deposited nuclear-recoil energy T=E_nr; no Lindhard/ionization yield, no eV_ee/eV_nr mixing anywhere (CONVENTIONS Sec B). Reconstruction/response is deferred to Phase 5 by design."
     fp-billard-norm:
       status: rejected
       notes: "k=0.0111 rescale applied before the Table-1 comparison; folding at the stored 3 GW_th/25 m norm is kept ONLY as test_without_k_overshoots_90x (89.9x=1/k regression)."
@@ -165,42 +86,6 @@ contract_results:
     fp-lumped-A-billard:
       status: rejected
       notes: "Billard reproduction uses the 5-isotope Ge sum on per-isotope kinematic domains, not a lumped A=72.63; BILLARD_REPRODUCTION.md Sec 2 states the abundances used."
-  comparison_verdicts:
-    cmp-sigma-anchor:
-      subject_role: decisive
-      kind: benchmark
-      verdict: agree
-      summary: "sigma(72Ge,4 MeV) full Q_W = 1.0026e-40 cm^2 vs CONVENTIONS Sec C anchor 1.0e-40 (+0.26%); independently recomputed. Backtrack trigger not met."
-    cmp-closedform-identity:
-      subject_role: decisive
-      kind: cross_method
-      verdict: agree
-      summary: "Differential integrates to the closed-form total to rel 1.3e-8..1.5e-8 across all five isotopes (<<0.1%); the /(4pi), (hbar c)^2, and truncated kinematic factor are mutually self-consistent."
-    cmp-per-isotope-vs-lumped:
-      subject_role: decisive
-      kind: cross_method
-      verdict: agree
-      summary: "Five distinct T_max steps (2.82-3.07 keV) vs one lumped-A endpoint (2.955 keV); the per-isotope sum is measurably distinct near the endpoint, confirming the decisive physics."
-    cmp-billard-table1:
-      subject_role: decisive
-      kind: prior_work
-      verdict: agree
-      summary: "Reproduced 0.7415/0.5009/0.2567 vs Billard Table 1 0.76/0.51/0.26 counts/kg/day (-2.4/-1.8/-1.3%, all <2.5% << 20%). Independently reproduced by an own fold with an independently derived k."
-    cmp-without-k-overshoot:
-      subject_role: decisive
-      kind: consistency
-      verdict: agree
-      summary: "Folding the variant at its stored norm (k=1) overshoots Table 1 by a uniform 89.9x = 1/k in every bin, proving the mismatch is pure geometry+power normalization (identical spectral shape)."
-    cmp-conus-scale:
-      subject_role: decisive
-      kind: experiment
-      verdict: agree
-      summary: "Flagship and Billard rates rescaled to CONUS+ config agree to ratio 0.99 (within factor 2). CAVEAT: coarse eV_ee-scale check needing a quenching model, not a direct eV_nr spectrum match -> MEDIUM confidence."
-    cmp-band-magnitude:
-      subject_role: decisive
-      kind: consistency
-      verdict: tension
-      summary: "Computed rate-weighted 1sigma flux band is 6-10% below 95 eV (9.8% at 20 eV) and 3.5% above 200 eV, NOT the plan-guessed 20-25% below 95 eV. The QUALITATIVE structure (widening below 95 eV, narrow above 200 eV, sub-1.8 toggle localized, T>200 eV unchanged <1e-3) is confirmed; only the guessed magnitude is superseded because the well-anchored (2-5%) >1.8 MeV flux dominates the rate integrand. Honest downward refinement from computation (both band and 18-34% sub-1.8 rate fraction reported), not a physics failure. Requires an orchestrator reword of claim-band, not a backtrack."
   uncertainty_markers:
     weakest_anchors:
       - "The sub-1.8-MeV flux SHAPE is the Phase-2 Kopeikin-2012-consistent MODEL PLACEHOLDER (not a sourced EF/CONFLUX table); it drives 18% (50 eV) to 34% (20 eV) of the low-recoil rate. Inherited from Phase 2 (which is expert_needed for the same reason), covered by the propagated band, not independently anchored here."
@@ -215,15 +100,33 @@ contract_results:
       - "If a real EF/CONFLUX/Kopeikin sub-1.8-MeV table replaces the placeholder, the low-recoil (T<~95 eV) band and the sub-1.8 rate fraction (18-34%) could shift; the Billard and CONUS+ anchors constrain the >1.8 MeV normalization but not the differential shape below 1.8 MeV."
     disconfirming_observations:
       - "Differential failing to integrate to sigma_tot at >0.1% (checked false: rel 1e-8). A single sharp endpoint instead of five T_max steps (checked false: 2.82-3.07 keV spread). PCHIP negative/jagged flux (checked false). Billard 100/200 eV bins off >20% (checked false: <2%). Sub-1.8 toggle changing T>200 eV bins (checked false: <1e-3)."
-  expert_review:
-    - item: "Adequacy of the inherited sub-1.8-MeV model-placeholder flux shape for the Phase-3 low-recoil CEvNS bins (T <~ 95 eV_nr)"
-      domain: "reactor antineutrino spectroscopy / low-energy CEvNS"
-      why: "Automated checks confirm the placeholder contributes only 18-34% of the low-recoil rate and is covered by the propagated band, but whether that band adequately spans the true EF-vs-CONFLUX sub-1.8-MeV shape spread -- or whether a digitized table must replace it before precision use -- is a domain-expert judgment. Inherited from Phase 2 (status expert_needed)."
-      expected: "Either accept the placeholder + propagated band as adequate for a stage-1 deposited-energy estimate, or source a real Estienne-Fallot/CONFLUX/Kopeikin-2012 per-isotope sub-1.8-MeV table to replace it."
-    - item: "Orchestrator bookkeeping: reword claim-band / test-band magnitude from 'band 20-25% below 95 eV' to 'band widens to ~6-10% below ~95 eV; sub-1.8 rate fraction reaches 18-34%'"
-      domain: "GPD contract maintenance (non-expert)"
-      why: "The implemented test asserts the correct physical behavior (widening + localization) and passes, but the plan's frozen claim-band/test-band pass_condition still literally states 20-25%. The computed value is 6-10%; this is an honest refinement, not a failure, and needs a contract-wording update decision (human/orchestrator), not a physics fix."
-      expected: "Orchestrator accepts the honest band magnitude and updates the claim-band wording; no code, convention, or backtrack action."
+comparison_verdicts:
+  - subject_id: test-billard
+    subject_kind: acceptance_test
+    subject_role: decisive
+    reference_id: ref-billard
+    comparison_kind: benchmark
+    metric: relative_error
+    threshold: "<= 0.025"
+    verdict: pass
+    notes: "Reproduced 0.7415/0.5009/0.2567 vs Billard Table 1 0.76/0.51/0.26 counts/kg/day (-2.4/-1.8/-1.3%, all <2.5% << 20%); independently reproduced by an own fold with an independently derived k. Folding at the stored norm (k=1) overshoots by a uniform 89.9x = 1/k, proving the mismatch is pure geometry+power normalization."
+  - subject_id: test-conus
+    subject_kind: acceptance_test
+    subject_role: decisive
+    reference_id: ref-conus
+    comparison_kind: benchmark
+    metric: rate_scale_ratio
+    threshold: "within factor 2"
+    verdict: pass
+    notes: "Flagship and Billard rates rescaled to CONUS+ config agree to ratio 0.99 (within factor 2). CAVEAT: coarse eV_ee-scale check needing a quenching model, not a direct eV_nr spectrum match -> MEDIUM confidence."
+  - subject_id: claim-band
+    subject_kind: claim
+    subject_role: supporting
+    comparison_kind: cross_method
+    metric: band_magnitude
+    threshold: "plan-guessed 20-25% below 95 eV"
+    verdict: tension
+    notes: "Computed rate-weighted 1sigma flux band is 6-10% below 95 eV (9.8% at 20 eV) and 3.5% above 200 eV, NOT the plan-guessed 20-25%. The QUALITATIVE structure (widening below 95 eV, narrow above 200 eV, sub-1.8 toggle localized, T>200 eV unchanged <1e-3) is confirmed; only the guessed magnitude is superseded because the well-anchored (2-5%) >1.8 MeV flux dominates the rate integrand. Honest downward refinement (both band and 18-34% sub-1.8 rate fraction reported), not a failure; needs an orchestrator reword of claim-band, not a backtrack."
 ---
 
 <!-- ASSERT_CONVENTION: metric_signature=not_applicable, fourier_convention=not_applicable, natural_units=internal-only (hbar=c=1) for CEvNS cross section; k_B EXPLICIT (not =1); I/O in eV/keV/MeV, counts/kg/day/keV, s, cm/um; (hbar c)^2 = 3.894e-28 GeV^2 cm^2 -->
@@ -248,6 +151,20 @@ Phase goal: *"Compute the per-isotope-summed CEvNS differential rate dR/dT on na
 All goal elements are established. The output is DEPOSITED nuclear-recoil energy (reconstruction/response is Phase 5, correctly out of scope). The single caveat driving `expert_needed` is the inherited Phase-2 sub-1.8-MeV placeholder (§6); the claim-band magnitude is an honest downward refinement, not a failure.
 
 ## 2. Contract Coverage
+
+### Frontmatter scope, Plan 03-01 verification, and expert review (relocated from frontmatter)
+<!-- frontmatter contract_results is bound to the single Plan 03-02 contract; Plan 03-01 ledger + the expert-review items below were relocated here from frontmatter to satisfy the one-plan-per-verification schema -->
+
+
+The machine-readable `contract_results` ledger in this file's frontmatter is bound to the single Plan 03-02 contract (`03-02-PLAN.md#/contract`), as the validator resolves one plan contract per verification. **Plan 03-01 (CEvNS cross section & differential rate) is fully verified and its machine-readable ledger lives in `03-01-SUMMARY.md`.** For the record, the Plan 03-01 headline verified here independently:
+
+- `claim-dsigma` (PASS): per-isotope Freedman dsigma_i/dT with Helm F and /(4pi)+(hbar c)^2 discipline integrates to the closed-form sigma_tot to rel 1.3e-8..1.5e-8 across all five isotopes; sigma(72Ge,4 MeV) full Q_W = 1.0026e-40 cm^2 (+0.26% vs the CONVENTIONS Sec C anchor); Helm F(0)=1, F^2(200 eV,72Ge)=0.99634. Deliverables `deliv-cevns-code`, `deliv-drdt-csv`, `deliv-tests`; tests `test-closedform`, `test-sigma-anchor`, `test-helm`; refs `ref-conventions`, `ref-cevns-code`, `ref-lewin-smith`; forbidden proxies `fp-hbarc2` (/(4pi)+(hbar c)^2 mandatory), `fp-4pi-8pi`, `fp-lumped-A`, `fp-quenching` all rejected.
+- `claim-drdt` (PASS): per-isotope-summed dR/dT on natural Ge, flagship rate above 50 eV = 67.752 counts/kg/day; rate closure 119.06 vs 119.42 (rel 3.0e-3); five distinct T_max endpoints (2.82-3.07 keV) vs a lumped-A endpoint. Tests `test-rate-closure`, `test-per-isotope`, `test-convergence`; ref `ref-flagship-flux`.
+- Decisive 03-01 comparisons (in `03-01-SUMMARY.md` ledger): sigma anchor +0.26% (benchmark, pass); closed-form identity rel ~1e-8 (cross_method, pass); per-isotope vs lumped-A stepped structure (cross_method, pass).
+
+**Expert review requested (drives `status: expert_needed`):**
+1. Adequacy of the inherited sub-1.8-MeV model-placeholder flux shape for the Phase-3 low-recoil CEvNS bins (T <~ 95 eV_nr), domain reactor antineutrino spectroscopy / low-energy CEvNS. Automated checks confirm the placeholder contributes only 18-34% of the low-recoil rate and is covered by the propagated band, but whether that band adequately spans the true EF-vs-CONFLUX sub-1.8-MeV shape spread -- or whether a digitized table must replace it before precision use -- is a domain-expert judgment (inherited from Phase 2, status expert_needed). Expected: accept placeholder + band as adequate for a stage-1 estimate, or source a real Estienne-Fallot/CONFLUX/Kopeikin-2012 per-isotope sub-1.8-MeV table.
+2. Orchestrator bookkeeping (non-expert): reword `claim-band`/`test-band` magnitude from "band 20-25% below 95 eV" to "band widens to ~6-10% below ~95 eV; sub-1.8 rate fraction reaches 18-34%". The implemented test asserts the correct physical behavior (widening + localization) and passes; the computed value is 6-10%, an honest refinement, not a failure. Needs a contract-wording update decision, not a physics/backtrack action. (Recorded as the `claim-band` `tension` comparison verdict.)
 
 **Plan 03-02 (machine ledger, headline):** claims 2/2, deliverables 4/4, acceptance_tests 4/4, references 4/4 completed, forbidden_proxies 4/4 rejected.
 **Plan 03-01 (machine ledger, carried):** claims 2/2, deliverables 3/3, acceptance_tests 6/6, references 4/4 completed, forbidden_proxies 4/4 rejected.

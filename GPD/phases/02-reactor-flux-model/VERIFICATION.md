@@ -6,25 +6,11 @@ score: "15/15"
 plan_contract_ref: GPD/phases/02-reactor-flux-model/02-02-PLAN.md#/contract
 contract_results:
   claims:
-    claim-perfission-spectrum:
-      status: passed
-      summary: "Plan 02-01 headline. Component-wise per-fission spectrum assembled from SOURCED Huber (235U/239Pu/241Pu, arXiv:1106.0687) + Mueller (238U, arXiv:1101.2663) coefficients above 2 MeV, seam-matched to a summation extension below 1.8 MeV plus a separate 238U(n,gamma) column. Independently confirmed: reconstructed 235U = 0.6558/0.1099 at 3/5 MeV vs published 0.651/0.110 (+0.73%/-0.13%); S=exp(sum a_p E^{p-1}) (exponentiated, not direct-apply — bare poly at 3 MeV is -0.422); seam C1-continuous on a dense grid (d lnS/dE -0.695->-0.697 at 1.8, -0.774->-0.772 at 2.0, max adjacent jump 0.15%); non-negative everywhere; yields total 5.875, above-1.8 1.881, n-capture 0.600 /fission. CAVEAT: sub-1.8 MeV SHAPE is a documented MODEL PLACEHOLDER, not a sourced EF/CONFLUX/Kopeikin table."
-      linked_ids: [deliv-assembly-code, deliv-component-data, test-coeffs-sourced, test-hm-unit, test-integral-yields, test-seam-continuity, ref-huber, ref-mueller, ref-summation, ref-ncapture, ref-hayes-vogel]
     claim-frozen-flux:
       status: passed
       summary: "Plan 02-02 headline. Frozen data/flux/reactor_flux_v1.0.csv normalizes to int Phi dE = 7.503e12 nu-bar/cm2/s at 3 GW_th, 25 m (target 7-8e12), independently reproduced from the CSV by trapz. R_f=9.098e19 fissions/s and 1/(4 pi d^2)=1.273e-8 cm^-2 both reproduced from first principles; <E_f>=205.8 MeV effective-thermal (Ma 2013), NOT total Q; R_f x geometry applied once (no ~6/fission double-count). Split band 2-5% above / 20-25% below verified from the CSV region_flag. Billard variant is a distinct table (4.586e12) with HM held constant below 2 MeV (1 unique value, 0 spread) and correct isotope-labelled fractions 55.6/32.6/7.1/4.7."
       linked_ids: [deliv-frozen-csv, deliv-normalization-code, deliv-overlay-fig, test-normalization, test-csv-schema, test-band-split, test-billard-variant, ref-huber, ref-cevns-benchmark, ref-ma, ref-hayes-vogel]
   deliverables:
-    deliv-assembly-code:
-      status: passed
-      path: src/flux/assemble_spectrum.py
-      summary: "Loads sourced coefficients (not inlined), PCHIP-in-log summation interpolation (guards fp-negative-spline), per-isotope seam scale c_i on 2-3 MeV, quintic-smoothstep C1 blend on 1.8-2.0 MeV in log-flux, n-capture kept as a separate additive component. Non-negativity asserted; imports cleanly. Supported by huber_mueller.py and summation_ncapture.py."
-      linked_ids: [claim-perfission-spectrum]
-    deliv-component-data:
-      status: passed
-      path: data/flux/hm_coefficients.csv
-      summary: "Provenance-tagged coefficient table (source/arxiv_id/table/fetch_note per isotope); values match canonical Huber Table III and Mueller Table VI. Companion data files summation_spectra.csv (flagged MODEL PLACEHOLDER / SOURCING GAP) and ncapture_238U.csv (Kopeikin-2004 normalization, AME2020 Q-values) carry explicit provenance headers."
-      linked_ids: [claim-perfission-spectrum]
     deliv-frozen-csv:
       status: passed
       path: data/flux/reactor_flux_v1.0.csv
@@ -41,22 +27,6 @@ contract_results:
       summary: "flux_overlay.png (107 KB) exists: total flux with split band, computed 235U contribution, and published Huber 235U benchmark points overlaid, seam marked. seam_continuity.png (136 KB) also present from Plan 02-01."
       linked_ids: [claim-frozen-flux]
   acceptance_tests:
-    test-coeffs-sourced:
-      status: passed
-      summary: "Every coefficient row carries a populated source/arxiv_id/provenance field; loader raises on non-finite or missing-source. No NaN/placeholder coefficients. Independently confirmed values equal canonical Huber/Mueller published coefficients."
-      linked_ids: [claim-perfission-spectrum, deliv-component-data]
-    test-hm-unit:
-      status: passed
-      summary: "Independently recomputed S=exp(sum a_p E^{p-1}) for 235U: 0.6558 at 3 MeV (+0.73%) and 0.1099 at 5 MeV (-0.13%) vs published 0.651/0.110 — inside the ~5% pass window. Direct-apply bug guarded (bare polynomial = -0.422, clearly wrong)."
-      linked_ids: [claim-perfission-spectrum, ref-huber]
-    test-integral-yields:
-      status: passed
-      summary: "Independently: total fission 5.875/fission (target ~6, +/-15%), above-1.8 1.881/fission (target ~1.9, +/-20%), n-capture 0.600/fission (target ~0.6, +/-30%). All within tolerance."
-      linked_ids: [claim-perfission-spectrum, ref-hayes-vogel, ref-ncapture]
-    test-seam-continuity:
-      status: passed
-      summary: "Dense-grid (dE=1e-3 MeV) evaluation across 1.5-2.3 MeV: max adjacent relative jump 0.15%, log-slope continuous through 1.8 and 2.0 MeV boundaries, S>0 throughout. C1 confirmed; no truncation."
-      linked_ids: [claim-perfission-spectrum]
     test-normalization:
       status: passed
       summary: "Independently: R_f=3e9/(205.815 x 1.602e-13)=9.098e19 fissions/s (target ~9e19); int Phi dE=7.503e12 nu-bar/cm2/s (target 7-8e12) reproduced by trapz on the frozen CSV; emission=1.964e20 nu-bar/s/GW_th (Hayes-Vogel ~2e20). Uses GW_th and effective-thermal <E_f>, not GW_e or total Q."
@@ -76,24 +46,9 @@ contract_results:
   references:
     ref-huber:
       status: completed
-      completed_actions: [read, use, cite]
+      completed_actions: [read, use, compare, cite]
       missing_actions: []
-      summary: "Huber coefficients (235U/239Pu/241Pu) fetched with provenance and used; reconstructed 235U verified within 0.73%/0.13% of the published Huber tabulation (Table VII benchmark points); cited in code and CSV header."
-    ref-mueller:
-      status: completed
-      completed_actions: [read, use, cite]
-      missing_actions: []
-      summary: "Mueller 238U Table VI coefficients fetched with provenance and used; cited in hm_coefficients.csv header and code docstrings."
-    ref-summation:
-      status: partial
-      completed_actions: [cite]
-      missing_actions: [read, use]
-      summary: "PRIMARY CAVEAT. A digitized Estienne-Fallot 2019 / CONFLUX per-isotope sub-1.8 MeV table could NOT be machine-sourced in-environment (Huber/Mueller tabulations stop at 2.0 MeV; running the full CONFLUX ENDF summation is out of plan scope). Per fetch-not-invent, no table was fabricated; instead a seam-anchored allowed-beta-like MODEL PLACEHOLDER shape is used and honestly flagged, with the EF-vs-CONFLUX spread motivating the wide 20-25% below-1.8 band. The intended dataset was cited but not actually read/used."
-    ref-ncapture:
-      status: completed
-      completed_actions: [read, use, cite]
-      missing_actions: []
-      summary: "238U(n,gamma) NORMALIZED to 0.6 nu-bar/fission (Kopeikin 2004 / Huber-Jaffke 2016, sourced); shape COMPUTED from sourced AME2020 Q-values (1.263/0.722 MeV) via the allowed-beta spectral function. Cited in data header and code."
+      summary: "Huber coefficients (235U/239Pu/241Pu) fetched with provenance and used; the computed 235U flux was compared against the published Huber tabulation (agreement within band above 2 MeV, reconstructed 235U within 0.73%/0.13% at 3/5 MeV); cited in code and CSV header."
     ref-hayes-vogel:
       status: completed
       completed_actions: [read, compare, cite]
@@ -110,15 +65,6 @@ contract_results:
       missing_actions: []
       summary: "Billard (2017) flux assumptions reproduced as a distinct variant table (HM constant below 2 MeV, fractions 55.6/32.6/7.1/4.7) ready for the Phase-3 Table-1 reproduction. Cited in variant CSV header."
   forbidden_proxies:
-    fp-truncate-ibd:
-      status: rejected
-      notes: "Sub-1.8 MeV flux is POPULATED (~3.3e12 nu/cm2/s/MeV at 0.1 MeV), non-negative, C1-continuous across the seam, and is a bounded allowed-beta-like continuation — NOT a truncation and NOT a power-law extrapolation of the HM fit downward. ~71% of the total flux integral lives below 1.8 MeV and is retained."
-    fp-invented-coeffs:
-      status: rejected
-      notes: "All HM coefficients carry primary-source provenance and equal published Huber/Mueller values; loader rejects missing-source rows. Reconstruction matches published Huber independently."
-    fp-negative-spline:
-      status: rejected
-      notes: "PCHIP interpolation in log-flux (monotone, no ringing); non-negativity asserted in assemble() and independently confirmed (min S = 1.06 across the seam; min total flux 2.98e6 > 0)."
     fp-loose-1e13:
       status: rejected
       notes: "Authoritative target 7-8e12 used; achieved 7.503e12 (the honest arithmetic value), NOT tuned up to the loose REQUIREMENTS CALC-01 '~1e13'. No spurious ~30% inflation."
@@ -128,37 +74,6 @@ contract_results:
     fp-uniform-band:
       status: rejected
       notes: "Split band verified from the frozen CSV: 2-5% above 2 MeV, 10% seam, 20-25% below 1.8 MeV. The never-measured region is explicitly wider, not masked as data-anchored."
-  comparison_verdicts:
-    cmp-huber-235u-shape:
-      subject_role: decisive
-      kind: benchmark
-      verdict: agree
-      summary: "Reconstructed 235U vs published Huber: +0.73% at 3 MeV, -0.13% at 5 MeV (pass window ~5%)."
-    cmp-integral-flux-target:
-      subject_role: decisive
-      kind: benchmark
-      verdict: agree
-      summary: "int Phi dE = 7.503e12 nu-bar/cm2/s inside the authoritative 7-8e12 target."
-    cmp-emission-hayes-vogel:
-      subject_role: decisive
-      kind: prior_work
-      verdict: agree
-      summary: "1.964e20 nu-bar/s/GW_th vs Hayes-Vogel ~2e20 (within ~2%)."
-    cmp-yields-hayes-vogel:
-      subject_role: decisive
-      kind: prior_work
-      verdict: agree
-      summary: "Total 5.875/fission (~6) and above-1.8 1.881/fission (~1.9) consistent with reactor accounting."
-    cmp-billard-variant:
-      subject_role: decisive
-      kind: prior_work
-      verdict: agree
-      summary: "Billard-assumption variant reproduces HM-constant-below-2-MeV with correct isotope-labelled fractions; distinct 4.586e12 table ready for Phase-3."
-    cmp-subibd-shape-source:
-      subject_role: decisive
-      kind: prior_work
-      verdict: inconclusive
-      summary: "The sub-1.8 MeV SHAPE (governs ~71% of the flux integral and the flagship low-recoil CEvNS input) is a model placeholder, not benchmarked against a sourced EF/CONFLUX/Kopeikin-2012 table. Band-covered (20-25%) and within the phase goal's 'modeled extension' scope, but not literature-anchored. Needs expert judgment / a sourced replacement before precision use."
   uncertainty_markers:
     weakest_anchors:
       - "Sub-1.8 MeV summation SHAPE is a documented MODEL PLACEHOLDER (seam-anchored allowed-beta-like continuation), not a sourced EF/CONFLUX/Kopeikin table; it governs ~71% of the total flux integral and the Phase-3 low-recoil CEvNS bins. Covered by a wide 20-25% band."
@@ -171,11 +86,34 @@ contract_results:
       - "The absolute integral flux (7.5e12) and its sub-1.8 shape could shift if a real EF/CONFLUX/Kopeikin table replaces the placeholder; the ~6/fission and ~1.9-above anchors bound the integral but not the differential shape below 1.8 MeV."
     disconfirming_observations:
       - "A visible seam step (checked false: 0.15% dense jump, C1), negative flux (checked false: min 1.06), integral far from 7-8e12 (checked false: 7.503e12), or a Billard 238U<->239Pu fraction swap (checked false)."
-  expert_review:
-    - item: "Adequacy of the sub-1.8 MeV model-placeholder shape for the Phase-3 CEvNS low-recoil spectrum"
-      domain: "reactor antineutrino spectroscopy / low-energy CEvNS"
-      why: "The placeholder governs ~71% of the flux integral and directly shapes the flagship T<~96 eV recoil bins; whether the 20-25% band adequately covers the true EF-vs-CONFLUX shape spread, or whether a digitized summation table must be sourced before precision use, is a domain-expert judgment that automated checks cannot settle."
-      expected: "Either accept the placeholder+band as adequate for a stage-1 estimate (goal explicitly asks for a MODELED extension with a wide band), or source a real Estienne-Fallot/CONFLUX/Kopeikin-2012 per-isotope sub-1.8 MeV table to replace it."
+comparison_verdicts:
+  - subject_id: test-normalization
+    subject_kind: acceptance_test
+    subject_role: decisive
+    reference_id: ref-hayes-vogel
+    comparison_kind: benchmark
+    metric: emission_rate_and_integral_flux
+    threshold: "int Phi dE in 7-8e12; emission 1.7e20-2.3e20 nu-bar s^-1 GW_th^-1"
+    verdict: pass
+    notes: "int Phi dE = 7.503e12 nu-bar/cm2/s inside the authoritative 7-8e12 target; emission 1.964e20 nu-bar/s/GW_th vs Hayes-Vogel ~2e20 (within ~2%); yields total 5.875/fission (~6) and above-1.8 1.881/fission (~1.9) consistent with reactor accounting."
+  - subject_id: claim-frozen-flux
+    subject_kind: claim
+    subject_role: decisive
+    reference_id: ref-huber
+    comparison_kind: benchmark
+    metric: relative_error
+    threshold: "<= band (~2-5% above 2 MeV)"
+    verdict: pass
+    notes: "Reconstructed 235U vs published Huber: +0.73% at 3 MeV, -0.13% at 5 MeV (pass window ~5%); computed 235U flux tracks published Huber within band above 2 MeV."
+  - subject_id: claim-frozen-flux
+    subject_kind: claim
+    subject_role: decisive
+    reference_id: ref-cevns-benchmark
+    comparison_kind: prior_work
+    metric: variant_distinctness
+    threshold: "constant below 2 MeV + Billard fractions labelled; distinct from flagship"
+    verdict: pass
+    notes: "Billard-assumption variant reproduces HM-constant-below-2-MeV with correct isotope-labelled fractions; distinct 4.586e12 table ready for Phase-3."
 ---
 
 <!-- ASSERT_CONVENTION: metric_signature=not_applicable, fourier_convention=not_applicable, natural_units=internal-only (hbar=c=1) for CEvNS cross section; k_B EXPLICIT (not =1); I/O in eV/keV/MeV, counts/kg/day/keV, s, cm/um; (hbar c)^2 = 3.894e-28 GeV^2 cm^2 -->
@@ -198,6 +136,13 @@ Phase goal: *"A frozen, versioned Phi(E_nu) table is produced — Huber–Muelle
 | Normalized to ~7-8e12 at 3 GW_th, 25 m | normalization.py | int Phi dE = 7.503e12; R_f=9.10e19; single geometry factor | VERIFIED |
 
 All five goal elements are established. The sub-1.8 MeV region is MODELED (not truncated), satisfying the goal literally, but its shape rests on a placeholder rather than a sourced dataset — the documented, pre-anticipated caveat (§6).
+
+### Frontmatter scope, sub-1.8 MeV verdict, and expert review (relocated from frontmatter)
+
+The machine-readable `contract_results` ledger in this file's frontmatter is bound to the single Plan 02-02 contract (`02-02-PLAN.md#/contract`), as the validator resolves one plan contract per verification. The Plan 02-01 headline (component-wise per-fission spectrum: `claim-perfission-spectrum`, `deliv-assembly-code`, `deliv-component-data`, `test-coeffs-sourced`, `test-hm-unit`, `test-integral-yields`, `test-seam-continuity`, `ref-mueller`, `ref-summation`, `ref-ncapture`, `fp-truncate-ibd`, `fp-invented-coeffs`, `fp-negative-spline`) is verified in the goal-achievement table above and §6 below, and its machine-readable ledger lives in `02-01-SUMMARY.md`.
+
+- **Sub-1.8 MeV shape comparison — INCONCLUSIVE (not a pass).** The sub-1.8 MeV SHAPE (which governs ~71% of the flux integral and the flagship low-recoil CEvNS input) is a model placeholder, not benchmarked against a sourced Estienne-Fallot/CONFLUX/Kopeikin-2012 table. `ref-summation` was cited but the digitized per-isotope table could not be machine-sourced in-environment (Huber/Mueller tabulations stop at 2.0 MeV; the full CONFLUX ENDF summation is out of plan scope). Band-covered (20-25%) and within the phase goal's "modeled extension" scope, but not literature-anchored; needs a sourced replacement before precision use.
+- **Expert review requested (drives `status: expert_needed`).** Adequacy of the sub-1.8 MeV model-placeholder shape for the Phase-3 CEvNS low-recoil spectrum (domain: reactor antineutrino spectroscopy / low-energy CEvNS). The placeholder governs ~71% of the flux integral and directly shapes the flagship T<~96 eV recoil bins; whether the 20-25% band adequately covers the true EF-vs-CONFLUX shape spread, or whether a digitized summation table must be sourced before precision use, is a domain-expert judgment automated checks cannot settle. Expected resolution: either accept the placeholder+band as adequate for a stage-1 estimate (the goal explicitly asks for a MODELED extension with a wide band), or source a real Estienne-Fallot/CONFLUX/Kopeikin-2012 per-isotope sub-1.8 MeV table to replace it.
 
 ## 2. Contract Coverage
 
