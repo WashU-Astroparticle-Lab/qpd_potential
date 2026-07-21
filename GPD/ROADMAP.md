@@ -39,7 +39,7 @@ This stage-1 study computes the reactor-CEvNS, cosmic-ray-muon, and environmenta
 - [x] **Phase 3: CEvNS Cross Section & Rate** — Per-isotope-summed dR/dT_dep on Ge, benchmarked against Billard Table 1 and the closed-form total cross section.
 - [x] **Phase 4: Muon & Compton Deposited-Energy Spectra** — Muon (Gaisser–Guan ⊗ chord ⊗ Landau–Vavilov) and Compton (Klein–Nishina continuum) deposited-energy spectra, validated against flux anchors.
 - [x] **Phase 5: QPD Response Chain & Energy Reconstruction** — Per-design response matrix R(E_rec | E_dep) spanning linear and saturated regimes; locate the crossover deposit energy.
-- [ ] **Phase 6: Fold & Produce Reconstructed-Energy Spectra** — Fold all three deposit spectra through R to deliver the reconstructed-energy figures for both designs.
+- [x] **Phase 6: Fold & Produce Reconstructed-Energy Spectra** — Fold all three deposit spectra through R to deliver the reconstructed-energy figures for both designs.
 
 ## Phase Dependencies
 
@@ -149,8 +149,8 @@ Plans:
 **Contract Coverage:** advances deliv-fig-spectra (all three channels, both designs, counts/kg/day/keV normalization), deliv-code, deliv-note | anchors — (consumes upstream frozen inputs) | forbidden proxy: fp-deposited-only (reporting spectra in deposited energy only without the reconstruction/bandwidth model — the decisive output is reconstructed energy)
 **Plans:** 2 plans
 
-- [ ] 06-01-PLAN.md — Fold pipeline: CEvNS counts-conserving rebin + fold all 3 channels × both designs through R_non_paralyzable → reconstructed-spectra CSVs + counts-conservation/low-edge/E_rec-axis tests (SIMU-03, deliv-code, wave 1)
-- [ ] 06-02-PLAN.md — deliv-fig-spectra (E_rec axis, all 3 channels, both designs, saturation delimited, true→reconstructed mapping panel) + finalize ASSUMPTIONS.md (deliv-note); closes stage-1 (wave 2, depends 06-01)
+- [x] 06-01-PLAN.md — Fold pipeline: CEvNS counts-conserving rebin + fold all 3 channels × both designs through R_non_paralyzable → reconstructed-spectra CSVs + counts-conservation/low-edge/E_rec-axis tests (SIMU-03, deliv-code, wave 1)
+- [x] 06-02-PLAN.md — deliv-fig-spectra (E_rec axis, all 3 channels, both designs, saturation delimited, true→reconstructed mapping panel) + finalize ASSUMPTIONS.md (deliv-note); closes stage-1 (wave 2, depends 06-01)
 
 ## Backtracking Triggers
 
@@ -173,4 +173,4 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | 3. CEvNS Cross Section & Rate | 2/2 | Complete ✓ (Billard within 2.4%; sub-1.8 MeV band-covered) | 2026-07-21 |
 | 4. Muon & Compton Deposited-Energy Spectra | 3/3 | Complete ✓ (VALD-02/03 met; gamma-flux band-covered) | 2026-07-21 |
 | 5. QPD Response Chain & Energy Reconstruction | 2/2 | Complete ✓ (user-verified; non-paralyzable adopted) | 2026-07-21 |
-| 6. Fold & Produce Reconstructed-Energy Spectra | 0/2 | Planned | - |
+| 6. Fold & Produce Reconstructed-Energy Spectra | 2/2 | Complete ✓ (deliverables produced; figure pending user review) | 2026-07-21 |
