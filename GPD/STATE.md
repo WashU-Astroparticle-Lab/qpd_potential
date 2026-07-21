@@ -51,6 +51,7 @@ None yet.
 | Phase 03 P03-01 | 3600s | 3 tasks | 6 files |
 | Phase 03 P03-02 | 2400s | 3 tasks | 7 files |
 | Phase 04 P04-01 | 2700s | 3 tasks | 9 files |
+| Phase 04 P04-02 | 2100s | 3 tasks | 10 files |
 
 ### Decisions
 
@@ -80,6 +81,9 @@ None yet.
 - [Phase 04-muon-compton-deposited-energy-spectra]: Muon dR/dE_dep folded from Gaisser-Guan flux (P1-P5 verbatim, arXiv:1509.06176) x analytic ray-box chord (Cauchy <ell>=0.385 cm reproduced to 0.03%) x Landau-Vavilov MPV. Integral rate 1.366 +/- 0.005 Hz (deterministic quadrature 1.415 Hz), within ~15% of PDG 1.5-2 Hz (VALD-02). Surface-flux measure I*A_proj*sin(theta) validated by J_horiz=pi*I_v/2 to 0.01%.
 - [Phase 04-muon-compton-deposited-energy-spectra]: Landau-Vavilov MPV computed in code (not memorized): vertical-chord xi=0.0721 MeV (PDG 0.072), Delta_p=1.232 MeV strictly below mean 1.459 MeV. Custom Landau inverse-CDF sampler (mode -0.22278); deposit=Delta_p+xi*(lambda-lambda_mode) so sampled mode=Delta_p; NOT mean, NOT Moyal. kappa=xi/T_max<0.07 for all chords -> Landau/mild-Vavilov. Guards fp-mean-not-mpv.
 - [Phase 04-muon-compton-deposited-energy-spectra]: Long near-horizontal chords importance-sampled (zenith uniform in [0,pi/2] with reweighting) so the deposit tail is resolved to ~197 MeV (66 bins >30 MeV) - the Phase-5 saturation input. Deposits on the unified phonon E_dep scale, NO quenching, no keVee/keVnr (electron recoil, zero Frenkel correction). Guards fp-angular-bias, fp-quenching-muon.
+- [Phase 04-muon-compton-deposited-energy-spectra]: Compton dR/dE_dep built as a Klein-Nishina angle-sampled ELECTRON-recoil continuum (deposit T_e=E_gamma-E_prime, scattered photon escapes the optically-thin 2mm wafer; NO photopeaks) up to each self-validating edge E_edge=2E^2/(m_ec^2+2E). VALD-03 edges reproduced: 40K->1243.4, 208Tl->2381.8, 214Bi->1541.3 keV (max sampled T_e = E_edge per line, exact). No signal above the max edge or at E_gamma=2614.5. Guards fp-full-absorption, fp-electron-not-photon.
+- [Phase 04-muon-compton-deposited-energy-spectra]: Total single-scatter Compton rate 0.268 Hz vs independent flux x sigma_KN x N_e anchor 0.273 Hz (ratio 0.983, within VALD-03 factor 2). Thin-target on the ONE pinned Cauchy mean chord ell_bar=4V/S=0.385 cm: mu*ell_bar=0.117@1MeV / 0.084@2MeV, double-scatter 1.4%; normal-incidence mu*t=0.061 quoted as optically-thin demo only. Same ell_bar in P, double-scatter, and rate. Energy closure to ~1e-5.
+- [Phase 04-muon-compton-deposited-energy-spectra]: Gamma flux table is a DOCUMENTED TUNABLE input, not invented: line energies + DDEP emission probabilities = nuclear data; absolute flux anchored to cited LABChico EPJP2022 measured spectrum (40K 0.036, 208Tl 2614.5 0.0016 cm^-2 s^-1); Th siblings scaled by DDEP intra-chain ratios; U chain via documented Phi_U=Phi_Th assumption (factor-2 band). NIST XCOM Ge mu/rho frozen (4 cited points, log-log interp). Unified phonon scale, no quenching. Guards fp-invented-flux, fp-quenching-compton.
 
 ### Active Approximations
 
