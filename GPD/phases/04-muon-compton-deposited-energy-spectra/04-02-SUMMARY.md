@@ -1,3 +1,123 @@
+---
+phase: 04-muon-compton-deposited-energy-spectra
+plan: "02"
+plan_contract_ref: GPD/phases/04-muon-compton-deposited-energy-spectra/04-02-PLAN.md#/contract
+title: "Environmental-gamma Compton deposited-energy spectrum dR/dE_dep: Klein-Nishina electron-recoil continuum, single-scatter, shared phonon grid"
+date: 2026-07-20
+status: completed
+depth: full
+completed: 2026-07-20
+one_liner: "The environmental radiogenic-gamma Compton deposited-energy spectrum for the 110 g Ge wafer is produced as a Klein-Nishina electron-recoil continuum (deposit = T_e; the scattered photon escapes the optically-thin 2 mm wafer, so there are no photopeaks), single-scatter-weighted on the one pinned Cauchy mean chord lbar = 4V/S = 0.385 cm, on the shared unified-phonon E_dep grid (no quenching, identical to 04-01); Compton edges fall out kinematically (40K->1243.4, 208Tl->2381.8, 214Bi->1541.3 keV) and the total single-scatter rate 0.268 Hz sits within 2% of the independent flux x sigma_KN x N_e anchor 0.273 Hz (VALD-03)."
+provides:
+  - "qpd_potential Compton module: Klein-Nishina electron-recoil continuum (deposit = T_e, no photopeaks), single-scatter on the Cauchy mean chord, shared no-quenching E_dep grid"
+  - "Compton deposited-energy spectrum dR/dE_dep with kinematic edges (40K/208Tl/214Bi) and total single-scatter rate 0.268 Hz"
+  - "Environmental gamma-line provenance table and tests (edges, continuum-not-peaks, single-scatter, convergence, flux provenance)"
+contract_results:
+  claims:
+    claim-compton-spectrum:
+      status: passed
+      summary: "Environmental-gamma Compton deposited-energy spectrum as a Klein-Nishina electron-recoil continuum (deposit = T_e; the scattered photon escapes the optically-thin 2 mm wafer, so there are no photopeaks), single-scatter-weighted on the pinned Cauchy mean chord lbar = 4V/S = 0.385 cm, on the shared no-quenching E_dep grid; Compton edges fall out kinematically (40K->1243.4, 208Tl->2381.8, 214Bi->1541.3 keV) and the total single-scatter rate 0.268 Hz sits within 2% of the independent flux x sigma_KN x N_e anchor 0.273 Hz."
+      linked_ids: [deliv-compton-code, deliv-compton-csv, deliv-gamma-lines, test-compton-edges, test-continuum-not-peaks, test-single-scatter, test-compton-convergence, ref-klein-nishina, ref-nist-xcom]
+    claim-compton-flux-provenance:
+      status: passed
+      summary: "The incident environmental gamma flux is provenance-tagged from sourced radiogenic gamma-line data (40K/208Tl/214Bi), not invented; the provenance table backs the single-scatter weighting."
+      linked_ids: [deliv-gamma-lines, deliv-compton-code, test-flux-provenance, ref-environmental-gamma]
+  deliverables:
+    deliv-compton-code:
+      status: passed
+      path: src/compton/deposited_spectrum.py
+      summary: "Compton dR/dE_dep module: Klein-Nishina electron-recoil continuum, single-scatter on the Cauchy mean chord, shared no-quenching E_dep grid."
+      linked_ids: [claim-compton-spectrum]
+    deliv-compton-csv:
+      status: passed
+      path: data/compton/compton_dep_spectrum.csv
+      summary: "Compton deposited-energy spectrum dR/dE_dep on the shared log E_dep grid, with kinematic edges and total rate 0.268 Hz."
+      linked_ids: [claim-compton-spectrum]
+    deliv-gamma-lines:
+      status: passed
+      path: data/compton/gamma_lines.csv
+      summary: "Provenance-tagged environmental gamma-line table (40K/208Tl/214Bi energies and fluxes)."
+      linked_ids: [claim-compton-flux-provenance]
+  acceptance_tests:
+    test-compton-edges:
+      status: passed
+      summary: "Compton edges fall out kinematically at the Klein-Nishina energies (40K->1243.4, 208Tl->2381.8, 214Bi->1541.3 keV)."
+      linked_ids: [claim-compton-spectrum, deliv-compton-code, ref-nist-xcom]
+    test-continuum-not-peaks:
+      status: passed
+      summary: "The spectrum is an electron-recoil continuum with no photopeaks (scattered photon escapes the optically-thin wafer)."
+      linked_ids: [claim-compton-spectrum, deliv-compton-code]
+    test-single-scatter:
+      status: passed
+      summary: "Total single-scatter rate 0.268 Hz sits within 2% of the independent flux x sigma_KN x N_e anchor 0.273 Hz (VALD-03, well inside factor 2)."
+      linked_ids: [claim-compton-spectrum, deliv-compton-csv]
+    test-compton-convergence:
+      status: passed
+      summary: "dR/dE_dep and the total rate are grid-convergence stable on the shared E_dep grid."
+      linked_ids: [claim-compton-spectrum, deliv-compton-code]
+    test-flux-provenance:
+      status: passed
+      summary: "The environmental gamma flux is provenance-tagged from sourced gamma-line data, not invented (each line has a source)."
+      linked_ids: [claim-compton-flux-provenance, deliv-gamma-lines]
+  references:
+    ref-environmental-gamma:
+      status: completed
+      completed_actions: [use, cite]
+      missing_actions: []
+      summary: "Environmental radiogenic gamma-line data (40K/208Tl/214Bi) used as the incident flux and cited in the provenance table."
+    ref-klein-nishina:
+      status: completed
+      completed_actions: [use, cite]
+      missing_actions: []
+      summary: "Klein-Nishina differential cross section used for the electron-recoil continuum and cited."
+    ref-nist-xcom:
+      status: completed
+      completed_actions: [use, compare, cite]
+      missing_actions: []
+      summary: "NIST XCOM Compton cross-section/attenuation data used in the single-scatter weighting, compared against the computed edges/rate, and cited."
+  forbidden_proxies:
+    fp-full-absorption:
+      status: rejected
+      notes: "Deposit is the Compton electron recoil T_e (single scatter, photon escapes), not full photo-absorption; there are no photopeaks."
+    fp-invented-flux:
+      status: rejected
+      notes: "The environmental gamma flux is provenance-tagged from sourced gamma-line data (test-flux-provenance), not invented."
+    fp-electron-not-photon:
+      status: rejected
+      notes: "The deposited energy is the recoil electron T_e (correct), not the scattered-photon energy."
+    fp-quenching-compton:
+      status: rejected
+      notes: "dR/dE_dep is on the unified phonon (no-quenching) scale, identical grid to 04-01; no quenching proxy."
+  uncertainty_markers:
+    weakest_anchors:
+      - "The environmental gamma flux normalization (40K/208Tl/214Bi line intensities) is site-dependent and the dominant rate uncertainty"
+      - "Single-scatter on the one Cauchy mean chord approximates the true chord distribution"
+    unvalidated_assumptions:
+      - "Optically-thin 2 mm wafer (scattered photon escapes) so multi-scatter and photopeaks are negligible"
+    competing_explanations:
+      - "A thicker or higher-Z absorber would reintroduce photopeaks and multi-scatter, changing the continuum shape"
+    disconfirming_observations:
+      - "Single-scatter rate far from the independent 0.273 Hz anchor, or photopeaks appearing, would indicate a Compton-model error (checked false: 0.268 Hz within 2%, continuum only)"
+comparison_verdicts:
+  - subject_id: test-single-scatter
+    subject_kind: acceptance_test
+    subject_role: decisive
+    comparison_kind: cross_method
+    metric: relative_error
+    threshold: "<= 0.02"
+    verdict: pass
+    notes: "Total single-scatter rate 0.268 Hz vs the independent flux x sigma_KN x N_e anchor 0.273 Hz, within 2% (VALD-03)."
+  - subject_id: test-compton-edges
+    subject_kind: acceptance_test
+    subject_role: decisive
+    reference_id: ref-nist-xcom
+    comparison_kind: benchmark
+    metric: edge_energy
+    threshold: "kinematic KN edges"
+    verdict: pass
+    notes: "Compton edges fall out at the Klein-Nishina energies (40K->1243.4, 208Tl->2381.8, 214Bi->1541.3 keV), consistent with NIST XCOM cross-section data."
+---
+
 # Plan 04-02 Summary — Environmental-Gamma Compton Deposited-Energy Spectrum dR/dE_dep
 
 **One-liner:** The environmental radiogenic-gamma Compton deposited-energy spectrum for the 110 g Ge wafer is produced as a Klein–Nishina **electron-recoil continuum** (deposit = T_e; the scattered photon escapes the optically-thin 2 mm wafer, so there are **no photopeaks**), single-scatter-weighted on the **one pinned Cauchy mean chord** ℓ̄ = 4V/S = 0.385 cm, on the **shared unified-phonon E_dep grid** (no quenching, identical to 04-01); Compton **edges fall out kinematically** at the Klein–Nishina energies (⁴⁰K→1243.4, ²⁰⁸Tl→2381.8, ²¹⁴Bi→1541.3 keV) and the total single-scatter rate **0.268 Hz** sits within **2%** of the independent flux × σ_KN × N_e anchor **0.273 Hz** (VALD-03, well inside factor 2).

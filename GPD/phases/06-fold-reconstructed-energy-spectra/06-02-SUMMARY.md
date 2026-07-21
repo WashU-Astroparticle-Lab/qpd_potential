@@ -1,3 +1,78 @@
+---
+phase: 06-fold-reconstructed-energy-spectra
+plan: "02"
+plan_contract_ref: GPD/phases/06-fold-reconstructed-energy-spectra/06-02-PLAN.md#/contract
+title: "Stage-1 deliverable figure (reconstructed-energy spectra) + finalized ASSUMPTIONS.md (STAGE-1 CLOSE)"
+date: 2026-07-21
+status: completed
+depth: full
+completed: 2026-07-21
+one_liner: "Rendered the stage-1 deliverable figure reconstructed_energy_spectra.pdf -- dR/dE_rec vs reconstructed energy (log-log, counts/kg/day/keV) for all three channels (CEvNS, muon, Compton) and both designs, with the saturation region delimited on the E_rec axis (muon shown reconstructed entirely in the plateau band) and a true->reconstructed mapping panel reusing the Phase-5 curve -- and finalized ASSUMPTIONS.md: the censoring OPEN switch is retired to the RESOLVED non-paralyzable convention, with a Phase-6 fold addendum and the four standing caveats consolidated."
+provides:
+  - "Stage-1 deliverable figure reconstructed_energy_spectra.pdf (four-panel dR/dE_rec vs E_rec, both designs, saturation delimited, true->reconstructed mapping, honest-caveat box)"
+  - "Finalized artifacts/stage1/ASSUMPTIONS.md: censoring switch retired to RESOLVED non-paralyzable, Phase-6 fold addendum, four standing caveats consolidated"
+  - "This plan closes the stage-1 milestone"
+contract_results:
+  claims:
+    claim-fig-spectra:
+      status: passed
+      summary: "Four-panel deliverable figure reconstructed_energy_spectra.pdf built from the committed Plan 06-01 reconstructed_spectra_{TaAl,AlHf}.csv and the Phase-5 response mapping arrays (no fold re-run): (a,b) per-design dR/dE_rec vs E_rec (log-log, counts/kg/day/keV) with CEvNS 1sigma/Compton factor-2/muon +-30% bands; saturation delimited on the E_rec axis (on-spot onset, whole-array plateau, muon pileup at E_rec ~18.8/15.0 keV inside the plateau band); (c) true->reconstructed mapping reusing the Phase-5 curve; (d) honest-caveat box (E_rec not deposited, no saturated-regime literature anchor)."
+      linked_ids: [deliv-fig-spectra, deliv-fig-code, test-fig-content, test-saturation-delimited]
+    claim-note-final:
+      status: passed
+      summary: "artifacts/stage1/ASSUMPTIONS.md finalized: the censoring OPEN switch is retired to the RESOLVED non-paralyzable convention, with a Phase-6 fold addendum and the four standing caveats consolidated; content cross-checked as current (not stale)."
+      linked_ids: [deliv-note, test-note-content]
+  deliverables:
+    deliv-fig-spectra:
+      status: passed
+      path: artifacts/stage1/reconstructed_energy_spectra.pdf
+      summary: "Stage-1 deliverable figure: four-panel reconstructed-energy spectra for both designs with saturation delimited, true->reconstructed mapping, and honest-caveat box."
+      linked_ids: [claim-fig-spectra]
+    deliv-fig-code:
+      status: passed
+      path: src/qpd_potential/fold.py
+      summary: "make_spectra_figure renders the deliverable figure from the committed reconstructed-spectra CSVs and Phase-5 mapping npz (no fold re-run)."
+      linked_ids: [claim-fig-spectra]
+    deliv-note:
+      status: passed
+      path: artifacts/stage1/ASSUMPTIONS.md
+      summary: "Finalized stage-1 assumptions note: censoring switch retired to RESOLVED non-paralyzable, Phase-6 fold addendum, four standing caveats consolidated."
+      linked_ids: [claim-note-final]
+  acceptance_tests:
+    test-fig-content:
+      status: passed
+      summary: "The figure renders with all three channels and both designs on the E_rec axis (test_make_spectra_figure_renders)."
+      linked_ids: [claim-fig-spectra, deliv-fig-spectra]
+    test-saturation-delimited:
+      status: passed
+      summary: "The saturation region is delimited on the E_rec axis and the muon pileup lands inside the plateau band (test_saturation_erec_images_ordered)."
+      linked_ids: [claim-fig-spectra, deliv-fig-spectra]
+    test-note-content:
+      status: passed
+      summary: "ASSUMPTIONS.md contains the RESOLVED non-paralyzable convention, the Phase-6 fold addendum, and the consolidated caveats (not stale)."
+      linked_ids: [claim-note-final, deliv-note]
+  forbidden_proxies:
+    fp-deposited-only:
+      status: rejected
+      notes: "The figure x-axis is reconstructed energy E_rec, not deposited; only the non-paralyzable deliverable is drawn."
+    fp-no-saturation-mark:
+      status: rejected
+      notes: "The saturation region is explicitly delimited (on-spot onset, whole-array plateau, muon pileup arrow), not left unmarked."
+    fp-note-stale:
+      status: rejected
+      notes: "ASSUMPTIONS.md is finalized current: the OPEN censoring switch is retired to RESOLVED non-paralyzable with a Phase-6 addendum; verified not stale (test-note-content)."
+  uncertainty_markers:
+    weakest_anchors:
+      - "The saturated-regime reconstructed shape shown in the figure has no literature anchor (limiting-cases-only)"
+      - "The muon +-30% and Compton factor-2 bands are wide site/normalization uncertainties carried into the figure"
+    unvalidated_assumptions:
+      - "The non-paralyzable convention is the resolved canonical choice drawn in the deliverable"
+    competing_explanations:
+      - "A paralyzable response would move the muon pileup off the plateau, changing the delimited saturation region"
+    disconfirming_observations:
+      - "A deposited-axis figure, an undelimited saturation region, or a stale note would fail the stage-1 close (checked false: E_rec axis, delimited, note finalized)"
+---
+
 # Plan 06-02 SUMMARY — Deliverable figure + finalized assumptions note (STAGE-1 CLOSE)
 
 **Phase:** 06-fold-reconstructed-energy-spectra · **Plan:** 02 · **Status:** completed (Task 2 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review; autonomous run). **This plan closes the stage-1 milestone.**

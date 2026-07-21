@@ -1,3 +1,79 @@
+---
+phase: 04-muon-compton-deposited-energy-spectra
+plan: "03"
+plan_contract_ref: GPD/phases/04-muon-compton-deposited-energy-spectra/04-03-PLAN.md#/contract
+title: "Phase-4 deposited-energy spectra assembly: muon + Compton co-added on the byte-identical shared grid, energy closure, 50 kHz pileup stop-condition"
+date: 2026-07-20
+status: completed
+depth: full
+completed: 2026-07-20
+one_liner: "The Phase-4 muon (04-01) and Compton (04-02) deposited-energy spectra are co-added on the byte-identical shared log E_dep grid (584 bins, 0.01 keV -> 197 MeV; max relative grid deviation 0.0), each channel passes count-rate energy closure (muon ratio 0.9993 within its 3.6e-3 MC band, Compton 0.99997), and the 50 kHz pileup stop-condition is comfortably clear: total event rate R_tot = 1.634 Hz (muon 1.366 + Compton 0.268) gives occupancy R*tau = 3.3e-5 (20 us) / 6.5e-5 (40 us) << 1 with mean inter-event spacing 0.61 s; the within-event muon ~197 MeV long-chord saturation tail is the flagged Phase-5 concern, not a Phase-4 stop-condition trigger."
+provides:
+  - "Phase-4 assembled muon+Compton deposited-energy spectrum on the byte-identical shared log E_dep grid (584 bins, 0.01 keV -> 197 MeV)"
+  - "Count-rate energy closure per channel (muon 0.9993, Compton 0.99997) and total event rate R_tot = 1.634 Hz"
+  - "50 kHz pileup stop-condition check (occupancy R*tau ~ 3.3e-5/6.5e-5 << 1); the ~197 MeV muon long-chord saturation flagged for Phase-5"
+contract_results:
+  claims:
+    claim-phase4-assembly:
+      status: passed
+      summary: "The muon (04-01) and Compton (04-02) deposited-energy spectra are co-added on the byte-identical shared log E_dep grid (584 bins, 0.01 keV -> 197 MeV; max relative grid deviation 0.0), and each channel passes count-rate energy closure (muon ratio 0.9993 within its 3.6e-3 MC band, Compton 0.99997)."
+      linked_ids: [deliv-assembly-code, deliv-spectra-fig, test-shared-grid, test-energy-closure, ref-qpd-paper]
+    claim-pileup-stopcondition:
+      status: passed
+      summary: "The 50 kHz pileup stop-condition is comfortably clear: total event rate R_tot = 1.634 Hz (muon 1.366 + Compton 0.268) gives occupancy R*tau = 3.3e-5 (20 us) / 6.5e-5 (40 us) << 1 with mean inter-event spacing 0.61 s; the within-event muon ~197 MeV long-chord saturation tail is flagged for Phase-5, not a Phase-4 stop-condition trigger."
+      linked_ids: [deliv-assembly-code, test-pileup, ref-qpd-paper]
+  deliverables:
+    deliv-assembly-code:
+      status: passed
+      path: src/assembly/phase4_spectra.py
+      summary: "Phase-4 assembly: co-adds the muon and Compton dR/dE_dep on the byte-identical shared grid, checks per-channel energy closure, and evaluates the pileup occupancy stop-condition."
+      linked_ids: [claim-phase4-assembly, claim-pileup-stopcondition]
+    deliv-spectra-fig:
+      status: passed
+      path: GPD/phases/04-muon-compton-deposited-energy-spectra/figures/phase4_spectra.png
+      summary: "Assembled Phase-4 deposited-energy spectra (muon + Compton) on the shared E_dep grid."
+      linked_ids: [claim-phase4-assembly]
+  acceptance_tests:
+    test-shared-grid:
+      status: passed
+      summary: "Muon and Compton spectra share a byte-identical log E_dep grid (584 bins, 0.01 keV -> 197 MeV; max relative grid deviation 0.0)."
+      linked_ids: [claim-phase4-assembly, deliv-assembly-code]
+    test-energy-closure:
+      status: passed
+      summary: "Count-rate energy closure per channel: integral(dR/dE_dep) dE = rate*86400/mass_kg with muon ratio 0.9993 (within 3.6e-3 MC band) and Compton 0.99997."
+      linked_ids: [claim-phase4-assembly, deliv-assembly-code]
+    test-pileup:
+      status: passed
+      summary: "Occupancy R*tau = 3.3e-5 (20 us) / 6.5e-5 (40 us) << 1 at R_tot = 1.634 Hz; mean inter-event spacing 0.61 s >> pulse; 50 kHz stop-condition not triggered."
+      linked_ids: [claim-pileup-stopcondition, deliv-assembly-code]
+  references:
+    ref-qpd-paper:
+      status: completed
+      completed_actions: [read, use, cite]
+      missing_actions: []
+      summary: "QPD paper (Ramanathan et al.) read, its dead-time/sampling (20 us) and 25/50 kHz rate scales used in the pileup stop-condition, and cited."
+  forbidden_proxies:
+    fp-reconstructed-not-deposited:
+      status: rejected
+      notes: "The assembled spectra are on the deposited-energy scale E_dep (unified phonon, no quenching); reconstructed E_rec is a Phase-5 step, not substituted here."
+    fp-grid-mismatch:
+      status: rejected
+      notes: "The two channels are co-added on a byte-identical grid (max relative deviation 0.0), not resampled onto mismatched grids."
+    fp-pileup-unchecked:
+      status: rejected
+      notes: "The 50 kHz pileup stop-condition is explicitly evaluated (occupancy R*tau << 1); the ~197 MeV within-event muon saturation is flagged for Phase-5, not silently ignored."
+  uncertainty_markers:
+    weakest_anchors:
+      - "The within-event muon ~197 MeV long-chord saturation tail is a flagged Phase-5 concern not resolved at Phase-4"
+      - "The pileup occupancy uses the aggregate rate R_tot; per-sensor within-event saturation is a separate Phase-5 question"
+    unvalidated_assumptions:
+      - "The muon and Compton channels are the dominant Phase-4 deposited-energy sources for the wafer"
+    competing_explanations:
+      - "A higher environmental gamma flux would raise R_tot but the occupancy margin (~5 orders) is large"
+    disconfirming_observations:
+      - "A grid mismatch (nonzero max deviation), an energy-closure ratio far from 1, or occupancy approaching 1 would break the assembly (checked false: 0.0 deviation, 0.9993/0.99997 closure, R*tau ~ 1e-5)"
+---
+
 # Plan 04-03 Summary — Phase-4 Deposited-Energy Spectra Assembly (muon + Compton)
 
 **One-liner:** The Phase-4 muon (04-01) and Compton (04-02) deposited-energy spectra are co-added on the **byte-identical** shared log E_dep grid (584 bins, 0.01 keV → 197 MeV; max relative grid deviation **0.0**), each channel passes **count-rate energy closure** (∫dR/dE_dep dE = rate·86400/mass_kg → muon ratio **0.9993** within its 3.6×10⁻³ MC band, Compton **0.99997**), and the **50 kHz pileup stop-condition** is comfortably clear — total event rate **R_tot = 1.634 Hz** (muon 1.366 + Compton 0.268) gives occupancy **R·τ = 3.3×10⁻⁵** (20 µs sample) / **6.5×10⁻⁵** (40 µs resolving) ≪ 1 with mean inter-event spacing **0.61 s ≫ pulse**, so quiescent reconstruction is not precluded; the within-event muon ~197 MeV long-chord saturation tail is the flagged Phase-5 concern, not a Phase-4 stop-condition trigger.

@@ -1,3 +1,102 @@
+---
+phase: 04-muon-compton-deposited-energy-spectra
+plan: "01"
+plan_contract_ref: GPD/phases/04-muon-compton-deposited-energy-spectra/04-01-PLAN.md#/contract
+title: "Sea-level cosmic-ray muon deposited-energy spectrum dR/dE_dep on the unified phonon scale (Gaisser-Guan flux x ray-box chord x Landau-Vavilov MPV)"
+date: 2026-07-20
+status: completed
+depth: full
+completed: 2026-07-20
+one_liner: "The sea-level cosmic-ray muon deposited-energy spectrum for the 110 g Ge wafer is produced on the unified phonon scale (no quenching) by folding the Gaisser-Guan angular/energy flux with the analytic ray-box chord-length distribution and the Landau-Vavilov most-probable deposit (Delta_p, not the mean, not Moyal); integral rate 1.366 +/- 0.005 Hz (PDG ~1.5-2 Hz, VALD-02 within ~15%), vertical-chord MPV 1.232 MeV strictly below the mean 1.459 MeV, with the long near-horizontal chord tail resolved to ~197 MeV (the Phase-5 saturation input)."
+provides:
+  - "qpd_potential muon module: Gaisser-Guan flux x analytic ray-box chord distribution x Landau-Vavilov MPV deposit, on the unified phonon (no-quenching) E_dep scale"
+  - "Muon deposited-energy spectrum dR/dE_dep and integral rate 1.366 +/- 0.005 Hz; long-chord tail resolved to ~197 MeV (Phase-5 saturation input)"
+  - "tests/ muon acceptance suite (chord Cauchy, horizontal J, MPV, high-energy tail, integral rate)"
+contract_results:
+  claims:
+    claim-muon-spectrum:
+      status: passed
+      summary: "Muon deposited-energy spectrum dR/dE_dep for the 110 g Ge wafer on the unified phonon (no-quenching) scale, from folding the Gaisser-Guan angular/energy flux with the analytic ray-box chord-length distribution and the Landau-Vavilov most-probable deposit Delta_p (not the mean, not Moyal); vertical-chord MPV 1.232 MeV sits strictly below the mean 1.459 MeV, and the long near-horizontal chord tail is resolved to ~197 MeV."
+      linked_ids: [deliv-muon-code, deliv-muon-csv, test-cauchy, test-jhoriz, test-mpv, test-hetail, ref-gaisser]
+    claim-muon-rate:
+      status: passed
+      summary: "Integral muon event rate 1.366 +/- 0.005 Hz for the wafer, consistent with the PDG sea-level flux (~1.5-2 Hz) and VALD-02 within ~15%."
+      linked_ids: [deliv-muon-code, deliv-muon-csv, test-muon-rate, ref-pdg-muon]
+  deliverables:
+    deliv-muon-code:
+      status: passed
+      path: src/muon/deposited_spectrum.py
+      summary: "Muon dR/dE_dep module: Gaisser-Guan flux, analytic ray-box chord distribution, Landau-Vavilov MPV deposit, on the shared no-quenching E_dep grid."
+      linked_ids: [claim-muon-spectrum, claim-muon-rate]
+    deliv-muon-csv:
+      status: passed
+      path: data/muon/muon_dep_spectrum.csv
+      summary: "Muon deposited-energy spectrum dR/dE_dep on the unified log E_dep grid (tail to ~197 MeV) plus the integral rate 1.366 Hz."
+      linked_ids: [claim-muon-spectrum, claim-muon-rate]
+  acceptance_tests:
+    test-cauchy:
+      status: passed
+      summary: "The analytic ray-box chord-length distribution matches the expected Cauchy-mean chord for the wafer geometry."
+      linked_ids: [claim-muon-spectrum, deliv-muon-code]
+    test-jhoriz:
+      status: passed
+      summary: "The near-horizontal angular flux J(theta) is resolved so the long-chord tail is populated (not truncated)."
+      linked_ids: [claim-muon-spectrum, deliv-muon-code]
+    test-mpv:
+      status: passed
+      summary: "The deposit uses the Landau-Vavilov most-probable value Delta_p (vertical-chord MPV 1.232 MeV) strictly below the mean 1.459 MeV; not the mean, not Moyal."
+      linked_ids: [claim-muon-spectrum, deliv-muon-code]
+    test-hetail:
+      status: passed
+      summary: "The high-energy deposited tail is resolved to ~197 MeV from the near-horizontal long chords (the Phase-5 saturation input)."
+      linked_ids: [claim-muon-spectrum, deliv-muon-code]
+    test-muon-rate:
+      status: passed
+      summary: "Integral rate 1.366 +/- 0.005 Hz, within ~15% of the PDG sea-level flux anchor (~1.5-2 Hz)."
+      linked_ids: [claim-muon-rate, deliv-muon-csv, ref-pdg-muon]
+  references:
+    ref-pdg-muon:
+      status: completed
+      completed_actions: [compare, cite]
+      missing_actions: []
+      summary: "PDG sea-level muon flux (~1.5-2 Hz for the wafer) compared against the integral rate 1.366 Hz (within ~15%) and cited."
+    ref-gaisser:
+      status: completed
+      completed_actions: [read, use, cite]
+      missing_actions: []
+      summary: "Gaisser-Guan angular/energy muon flux parametrization read, used as the incident flux, and cited."
+  forbidden_proxies:
+    fp-mean-not-mpv:
+      status: rejected
+      notes: "The deposit is the Landau-Vavilov MPV Delta_p (1.232 MeV vertical), explicitly below the mean 1.459 MeV; the mean is not substituted."
+    fp-angular-bias:
+      status: rejected
+      notes: "The near-horizontal flux is resolved (test-jhoriz) so the long-chord tail is populated; the angular distribution is not biased vertical."
+    fp-quenching-muon:
+      status: rejected
+      notes: "dR/dE_dep is on the unified phonon (no-quenching) scale; no keVee/keVnr quenching proxy applied."
+  uncertainty_markers:
+    weakest_anchors:
+      - "The ~197 MeV long-chord tail (Phase-5 saturation input) depends on the near-horizontal angular flux tail, which is the least-constrained flux region"
+      - "The MPV deposit uses the Landau-Vavilov parametrization, not a full straggling simulation"
+    unvalidated_assumptions:
+      - "Point-deposit collapse per muon rather than an extended ~cm track"
+    competing_explanations:
+      - "The integral-rate ~15% offset from PDG could reflect the Gaisser-Guan vs PDG flux normalization choice"
+    disconfirming_observations:
+      - "Integral rate far from PDG (~1.5-2 Hz), or the MPV not below the mean, would indicate a deposit-model error (checked false: 1.366 Hz, MPV 1.232 < mean 1.459)"
+comparison_verdicts:
+  - subject_id: test-muon-rate
+    subject_kind: acceptance_test
+    subject_role: decisive
+    reference_id: ref-pdg-muon
+    comparison_kind: benchmark
+    metric: relative_error
+    threshold: "within ~15%"
+    verdict: pass
+    notes: "Integral muon rate 1.366 +/- 0.005 Hz vs PDG sea-level flux ~1.5-2 Hz, within ~15% (VALD-02)."
+---
+
 # Plan 04-01 Summary — Muon Deposited-Energy Spectrum dR/dE_dep
 
 **One-liner:** The sea-level cosmic-ray muon deposited-energy spectrum for the 110 g Ge wafer is produced on the unified phonon scale (no quenching) by folding the Gaisser–Guan angular/energy flux with the analytic ray–box chord-length distribution and the Landau–Vavilov **most-probable** deposit (Δ_p, not the mean, not Moyal); integral rate **1.366 ± 0.005 Hz** (PDG ~1.5–2 Hz, VALD-02 within ~15%), vertical-chord MPV **1.232 MeV** sitting strictly below the mean **1.459 MeV**, with the long near-horizontal chord tail resolved to **~197 MeV** (the Phase-5 saturation input).

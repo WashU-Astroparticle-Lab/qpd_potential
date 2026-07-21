@@ -1,3 +1,87 @@
+---
+phase: 06-fold-reconstructed-energy-spectra
+plan: "01"
+plan_contract_ref: GPD/phases/06-fold-reconstructed-energy-spectra/06-01-PLAN.md#/contract
+title: "Fold pipeline: reconstructed-energy spectra dR/dE_rec (CEvNS + muon + Compton, both designs) via the non-paralyzable response matrix"
+date: 2026-07-21
+status: completed
+depth: full
+completed: 2026-07-21
+one_liner: "Folded the frozen CEvNS, muon, and Compton deposited-energy spectra through the non-paralyzable response matrix R(E_rec|E_dep) for both designs to produce reconstructed-energy spectra dR/dE_rec, conserving counts per channel to ~1e-16 (CEvNS rebin to <1e-4), with the muon MeV deposits correctly saturating to a bounded ~18.8/15.0 keV plateau and the CEvNS 5-10.14 eV low edge retained via E_rec=0.5*E_dep."
+provides:
+  - "qpd_potential.fold — counts-conserving CEvNS rebin onto the shared E_dep grid + non-paralyzable fold of all three channels into dR/dE_rec for both designs"
+  - "Reconstructed-energy spectra CSVs reconstructed_spectra_{TaAl,AlHf}.csv (per-channel dR/dE_rec + bands + total)"
+  - "tests/ fold acceptance suite (counts conservation, E_rec axis, CEvNS rebin, low-edge retained)"
+contract_results:
+  claims:
+    claim-fold-conserves:
+      status: passed
+      summary: "Folding the frozen CEvNS/muon/Compton deposited spectra through the non-paralyzable response matrix R(E_rec|E_dep) for both designs conserves counts per channel to ~1e-16 (CEvNS counts-conserving rebin to <1e-4: total 109.587 vs trapezoidal 109.597, rel 9.6e-5; above-50-eV 67.67 vs frozen 67.752, 0.12%); the muon MeV deposits saturate to a bounded ~18.8/15.0 keV plateau. Only the non-paralyzable R is folded (CONVENTIONS Sec F canonical); paralyzable retained only as a labeled sensitivity."
+      linked_ids: [deliv-fold-code, deliv-recon-csv-taal, deliv-recon-csv-alhf, deliv-fold-tests, test-counts-conservation, test-erec-axis, test-cevns-rebin]
+    claim-cevns-lowedge:
+      status: passed
+      summary: "The CEvNS 5-10.14 eV low edge is retained (7.27 counts/kg/day, not dropped) and reconstructed via the exact linear E_rec=0.5*E_dep mapping (E_rec ~ 2.5-5.0 eV), since these deposits lie far below the ~52.9/32.1 eV crossover onset."
+      linked_ids: [deliv-fold-code, deliv-recon-csv-taal, deliv-recon-csv-alhf, deliv-fold-tests, test-cevns-rebin, test-lowedge-retained]
+  deliverables:
+    deliv-fold-code:
+      status: passed
+      path: src/qpd_potential/fold.py
+      summary: "Fold pipeline: counts-conserving CEvNS rebin (piecewise log-log power-law), non-paralyzable fold N_rec = R @ N_dep of all three channels for both designs, band propagation."
+      linked_ids: [claim-fold-conserves, claim-cevns-lowedge]
+    deliv-recon-csv-taal:
+      status: passed
+      path: artifacts/stage1/reconstructed_spectra_TaAl.csv
+      summary: "Ta->Al reconstructed-energy spectra: E_rec_keV + per-channel dR/dE_rec + bands + total (counts/kg/day/keV) with provenance header."
+      linked_ids: [claim-fold-conserves, claim-cevns-lowedge]
+    deliv-recon-csv-alhf:
+      status: passed
+      path: artifacts/stage1/reconstructed_spectra_AlHf.csv
+      summary: "Al->Hf reconstructed-energy spectra: E_rec_keV + per-channel dR/dE_rec + bands + total (counts/kg/day/keV) with provenance header."
+      linked_ids: [claim-fold-conserves, claim-cevns-lowedge]
+    deliv-fold-tests:
+      status: passed
+      path: tests/test_fold.py
+      summary: "Fold acceptance suite: counts conservation, E_rec axis, CEvNS rebin closure, low-edge retention."
+      linked_ids: [claim-fold-conserves, claim-cevns-lowedge]
+  acceptance_tests:
+    test-counts-conservation:
+      status: passed
+      summary: "Per-channel counts are conserved through the non-paralyzable fold to ~1e-16 (N_rec sum == N_dep sum)."
+      linked_ids: [claim-fold-conserves, deliv-fold-code]
+    test-erec-axis:
+      status: passed
+      summary: "The output spectra are on the reconstructed-energy axis E_rec (dR/dE_rec), not the deposited axis."
+      linked_ids: [claim-fold-conserves, deliv-fold-code]
+    test-cevns-rebin:
+      status: passed
+      summary: "CEvNS dR/dT rebinned onto the shared E_dep grid conserves counts to <1e-4 (109.587 vs 109.597, rel 9.6e-5; above-50-eV 67.67 vs 67.752, 0.12%)."
+      linked_ids: [claim-fold-conserves, claim-cevns-lowedge, deliv-fold-code]
+    test-lowedge-retained:
+      status: passed
+      summary: "The CEvNS 5-10.14 eV low edge (7.27 counts/kg/day) is retained and mapped via E_rec=0.5*E_dep, not dropped."
+      linked_ids: [claim-cevns-lowedge, deliv-fold-code]
+  forbidden_proxies:
+    fp-deposited-only:
+      status: rejected
+      notes: "The output spectra are on the reconstructed E_rec axis (dR/dE_rec) via the response matrix, not left on the deposited scale."
+    fp-drop-lowE-cevns:
+      status: rejected
+      notes: "The CEvNS 5-10.14 eV low edge (7.27 counts/kg/day) is explicitly retained via E_rec=0.5*E_dep, not truncated."
+    fp-paralyzable-swap:
+      status: rejected
+      notes: "Only the non-paralyzable R (CONVENTIONS Sec F canonical) is folded into the deliverables; paralyzable is retained only as a labeled sensitivity, not swapped in."
+  uncertainty_markers:
+    weakest_anchors:
+      - "The saturated-regime muon plateau (~18.8/15.0 keV) has no literature anchor; validated by limiting cases only"
+      - "The CEvNS low-recoil bins inherit the Phase-2 sub-1.8 MeV flux placeholder"
+    unvalidated_assumptions:
+      - "The non-paralyzable censoring convention is canonical (paralyzable carried only as sensitivity)"
+    competing_explanations:
+      - "A paralyzable response would roll the muon deposits over rather than plateau, changing the high-E_rec pileup shape"
+    disconfirming_observations:
+      - "Non-conservation of counts through the fold, or the CEvNS low edge being dropped, would break the pipeline (checked false: ~1e-16 conservation, low edge retained)"
+---
+
 # Plan 06-01 SUMMARY — Fold pipeline: reconstructed-energy spectra
 
 **Phase:** 06-fold-reconstructed-energy-spectra · **Plan:** 01 · **Status:** completed (Task 3 checkpoint self-assessed satisfied pending orchestrator/researcher review; autonomous run)

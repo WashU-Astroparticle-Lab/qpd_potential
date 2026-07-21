@@ -1,3 +1,130 @@
+---
+phase: 03-cevns-cross-section-rate
+plan: "02"
+plan_contract_ref: GPD/phases/03-cevns-cross-section-rate/03-02-PLAN.md#/contract
+title: "VALD-01: Billard (2017) Table 1 reproduction, CONUS+ cross-check, and flux-band propagation into dR/dT"
+date: 2026-07-20
+status: completed
+depth: full
+completed: 2026-07-20
+one_liner: "Derived the Billard geometry+power renormalization k = 0.01112 two independent ways (single-source 8.54 GW/400 m and two-core, agreeing 0.25%), reproduced Billard (2017) Table 1 to < 2.5% (0.742/0.501/0.257 vs 0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr), showed the without-k fold overshoots by exactly 1/k ~= 90x, matched the CONUS+ rate scale to a factor 0.99, and propagated the split flux band into dR/dT (rigorous 1sigma band 3.4-10%, sub-1.8 MeV placeholder contributing only 18-34% of the rate below ~95 eV_nr)."
+provides:
+  - "Billard geometry+power renormalization k = 0.01112 derived two independent ways (agree 0.25%)"
+  - "Billard (2017) Table 1 reproduction to < 2.5% and CONUS+ rate-scale cross-check (factor 0.99)"
+  - "Flux-band propagation into dR/dT: rigorous 1sigma band 3.4-10% deposited-energy rate"
+contract_results:
+  claims:
+    claim-billard:
+      status: passed
+      summary: "Billard geometry+power renormalization k = 0.01112 derived two independent ways (single-source 8.54 GW/400 m and two-core) agreeing to 0.25%; folding with k reproduces Billard (2017) Table 1 to < 2.5% (0.742/0.501/0.257 vs 0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr); the without-k fold overshoots by exactly 1/k ~= 90x; the CONUS+ rate scale matches to a factor 0.99."
+      linked_ids: [deliv-billard-report, deliv-billard-tests, test-k-derivation, test-billard, test-conus, ref-billard, ref-billard-flux, ref-conus]
+    claim-band:
+      status: passed
+      summary: "The Phase-2 split flux band propagated into the deposited-energy dR/dT gives a rigorous 1sigma band of 3.4-10% (not the plan-guessed 20-25%) because the well-anchored >1.8 MeV flux dominates the rate at every recoil; the sub-1.8 MeV placeholder contributes only 18-34% of the rate below ~95 eV_nr."
+      linked_ids: [deliv-drdt-band-csv, deliv-dep-figure, deliv-billard-tests, test-band, ref-flagship-flux-v2]
+  deliverables:
+    deliv-billard-report:
+      status: passed
+      path: GPD/phases/03-cevns-cross-section-rate/03-02-billard-report.md
+      summary: "Billard reproduction report: k derivation two ways, Table 1 comparison (< 2.5%), without-k overshoot 1/k, CONUS+ scale factor 0.99."
+      linked_ids: [claim-billard]
+    deliv-dep-figure:
+      status: passed
+      path: GPD/phases/03-cevns-cross-section-rate/figures/drdt_band.png
+      summary: "Deposited-energy dR/dT with the propagated flux band overlaid."
+      linked_ids: [claim-band]
+    deliv-drdt-band-csv:
+      status: passed
+      path: data/cevns/drdt_band.csv
+      summary: "dR/dT with per-bin 1sigma band (3.4-10%) from the propagated Phase-2 split flux band."
+      linked_ids: [claim-band]
+    deliv-billard-tests:
+      status: passed
+      path: tests/test_billard_conus_band.py
+      summary: "Acceptance suite: k derivation, Billard Table 1, CONUS+ scale, band propagation."
+      linked_ids: [claim-billard, claim-band]
+  acceptance_tests:
+    test-k-derivation:
+      status: passed
+      summary: "k = 0.01112 from single-source (8.54 GW / 400 m) and two-core derivations agree to 0.25%."
+      linked_ids: [claim-billard, deliv-billard-report]
+    test-billard:
+      status: passed
+      summary: "Billard (2017) Table 1 reproduced to < 2.5% (0.742/0.501/0.257 vs 0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr); without-k overshoots by 1/k ~= 90x."
+      linked_ids: [claim-billard, deliv-billard-report, ref-billard]
+    test-conus:
+      status: passed
+      summary: "CONUS+ deposited-rate scale matched to a factor 0.99."
+      linked_ids: [claim-billard, deliv-billard-report, ref-conus]
+    test-band:
+      status: passed
+      summary: "Propagated flux band into dR/dT yields a rigorous 1sigma band of 3.4-10%; sub-1.8 MeV placeholder contributes 18-34% below ~95 eV_nr; the band is exposed, not hidden."
+      linked_ids: [claim-band, deliv-drdt-band-csv]
+  references:
+    ref-billard:
+      status: completed
+      completed_actions: [compare, cite]
+      missing_actions: []
+      summary: "Billard (2017) Table 1 values compared against the folded rate (< 2.5%) and cited."
+    ref-billard-flux:
+      status: completed
+      completed_actions: [read, use]
+      missing_actions: []
+      summary: "Phase-2 Billard-variant flux read and used as the fold input for the reproduction."
+    ref-conus:
+      status: completed
+      completed_actions: [compare, cite]
+      missing_actions: []
+      summary: "CONUS+ published rate scale compared (factor 0.99) and cited."
+    ref-flagship-flux-v2:
+      status: completed
+      completed_actions: [read, use]
+      missing_actions: []
+      summary: "Frozen Phase-2 flagship flux (with split band) read and used for the band propagation."
+  forbidden_proxies:
+    fp-billard-norm:
+      status: rejected
+      notes: "k = 0.01112 is derived from geometry+power two ways, not tuned to hit Billard's numbers; the without-k overshoot 1/k confirms the normalization is physical."
+    fp-gwe-gwth:
+      status: rejected
+      notes: "Billard reactor power uses thermal GW consistent with the geometry derivation; GW_e is not substituted."
+    fp-hide-band:
+      status: rejected
+      notes: "The propagated flux band (3.4-10%) is reported explicitly per recoil bin, not collapsed to a single point or hidden."
+    fp-lumped-A-billard:
+      status: rejected
+      notes: "The Billard reproduction uses the per-isotope natural-Ge sum, not a lumped-A approximation."
+  uncertainty_markers:
+    weakest_anchors:
+      - "The sub-1.8 MeV flux placeholder contributes 18-34% of the rate below ~95 eV_nr and is the dominant low-recoil systematic"
+      - "The Billard k depends on the assumed source geometry (8.54 GW / 400 m) and power"
+    unvalidated_assumptions:
+      - "CONUS+ scale comparison uses published aggregate rate, not a full spectrum match"
+    competing_explanations:
+      - "The low-recoil band could widen if a sourced sub-1.8 MeV summation table replaces the placeholder"
+    disconfirming_observations:
+      - "Billard Table 1 reproduced worse than a few percent, or the without-k fold not overshooting by ~1/k, would indicate a normalization error (checked false: < 2.5%, 90x)"
+comparison_verdicts:
+  - subject_id: test-billard
+    subject_kind: acceptance_test
+    subject_role: decisive
+    reference_id: ref-billard
+    comparison_kind: benchmark
+    metric: relative_error
+    threshold: "<= 0.025"
+    verdict: pass
+    notes: "Billard (2017) Table 1 reproduced to < 2.5% (0.742/0.501/0.257 vs 0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr)."
+  - subject_id: test-conus
+    subject_kind: acceptance_test
+    subject_role: decisive
+    reference_id: ref-conus
+    comparison_kind: benchmark
+    metric: rate_scale_factor
+    threshold: "within factor 2"
+    verdict: pass
+    notes: "CONUS+ deposited-rate scale matched to a factor 0.99."
+---
+
 # Plan 03-02 SUMMARY — VALD-01: Billard Reproduction, CONUS+ Cross-Check, Flux-Band Propagation
 
 **Phase:** 03-cevns-cross-section-rate · **Plan:** 02 · **Status:** complete (Task 3 checkpoint satisfied-pending-orchestrator-review)
