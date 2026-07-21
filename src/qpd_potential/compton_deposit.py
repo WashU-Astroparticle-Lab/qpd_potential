@@ -40,7 +40,7 @@ R_E_CM = cs.R_E_CM
 # Klein-Nishina differential cross section and angle sampling                  #
 # --------------------------------------------------------------------------- #
 def kn_dsigma_domega(e_gamma_kev: float, cos_theta: np.ndarray) -> np.ndarray:
-    """Klein-Nishina dsigma/dOmega [cm^2/sr] per free electron vs cos(theta).
+    """Klein-Nishina dsigma/dOmega [cm^2/sr] per FREE electron vs cos(theta).
 
     dsigma/dOmega = (r_e^2/2)(E'/E)^2 (E'/E + E/E' - sin^2 theta),
       E'(theta) = E / (1 + alpha(1 - cos theta)),  alpha = E / m_e c^2.
@@ -51,26 +51,63 @@ def kn_dsigma_domega(e_gamma_kev: float, cos_theta: np.ndarray) -> np.ndarray:
     return 0.5 * R_E_CM**2 * ratio**2 * (ratio + 1.0 / ratio - sin2)
 
 
+def incoh_dsigma_domega(e_gamma_kev: float, cos_theta: np.ndarray) -> np.ndarray:
+    """BOUND-electron incoherent dsigma/dOmega [cm^2/sr] PER ATOM vs cos(theta).
+
+    dsigma_incoh/dOmega = (dsigma_KN/dOmega) * S(x,Z), the standard bound-Compton
+    correction with the incoherent scattering function S(x,Z=32) (Hubbell 1975).
+    x = E_gamma[keV]*sin(theta/2)/12.39842 [A^-1]. S->0 forward (low recoil, bound)
+    and S->Z backward (the Compton edge, free), so the edge is UNCHANGED.
+    """
+    x = cs.momentum_transfer_x(e_gamma_kev, cos_theta)
+    return kn_dsigma_domega(e_gamma_kev, cos_theta) * cs.incoherent_S(x)
+
+
+def sigma_incoh_atom(e_gamma_kev: float, n_grid: int = 40001) -> float:
+    """Total bound incoherent cross section PER ATOM [cm^2]:
+    sigma_incoh = integral (dsigma_KN/dOmega) S(x,Z) dOmega, dOmega = 2pi d(cos).
+
+    Free limit S->Z gives sigma_incoh -> Z * sigma_KN (atom of Z free electrons).
+    """
+    c = np.linspace(-1.0, 1.0, n_grid)
+    integrand = incoh_dsigma_domega(e_gamma_kev, c)
+    return float(2.0 * np.pi * np.trapz(integrand, c))
+
+
+def binding_suppression(e_gamma_kev: float) -> float:
+    """Binding suppression f_bind(E) = sigma_incoh_atom / (Z * sigma_KN) in (0,1].
+
+    The fractional reduction of the TOTAL incoherent cross section from electron
+    binding; ~1 for the MeV radiogenic lines (binding removes only the small
+    near-forward, low-q cross section). Multiplies the free per-line rate to give
+    the bound (deliverable) normalization consistent with the S-suppressed shape.
+    """
+    sig_free_atom = cs.Z_GE * float(cs.sigma_kn(e_gamma_kev))
+    return sigma_incoh_atom(e_gamma_kev) / sig_free_atom
+
+
 def sample_electron_recoil(e_gamma_kev: float, n: int,
                            rng: np.random.Generator) -> np.ndarray:
     """Sample n electron-recoil energies T_e [keV] for a line E_gamma via
-    rejection sampling of cos(theta) ~ dsigma/dOmega, then T_e = E_gamma - E'.
+    rejection sampling of cos(theta) ~ dsigma_incoh/dOmega = dsigma_KN/dOmega *
+    S(x,Z), then T_e = E_gamma - E'.
 
-    The Compton edge T_e(theta=pi) = E_edge falls out kinematically (the max
-    possible T_e), so the edge is self-validating and NEVER exceeds E_edge.
+    The bound incoherent scattering function S(x,Z) SUPPRESSES near-forward (low
+    T_e) recoils; the Compton edge T_e(theta=pi)=E_edge (S->Z there) is unchanged
+    and still falls out kinematically as the max sampled T_e (self-validating).
     """
     alpha = e_gamma_kev / M_E_KEV
-    # Envelope: dsigma/dOmega is largest at forward scattering (cos=1) for these
-    # alpha; bound it on a fine grid to be safe.
+    # Envelope for dsigma_KN/dOmega * S(x,Z): bound on a fine cos grid (the S
+    # factor moves the peak off exact forward scatter, so bound the product).
     cgrid = np.linspace(-1.0, 1.0, 4001)
-    fmax = kn_dsigma_domega(e_gamma_kev, cgrid).max() * 1.02
+    fmax = incoh_dsigma_domega(e_gamma_kev, cgrid).max() * 1.02
 
     out = np.empty(n)
     filled = 0
     while filled < n:
         m = int((n - filled) * 1.6) + 64
         c = rng.uniform(-1.0, 1.0, m)
-        f = kn_dsigma_domega(e_gamma_kev, c)
+        f = incoh_dsigma_domega(e_gamma_kev, c)
         acc = rng.uniform(0.0, fmax, m) < f
         c_acc = c[acc]
         take = min(c_acc.size, n - filled)
@@ -110,8 +147,9 @@ class ComptonSpectrum:
     centers_kev: np.ndarray
     dRdE: np.ndarray            # counts / kg / day / keV
     dRdE_err: np.ndarray        # per-bin MC statistical error, same units
-    rate_hz: float              # total single-scatter interaction rate [Hz]
-    rate_anchor_hz: float       # flux x sigma_KN x N_e cross-check [Hz]
+    rate_hz: float              # total BOUND single-scatter interaction rate [Hz]
+    rate_free_hz: float         # total FREE-KN single-scatter rate (pre-binding) [Hz]
+    rate_anchor_hz: float       # flux x sigma_KN x N_e (free) cross-check [Hz]
     line_energies: np.ndarray   # E_gamma per line [keV]
     line_edges: np.ndarray      # E_edge per line [keV]
     line_edges_sampled: np.ndarray   # max sampled T_e per line [keV]
@@ -139,11 +177,15 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720) -> ComptonSp
 
     e_g, e_edge, e_edge_s, r_line = [], [], [], []
     total_rate = 0.0
+    total_free = 0.0
     total_anchor = 0.0
     for ln in lines:
-        R_i = line_interaction_rate_hz(ln.flux_cm2_s, ln.energy_keV)     # Hz
-        A_i = line_rate_anchor_hz(ln.flux_cm2_s, ln.energy_keV)          # Hz (anchor)
+        R_free = line_interaction_rate_hz(ln.flux_cm2_s, ln.energy_keV)  # Hz (free KN)
+        f_bind = binding_suppression(ln.energy_keV)                     # <= 1
+        R_i = R_free * f_bind                                            # Hz (bound incoh)
+        A_i = line_rate_anchor_hz(ln.flux_cm2_s, ln.energy_keV)          # Hz (free anchor)
         total_rate += R_i
+        total_free += R_free
         total_anchor += A_i
 
         te = sample_electron_recoil(ln.energy_keV, n_per_line, rng)      # keV
@@ -168,6 +210,7 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720) -> ComptonSp
         dRdE=dRdE,
         dRdE_err=dRdE_err,
         rate_hz=float(total_rate),
+        rate_free_hz=float(total_free),
         rate_anchor_hz=float(total_anchor),
         line_energies=np.asarray(e_g),
         line_edges=np.asarray(e_edge),
@@ -185,14 +228,21 @@ def write_csv(spec: ComptonSpectrum, path: str) -> None:
     header_lines = [
         "# Compton (environmental-gamma) deposited-energy spectrum dR/dE_dep,",
         "# 4in x 4in x 2mm Ge wafer. Plan 04-02 (CALC-04/VALD-03).",
-        "# Klein-Nishina angle-sampled ELECTRON recoil T_e continuum (NO photopeaks,",
-        "# scattered photon escapes the thin wafer), thin-target single-scatter on the",
-        "# pinned Cauchy mean chord ell_bar = 4V/S = 0.385 cm. UNIFIED PHONON SCALE,",
-        "# NO quenching (CONVENTIONS Section B). Gamma flux = sourced tunable input",
+        "# BOUND incoherent scattering: angle sampled from dsigma_KN/dOmega * S(x,Z=32)",
+        "# with the Hubbell (1975) incoherent scattering function (data/ge_incoherent_S.csv);",
+        "# S(x->0)->0 SUPPRESSES the low-recoil (near-forward) continuum, fixing the",
+        "# unphysical free-KN flat-then-cut low edge; S(x->inf)->Z leaves the Compton",
+        "# EDGES and the bulk continuum (>~keV) unchanged. ELECTRON recoil T_e (NO",
+        "# photopeaks, scattered photon escapes the thin wafer); thin-target single-",
+        "# scatter on the pinned Cauchy mean chord ell_bar = 4V/S = 0.385 cm. UNIFIED",
+        "# PHONON SCALE, NO quenching (CONVENTIONS Section B): S(x,Z) changes the CROSS",
+        "# SECTION, not the energy scale. Gamma flux = sourced tunable input",
         "# (data/gamma_lines.csv, provenance).",
-        f"# total_single_scatter_rate_Hz = {spec.rate_hz:.4e} "
-        f"(flux x sigma_KN x N_e anchor = {spec.rate_anchor_hz:.4e}; "
-        f"ratio {spec.rate_hz / spec.rate_anchor_hz:.3f})",
+        f"# total_single_scatter_rate_Hz = {spec.rate_hz:.4e} (BOUND incoherent; "
+        f"free-KN pre-binding = {spec.rate_free_hz:.4e}, binding f_bind = "
+        f"{spec.rate_hz / spec.rate_free_hz:.4f})",
+        f"# VALD-03 anchor flux x sigma_KN x N_e (free) = {spec.rate_anchor_hz:.4e}; "
+        f"bound/anchor ratio {spec.rate_hz / spec.rate_anchor_hz:.3f} (within factor 2)",
         f"# integral dR/dE_dep = {spec.counts_per_kg_day:.4e} counts/kg/day "
         f"(= total_rate * 86400 / mass_kg; energy closure)",
         f"# n_mc_samples_per_line = {spec.n_per_line}; seed fixed for reproducibility",

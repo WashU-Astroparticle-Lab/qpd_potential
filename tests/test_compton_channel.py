@@ -81,6 +81,58 @@ def test_total_rate_within_factor_two():
     assert _SPEC.rate_hz > 0.0
 
 
+# --------------------------------------------------------------------------- #
+# Incoherent S(x,Z) binding: rate drops SLIGHTLY, edges/bulk preserved          #
+# --------------------------------------------------------------------------- #
+def test_binding_suppression_small_at_mev():
+    """Binding f_bind = sigma_incoh/(Z sigma_KN) in (0,1], ~1 for MeV lines; the
+    bound rate is BELOW the free-KN rate but by only a few percent (VALD-03)."""
+    for e in (242.0, 1460.822, 2614.511):
+        f = cd.binding_suppression(e)
+        assert 0.90 < f <= 1.0
+    # bound total rate is slightly below the free-KN pre-binding rate
+    assert _SPEC.rate_hz < _SPEC.rate_free_hz
+    assert _SPEC.rate_hz / _SPEC.rate_free_hz == pytest.approx(1.0, abs=0.03)
+    # higher-energy lines are LESS bound (approach free faster)
+    assert cd.binding_suppression(2614.511) > cd.binding_suppression(242.0)
+
+
+def test_low_recoil_continuum_suppressed_and_rolls_off():
+    """The bound continuum ROLLS OFF toward low T_e (no free-KN flat-then-cut).
+
+    Measured in COUNTS per band (robust to the single-count dR/dE noise in the
+    narrow near-floor log bins): the count content increases steadily away from
+    the floor (10 eV -> 100 eV -> 1 keV -> 10 keV), i.e. the continuum rolls off
+    toward zero at low recoil, and is essentially gone (< 1e-4 of total) below
+    50 eV -- ABOVE the grid floor, so the reconstructed floor sits in the
+    fully binding-suppressed region."""
+    c, y = _SPEC.centers_kev, _SPEC.dRdE
+    wd = np.diff(_SPEC.edges_kev)
+
+    def counts(a, b):
+        m = (c >= a) & (c < b)
+        return float((y[m] * wd[m]).sum())
+
+    total = counts(c[0] * 0.5, c[-1] * 2.0)
+    # roll-off: monotone increase in per-band counts away from the floor
+    assert counts(0.01, 0.1) < counts(0.1, 1.0) < counts(1.0, 10.0)
+    # near-floor content has rolled off to essentially zero (binding suppression)
+    assert counts(0.01, 0.05) / total < 1e-4
+    # representative dR/dE at ~50 eV is far below the ~10 keV plateau value
+    plateau = _y_at(_SPEC, 10.0)
+    assert plateau > 0.0
+    assert _y_at(_SPEC, 0.05) < 0.5 * plateau
+
+
+def test_edges_preserved_under_binding():
+    """S->Z at the Compton edge (backscatter): the kinematic edges are UNCHANGED
+    by the binding correction (VALD-03 edge targets still self-validate)."""
+    edges = {round(eg): ed for eg, ed in zip(_SPEC.line_energies, _SPEC.line_edges_sampled)}
+    assert edges[1461] == pytest.approx(1243.4, abs=1.0)
+    assert edges[2615] == pytest.approx(2381.7, abs=1.0)
+    assert edges[1764] == pytest.approx(1541.3, abs=1.0)
+
+
 def test_energy_closure():
     """int dR/dE_dep dE = total_rate * 86400 / mass_kg (counts/kg/day).
 

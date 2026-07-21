@@ -40,6 +40,10 @@ _DATA_DIR = os.path.abspath(
 )
 GAMMA_LINES_CSV = os.path.join(_DATA_DIR, "gamma_lines.csv")
 GE_XCOM_CSV = os.path.join(_DATA_DIR, "ge_xcom_mu.csv")
+GE_SF_CSV = os.path.join(_DATA_DIR, "ge_incoherent_S.csv")
+
+# hc in keV.Angstrom (photon wavelength lambda[A] = HC_KEV_ANG / E_gamma[keV]).
+HC_KEV_ANG = 12.39842
 
 # --------------------------------------------------------------------------- #
 # Physical constants                                                          #
@@ -142,6 +146,63 @@ def mu_over_rho(e_kev):
 def mu_linear(e_kev):
     """Linear attenuation coefficient mu = (mu/rho) * rho [cm^-1]."""
     return np.asarray(mu_over_rho(e_kev)) * RHO
+
+
+# --------------------------------------------------------------------------- #
+# Incoherent (Compton) scattering function S(x,Z): frozen Hubbell (1975) table  #
+# + log-log interpolation. Binds the low-recoil Compton continuum.             #
+# --------------------------------------------------------------------------- #
+def load_incoherent_sf(path: str = GE_SF_CSV):
+    """Load the frozen Ge incoherent scattering function -> (x, S) arrays.
+
+    x is the momentum-transfer variable [Angstrom^-1]; S(x,Z=32) is the Hubbell
+    (1975) incoherent scattering function (provenance in data/ge_incoherent_S.csv).
+    """
+    x, s = [], []
+    with open(path, newline="") as f:
+        reader = csv.DictReader(row for row in f if not row.startswith("#"))
+        for r in reader:
+            x.append(float(r["x_inv_angstrom"]))
+            s.append(float(r["S_incoherent"]))
+    return np.asarray(x), np.asarray(s)
+
+
+_SF_X, _SF_S = load_incoherent_sf()
+_LOG_SF_X = np.log(_SF_X)
+_LOG_SF_S = np.log(_SF_S)
+# Low-x log-log slope (S ~ x^p, physically p ~ 2 -> S -> 0 as x -> 0).
+_SF_SLOPE_LO = (_LOG_SF_S[1] - _LOG_SF_S[0]) / (_LOG_SF_X[1] - _LOG_SF_X[0])
+
+
+def incoherent_S(x_inv_ang):
+    """Incoherent scattering function S(x, Z=32) at momentum transfer x [A^-1].
+
+    Log-log interpolation between the frozen Hubbell (1975) points. Below the
+    tabulated x_min, log-log LINEAR extrapolation with the first-interval slope
+    (S ~ x^2 -> 0, forward/low-recoil binding suppression); above x_max, clamp to
+    S = Z = 32 (large recoil -> electrons act free, edges/bulk unchanged).
+    """
+    x = np.atleast_1d(np.asarray(x_inv_ang, dtype=float))
+    lx = np.log(np.maximum(x, 1e-300))
+    ly = np.interp(lx, _LOG_SF_X, _LOG_SF_S)          # np.interp clamps at ends
+    below = lx < _LOG_SF_X[0]
+    ly = np.where(below, _LOG_SF_S[0] + _SF_SLOPE_LO * (lx - _LOG_SF_X[0]), ly)
+    # above x_max np.interp already clamps to _LOG_SF_S[-1] = ln(Z) -> S = Z.
+    out = np.exp(ly)
+    return out if out.size > 1 else float(out[0])
+
+
+def momentum_transfer_x(e_gamma_kev, cos_theta):
+    """Momentum-transfer variable x = E_gamma[keV]*sin(theta/2)/12.39842 [A^-1].
+
+    sin(theta/2) = sqrt((1 - cos theta)/2). Forward scatter (cos->1) -> x->0
+    (bound, suppressed); backscatter (cos->-1, the Compton edge) -> x maximal
+    (free, S->Z).
+    """
+    e = np.asarray(e_gamma_kev, dtype=float)
+    c = np.asarray(cos_theta, dtype=float)
+    sin_half = np.sqrt(np.maximum(1.0 - c, 0.0) / 2.0)
+    return e * sin_half / HC_KEV_ANG
 
 
 # --------------------------------------------------------------------------- #

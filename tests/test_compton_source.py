@@ -125,3 +125,43 @@ def test_sigma_kn_thomson_limit():
 def test_sigma_kn_1mev_literature():
     """sigma_KN(1 MeV) ~= 0.211 barn per electron (standard KN value)."""
     assert float(cs.sigma_kn(1000.0)) == pytest.approx(2.11e-25, rel=0.02)
+
+
+# --------------------------------------------------------------------------- #
+# Incoherent scattering function S(x,Z=32) (Hubbell 1975, frozen provenance)    #
+# --------------------------------------------------------------------------- #
+def test_incoherent_sf_table_sourced():
+    """The S(x,Z) table is sourced (frozen CSV present, monotone, spans the range)."""
+    x, s = cs.load_incoherent_sf()
+    assert x.size >= 100
+    assert np.all(np.diff(x) > 0)                 # x strictly increasing
+    assert np.all(np.diff(s) >= -1e-9)            # S non-decreasing in x
+    assert s[-1] == pytest.approx(32.0, abs=1e-6)  # tabulated tail -> Z
+    assert x[-1] >= 211.0                          # covers max physical x (2.6 MeV line)
+
+
+def test_incoherent_S_limits():
+    """S(x->0) -> 0 (binding suppression); S(x->inf) -> Z = 32 (free)."""
+    assert float(cs.incoherent_S(1e-4)) < 1e-3           # forward/low recoil -> ~0
+    assert float(cs.incoherent_S(1e-5)) < float(cs.incoherent_S(1e-3))  # falls toward 0
+    assert float(cs.incoherent_S(1e3)) == pytest.approx(32.0, abs=1e-6)  # high x -> Z
+    assert float(cs.incoherent_S(1e6)) == pytest.approx(32.0, abs=1e-6)  # clamp above table
+    # strictly increasing through the rising region, then saturates at Z = 32
+    xs = np.array([0.01, 0.1, 0.5, 1.0, 5.0])
+    S = np.asarray(cs.incoherent_S(xs))
+    assert np.all(np.diff(S) > 0)
+    assert np.all((S >= 0.0) & (S < 32.0))
+    # large x: fully saturated at Z (edges/bulk are free -> unchanged)
+    assert float(cs.incoherent_S(50.0)) == pytest.approx(32.0, abs=1e-6)
+    assert float(cs.incoherent_S(200.0)) == pytest.approx(32.0, abs=1e-6)
+
+
+def test_momentum_transfer_x():
+    """x = E[keV] sin(theta/2)/12.39842: forward (cos=1) -> 0, backscatter -> max."""
+    e = 1460.822
+    assert float(cs.momentum_transfer_x(e, 1.0)) == pytest.approx(0.0, abs=1e-12)
+    # backscatter theta=pi (cos=-1): sin(theta/2)=1 -> x = E/12.39842
+    assert float(cs.momentum_transfer_x(e, -1.0)) == pytest.approx(e / cs.HC_KEV_ANG, rel=1e-9)
+    # 90 deg (cos=0): sin(45)=1/sqrt2
+    assert float(cs.momentum_transfer_x(e, 0.0)) == pytest.approx(
+        e * np.sqrt(0.5) / cs.HC_KEV_ANG, rel=1e-9)

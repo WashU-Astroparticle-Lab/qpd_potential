@@ -412,6 +412,36 @@ continuum, NOT a full-absorption spectrum:
   carried with a **factor-2 site-dependent flux band** (0.5×/2×). The gamma flux
   is a **documented tunable input**, not a measurement of any specific site.
 
+- **Electron-binding correction — incoherent scattering function `S(x,Z)` (refinement):**
+  the angular sampling now uses the **bound**-electron incoherent cross section
+  `dσ_incoh/dΩ = (dσ_KN/dΩ)·S(x,Z=32)` (the standard bound-Compton correction),
+  replacing the pure free-electron Klein–Nishina angular weight. Here
+  `x = E_γ[keV]·sin(θ/2)/12.39842` [Å⁻¹] is the momentum-transfer variable.
+  `S(x,Z)` is **sourced, not invented** (`data/ge_incoherent_S.csv`): the Hubbell,
+  Veigele, Briggs, Brown, Cromer & Howerton tabulation, *J. Phys. Chem. Ref. Data*
+  **4**, 471 (1975), retrieved verbatim from the xraylib `data/SF.dat` Z=32 block
+  (xraylib: Schoonjans et al., *Spectrochim. Acta B* **66**, 776 (2011)), fetched
+  2026-07-21; interpolated **log-log** in `x`. This **fixes the unphysical
+  free-KN low edge**: because `S(x→0)→0`, the near-forward / low-recoil
+  continuum is strongly suppressed, so the Compton `dR/dE_dep` (and the folded
+  `dR/dE_rec`) now **rolls off smoothly toward zero** at low energy instead of a
+  flat continuum hard-cut at the grid floor — the roll-off completes near
+  ~30–50 eV `E_dep` (~15–25 eV `E_rec`), **above** the 10 eV shared-grid floor
+  (< 10⁻⁴ of counts below 50 eV `E_dep`), so the reconstructed floor sits in the
+  fully binding-suppressed region (no separate sub-floor extension needed).
+  Because `S(x→∞)→Z=32`, the **Compton edges** (backscatter, large `x`) and the
+  **bulk continuum above ~keV** (`S/Z≈1`) are **UNCHANGED** — VALD-03 edge
+  targets (⁴⁰K→1243.4, ²⁰⁸Tl→2381.7, ²¹⁴Bi→1541.3 keV) still self-validate.
+  The per-line rate is recomputed with the bound total cross section
+  `σ_incoh = ∫(dσ_KN/dΩ)·S(x,Z) dΩ` per atom (binding factor
+  `f_bind = σ_incoh/(Z·σ_KN) ∈ [0.979, 0.999]` across the line band): the total
+  Compton rate drops **slightly**, from **0.2685 Hz (free-KN)** to
+  **0.2675 Hz (bound)**. The free-KN `Φ·σ_KN·N_e = 0.273 Hz` remains the labeled
+  VALD-03 anchor; the bound/anchor ratio is **0.980** (still within the factor-2
+  band). `S(x,Z)` changes the **cross section, not the energy scale** — unified
+  phonon deposit, no quenching (guard `fp-quenching-compton` intact). Muon,
+  CEvNS, and the response matrix `R` are untouched.
+
 _Phase-4 gamma-background note consolidated into the stage-1 assumptions record under Plan 06-02._
 
 ---
