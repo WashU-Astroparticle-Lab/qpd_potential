@@ -115,9 +115,10 @@ Plans:
 **Goal:** The per-isotope-summed CEvNS differential rate dR/dT on natural Ge is computed in deposited nuclear-recoil energy (Freedman cross section + Helm form factor, folded with the Phase-2 flux) and validated against the closed-form total cross section and Billard et al. (2017) Table 1.
 **Objectives:** CALC-02, VALD-01
 **Contract Coverage:** advances claim-cevns, obs-cevns-spectrum (deposited-energy precursor), test-cevns-benchmark, deliv-code | anchors ref-cevns-benchmark (Billard Table 1: 0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr), CONUS+ baseline, ref-huber | forbidden proxy: (ħc)² omission, /4π vs /8π, GW_e vs GW_th, lumped A instead of per-isotope endpoints
-**Plans:** 0 plans
+**Plans:** 2 plans
 
-- [ ] TBD (run plan-phase 3 to break down)
+- [ ] 03-01-PLAN.md — Extend cevns.py with Helm FF, per-isotope dσ/dT, 5-isotope Ge table, and flux fold → dR/dT CSV; closed-form σ_tot + benchmark + closure + convergence (CALC-02, wave 1)
+- [ ] 03-02-PLAN.md — VALD-01: Billard Table-1 reproduction with the k≈0.0111 rescale (~20%), CONUS+ factor-2, flux-band propagation + deposited-energy figure (wave 2, depends 03-01)
 
 ### Phase 4: Muon & Compton Deposited-Energy Spectra
 
@@ -167,7 +168,7 @@ Phases execute by dependency wave: 1 → {2, 4} → 3 → 5 → 6 (Phase 4 paral
 | ----- | -------------- | ------ | --------- |
 | 1. Conventions & Energy-Scale Foundation | 2/2 | Complete ✓ | 2026-07-20 |
 | 2. Reactor Flux Model | 2/2 | Complete ✓ (caveat: sub-1.8 MeV model placeholder, band-covered) | 2026-07-20 |
-| 3. CEvNS Cross Section & Rate | 0/TBD | Not started | - |
+| 3. CEvNS Cross Section & Rate | 0/2 | Planned | - |
 | 4. Muon & Compton Deposited-Energy Spectra | 0/3 | Planned | - |
 | 5. QPD Response Chain & Energy Reconstruction | 0/TBD | Not started | - |
 | 6. Fold & Produce Reconstructed-Energy Spectra | 0/TBD | Not started | - |
