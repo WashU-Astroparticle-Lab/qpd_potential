@@ -1,0 +1,38 @@
+# QPD Phase-7 Plan 07-01 -- Ge cosmogenic exposure/cool-down activation scenario, version v1.1
+# generated: 2026-07-22   git_sha: 03c789a
+# DOCUMENTED TUNABLE INPUT -- fixed scenario (t_exp,t_cool) + per-isotope as-deployed activity band.
+# Gates CALC-09 / Phase-11 (radiogenic ER templates -- NOT built here).
+#
+# AXIS TAG: keV_nr / unified phonon energy scale (CONVENTIONS.md Section B). The 3H beta continuum
+#   (0 -> 18.6 keV endpoint) and the 68Ga/65Zn EC X-ray/Auger deposits are born INSIDE the Ge and
+#   deposit their FULL energy on the phonon E_dep = E_nr scale with NO ionization quenching.
+#   No electron-equivalent<->nuclear-recoil scale mixing and no ionization-quenching factor are
+#   applied (CONVENTIONS.md Section B FORBIDDEN list; full guard in the scenario note).
+# PROVENANCE TAG: (exposure history) = (t_exp, t_cool).
+#
+# SCENARIO (DISCRETIONARY DEFAULT, PENDING RESEARCHER CONFIRMATION at the 07-01 human-verify gate):
+#   t_exp = 1 yr  (sea-level surface exposure: fabrication + storage + continuously-operating surface run)
+#   t_cool = 0    (worst-case surface framing; no post-fabrication shielded/below-ground cool-down interval)
+#   Band: t_exp in [0.25, 3] yr;  CDMSlite production rates = central, EDELWEISS-III = upper.
+#
+# FORMULA (verified numerically in 07-01):  A = R * (1 - exp(-lambda*t_exp)) * exp(-lambda*t_cool),
+#   lambda = ln2 / t_half,  t_cool = 0.  A and R in decays|atoms per kg per day.
+#
+# WHAT IS FIXED (HIGH -- evaluated decay data):
+#   * t_half: 3H 12.32 yr (=4499.9 d); 68Ge 270.8 d; 65Zn 243.9 d.
+#   * 3H: beta-, Q = 18.6 keV (in-band ER continuum, no line to subtract).
+#   * 68Ge -> 68Ga EC; 65Zn EC (K-shell X-ray/Auger in-band deposits).
+# WHAT IS SOURCED (production rates R, sea level, atoms/kg/day):
+#   * CDMSlite/SuperCDMS central: 3H 74+-9, 65Zn 17+-5, 68Ge 30+-18   (Amman et al., APh 105, 44 (2019), arXiv:1806.07043)
+#   * EDELWEISS-III upper:        3H 82+-21, 65Zn 106+-13, 68Ge >71   (Armengaud et al., APh 91, 51 (2017), arXiv:1607.04560)
+#
+# FINDING (07-01, guard fp-saturation-3H extended): at t_exp = 1 yr the SHORT-LIVED isotopes are NOT
+#   yet saturated -- 68Ge is at 60.7% of R (A=18.2, not 30) and 65Zn at 64.6% (A=11.0, not 17). Full
+#   saturation (A -> R) requires t_exp >~ 3 yr. 3H NEVER saturates (5.5% of R at 1 yr, grows ~linearly:
+#   1.0 @0.25yr -> 4.1 @1yr -> 11.5 @3yr). As-deployed A (NOT the saturation value R) is quoted below.
+#
+# columns: isotope,decay_mode,Q_or_line_keV,t_half_days,lambda_per_day,R_CDMSlite_atoms_kg_day,R_EDELWEISS_atoms_kg_day,satfrac_1yr,A_default_CDMSlite_1yr_dec_kg_day,A_EDELWEISS_1yr_dec_kg_day,A_band_lo_CDMSlite_0p25yr,A_band_hi_EDELWEISS_3yr,saturating_flag,provenance
+isotope,decay_mode,Q_or_line_keV,t_half_days,lambda_per_day,R_CDMSlite_atoms_kg_day,R_EDELWEISS_atoms_kg_day,satfrac_1yr,A_default_CDMSlite_1yr_dec_kg_day,A_EDELWEISS_1yr_dec_kg_day,A_band_lo_CDMSlite_0p25yr,A_band_hi_EDELWEISS_3yr,saturating_flag,provenance
+3H,beta_minus,18.6_endpoint,4499.9,1.5403e-4,74,82,0.0547,4.05,4.49,1.03,12.74,never_saturates_linear,CDMSlite_arXiv1806.07043_central__EDELWEISS_arXiv1607.04560_upper
+68Ge,EC_to_68Ga,10.37_K_EC,270.8,2.5596e-3,30,71,0.6074,18.22,43.12,6.25,66.70,saturates_t_exp~3yr,CDMSlite_arXiv1806.07043_central__EDELWEISS_arXiv1607.04560_lower_limit
+65Zn,EC,8.98_K_EC,243.9,2.8419e-3,17,106,0.6458,10.98,68.46,3.89,101.29,saturates_t_exp~3yr,CDMSlite_arXiv1806.07043_central__EDELWEISS_arXiv1607.04560_upper

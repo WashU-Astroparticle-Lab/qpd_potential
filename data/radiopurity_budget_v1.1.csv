@@ -1,0 +1,59 @@
+# QPD Phase-7 Plan 07-01 -- Housing/materials U/Th/40K radiopurity budget, version v1.1
+# generated: 2026-07-22   git_sha: 03c789a
+# DOCUMENTED TUNABLE INPUT -- single representative default + optimistic<->pessimistic bracket band.
+# Gates CALC-07 (gamma budget) and CALC-08 ((alpha,n)+SF neutron budget).
+#
+# AXIS TAG: keV_nr / unified phonon energy scale (CONVENTIONS.md Section B). Every downstream
+#   deposit fed by this budget (U/Th/40K gamma Compton continuum -> CALC-07; (alpha,n)+SF neutron
+#   elastic recoil -> CALC-08) lands on the SAME phonon E_dep = E_nr scale with NO ionization
+#   quenching. No electron-equivalent<->nuclear-recoil scale mixing and no ionization-quenching
+#   factor are applied (CONVENTIONS.md Section B FORBIDDEN list; full guard in the scenario note).
+# PROVENANCE TAG: (material / assay). Per-component housing/mount/nearby-components assay.
+#   NOT a (depth,shielding) flux; NOT the ambient-neutron normalization (that is Input 1).
+#
+# WHAT IS FIXED (HIGH confidence -- standard radioassay conversions, recorded once here):
+#   * 1 ppb U  (nat, secular eq) = 12.4 mBq/kg   (re-derived here: 12.44, <1%; 238U spec. act.)
+#   * 1 ppb Th (nat, secular eq) = 4.06 mBq/kg   (re-derived here: 4.057, <1%; 232Th spec. act.)
+#   * nat-K specific activity  = 31 Bq / g(K)    (re-derived here: 31.03, <1%)
+#       => 1 ppm nat-K = 31 mBq/kg of 40K activity
+#   * 40K gamma line 1460.8 keV, p_gamma = 0.1067 per decay (DDEP/LNHB)
+#   * 238U spontaneous-fission neutron yield = 1.353e-11 n/g/s per ppb U (material-independent;
+#       <E_n> ~ 2 MeV Watt).  Source: Mei, Zhang & Hime, NIMA 606, 651 (2009), arXiv:0812.4307.
+#
+# WHAT IS TUNABLE (MEDIUM confidence -- representative pick WITHIN a cited bracket; DISCRETIONARY,
+#   PENDING RESEARCHER CONFIRMATION at the 07-01 human-verify checkpoint):
+#   * Optimistic (lo) anchor  = electroformed Cu < 0.3 uBq/kg U/Th  (MAJORANA, OSTI 1481666).
+#   * Pessimistic (hi) anchor = commercial Cu/steel/PCB/connectors ~ mBq-Bq/kg U/Th/40K
+#       (radioassay DBs: ILIAS/SNOLAB; MAJORANA commercial-material assays).
+#   * Representative default   = commercial OFHC Cu ~ tens of uBq/kg U/Th for the structural
+#       housing, with a dirtier PCB/connector sub-budget at ~mBq/kg. This FORCES a single
+#       representative middle (guard fp-open-bracket) -- the >2-order bracket is retained ONLY as
+#       the lo/hi band, never as the operative input.
+#   * Ge-bulk intrinsic term ~ uBq/kg U/Th (GERDA, arXiv:1611.06884) is CONTEXT ONLY (negligible),
+#       flagged context_only=yes and NOT part of the housing budget sum.
+#
+# CHANNEL SPLIT (load-bearing): gamma_channel_CALC07 = U/Th chain gamma lines + 40K 1461 keV ->
+#   Compton continuum in the thin wafer (peaks escape). alphan_SF_channel_CALC08 = 238U SF (all U,
+#   material-independent) + (alpha,n) (dominated by LOW-Z content -- low_Z_alpha_n=yes rows; pure Cu/Ge
+#   ~ nothing). Per-component low-Z content flagged so Phase-10 can compute (alpha,n) per material.
+#
+# Activity unit: mBq/kg (1 uBq/kg = 1e-3 mBq/kg). ppb_U/ppb_Th/ppm_natK = default converted via the
+#   fixed constants above. Values are representative picks within the cited bracket (see WHAT IS TUNABLE).
+#
+# columns: component,material,nuclide,chain,activity_default_mBq_kg,activity_lo_mBq_kg,activity_hi_mBq_kg,ppb_or_ppm_default,gamma_channel_CALC07,alphan_SF_channel_CALC08,low_Z_alpha_n,context_only,provenance
+component,material,nuclide,chain,activity_default_mBq_kg,activity_lo_mBq_kg,activity_hi_mBq_kg,ppb_or_ppm_default,gamma_channel_CALC07,alphan_SF_channel_CALC08,low_Z_alpha_n,context_only,provenance
+housing,Cu_OFHC_commercial,U238,U-238,5.0e-2,3.0e-4,2.0e0,0.0040_ppbU,yes,yes_SF_dominant,no,no,MAJORANA_bracket_OSTI1481666_representative_middle
+housing,Cu_OFHC_commercial,Th232,Th-232,5.0e-2,3.0e-4,2.0e0,0.0123_ppbTh,yes,no,no,no,MAJORANA_bracket_OSTI1481666_representative_middle
+housing,Cu_OFHC_commercial,K40,K-40,1.0e-1,1.0e-2,5.0e0,0.0032_ppmK,yes,no,no,no,commercial_Cu_assay_DB_representative
+pcb_readout,FR4_fiberglass_epoxy,U238,U-238,1.0e0,1.0e-1,1.0e2,0.081_ppbU,yes,yes_alpha_n_and_SF,yes,no,radioassay_DB_ILIAS_SNOLAB_representative
+pcb_readout,FR4_fiberglass_epoxy,Th232,Th-232,1.0e0,1.0e-1,1.0e2,0.246_ppbTh,yes,yes_alpha_n,yes,no,radioassay_DB_ILIAS_SNOLAB_representative
+pcb_readout,FR4_fiberglass_epoxy,K40,K-40,1.0e1,1.0e0,5.0e2,0.323_ppmK,yes,no,yes,no,PCB_high_K_assay_DB_representative
+connectors,connector_wirebond_polymer_metal,U238,U-238,1.0e0,1.0e-1,1.0e1,0.081_ppbU,yes,yes_alpha_n_and_SF,partial,no,radioassay_DB_representative
+connectors,connector_wirebond_polymer_metal,Th232,Th-232,1.0e0,1.0e-1,1.0e1,0.246_ppbTh,yes,yes_alpha_n,partial,no,radioassay_DB_representative
+connectors,connector_wirebond_polymer_metal,K40,K-40,1.0e0,1.0e-1,1.0e1,0.032_ppmK,yes,no,partial,no,radioassay_DB_representative
+mount,stainless_steel_316,U238,U-238,1.0e0,1.0e-1,1.0e1,0.081_ppbU,yes,yes_SF_dominant,no,no,radioassay_DB_representative
+mount,stainless_steel_316,Th232,Th-232,1.0e0,1.0e-1,1.0e1,0.246_ppbTh,yes,no,no,no,radioassay_DB_representative
+mount,stainless_steel_316,K40,K-40,1.0e-1,1.0e-2,1.0e0,0.0032_ppmK,yes,no,no,no,radioassay_DB_representative
+ge_bulk_CONTEXT,Ge_crystal_intrinsic,U238,U-238,1.0e-3,1.0e-4,5.0e-3,8.1e-5_ppbU,context,context,no,yes,GERDA_arXiv1611.06884_negligible_not_summed
+ge_bulk_CONTEXT,Ge_crystal_intrinsic,Th232,Th-232,1.0e-3,1.0e-4,5.0e-3,2.5e-4_ppbTh,context,context,no,yes,GERDA_arXiv1611.06884_negligible_not_summed
+ge_bulk_CONTEXT,Ge_crystal_intrinsic,K40,K-40,1.0e-3,1.0e-4,5.0e-3,3.2e-5_ppmK,context,context,no,yes,GERDA_arXiv1611.06884_negligible_not_summed
