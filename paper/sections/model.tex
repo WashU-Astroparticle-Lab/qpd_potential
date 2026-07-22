@@ -38,8 +38,10 @@ $p$ & 0.25 & 0.13 \\
 \end{equation}
 Because $\Delta_{\rm tr}$, $V_{\rm tr}$, $K$, and $p$ differ between designs, the two designs reach this ceiling at different deposit energies; the Al$\to$Hf design saturates first (its plateau $\Gamma_{\rm in}$ per unit deposit is $\sim$3.2$\times$ that of Ta$\to$Al). The per-design crossover deposit energy and the whole-array plateau are quoted in Sec.~\ref{sec:response}. The mapping from the true tunneling rate $\Gamma$ to the observed count rate $m$ is a dead-time censoring model, and the choice of model is not fixed by electronics reasoning alone; both the non-paralyzable and paralyzable idealizations are defensible:
 \begin{equation}
-m = \frac{\Gamma}{1+\Gamma\tau_d}\ \ \text{(non-paralyzable)},\quad
-m = \Gamma\,e^{-\Gamma\tau_d}\ \ \text{(paralyzable)}.
+\begin{aligned}
+m &= \frac{\Gamma}{1+\Gamma\tau_d}\quad\text{(non-paralyzable)},\\
+m &= \Gamma\,e^{-\Gamma\tau_d}\quad\text{(paralyzable)}.
+\end{aligned}
 \label{eq:censor}
 \end{equation}
 The non-paralyzable form is monotone and saturates at $m\to 1/\tau_d = 25$~kHz; the paralyzable form is non-monotone, peaking at $\Gamma = 1/\tau_d$ and rolling over thereafter. This was an open modeling choice, closed by decision: we adopt \emph{non-paralyzable} censoring as the canonical convention for all results and retain the paralyzable variant only as a sensitivity. Equations~\eqref{eq:chain}--\eqref{eq:censor} fix the setup on which the flux and background channels (Secs.~\ref{sec:cevns} and~\ref{sec:backgrounds}) and the reconstruction estimator (Sec.~\ref{sec:response}) are built.

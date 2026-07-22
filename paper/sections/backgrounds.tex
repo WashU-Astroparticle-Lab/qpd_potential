@@ -15,10 +15,12 @@ We sample the sea-level muon intensity from the modified-Gaisser
 incorporates the low-energy/large-angle correction that plain Gaisser
 lacks,
 \begin{equation}
+\begin{aligned}
 \frac{dI}{dE_\mu\,d\Omega}
-= 0.14\,\Big(\frac{E_\mu}{\rm GeV}\Big)^{-2.7}
-\left[\frac{1}{1+\tfrac{1.1 E_\mu\cos\theta^\ast}{115~{\rm GeV}}}
-+\frac{0.054}{1+\tfrac{1.1 E_\mu\cos\theta^\ast}{850~{\rm GeV}}}\right],
+&= 0.14\,\Big(\frac{E_\mu}{\rm GeV}\Big)^{-2.7}\\
+&\quad\times\bigg[\frac{1}{1+\tfrac{1.1 E_\mu\cos\theta^\ast}{115~{\rm GeV}}}
++\frac{0.054}{1+\tfrac{1.1 E_\mu\cos\theta^\ast}{850~{\rm GeV}}}\bigg],
+\end{aligned}
 \label{eq:gaisser}
 \end{equation}
 in cm$^{-2}$s$^{-1}$sr$^{-1}$GeV$^{-1}$, where $E_\mu$ is the muon
@@ -36,10 +38,13 @@ $\langle\ell\rangle=4V/S=0.385$ cm. The deposited spectrum is the
 flux-weighted, projected-area chord distribution folded with the
 straggling density,
 \begin{equation}
+\begin{aligned}
 \frac{dR}{dE_{\rm dep}}
-= \frac{1}{m}\int d\Omega\,(\hat{n}\!\cdot\!\hat{\Omega})_{+}\,A
-\int dE_\mu\,\frac{dI}{dE_\mu\,d\Omega}\;
+&= \frac{1}{m}\int d\Omega\,(\hat{n}\!\cdot\!\hat{\Omega})_{+}\,A
+\int dE_\mu\,\frac{dI}{dE_\mu\,d\Omega}\\
+&\quad\times
 f_{\rm L}\!\big(E_{\rm dep};\,\Delta_p(\ell,E_\mu),\,\xi(\ell)\big),
+\end{aligned}
 \label{eq:muonfold}
 \end{equation}
 where $m$ is the wafer mass, $A$ the entry-face area,
@@ -50,9 +55,11 @@ or the Moyal approximation, would misplace the peak and suppress the
 high-energy tail; we use neither. With mass thickness $x=\rho\ell$, the
 width and MPV follow the standard forms
 \begin{equation}
-\xi=\frac{K}{2}\frac{Z}{A}\frac{x}{\beta^2},\qquad
-\Delta_p=\xi\!\left[\ln\frac{2m_ec^2\beta^2\gamma^2}{I}+\ln\frac{\xi}{I}
+\begin{aligned}
+\xi&=\frac{K}{2}\frac{Z}{A}\frac{x}{\beta^2},\\
+\Delta_p&=\xi\!\left[\ln\frac{2m_ec^2\beta^2\gamma^2}{I}+\ln\frac{\xi}{I}
 +j-\beta^2-\delta(\beta\gamma)\right],
+\end{aligned}
 \label{eq:landau}
 \end{equation}
 with $K=0.307$ MeV\,mol$^{-1}$cm$^2$, $Z/A=0.4406$ for Ge, mean
@@ -97,10 +104,12 @@ $T_e=E_\gamma-E'$, a \emph{continuum}, and not a full-energy photopeak.
 We sample the scattering angle $\theta$ from the bound-electron
 incoherent cross section,
 \begin{equation}
+\begin{aligned}
 \frac{d\sigma}{d\Omega}
-=\frac{r_e^2}{2}\Big(\frac{E'}{E_\gamma}\Big)^{2}
-\Big(\frac{E'}{E_\gamma}+\frac{E_\gamma}{E'}-\sin^2\theta\Big)\,S(x,Z),
-\qquad E'=\frac{E_\gamma}{1+\alpha(1-\cos\theta)},
+&=\frac{r_e^2}{2}\Big(\frac{E'}{E_\gamma}\Big)^{2}
+\Big(\frac{E'}{E_\gamma}+\frac{E_\gamma}{E'}-\sin^2\theta\Big)\,S(x,Z),\\
+E'&=\frac{E_\gamma}{1+\alpha(1-\cos\theta)},
+\end{aligned}
 \label{eq:kn}
 \end{equation}
 with classical electron radius $r_e$, incident photon energy $E_\gamma$,

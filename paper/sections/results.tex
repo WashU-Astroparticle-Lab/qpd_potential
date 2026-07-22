@@ -1,12 +1,14 @@
 We now fold the three deposited-energy spectra of Secs.~\ref{sec:cevns} and~\ref{sec:backgrounds} through the non-paralyzable response matrix $R(E_{\rm rec}\,|\,E_{\rm dep})$ of Sec.~\ref{sec:response} to obtain the reconstructed-energy differential rate spectra $dR/dE_{\rm rec}$ for the two trapping designs. This is the payoff of the forward model: the reconstructed axis is what a bandwidth-limited readout actually records, and it differs qualitatively from the deposited axis wherever the tunneling burst saturates the 25~kHz ceiling. The fold is a discrete matrix product,
 \begin{equation}
-\frac{dR}{dE_{\rm rec}}\bigg|_{j} = \frac{1}{\Delta E_{{\rm rec},j}}\sum_{i} R_{ji}\,N_{{\rm dep},i},
-\qquad N_{{\rm dep},i} = \frac{dR}{dE_{\rm dep}}\bigg|_{i}\,\Delta E_{{\rm dep},i},
+\begin{aligned}
+\frac{dR}{dE_{\rm rec}}\bigg|_{j} &= \frac{1}{\Delta E_{{\rm rec},j}}\sum_{i} R_{ji}\,N_{{\rm dep},i},\\
+N_{{\rm dep},i} &= \frac{dR}{dE_{\rm dep}}\bigg|_{i}\,\Delta E_{{\rm dep},i},
+\end{aligned}
 \label{eq:fold}
 \end{equation}
 where $N_{{\rm dep},i}$ is the rate in deposited bin $i$, $R_{ji}$ is the probability that a deposit in bin $i$ is reconstructed into bin $j$, and $\Delta E_{{\rm dep},i}$, $\Delta E_{{\rm rec},j}$ are the bin widths. Because every column of $R$ is normalized to unit sum, Eq.~\eqref{eq:fold} conserves counts per channel by construction; we verify this numerically to a relative $\sim\!10^{-16}$ for all three channels and both designs. The CEvNS spectrum, computed on a recoil grid in Sec.~\ref{sec:cevns}, is first rebinned onto the shared $E_{\rm dep}$ grid by a piecewise log--log power-law integral that conserves counts to $9.6\times10^{-5}$ overall and $0.12\%$ above 50~eV$_{\rm nr}$. Its sub-floor low edge (5--10.14~eV, $7.27$ counts~kg$^{-1}$~day$^{-1}$) lies far below the saturation onset, where the response is exactly linear; it is therefore reconstructed via the calibrated mapping $E_{\rm rec}=0.5\,E_{\rm dep}$ rather than discarded, and carried into the matching $E_{\rm rec}$ bins.
 
-Figure~\ref{fig:spectra} is the central result: $dR/dE_{\rm rec}$ versus reconstructed energy for CEvNS, cosmic muons, environmental gammas, and their total, for both designs, together with a panel showing the underlying true-to-reconstructed mapping. Nothing below 10~eV is shown. Three qualitative features organize the spectrum.
+Figure~\ref{fig:spectra} is the central result: $dR/dE_{\rm rec}$ versus reconstructed energy for CEvNS, cosmic muons, environmental gammas, and their total, for both designs; the underlying true-to-reconstructed energy mapping is shown separately in Fig.~\ref{fig:mapping}. Nothing below 10~eV is shown. Three qualitative features organize the spectrum.
 
 First, the reactor-CEvNS signal---the flagship channel---reconstructs to \emph{tens of eV}. Its differential rate peaks near $42$~eV in $E_{\rm rec}$, with $\sim\!85\%$ of the reconstructed counts falling below $100$~eV, and integrates to $109.6$ counts~kg$^{-1}$~day$^{-1}$. Because CEvNS recoils sit entirely below the crossover onset, they map linearly ($E_{\rm rec}\approx0.5\,E_{\rm dep}$, down to $\sim\!2.5$~eV), so the flagship signal populates the very lowest end of the observable axis. This places the signal well below the sub-100~eV thresholds now being probed by reactor-CEvNS experiments~\cite{conus2025}, underscoring that recovering it demands an eV-scale reconstruction floor rather than merely a low deposited threshold.
 

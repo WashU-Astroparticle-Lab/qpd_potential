@@ -8,21 +8,21 @@
       "artifact_id": "tex-paper",
       "category": "tex",
       "path": "qpd_reactor_cevns_spectra.tex",
-      "sha256": "f7a5dbe38d2001d5fccbbb5b2c50f37796e57a8e93a75dd51808db9af7e08cf5",
+      "sha256": "bcc30a3d108c9703a41163f36ae4c2d71773186ebef527d3c374cc184e977a4e",
       "produced_by": "build_paper:render_tex",
       "sources": [],
       "metadata": {
         "journal": "prl",
         "section_count": 8,
         "appendix_count": 2,
-        "figure_count": 3
+        "figure_count": 4
       }
     },
     {
       "artifact_id": "figure-spectra",
       "category": "figure",
       "path": "figures/reconstructed_energy_spectra.pdf",
-      "sha256": "47b8856b2ee3525f8ea059b3a3c1d93ae15a2e61297b9e6fed5a84d58dd5e099",
+      "sha256": "449057167ccc77b134568f56b018009c867f8827ec30a3fc709a1ecd30ed46d3",
       "produced_by": "build_paper:prepare_figures",
       "sources": [
         {
@@ -34,6 +34,24 @@
         "label": "spectra",
         "caption_length": 627,
         "double_column": true
+      }
+    },
+    {
+      "artifact_id": "figure-mapping",
+      "category": "figure",
+      "path": "figures/true_reconstructed_mapping.pdf",
+      "sha256": "7efe349cd0f6f81b6d806bc5910017ec629500149f71d933ba7ade19de0010c5",
+      "produced_by": "build_paper:prepare_figures",
+      "sources": [
+        {
+          "path": "figures/true_reconstructed_mapping.pdf",
+          "role": "source-figure"
+        }
+      ],
+      "metadata": {
+        "label": "mapping",
+        "caption_length": 402,
+        "double_column": false
       }
     },
     {
@@ -76,7 +94,7 @@
       "artifact_id": "pdf-qpd_reactor_cevns_spectra",
       "category": "pdf",
       "path": "qpd_reactor_cevns_spectra.pdf",
-      "sha256": "af784eec131dab0e13f98475b4adc4b73bfe89ae941a1df0ea74df1c796c7a24",
+      "sha256": "1f7684ac84de9749663e99a0e7629ad9a1a3512bb3faa442057b284416ead2e2",
       "produced_by": "build_paper:compile",
       "sources": [
         {
@@ -87,6 +105,6 @@
       "metadata": {}
     }
   ],
-  "manuscript_sha256": "f7a5dbe38d2001d5fccbbb5b2c50f37796e57a8e93a75dd51808db9af7e08cf5",
-  "manuscript_mtime_ns": 1784677063435250596
+  "manuscript_sha256": "bcc30a3d108c9703a41163f36ae4c2d71773186ebef527d3c374cc184e977a4e",
+  "manuscript_mtime_ns": 1784679910358538662
 }

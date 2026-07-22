@@ -21,9 +21,10 @@ Our differential reproduces Eq.~\eqref{eq:app-sigmatot} to a relative $3\times10
 
 The nuclear form factor is the Lewin--Smith parametrization~\cite{lewinsmith1996} of the Helm ansatz~\cite{helm1956},
 \begin{equation}
-F(q) = \frac{3\, j_1(qR_0)}{qR_0}\,\exp\!\left(-\tfrac12 q^2 s^2\right),
-\qquad
-R_0^2 = c^2 + \tfrac{7}{3}\pi^2 a^2 - 5 s^2 ,
+\begin{aligned}
+F(q) &= \frac{3\, j_1(qR_0)}{qR_0}\,\exp\!\left(-\tfrac12 q^2 s^2\right),\\
+R_0^2 &= c^2 + \tfrac{7}{3}\pi^2 a^2 - 5 s^2 ,
+\end{aligned}
 \label{eq:helm}
 \end{equation}
 with $j_1$ the first spherical Bessel function, diffraction radius $c=1.23\,A^{1/3}-0.60$~fm, surface diffuseness $a=0.52$~fm, and skin thickness $s=0.90$~fm; $F(0)=1$ by construction. The momentum transfer $q=\sqrt{2M_iT}$ is expressed in fm$^{-1}$ via $q[\mathrm{fm}^{-1}]=q[\mathrm{MeV}]/(\hbar c)$ with $\hbar c=197.327$~MeV\,fm, so that $qR_0$ and $qs$ are dimensionless (feeding $q$ in the wrong units produces a large spurious suppression). For germanium at reactor recoils the form factor is nearly unity: $F^2>0.998$ in the sub-$100$~eV region that carries most of the rate, falling to $F^2({}^{72}\mathrm{Ge})=0.9963$ at $T=200$~eV and to $0.9639$ only at the rare $\sim\!2$~keV endpoint reached by $E_\nu\sim8$--$10$~MeV neutrinos. These are consistent: the $>0.998$ figure is the dominant low-recoil regime and the $\sim\!0.96$ value is the high-recoil tail. The integrated deposited rate above $50$~eV is form-factor independent at the sub-percent level---turning $F$ off shifts it by $0.38\%$---so reactor CEvNS on Ge sits in the form-factor-insensitive regime and the exact skin parameters are not a systematic driver.

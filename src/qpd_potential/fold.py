@@ -549,9 +549,6 @@ def make_spectra_figure(
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    from matplotlib.gridspec import GridSpec
-    from matplotlib.lines import Line2D
-    from matplotlib.patches import Patch
 
     if out_path is None:
         out_path = os.path.join(art_dir, SPECTRA_FIG_FILE)
@@ -576,10 +573,9 @@ def make_spectra_figure(
             "med": med,
         }
 
-    fig = plt.figure(figsize=(12.5, 9.2))
-    gs = GridSpec(2, 2, figure=fig, height_ratios=[1.0, 0.92],
-                  hspace=0.30, wspace=0.22,
-                  left=0.075, right=0.975, top=0.935, bottom=0.075)
+    fig, axes = plt.subplots(1, len(designs), figsize=(11.0, 4.7))
+    if len(designs) == 1:
+        axes = [axes]
 
     # ---- Panels A/B: spectra per design ------------------------------------ #
     ymin, ymax = 1e-3, 1e9
@@ -588,7 +584,7 @@ def make_spectra_figure(
     # 0.5*E_dep extension) and is not trustworthy for presentation (user directive).
     xmin, xmax = 1e-2, 1e2  # keV  (10 eV floor)
     for col, d in enumerate(designs):
-        ax = fig.add_subplot(gs[0, col])
+        ax = axes[col]
         s = spectra[d]
         E = s["E_rec_keV"]
         # saturation shading (E_dep > onset -> reconstructed under saturation)
@@ -636,14 +632,46 @@ def make_spectra_figure(
         if col == 0:
             ax.legend(loc="lower left", fontsize=8.0, framealpha=0.9, ncol=1)
 
-    # ---- Panel C: true->reconstructed mapping ------------------------------ #
-    axm = fig.add_subplot(gs[1, 0])
+    fig.tight_layout()
+    fig.savefig(out_path)
+    plt.close(fig)
+    return out_path
+
+
+MAPPING_FIG_FILE = "true_reconstructed_mapping.pdf"
+
+
+def make_mapping_figure(
+    out_path: Optional[str] = None,
+    art_dir: str = _ARTIFACT_DIR,
+    designs: tuple = ("Ta->Al", "Al->Hf"),
+) -> str:
+    """Render the standalone true->reconstructed energy-mapping figure.
+
+    This was formerly panel (c) of the spectra figure; it is now a separate
+    figure. Shows the Phase-5 median non-paralyzable mapping E_rec(E_dep) for
+    both designs, the on-spot saturation onset and whole-array plateau E_dep
+    scales, and the linear-calibration reference E_rec = 0.5 E_dep. Reuses the
+    committed response_matrix_*.npz mapping arrays; does NOT re-run the fold.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    if out_path is None:
+        out_path = os.path.join(art_dir, MAPPING_FIG_FILE)
+
+    npz = {d: dict(np.load(os.path.join(art_dir, rm.DESIGN_FILE[d]))) for d in designs}
+
+    fig, axm = plt.subplots(figsize=(5.4, 4.3))
     for d in designs:
-        cen = sat[d]["cen"]
-        med = sat[d]["med"]
+        z = npz[d]
+        cen = z["E_dep_centers_eV"]
+        med = z["E_rec_median_non_paralyzable_eV"]
         axm.plot(cen, med, ls=_DESIGN_LS[d], color="0.15", lw=1.8,
                  label=f"{d}: median $E_{{\\rm rec}}(E_{{\\rm dep}})$")
-        oe = sat[d]["onset_Edep_eV"]; pe = sat[d]["plateau_Edep_eV"]
+        oe = float(z["saturation_onset_Edep_eV"])
+        pe = float(z["whole_array_plateau_Edep_eV"])
         axm.axvline(oe, color="#ff7f0e", ls=_DESIGN_LS[d], lw=1.0, alpha=0.8)
         axm.axvline(pe, color="#8c564b", ls=_DESIGN_LS[d], lw=1.0, alpha=0.8)
     ed = np.array([5.0, 5e5])
@@ -653,49 +681,14 @@ def make_spectra_figure(
     axm.set_xlim(10.0, 2.5e8); axm.set_ylim(1.0, 1e5)  # 10 eV floor (user directive)
     axm.set_xlabel(r"deposited energy $E_{\rm dep}$  [eV]")
     axm.set_ylabel(r"reconstructed $E_{\rm rec}$  [eV]")
-    axm.set_title("(c) true$\\rightarrow$reconstructed mapping (Phase-5 non-paralyzable "
-                  "response; reused)", fontsize=10)
     axm.grid(True, which="major", alpha=0.25)
-    axm.legend(loc="upper left", fontsize=7.6, framealpha=0.9)
+    axm.legend(loc="upper left", fontsize=8.0, framealpha=0.9)
     axm.text(0.985, 0.05,
              "orange = on-spot saturation onset ($\\sim$53/32 eV)\n"
              "brown = whole-array plateau ($\\sim$18.6/11.3 keV)",
-             transform=axm.transAxes, ha="right", va="bottom", fontsize=7.2,
+             transform=axm.transAxes, ha="right", va="bottom", fontsize=7.6,
              bbox=dict(boxstyle="round", fc="white", ec="0.7", alpha=0.9))
-
-    # ---- Panel D: caveat / honest-landing box ------------------------------ #
-    axc = fig.add_subplot(gs[1, 1]); axc.axis("off")
-    caveat = (
-        "Honest caveats (stage-1):\n"
-        "• Axis is RECONSTRUCTED energy $E_{\\rm rec}$, not deposited.\n"
-        "• NO literature anchor for the saturated-regime shape;\n"
-        "  validation is limiting-cases-only. The muon channel is\n"
-        "  reconstructed ENTIRELY in saturation — its tens-of-keV\n"
-        "  pile-up is an instrument artifact of the modelled ceiling,\n"
-        "  NOT a physical spectral line.\n"
-        "• CEvNS reconstructs to TENS OF eV $E_{\\rm rec}$ (peak $\\sim$42 eV,\n"
-        "  $\\sim$85% below 100 eV); the flagship signal sits very low.\n"
-        "• Bands: CEvNS 1$\\sigma$ reactor-flux; Compton factor-2\n"
-        "  site-dependent $\\gamma$ flux; muon $\\pm$30% normalization.\n"
-        "• Grey shading = deposits in saturation ($E_{\\rm dep}>$ onset);\n"
-        "  darker = whole-array plateau. Non-paralyzable is the\n"
-        "  deliverable (CONVENTIONS §F resolved 2026-07-21)."
-    )
-    axc.text(0.0, 0.98, caveat, transform=axc.transAxes, ha="left", va="top",
-             fontsize=8.8, family="sans-serif",
-             bbox=dict(boxstyle="round", fc="#fffbe6", ec="#e0c000", alpha=0.95))
-    sat_legend = [
-        Patch(fc="0.86", ec="none", label="saturation region ($E_{\\rm dep}>$ onset)"),
-        Patch(fc="0.72", ec="none", label="whole-array plateau region"),
-        Line2D([0], [0], color="#d62728", ls=":", lw=1.3, label="muon $E_{\\rm rec}$ pile-up"),
-    ]
-    axc.legend(handles=sat_legend, loc="lower left", fontsize=8.2,
-               framealpha=0.9, title="saturation delimitation")
-
-    fig.suptitle(
-        "Reconstructed-energy differential-rate spectra — QPD Ge wafer "
-        "(4$''\\times$4$''\\times$2 mm, $\\sim$110 g, per-kg), stage-1 deliverable",
-        fontsize=12.5, y=0.982)
+    fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)
     return out_path

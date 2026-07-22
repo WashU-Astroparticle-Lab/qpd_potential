@@ -10,9 +10,11 @@ where $r$ is the spot radius in sensor-pitch units. Both sides carry units of en
 
 \emph{Count-integral estimator.} On each sensor the trapped-quasiparticle population $N_{\rm qp}(E_s)$ [Eq.~\eqref{eq:chain}] drives a two-exponential tunneling burst. The quantity that controls both the burst statistics and the saturation is the expected number of \emph{tunneling events}, $n_{\rm ev}=\int\Gamma_{\rm in}(t)\,dt=K\tau_{\rm qp}N_{\rm qp}/V_{\rm tr}$, where $\tau_{\rm qp}$ is the trapped-quasiparticle lifetime; this is distinct from, and much smaller than, the trapped count $N_{\rm qp}$ itself (by $\sim$$0.03$ for Al, $\sim$$0.008$ for Hf), and it is $n_{\rm ev}$, not $N_{\rm qp}$, that we feed as the Poisson mean to the exponentially-modified-Gaussian (EMG) tunneling-burst template of Ref.~\cite{ramanathan2026}. Conflating the two would mis-scale the entire saturation. The template realizes the event train, which we censor with the dead-time model $m(\Gamma_{\rm in})$ [Eq.~\eqref{eq:censor}] to obtain a per-sensor observed count $N_{{\rm obs},i}$; summing over the array gives the reconstructed energy
 \begin{equation}
-E_{\rm rec}=C\,N_{\rm obs},\qquad
-N_{\rm obs}=\sum_{i=1}^{N_{\rm sens}} N_{{\rm obs},i},\quad
-N_{{\rm obs},i}=\int m\big(\Gamma_{{\rm in},i}(t)\big)\,dt .
+\begin{aligned}
+E_{\rm rec}&=C\,N_{\rm obs},\qquad
+N_{\rm obs}=\sum_{i=1}^{N_{\rm sens}} N_{{\rm obs},i},\\
+N_{{\rm obs},i}&=\int m\big(\Gamma_{{\rm in},i}(t)\big)\,dt .
+\end{aligned}
 \label{eq:erec}
 \end{equation}
 The count-to-energy constant $C$ (units eV per event) is a \emph{single global} constant per design, fixed once on a deeply unsaturated deposit by requiring the linear slope $dE_{\rm rec}/dE_{\rm dep}=\varepsilon=0.5$. It is not tuned per energy bin. Consequently, the recovery of $E_{\rm rec}\approx0.5\,E_{\rm dep}$ at low energy is a calibration-consistency check, not an independent validation; the genuinely predictive content of Eq.~\eqref{eq:erec} is the saturated-regime behavior, to which we turn next.
@@ -27,9 +29,10 @@ Because $E_{\rm dep}^{\rm cross}$ inherits the $f_{\rm prompt}/r$ uncertainty, w
 
 \emph{Response matrix.} We assemble the bandwidth-limited transfer function
 \begin{equation}
-R(E_{\rm rec}\,|\,E_{\rm dep})=\frac{dP}{dE_{\rm rec}}\bigg|_{E_{\rm dep}},
-\qquad
-\int R(E_{\rm rec}\,|\,E_{\rm dep})\,dE_{\rm rec}=1,
+\begin{aligned}
+R(E_{\rm rec}\,|\,E_{\rm dep})&=\frac{dP}{dE_{\rm rec}}\bigg|_{E_{\rm dep}},\\
+\int R(E_{\rm rec}\,|\,E_{\rm dep})\,dE_{\rm rec}&=1,
+\end{aligned}
 \label{eq:response}
 \end{equation}
 the normalized conditional distribution of reconstructed energy for a fixed deposit, per design and per censoring variant. Each $E_{\rm dep}$ column is built by Monte-Carlo, histogramming $N_s=5000$ forward realizations of Eq.~\eqref{eq:erec} over a grid of $584$ deposit energies sampled uniformly in $\log E_{\rm dep}$ from $10.14$~eV to $197$~MeV (80 bins per decade), spanning the sub-keV CEvNS floor through the deep-saturated cosmic-muon tail. The $\sim$$\pi r^2$ on-spot sensors are realized individually with the EMG template; the $\sim$10,287 identical off-spot sensors are drawn as one aggregate ensemble per realization rather than looped. Columns normalize to unity to $10^{-12}$, and the well-populated cells converge to $\lesssim$1.8\% at $N_s=5000$ with clean $1/\sqrt{N_s}$ scaling. Figure~\ref{fig:response} shows the resulting median $E_{\rm rec}(E_{\rm dep})$ with its 16--84\% band for both designs and both variants. At the $197$~MeV muon endpoint the non-paralyzable response plateaus at $\sim$34.8~keV (Ta$\to$Al) and $\sim$26.8~keV (Al$\to$Hf)---some three to four orders of magnitude below the linear $0.5\,E_{\rm dep}$ line ($\approx$98.5~MeV)---while the paralyzable variant rolls over to $\sim$3.3~keV and $\sim$2.6~keV. No column ramps linearly into the MeV range.
