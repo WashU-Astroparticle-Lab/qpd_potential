@@ -7,26 +7,38 @@
   "project_contract": {
     "schema_version": 1,
     "scope": {
-      "question": "What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton differential rate spectra in reconstructed energy for a 4 inch x 4 inch x 2 mm single-sided Ge wafer read out by QPDs with Ta->Al and Al->Hf trapping designs?",
+      "question": "What are the reactor-CEvNS signal and the full in-band particle-background budget, in reconstructed energy down to 100 meV, for a 4 inch x 4 inch x 2 mm (~110 g) single-sided Ge wafer read out by QPDs (Ta->Al and Al->Hf trapping designs) deployed at the NUCLEUS Chooz Very-Near-Site behind the NUCLEUS shielding - and what signal-to-background does that give?",
       "in_scope": [
-        "Reactor CEvNS differential rate spectrum in reconstructed energy for a 3 GWth commercial reactor at 25 m standoff with a 4-isotope Huber-Mueller-like antineutrino spectrum plus an explicit sub-1.8 MeV treatment",
-        "Cosmic-ray muon energy-deposit spectrum in reconstructed energy for the thin wafer, including chord-length geometry (short vertical crossings and long near-horizontal chords) and Landau-Vavilov straggling",
-        "Compton-scattering electron-recoil spectrum in reconstructed energy from a representative environmental radiogenic gamma background (U/Th chains plus K-40 lines and continuum) in the thin wafer",
-        "Detector response model: deposited energy to ~50% signal efficiency, trapped quasiparticle number, EMG-profiled tunneling burst, 50 kHz bandwidth-limited reconstruction with perfect tunneling identification",
-        "Both trapping designs: Ta absorber to Al trap/junction and Al absorber to Hf trap/junction",
-        "Detector geometry: 4 inch x 4 inch x 2 mm Ge wafer (about 110 g), single instrumented face with QPD sensor density of 1 per mm^2 (about 10300 sensors)"
+        "Reactor CEvNS spectrum in reconstructed energy at the Chooz Very-Near-Site: two Chooz-B cores, 4.25 GWth each, at 72 m and 102 m, integral flux 2.1e12 nubar/cm2/s, 80% operating duty",
+        "Residual particle backgrounds behind the NUCLEUS shielding (5 cm plastic-scintillator muon veto + 5 cm low-activity Pb + 20 cm 5%-borated HDPE external; internal Pb/PE + ~4pi 4 cm B4C + cold muon veto; HPGe cryogenic outer veto at 1 keVee; Si inner veto), with their measured normalizations and attenuations adopted and the target response re-folded for germanium",
+        "All spectra extended down to 100 meV, two decades below the v1.0 10.14 eV grid floor, below the per-sensor saturation onsets (~1.27 eV Ta->Al, ~0.77 eV Al->Hf)",
+        "Impulse-approximation quantum broadening of the nuclear recoil (sigma_E = sqrt(E_R * omega_bar)) applied before the response chain",
+        "A trigger-probability curve as the reported observable below ~1 eV deposit: sigmoid with its 50% point at 0.5 eV, multiplying all other efficiencies including eps ~= 0.5",
+        "Ge-only thermal-capture channels that CaWO4/Al2O3 are structurally blind to: prompt (n,gamma) cascade recoils and the 71Ge EC M-shell line at ~159 eV",
+        "Cosmic-ray muon and environmental-gamma Compton channels re-driven at the VNS overburden (2.92 m.w.e., attenuation 1.41) and the measured VNS gamma ambience (5.03 cm-2 s-1)",
+        "Low-energy excess carried as an explicitly parameterized overlay band, never folded into a headline number, with the LEE amplitude at which S/B = 1 reported as the falsifiable deliverable",
+        "Detector geometry: 4 inch x 4 inch x 2 mm Ge wafer (~110 g), single instrumented face, ~10300 QPD sensors at 1/mm2",
+        "Both trapping designs: Ta absorber to Al trap/junction and Al absorber to Hf trap/junction"
       ],
       "out_of_scope": [
-        "G4CMP phonon-transport simulation (deferred to a later stage)",
+        "Full Geant4 transport of the NUCLEUS geometry (their p.21 reports tens, even hundreds, millions of hours of computing time and states variance reduction will be required) - explicit user decision",
+        "Scaling the NUCLEUS CaWO4/Al2O3 residual backgrounds to germanium by a mass argument - discards the target dependence their own paper emphasizes; explicit user decision",
+        "Coherent-crystal S(q,omega) modelling backbone - the crystal-coherent regime lies below ~21 meV, under the 100 meV floor; NCrystal/DarkELF retained only as a bounded justification and for the sub-5 eV neutron kernel",
+        "OpenMC for any transport step - unbuildable on osx-arm64; any transport fallback must be hand-rolled (SIMU-05, follow-up)",
+        "Extending the reactor antineutrino flux table below 100 keV - the truncation bound is <= 0.81% at 100 meV and exactly zero above 0.29 eV; reporting the bound is the deliverable",
+        "Splicing TENDL-2023 n-Ge elastic above the 20 MeV ENDF ceiling (CALC-24, deferred to follow-up)",
+        "G4CMP phonon-transport detector response (deferred project-wide since v1.0)",
         "Dark-matter sensitivity projections (later milestone)",
         "Imperfect quasiparticle-tunneling identification and readout-noise modeling",
-        "Neutron-induced nuclear-recoil backgrounds and other backgrounds beyond cosmic-ray muons and environmental-gamma Compton scattering",
-        "Detector geometry and sensor-layout optimization"
+        "Detector geometry / sensor-layout optimization - note VALD-09 may show the fixed geometry is incompatible with the adopted veto envelope, which is a stop-condition rather than an optimization trigger"
       ],
       "unresolved_questions": [
-        "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)?",
-        "How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?",
-        "What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment?"
+        "GATING STOP-CONDITION: does a 4 inch x 4 inch x 2 mm ~110 g Ge wafer fit the NUCLEUS COV/IV veto envelope, dimensioned for 6.8 g CaWO4 and 4.5 g Al2O3 3x3 arrays (103 cm2 vs ~9 cm2, and monolithic so no multiplicity handle)? If not, STOP and re-scope with the user - nothing transfers.",
+        "Are the NUCLEUS Figs. 8-11 deposit spectra pre- or post-veto? Determines whether the inverted quantity is a fluence or a veto-survival-weighted fluence.",
+        "What value of omega_bar and which Debye-Waller convention (2W = q^2<u_x^2> vs q^2<u^2>/3)? The <u^2>-derived 12-21 meV and the 37 meV optical phonon differ by 2-3x, and both 2W and sigma_E scale linearly with it.",
+        "Can the in-shield thermal neutron flux phi_th be obtained? NUCLEUS does not publish it and it gates the Ge-only capture channel; a quantified gap is acceptable, zero is not.",
+        "What LEE amplitude and spectral shape should be carried? Design-dependent for a QPD (Al-film dislocation relaxation scaling with film area, ~10300 films), so neither inheritable nor shieldable.",
+        "Does E_rec ~= 0.5*E_dep survive at 100 meV, where the down-conversion cascade truncates near optical-phonon energies and the deposit is only ~3 phonon quanta? No literature addresses this."
       ]
     },
     "context_intake": {
@@ -39,24 +51,31 @@
         "/Users/lanqingyuan/Documents/GitHub/qpd/src/qpd/simulator/quasiparticle_bursts.py"
       ],
       "known_good_baselines": [
-        "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035 (Ge CEvNS reactor rate predictions, Table 1: 0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr)",
-        "CONUS+ Collaboration, Nature 643, 1229 (2025), arXiv:2501.05206 (observed reactor CEvNS on Ge at 3.6 GWth, 20.7 m)"
+        "NUCLEUS Collab., Eur. Phys. J. C 86, 29 (2026), arXiv:2509.03559, Table 5 at 100% duty: CaWO4 residual 144 mcpd (235 counts/kg/day/keV) and CEvNS 218.2 mcpd (356.5); Al2O3 52 mcpd (128) and 8.4 mcpd (20.7), 10-100 eV RoI. ANCHOR ON THE TABLE, NOT the Sect. 2 prose 280 (that is the 80%-duty value).",
+        "NUCLEUS Collab., Eur. Phys. J. C 79, 1018 (2019), arXiv:1905.10258, Fig. 1 Ge CEvNS curve - reproduced to 5% by the VALD-02 anchor (tests/test_cevns_nucleus.py).",
+        "Our own CaWO4 closure fold: 407.7 counts/kg/day/keV, ratio 1.14 to their Table 5 - the SIGNAL-side target-swap closure test has already passed at 14%.",
+        "CONUS+ Collab., Nature 643, 1229 (2025), arXiv:2501.05206: the only measured Ge-at-a-reactor S/B, ~0.03 in 0.4-1 keVee at 7.4 m.w.e. (395 +/- 106 events in 327 kg.d, 3.7 sigma). Hard gate on any v2.0 S/B claim.",
+        "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035, Table 1 (0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr) - reproduced to 2.4% in v1.0."
       ],
       "context_gaps": [
-        "Ta->Al device tunneling parameters (K, Gamma_out, tau_qp) not tabulated in the QPD paper",
-        "Absolute environmental gamma flux normalization for the Compton channel not yet fixed"
+        "In-shield thermal neutron flux phi_th at the target position - not published by NUCLEUS, gates the Ge-only capture channel",
+        "Whether NUCLEUS Figs. 8-11 are pre- or post-veto",
+        "omega_bar and the Debye-Waller convention for germanium",
+        "LEE amplitude and spectral shape for a QPD-instrumented Ge wafer - no measurement exists for this geometry",
+        "The Tengblad(1989)/Guetlein(2013) reactor flux shape NUCLEUS folds is not machine-sourceable; the Phase-2 flagship shape is substituted (normalization is entirely theirs)",
+        "No Ge thermal scattering law S(alpha,beta) exists in ENDF/B-VIII.0; sub-5 eV neutron kernel needs NCrystal"
       ],
       "crucial_inputs": [
-        "100% phonon collection with ~50% overall deposited-energy-to-signal efficiency",
-        "50 kHz signal bandwidth: tunneling faster than the ~25 kHz Nyquist rate is unresolvable",
-        "Perfect identification of quasiparticle tunneling events",
-        "4 inch x 4 inch x 2 mm single-sided Ge wafer, about 110 g",
-        "QPD sensor density of 1 per mm^2 on one face, about 10300 sensors",
-        "Commercial 3 GWth reactor at 25 m standoff",
-        "Sea-level muon flux with no overburden",
-        "Representative environmental radiogenic gamma background for the Compton channel",
-        "Exponentially-modified-Gaussian pulse template from the qpd repo",
-        "Unified phonon energy scale with no ionization quenching for nuclear and electron recoils"
+        "Chooz Very-Near-Site: two Chooz-B cores at 4.25 GWth each, 72 m and 102 m, integral flux 2.1e12 nubar/cm2/s, 80% operating duty",
+        "Overburden 2.92 +/- 0.01 m.w.e.; omnidirectional muon attenuation factor 1.41 +/- 0.02",
+        "Measured VNS gamma ambience 5.03 cm-2 s-1; 40K 59.6, 232Th 3.28, 238U 5.65 Bq/kg",
+        "NUCLEUS normalization uncertainties: atmospheric muons 25%, atmospheric neutrons 30%, environmental gammas 20%, material radioactivity 30%",
+        "Spectra extend to 100 meV; the earlier 10 eV display floor is RETRACTED (user, 2026-07-22)",
+        "Trigger-probability sigmoid with 50% point at 0.5 eV, multiplying all other efficiencies including eps ~= 0.5",
+        "Unified phonon energy scale with no ionization quenching - strengthened in-window by the SuperCDMS Ge displacement threshold 19.7 eV with no defect below ~6 eV",
+        "50 kHz signal bandwidth, ~25 kHz max resolvable tunneling rate, non-paralyzable censoring",
+        "4 inch x 4 inch x 2 mm single-sided Ge wafer, ~110 g, ~10300 QPD sensors at 1/mm2",
+        "Inherited veto credit defaults to ZERO unless earned by wafer geometry"
       ]
     },
     "approach_policy": {
@@ -112,12 +131,28 @@
         "definition": "Reconstructed energy versus deposited energy per trapping design, including 50 kHz bandwidth saturation",
         "regime": null,
         "units": null
+      },
+      {
+        "id": "obs-background-spectrum",
+        "name": "Residual particle-background spectrum for Ge at the VNS",
+        "kind": "curve",
+        "definition": "Differential residual particle-background rate versus reconstructed energy for the Ge wafer behind the NUCLEUS shielding, summed over atmospheric neutrons, environmental gammas, atmospheric muons and material radioactivity",
+        "regime": "10-100 eV region of interest and below, to 100 meV",
+        "units": "counts/kg/day/keV"
+      },
+      {
+        "id": "obs-sb",
+        "name": "Particle signal-to-background ratio",
+        "kind": "scalar",
+        "definition": "S/B_particle in the 10-100 eV region of interest, reported with and without inherited veto credit, alongside the LEE amplitude at which S/B = 1",
+        "regime": "10-100 eV region of interest",
+        "units": "dimensionless"
       }
     ],
     "claims": [
       {
         "id": "claim-cevns",
-        "statement": "The reactor CEvNS spectrum in reconstructed energy is computed for both trapping designs and its total rate agrees with published Ge reactor predictions within a factor of about 2",
+        "statement": "The reactor CEvNS spectrum in reconstructed energy is computed for both trapping designs at the NUCLEUS Chooz Very-Near-Site normalization (2.1e12 nubar/cm2/s, 80% duty) down to 100 meV, with impulse-approximation broadening and the 0.5 eV trigger curve applied, and is anchored to NUCLEUS Table 5 at 100% duty",
         "claim_kind": "result",
         "observables": [
           "obs-cevns-spectrum",
@@ -143,7 +178,7 @@
       },
       {
         "id": "claim-muon",
-        "statement": "The sea-level muon spectrum in reconstructed energy is computed for both designs with the chord-length geometry and bandwidth-saturation regime made explicit, and the integral muon rate matches the PDG sea-level flux through the wafer",
+        "statement": "The muon spectrum in reconstructed energy is computed for both designs at the VNS overburden (2.92 m.w.e., attenuation 1.41) with chord-length geometry and the bandwidth-saturation regime made explicit",
         "claim_kind": "result",
         "observables": [
           "obs-muon-spectrum",
@@ -167,7 +202,7 @@
       },
       {
         "id": "claim-compton",
-        "statement": "The Compton electron-recoil spectrum from a representative environmental radiogenic gamma background is computed in reconstructed energy for the wafer, showing Compton continua and edges on the unified phonon energy scale",
+        "statement": "The Compton electron-recoil spectrum is computed in reconstructed energy from the MEASURED VNS gamma ambience (5.03 cm-2 s-1; 40K 59.6, 232Th 3.28, 238U 5.65 Bq/kg), replacing the v1.0 Heusser factor-2 band",
         "claim_kind": "result",
         "observables": [
           "obs-compton-spectrum",
@@ -208,6 +243,54 @@
         "references": [
           "ref-qpd-paper",
           "ref-qpd-repo"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      },
+      {
+        "id": "claim-background",
+        "statement": "The residual particle-background spectrum for a Ge wafer behind the NUCLEUS shielding is computed by adopting their measured environment and attenuations and re-folding the target response through germanium cross sections and kinematics, never by mass-scaling their CaWO4/Al2O3 residuals",
+        "claim_kind": "result",
+        "observables": [
+          "obs-background-spectrum"
+        ],
+        "deliverables": [
+          "deliv-fig-background",
+          "deliv-code"
+        ],
+        "acceptance_tests": [
+          "test-neutron-ratio"
+        ],
+        "references": [
+          "ref-nucleus-bkg"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      },
+      {
+        "id": "claim-sb",
+        "statement": "The particle signal-to-background ratio for the Ge wafer at the VNS is assembled in the 10-100 eV region of interest with the trigger curve applied, reported alongside a zero-inherited-veto-credit baseline and an explicit LEE overlay band, and is gated on reproducing CONUS+ as a limiting case",
+        "claim_kind": "result",
+        "observables": [
+          "obs-sb",
+          "obs-background-spectrum",
+          "obs-cevns-spectrum"
+        ],
+        "deliverables": [
+          "deliv-sb-report"
+        ],
+        "acceptance_tests": [
+          "test-conus-plus"
+        ],
+        "references": [
+          "ref-conus-plus",
+          "ref-nucleus-bkg"
         ],
         "parameters": [],
         "hypotheses": [],
@@ -257,6 +340,28 @@
           "stated efficiency and bandwidth assumptions",
           "wafer geometry and gamma-background assumptions"
         ]
+      },
+      {
+        "id": "deliv-fig-background",
+        "kind": "figure",
+        "path": "artifacts/stage2/vns_background_budget.pdf",
+        "description": "Residual background spectrum for Ge at the VNS, component-resolved, with the LEE overlay band",
+        "must_contain": [
+          "all four particle components",
+          "LEE band shown separately, never summed in",
+          "both trapping designs"
+        ]
+      },
+      {
+        "id": "deliv-sb-report",
+        "kind": "note",
+        "path": "artifacts/stage2/SB-BUDGET.md",
+        "description": "S/B_particle budget with the L2-off baseline, the CONUS+ limiting-case reproduction, and the LEE erasure amplitude",
+        "must_contain": [
+          "L2-off (zero inherited veto credit) baseline",
+          "CONUS+ reproduction",
+          "LEE amplitude at which S/B = 1"
+        ]
       }
     ],
     "acceptance_tests": [
@@ -304,6 +409,30 @@
         "pass_condition": "Both limiting behaviors reproduced by the pipeline",
         "evidence_required": [
           "deliv-fig-response"
+        ],
+        "automation": "hybrid"
+      },
+      {
+        "id": "test-neutron-ratio",
+        "subject": "claim-background",
+        "kind": "benchmark",
+        "procedure": "Reproduce both published CaWO4/Al2O3 neutron rate ratios from a single normalization: 1.81 in 10-100 eV and 1.20 in 0.1-1 keV",
+        "pass_condition": "Both ratios reproduced from one normalization before any Ge neutron number is trusted",
+        "evidence_required": [
+          "deliv-fig-background",
+          "ref-nucleus-bkg"
+        ],
+        "automation": "hybrid"
+      },
+      {
+        "id": "test-conus-plus",
+        "subject": "claim-sb",
+        "kind": "limiting_case",
+        "procedure": "Rescale the pipeline to the CONUS+ configuration (3.6 GWth, 20.7 m, 7.4 m.w.e.) and reproduce its measured signal-to-background",
+        "pass_condition": "CONUS+ S/B ~0.03 reproduced within a factor ~2; no headline S/B claimed until this passes",
+        "evidence_required": [
+          "deliv-sb-report",
+          "ref-conus-plus"
         ],
         "automation": "hybrid"
       }
@@ -444,6 +573,75 @@
           "use",
           "cite"
         ]
+      },
+      {
+        "id": "ref-nucleus-bkg",
+        "kind": "paper",
+        "locator": "H. Abele et al. (NUCLEUS Collaboration), Eur. Phys. J. C 86, 29 (2026), doi:10.1140/epjc/s10052-025-15168-9, arXiv:2509.03559",
+        "aliases": [
+          "NUCLEUS background paper"
+        ],
+        "role": "benchmark",
+        "why_it_matters": "Supplies the entire adopted environment: overburden 2.92 m.w.e., muon attenuation 1.41, VNS neutron spectrum (Fig. 4), gamma ambience (Table 2), material screening (Table 3), normalization uncertainties (Table 4), residual background benchmarks (Table 5), and the shielding specification",
+        "applies_to": [
+          "claim-cevns"
+        ],
+        "carry_forward_to": [
+          "planning",
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "read",
+          "use",
+          "compare",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-nucleus-cevns",
+        "kind": "paper",
+        "locator": "G. Angloher et al. (NUCLEUS Collaboration), Eur. Phys. J. C 79, 1018 (2019), doi:10.1140/epjc/s10052-019-7454-4, arXiv:1905.10258",
+        "aliases": [
+          "NUCLEUS at Chooz"
+        ],
+        "role": "benchmark",
+        "why_it_matters": "Fig. 1 Ge CEvNS curve, reproduced to 5% under their own assumptions by the VALD-02 anchor; establishes the VNS site geometry",
+        "applies_to": [
+          "claim-cevns"
+        ],
+        "carry_forward_to": [
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "compare",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-conus-plus",
+        "kind": "paper",
+        "locator": "N. Ackermann et al. (CONUS+ Collaboration), Nature 643, 1229 (2025), arXiv:2501.05206",
+        "aliases": [
+          "CONUS+"
+        ],
+        "role": "benchmark",
+        "why_it_matters": "The only measured Ge-at-a-reactor signal-to-background (~0.03); hard validation gate before any v2.0 S/B claim",
+        "applies_to": [
+          "claim-cevns"
+        ],
+        "carry_forward_to": [
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "compare",
+          "cite"
+        ]
       }
     ],
     "forbidden_proxies": [
@@ -464,6 +662,42 @@
         "subject": "claim-compton",
         "proxy": "Treating gamma deposits as full-energy photopeaks instead of the Compton continuum expected in a thin 2 mm wafer",
         "reason": "In a thin wafer gammas predominantly single-Compton-scatter and escape, so the continuum, not photopeaks, is the physical signal"
+      },
+      {
+        "id": "fp-nucleus-prose-280",
+        "subject": "claim-cevns",
+        "proxy": "Anchoring on the NUCLEUS Sect. 2 prose CEvNS value (280 counts/kg/day/keV) instead of their Table 5 entry at 100% duty (356.5)",
+        "reason": "The prose value is the 80%-duty number and their prose is internally inconsistent (the Al2O3 prose value matches its table entry at 100% duty). Anchoring on it flatters our Ge S/B by ~27%."
+      },
+      {
+        "id": "fp-nucleus-3e12",
+        "subject": "claim-cevns",
+        "proxy": "Folding at the NUCLEUS 2019 prose site flux of 3e12 nubar/cm2/s",
+        "reason": "Their own Fig. 1 follows the geometric 1.83e12 sum and the 2026 paper states 2.1e12; folding at 3e12 overshoots their own figure by ~50%."
+      },
+      {
+        "id": "fp-veto-credit-transfer",
+        "subject": "claim-background",
+        "proxy": "Inheriting NUCLEUS gram-scale veto rejection factors (COV factor ~5, MV+COV > 99.8%, 3x3 multiplicity) for a 110 g monolithic wafer",
+        "reason": "Those factors are payload-coupled and geometry-specific. The wafer has ~11x the footprint and no multiplicity handle at all."
+      },
+      {
+        "id": "fp-mass-scaled-target",
+        "subject": "claim-background",
+        "proxy": "Scaling the NUCLEUS CaWO4/Al2O3 residual backgrounds to germanium by a mass or cross-section argument",
+        "reason": "Discards the target dependence the paper itself emphasizes; the recoil spectrum shape differs because T_max/E_n is 0.0536 for Ge vs 0.0215 for W."
+      },
+      {
+        "id": "fp-lee-omission",
+        "subject": "claim-sb",
+        "proxy": "Reporting a signal-to-background number without the LEE overlay band",
+        "reason": "The LEE is absent from the NUCLEUS particle budget by their own statement, is design-dependent for a QPD, and is plausibly dominant below ~100 eV on a phonon-only device."
+      },
+      {
+        "id": "fp-poisson-as-resolution",
+        "subject": "claim-response",
+        "proxy": "Quoting the emergent Poisson counting floor as the detector energy resolution",
+        "reason": "The project has no resolution model. The counting floor (15.9%/14.2% at 0.5 eV) omits baseline, amplifier, collection, position and readout noise, and the comparable unmodelled IA broadening (15.5-20.5% at 0.5 eV)."
       }
     ],
     "links": [
@@ -502,6 +736,24 @@
         "verified_by": [
           "test-response-limits"
         ]
+      },
+      {
+        "id": "link-background",
+        "source": "claim-background",
+        "target": "deliv-fig-background",
+        "relation": "supports",
+        "verified_by": [
+          "test-neutron-ratio"
+        ]
+      },
+      {
+        "id": "link-sb",
+        "source": "claim-sb",
+        "target": "deliv-sb-report",
+        "relation": "supports",
+        "verified_by": [
+          "test-conus-plus"
+        ]
       }
     ],
     "uncertainty_markers": {
@@ -525,12 +777,12 @@
     }
   },
   "position": {
-    "current_phase": "7",
-    "current_phase_name": "Scenario & Nuclear-Data Lock",
-    "total_phases": 12,
+    "current_phase": "8",
+    "current_phase_name": "Veto-Envelope Geometry Gate (P-VETO)",
+    "total_phases": 9,
     "current_plan": null,
     "total_plans_in_phase": null,
-    "status": "Planning",
+    "status": "Ready to plan",
     "last_activity": "2026-07-22",
     "last_activity_desc": null,
     "progress_percent": 100,
@@ -967,6 +1219,11 @@
       "phase": "0",
       "summary": "USER DECISION 2026-07-22: sub-eV observable is a TRIGGER-PROBABILITY curve; sigmoid analysis efficiency with 50% point at 0.5 eV, multiplied on top of all other efficiencies",
       "rationale": "Below ~1 eV deposit, dR/dE_rec presupposes the lumped 50% collection efficiency, which is not defensible for a ~3-optical-phonon-quantum deposit in Ge. User chose to report a trigger-probability curve instead. Threshold: sigmoid with the 50% point at 0.5 eV. This ANALYSIS efficiency multiplies on top of everything else, including the existing eps~=0.5 deposited-to-signal collection efficiency -- it does NOT replace it. FINDING (orchestrator, from the code): the project has NO resolution parameter anywhere and did NOT quote the QPD paper for resolution. The width of R(E_rec|E_dep) is emergent counting statistics only -- multinomial over the per-sensor EMG pmf (unsaturated) or Poisson (saturated) on the registered tunneling count. total_N_obs = 39.4 (Ta->Al) / 49.9 (Al->Hf) at 0.5 eV, so the Poisson floor is 15.9%/14.2% there; 35.6%/31.6% at 0.1 eV; 3.6%/3.2% at 10 eV; 1.2%/1.1% at 100 eV. This is a BEST-CASE resolution: no baseline/amplifier noise, no phonon-collection fluctuation, no position dependence, no readout noise. At the 0.5 eV threshold the impulse-approximation quantum broadening (15.5-20.5% for omega_bar 12-21 meV) is COMPARABLE to the counting floor and is not yet in the model; the two add in quadrature to ~22-26%."
+    },
+    {
+      "phase": "0",
+      "summary": "v2.0 roadmap finalized: 9 phases (8-16), 18/18 requirements mapped; project_contract synced to v2.0 and re-validated authoritative",
+      "rationale": "Phases 8-16. Critical path 8->10->11->13->14->16; waves [8]->[9,10]->[11,15]->[12,13]->[14]->[16]. Phase 8 (VALD-09 veto-envelope geometry) is a GATING STOP-CONDITION: if the 110 g wafer does not fit the COV/IV envelope, STOP and re-scope with the user -- no reduced veto credit, no invented veto (user decision 2026-07-22). VALD-11 two-band neutron-ratio calibration blocks Phase 13. CALC-14 (omega_bar + Debye-Waller) pinned as plan 11-01 ahead of CALC-15. VALD-12 (CONUS+ ~0.03) is criterion 1 of the terminal Phase 16. No OpenMC/Geant4/G4CMP dependency anywhere (synthesis overrode METHODS.md on OpenMC: unbuildable on osx-arm64). ADDED CALC-25 after the roadmapper correctly flagged the headline signal deliverable owned no requirement ID; orchestrator's brief had also miscounted 16 vs the actual 17 primary requirements (now 18 with CALC-25). CONTRACT SYNC: state.json project_contract was still the v1.0 scenario (3 GWth/25 m, neutron backgrounds out of scope) while reporting authoritative. Rewrote scope/context_intake, added claim-background + claim-sb with observables, deliverables, acceptance tests and links, and 6 new forbidden proxies. First sync attempt FAILED validation (three proxies targeted nonexistent claims) -- caught by the gate, fixed, re-validated: valid=True, authoritative=True, decisive targets 12 -> 18. Backup at GPD/state.json.v1.0-contract-backup."
     }
   ],
   "approximations": [],
@@ -1022,5 +1279,5 @@
     "confirmed_context_hash": "sha256:618a743b0d29768e03d1c80a76d3a9ace89c7f5f22f252c3d06f3746d39c9b8b"
   },
   "_version": 1,
-  "_synced_at": "2026-07-22T20:06:52.483896+00:00"
+  "_synced_at": "2026-07-22T21:12:22.700701+00:00"
 }

@@ -27,6 +27,7 @@
 - [ ] **CALC-15**: Implement impulse-approximation quantum broadening — free-nucleus recoil convolved with a Gaussian of width σ_E = √(E_R·ω̄), applied **before** the response chain. Fractional width ≈ 35–46% at 100 meV, 15.5–20.5% at 0.5 eV, 11–15% at 1 eV, negligible above ~100 eV. This is the largest new physics input and is absent from the v1.0 model.
 - [ ] **CALC-16**: Implement the analysis trigger-probability curve: a sigmoid efficiency with its **50% point at 0.5 eV**, multiplied on top of *all* other efficiencies including the existing ε ≈ 0.5 deposited-to-signal collection efficiency (it does not replace it). Below ~1 eV deposit this curve, not dR/dE_rec, is the reported observable.
 - [ ] **CALC-17**: Evaluate and report the sub-100 keV flux truncation bound with the project's own Φ. Established: ≤ 0.81% at T = 100 meV, exactly zero above 0.29 eV, under a conservative flat continuation of Φ at its 100 keV value including the (1 − MT/2E²) factor. **Report the bound; do not extend the flux table.**
+- [ ] **CALC-25** *(the milestone's decisive signal deliverable)*: Produce the reactor-CEvNS differential rate dR/dE_rec at the VNS normalization (∫Φ = 2.1×10¹² ν̄/cm²/s, two Chooz-B cores at 72 m and 102 m, 80% duty declared exactly once), both trapping designs, from **100 meV** upward — with the CALC-15 impulse-approximation broadening applied *before* the response chain and the CALC-16 trigger curve applied on top of ε ≈ 0.5. Quantify the drop relative to the v1.0 3 GW_th / 25 m flagship (~3.6×). *(Added 2026-07-22 after the roadmapper correctly flagged that the headline signal output was implied by CALC-15/16/17 + VALD-10 but owned by no requirement ID.)*
 
 **C. Ge target re-fold**
 
@@ -93,6 +94,7 @@ Deferred by explicit user scoping decision (2026-07-22). Tracked, not in the v2.
 | CALC-12 | CaWO₄- and Al₂O₃-derived φ_post agree within a factor ≲1.5 | Over-determination: two independent published targets must yield the same fluence |
 | CALC-14/15 | ω̄ fixed to a stated convention; σ_E re-derived in-phase | Ge broadening numbers are DERIVED in-survey, not literature-quoted — must be re-derived before use |
 | CALC-16 | Sigmoid 50% point exactly 0.5 eV; multiplies ε, does not replace it | Unit test on the composed efficiency chain |
+| CALC-25 | Duty cycle declared once; broadening before response; trigger on top of eps | Regression vs frozen v1.0 above 10 eV (<1%, VALD-10); ratio to flagship ~3.6x |
 | CALC-17 | Bound computed, not estimated | Flat-continuation integral with the (1 − MT/2E²) factor; established ≤0.81% |
 | CALC-18 | Target-swap closure factor ≲1.5; break condition >2 | Reproduce NUCLEUS's own CaWO₄/Al₂O₃ residuals with our pipeline before swapping in the Ge kernel |
 | CALC-22 | S/B reported with and without inherited veto credit | L2-off baseline mandatory alongside any L2-credited number |
@@ -116,6 +118,36 @@ Deferred by explicit user scoping decision (2026-07-22). Tracked, not in the v2.
 
 ## Traceability
 
+Mapped by the roadmapper 2026-07-22. Every v2.0 primary requirement maps to **exactly one** primary phase; v2.0 phases are numbered 8–16 (v1.1's withdrawn Phases 8–12 free those numbers for reuse). Follow-up requirements deliberately carry no phase.
+
 | Requirement | Phase | Status |
 | ----------- | ----- | ------ |
-| *(filled by the roadmapper)* | | |
+| VALD-09 *(GATING stop-condition)* | Phase 8 — Veto-Envelope Geometry Gate (P-VETO) | Pending |
+| CALC-11 | Phase 9 — VNS Environment Lock & Fluence Recovery (P-ENV) | Pending |
+| CALC-12 | Phase 9 — VNS Environment Lock & Fluence Recovery (P-ENV) | Pending |
+| VALD-11 *(gate on the Ge swap)* | Phase 9 — VNS Environment Lock & Fluence Recovery (P-ENV) | Pending |
+| CALC-13 | Phase 10 — Sub-eV Grid & Trigger Observable (P-GRID) | Pending |
+| CALC-16 | Phase 10 — Sub-eV Grid & Trigger Observable (P-GRID) | Pending |
+| CALC-14 *(must precede CALC-15; own early plan)* | Phase 11 — Phonon Conventions & IA Broadening (P-CONV) | Pending |
+| CALC-15 | Phase 11 — Phonon Conventions & IA Broadening (P-CONV) | Pending |
+| CALC-17 | Phase 12 — CEvNS at the VNS to 100 meV (P-SIG) | Pending |
+| CALC-25 | Phase 12 — CEvNS at the VNS to 100 meV (P-SIG) | Pending |
+| VALD-10 | Phase 12 — CEvNS at the VNS to 100 meV (P-SIG) | Pending |
+| CALC-18 | Phase 13 — Ge Neutron Re-Fold (P-TGT) | Pending |
+| CALC-23 | Phase 14 — Ge-Only Capture Channels (P-GEONLY) | Pending |
+| CALC-19 | Phase 15 — Gamma & Muon Re-Fold (P-EM) | Pending |
+| CALC-20 | Phase 15 — Gamma & Muon Re-Fold (P-EM) | Pending |
+| CALC-21 | Phase 16 — S/B Assembly, LEE, CONUS+ Gate (P-SB) | Pending |
+| CALC-22 *(terminal)* | Phase 16 — S/B Assembly, LEE, CONUS+ Gate (P-SB) | Pending |
+| VALD-12 *(hard gate on any headline S/B)* | Phase 16 — S/B Assembly, LEE, CONUS+ Gate (P-SB) | Pending |
+| CALC-24 | — (follow-up, not in the v2.0 roadmap) | Deferred |
+| SIMU-05 | — (follow-up, not in the v2.0 roadmap) | Deferred |
+| RADX-01 | — (follow-up, not in the v2.0 roadmap) | Deferred |
+| MANU-01 | — (follow-up, not in the v2.0 roadmap) | Deferred |
+| SENS-01 | — (follow-up, not in the v2.0 roadmap) | Deferred |
+
+**Coverage:** 17/17 primary requirements mapped, no orphans, no duplicates. 5/5 follow-up requirements explicitly unmapped by design.
+
+**Ordering constraints encoded in the roadmap dependency DAG:** VALD-09 (Phase 8) gates everything; CALC-11 → CALC-12 → VALD-11 within Phase 9, and VALD-11 must pass before Phase 13 (CALC-18) starts; CALC-13 (Phase 10) gates all sub-eV work; CALC-14 must complete before CALC-15 inside Phase 11; VALD-12 must pass before any headline claim in Phase 16.
+
+**Coverage note (open):** no CALC ID explicitly owns "produce the CEvNS dR/dE_rec at the VNS normalization," which is the milestone's decisive signal deliverable. It is implied jointly by CALC-15/16/17 + VALD-10 and consumed by CALC-22, and is carried as a Phase-12 deliverable rather than a new requirement ID. Similarly, Ge inelastic (⁷⁴Ge 596 keV, ⁷²Ge 834 keV) and the B₄C ¹⁰B(n,α)⁷Li 478 keV γ line are carried as adjacent-scope deliverables in Phase 14 without a dedicated ID.

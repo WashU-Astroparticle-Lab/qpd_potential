@@ -225,3 +225,4 @@ GPD/state.json.lock
 # NOT tracked -- exactly reproducible via src/nuclear/fetch_ace_lib80x.py,
 # with per-file sha256 recorded in the frozen CSV provenance headers.
 data/endf/ace/
+GPD/state.json.v1.0-contract-backup
