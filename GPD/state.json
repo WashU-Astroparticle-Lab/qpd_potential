@@ -932,6 +932,16 @@
       "phase": "07-verify",
       "summary": "Phase 7 VERIFIED with gaps (19/22, HIGH confidence): no committed number wrong, all gating quantities independently reproduced. Gaps: D1 sigma_el table ends at 20 MeV while phi(E_n) runs to 197 MeV (26.9% of on-grid flux, 86.4% of on-grid >10 MeV flux, has no cross section) - BLOCKS Phase 9; D2 flux anchor not reproducible in-repo (no PARMA driver committed); D3 test-resonance-grid passed on a vacuous metric (physical no-clipping guard independently re-proved by set containment); D4 log-log interp of lin-lin ENDF (<=4% pointwise, <=0.11% band integrals); D5 stale 0.0538 endpoint label FIXED to 0.0536",
       "rationale": "Independent verifier recomputation; D5 corrected in REQUIREMENTS.md + ROADMAP.md this commit"
+    },
+    {
+      "phase": "07-verify",
+      "summary": "GAP D1 RESOLVED (USER DECISION 2026-07-22): Phase 9 truncates the neutron fold at 20 MeV (ENDF/B-VIII.0 ceiling) and explicitly documents the omitted >20 MeV contribution; sigma_el must NOT be extrapolated above 20 MeV. Wired into ROADMAP Phase 9 as success criterion 5 + a forbidden proxy",
+      "rationale": ">20 MeV neutrons give ~MeV recoils (0.0536*197 MeV ~ 10.6 MeV) landing above the flagship CEvNS band in the saturated region, so the in-band result is unaffected; omission bounds total rate and high-E tail only. Avoids a cross-library seam"
+    },
+    {
+      "phase": "07-verify",
+      "summary": "Phase 7 addendum items carried (non-blocking): D2 commit a PARMA driver so the flux anchor integrals are reproducible in-repo; D3 test-resonance-grid metric is vacuous (no-clipping guard independently re-proved by native-node set containment); D4 log-log interpolation of lin-lin ENDF pointwise data (<=4% pointwise, <=0.11% band integrals) undisclosed in artifact headers",
+      "rationale": "Verifier recommendation: fold into a short Phase-7 addendum rather than re-opening the data lock"
     }
   ],
   "approximations": [],
@@ -987,5 +997,5 @@
     "confirmed_context_hash": "sha256:618a743b0d29768e03d1c80a76d3a9ace89c7f5f22f252c3d06f3746d39c9b8b"
   },
   "_version": 1,
-  "_synced_at": "2026-07-22T18:17:01.289849+00:00"
+  "_synced_at": "2026-07-22T18:22:09.493338+00:00"
 }

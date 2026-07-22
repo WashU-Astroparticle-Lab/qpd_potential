@@ -114,13 +114,15 @@ Milestone audit: PASS with open questions ([`milestones/v1.0-MILESTONE-AUDIT.md`
 - Advances: CALC-06 (neutron dR/dE_dep), SIMU-04 (MC cross-check + a₁ tail), VALD-05 (kinematics), VALD-06 (interaction probability + count-conservation).
 - Deliverables: labeled three-channel neutron dR/dE_dep on `shared_energy_grid()`; single-scatter/escape MC report; kinematics and interaction-probability validation notes.
 - Anchor coverage: ENDF/B-VIII.0 n-Ge elastic; two-body recoil kinematics; v1.0 shared grid; CONVENTIONS §B.
-- Forbidden proxies: applying Lindhard/QF on the phonon scale; keVnr-vs-keVee mixing; depositing full neutron energy instead of ≤5.4% recoil per interaction.
+- Forbidden proxies: applying Lindhard/QF on the phonon scale; keVnr-vs-keVee mixing; depositing full neutron energy instead of ≤5.4% recoil per interaction; **silently truncating or extrapolating the fold above 20 MeV** (see criterion 5).
+**Carried-in from Phase 7 verification (gap D1, USER DECISION 2026-07-22):** the frozen n-Ge elastic table ends at **20 MeV** (ENDF/B-VIII.0 general-purpose ceiling) while φ(E_n) extends to 197 MeV, so **26.9% of the on-grid ambient flux (86.4% of the on-grid >10 MeV flux) has no cross section**. Resolution: **truncate the fold at 20 MeV and explicitly document the omitted >20 MeV contribution** — do NOT extrapolate σ_el. Physics note: >20 MeV neutrons give ~MeV-scale recoils (0.0536 × 197 MeV ≈ 10.6 MeV) that land above the flagship CEvNS band in the saturated-readout region, so the in-band result is unaffected; the omission bounds the total rate and the high-energy tail only.
 **Success Criteria** (what must be TRUE):
 
 1. dR/dE_dep is produced for all three neutron channels on `shared_energy_grid()`, labeled, on the unified phonon scale with NO quenching (no Lindhard/QF anywhere).
 2. **VALD-05:** T_max/E_n = 4A/(1+A)² is reproduced per contributing isotope (0.0555/0.0540/0.0533/0.0526/0.0513 for Ge-70/72/73/74/76 → abundance-weighted natural 0.0536, verified Phase 7), and the flat-box kernel integrates to σ_el·N_Ge.
 3. **VALD-06:** the fast-neutron interaction probability in 2 mm Ge is 3–4% (λ ~ 5–6 cm, Σ ~ 0.18 cm⁻¹), and count-conservation is preserved through the recoil fold (≤1e-3).
 4. **SIMU-04:** a bespoke single-scatter/escape MC (or analytic multiple-scatter estimate) quantifies the multi-scatter and escape fractions (≲1%) and the >1 MeV a₁ forward-peaking (File-4 Legendre) tail correction to the flat-box kernel.
+5. **20 MeV truncation (gap D1) is explicit, not silent:** the fold stops at 20 MeV, σ_el is NOT extrapolated above it, and the omitted >20 MeV flux fraction and its bounding recoil-rate contribution are quantified and reported in the phase artifacts.
 
 **Plans:** TBD (run `gpd:plan-phase 9` to break down)
 
