@@ -220,3 +220,8 @@ __marimo__/
 # GPD local state artifacts
 GPD/state.json.bak
 GPD/state.json.lock
+
+# Lib80x ACE tables (Plan 07-02): 58 MB of NJOY-processed binaries.
+# NOT tracked -- exactly reproducible via src/nuclear/fetch_ace_lib80x.py,
+# with per-file sha256 recorded in the frozen CSV provenance headers.
+data/endf/ace/

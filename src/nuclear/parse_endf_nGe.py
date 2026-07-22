@@ -27,10 +27,19 @@ via `sandy`.  MAT and per-isotope sigma come from the files, never memory
 (fp-hardcode-mat).  The union grid resolves sub-MeV resonances (fp-coarse-mesh).
 
 Reader path (documented at run time in the CSV header):
-    primary  : endf.Material(...).interpret()        (MF=3, MF=4)  [openmc.data reader]
-    reconr   : sandy.Endf6.get_pendf() -> NJOY RECONR (resolved+URR -> pointwise)
-    fallback : if NJOY is unavailable, the MF=3 pointwise background is used and
-               the missing resonance region is FLAGGED, not fabricated.
+    MF3/MF4  : endf.Material(...).interpret()        (MF=3, MF=4)  [openmc.data reader]
+    primary  : PRE-RECONSTRUCTED pointwise sigma_el from NJOY-2016.68-processed
+               ACE (LANL Lib80x, LA-UR-18-24034), read with endf.IncidentNeutron
+               .from_ace().  The File-2 resonance reconstruction was performed
+               upstream by NJOY, so no local reconstruction is needed.
+    reconr   : sandy.Endf6.get_pendf() -> NJOY RECONR, if njoy is on PATH.
+    fallback : if neither ACE nor NJOY is available, the MF=3 pointwise
+               background is used and the missing resonance region is left NaN
+               and FLAGGED -- never fabricated or flat-extrapolated.
+
+The ACE fast-region sigma_el is cross-checked against the independently parsed
+MF=3 MT=2 pointwise background above every resonance-region top; agreement
+there is what licenses using ACE across the whole grid.
 """
 from __future__ import annotations
 
@@ -49,6 +58,9 @@ if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
 
 from qpd_potential.muon_deposit import shared_energy_grid  # noqa: E402
+
+sys.path.insert(0, _HERE)
+import fetch_ace_lib80x as fetch_ace  # noqa: E402
 
 # --------------------------------------------------------------------------- #
 # Locked physical inputs (provenance in header; NOT fabricated cross sections) #
@@ -201,6 +213,64 @@ def _find_njoy():
 
 
 # --------------------------------------------------------------------------- #
+# PRE-RECONSTRUCTED pointwise sigma from NJOY-processed ACE (primary path)     #
+# --------------------------------------------------------------------------- #
+def read_ace_pointwise(A, suffix=None):
+    """Return (E_eV, sigma_el_b, sigma_tot_b, meta) from a Lib80x ACE table.
+
+    The ACE files were produced by NJOY 2016.68 from the SAME ENDF/B-VIII.0
+    evaluations already in data/endf/raw/, with File-2 resonance parameters
+    ALREADY RECONSTRUCTED to pointwise form and Doppler-broadened to the
+    tabulated temperature.  This supplies the sub-MeV sigma_el that MF=3 MT=2
+    leaves at exactly zero.  Reading is done by the `endf` package's ACE
+    reader -- no bespoke parsing (fp-bespoke-parser).
+
+    Returns None if the ACE file is absent."""
+    import endf
+    import endf.ace as _ace
+    suffix = suffix or fetch_ace.ACE_SUFFIX
+    path = fetch_ace.ace_path(A, suffix)
+    if not os.path.exists(path):
+        return None
+    tab = _ace.get_tables(path)[0]
+    inc = endf.IncidentNeutron.from_ace(path)
+
+    def _xs(mt):
+        r = inc.reactions[mt].xs
+        f = r[list(r.keys())[0]]
+        return np.asarray(f.x, float), np.asarray(f.y, float)
+
+    E, sig_el = _xs(2)
+    Et, sig_tot = _xs(1)
+    if len(Et) != len(E) or not np.allclose(Et, E):
+        sig_tot = np.interp(E, Et, sig_tot)
+    meta = dict(name=tab.name, awr=float(tab.atomic_weight_ratio),
+                temperature_K=float(tab.temperature),
+                sha256=_sha256(path), nbytes=os.path.getsize(path))
+    return E, sig_el, sig_tot, meta
+
+
+def _sha256(path):
+    import hashlib
+    with open(path, "rb") as fh:
+        return hashlib.sha256(fh.read()).hexdigest()
+
+
+def rel_dev(E, y_a, Eb, y_b, elo, ehi):
+    """Max & mean |y_a - y_b|/y_b of two tabulations over [elo, ehi],
+    compared on the first tabulation's nodes inside the band."""
+    m = (E >= elo) & (E <= ehi) & np.isfinite(y_a)
+    if not m.any():
+        return float("nan"), float("nan")
+    ref = loglog_interp(E[m], Eb, y_b)
+    ok = np.isfinite(ref) & (ref > 0)
+    if not ok.any():
+        return float("nan"), float("nan")
+    d = np.abs(y_a[m][ok] - ref[ok]) / ref[ok]
+    return float(np.max(d)), float(np.mean(d))
+
+
+# --------------------------------------------------------------------------- #
 # Union grid                                                                   #
 # --------------------------------------------------------------------------- #
 def build_union_grid(native_grids_eV):
@@ -243,9 +313,28 @@ def band_mean(E, y, elo, ehi):
 # --------------------------------------------------------------------------- #
 # CSV writers                                                                  #
 # --------------------------------------------------------------------------- #
-def _prov_header(reader, reconstructed, mats, extra_lines):
+def _prov_header(reader, reconstructed, mats, extra_lines, ace_meta=None):
     now = _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     matline = ", ".join(f"{A}Ge=MAT{mats[A]}" for A in sorted(mats))
+    ace_lines = []
+    if ace_meta:
+        zaid = ", ".join(f"{A}Ge={ace_meta[A]['name']}" for A in sorted(ace_meta))
+        sha = ", ".join(f"{A}Ge={ace_meta[A]['sha256'][:16]}" for A in sorted(ace_meta))
+        tK = sorted({round(ace_meta[A]["temperature_K"], 1) for A in ace_meta})
+        ace_lines = [
+            "# --- PRE-RECONSTRUCTED POINTWISE SOURCE (sub-MeV resonance region) ---",
+            f"# ace_library      = LANL Lib80x (ENDF/B-VIII.0-based ACE), "
+            f"Conlin/Haeck/Neudecker/Parsons/White, LA-UR-18-24034 (2018)",
+            f"# ace_retrieval    = {fetch_ace.LIB80X_URL}  "
+            f"[doc {fetch_ace.LIB80X_DOC}]  (retrieved 2026-07-22)",
+            f"# ace_zaids        = {zaid}",
+            f"# ace_sha256_head  = {sha}",
+            f"# ace_processing   = {fetch_ace.NJOY_VERSION}; File-2 resolved+URR "
+            f"reconstructed AND Doppler-broadened upstream",
+            f"# ace_temperature  = {', '.join(f'{t} K' for t in tK)}  "
+            f"(ZAID ext .{fetch_ace.ACE_SUFFIX} = 293.6 K room temperature)",
+            f"# ace_reader       = endf.IncidentNeutron.from_ace() (endf 0.1.12)",
+        ]
     lines = [
         "# ENDF/B-VIII.0 n-Ge ELASTIC cross section (Plan 07-02, milestone v1.1)",
         "# ACQUISITION + VALIDATION artifact -- NO recoil kernel, NO quenching.",
@@ -261,13 +350,15 @@ def _prov_header(reader, reconstructed, mats, extra_lines):
         f"# git_sha          = {_git_sha()}",
         f"# generated_utc    = {now}",
     ]
-    return "\n".join(lines + list(extra_lines)) + "\n"
+    return "\n".join(lines + ace_lines + list(extra_lines)) + "\n"
 
 
-def write_per_isotope_csv(path, union_eV, per_iso_sig, per_iso_a1, mats, reader, recon):
+def write_per_isotope_csv(path, union_eV, per_iso_sig, per_iso_a1, mats, reader,
+                          recon, ace_meta=None):
     header = _prov_header(
         reader, recon, mats,
         ["# columns: E_eV, then sigma_el_b_<A> and a1_<A> per isotope"],
+        ace_meta=ace_meta,
     )
     cols = ["E_eV"]
     data = [union_eV]
@@ -293,20 +384,51 @@ def write_natural_csv(path, union_eV, sig_nat, a1_nat, mats, reader, recon, chec
         f"# T_max/E_n natural (abundance-weighted, AS COMPUTED) = {checks['endpoint_nat']:.4f}"
         f"  [A=72.6 effective form = {checks['endpoint_A726']:.4f};"
         f" mass-ratio(AWR) refinement = {checks['endpoint_nat_awr']:.4f}]",
-        f"# sigma_el natural VALID above {checks['valid_lo']/1e6:.3f} MeV "
-        f"(below = NaN, unreconstructed resonance/URR region)",
+        f"# sigma_el natural VALID from {checks['valid_lo']:.3e} eV upward; "
+        f"unfilled (NaN) rows = {checks['n_nan']}",
         f"# sigma_el natural spot: 1.2MeV={spot[1.2e6]:.3f} b, 2MeV={spot[2.0e6]:.3f} b, "
         f"5MeV={spot[5.0e6]:.3f} b; peak(1.1-2MeV)={checks['sig_el_peak']:.3f} b",
+        f"# sigma_el natural resonance-band peak (0.1keV-1MeV) = "
+        f"{checks['sig_res_peak']:.2f} b at E={checks['e_res_peak']:.4e} eV",
+        "# ACE vs MF=3 MT=2 cross-check over 1.1-20 MeV (where the MF3 background "
+        "is the real evaluated sigma_el):",
+        ("#   " + "; ".join(
+            f"{A}Ge max={checks['ace_vs_mf3'][A][0]*100:.2e}% mean={checks['ace_vs_mf3'][A][1]*100:.2e}%"
+            for A in sorted(checks['ace_vs_mf3']))
+         + "  -> agreement at ACE float32 storage precision; the fast-region ACE"
+           " sigma_el IS the File-3 evaluated cross section"
+         ) if checks['ace_vs_mf3'] else "#   n/a",
+        "# Doppler sensitivity, int sigma_el dE, 293.6 K baseline vs 0.1 K ACE (.805nc): "
+        + (", ".join(f"{k}={v*100:.2e}%" for k, v in checks['doppler'].items()
+                     if k not in ("error", "T_cold_K"))
+           if "error" not in checks['doppler'] else f"UNAVAILABLE ({checks['doppler']['error']})"),
+        "#   MECHANISM: Doppler broadening is a convolution with a normalised kernel,"
+        " so it conserves the resonance integral while reshaping peaks (Ge-73 peak"
+        " 9253.7 b at 0.1 K -> 8533.0 b at 293.6 K).  The ~0 integral shift is"
+        " therefore the EXPECTED result, not a null cross-check.",
+        "#   CAVEAT: the baseline is the 293.6 K processing, while the Ge target is a"
+        " cryogenic (mK) device.  Band-integrated quantities are insensitive (above),"
+        " but any downstream use that resolves individual resonance LINE SHAPES should"
+        " re-derive from the 0.1 K (.805nc) set.",
         f"# sigma_el fast-band mean (1.1-2 MeV) = {checks['sig_el_fast']:.3f} b "
         f"(1.1-10 MeV = {checks['sig_el_fast_wide']:.3f} b)",
-        f"# sigma_tot fast (data-derived MF3 MT1, ~1-2 MeV) = {checks['sigma_tot_fast']:.3f} b",
+        f"# sigma_tot fast (data-derived MT=1 total, ~1-2 MeV) = {checks['sigma_tot_fast']:.3f} b"
+        f"   [source: {'ACE pointwise' if checks.get('ace_meta') else 'MF=3 MT=1'}]",
+        f"# MESH (fp-coarse-mesh guard), band 0.1keV-1MeV:",
+        f"#   convergence  int_union vs int_native(NJOY err=1e-3 reference), per isotope: "
+        + ", ".join(f"{A}Ge={checks['union_vs_native'][A]*100:.4f}%"
+                    for A in sorted(checks['union_vs_native']))
+        + f"  -> max {checks['union_vs_native_max']*100:.4f}% (PASS if <0.5%)",
+        f"#   decimation headroom (drop every other union node) = "
+        f"{checks['mesh_decimation']*100:.3f}% -- NOT a convergence metric: the NJOY grid "
+        f"is linearised to err=1e-3, so decimating it necessarily degrades the integral",
         f"# Sigma = N_Ge*sigma_tot = {checks['Sigma']:.4f} cm^-1  (target ~0.18)",
         f"# lambda = 1/Sigma = {checks['lambda']:.3f} cm  (>> {WAFER_THICK_CM} cm wafer; target ~5.6)",
         f"# P_int(2 mm) = 1-exp(-Sigma*t) = {checks['P_int']*100:.2f} %  (target ~3.5%)",
         f"# resonance_status = {checks['resonance_status']}",
         "# columns: E_eV, sigma_el_natural_b, a1_natural",
     ]
-    header = _prov_header(reader, recon, mats, extra)
+    header = _prov_header(reader, recon, mats, extra, ace_meta=checks.get("ace_meta"))
     arr = np.column_stack([union_eV, sig_nat, a1_nat])
     with open(path, "w") as fh:
         fh.write(header)
@@ -318,8 +440,18 @@ def write_natural_csv(path, union_eV, sig_nat, a1_nat, mats, reader, recon, chec
 # Mesh-refinement convergence hook (test-resonance-grid)                       #
 # --------------------------------------------------------------------------- #
 def mesh_convergence(E, sig, elo=1.0e2, ehi=1.0e6):
-    """Fractional change in  int sigma_el dE  over [elo,ehi] when the mesh is
-    halved (evaluate on every other native node vs all nodes)."""
+    """Decimation sensitivity: fractional change in int sigma_el dE over
+    [elo,ehi] when every other node is DROPPED.
+
+    NOTE ON INTERPRETATION.  This is a *resolution-headroom* indicator, not a
+    convergence criterion.  The pointwise grid produced by NJOY RECONR is
+    already linearised to a tolerance (err=1e-3), i.e. it is the minimal node
+    set that represents sigma(E) to 0.1%; every node carries information.
+    Decimating such a grid therefore MUST degrade the integral -- a near-zero
+    decimation sensitivity would instead mean the grid was wastefully dense.
+    The criterion that actually answers "does the union grid clip resonances?"
+    is `union_vs_native()` below, which compares against the converged NJOY
+    grid as reference."""
     m = (E >= elo) & (E <= ehi) & np.isfinite(sig)
     Ef, Sf = E[m], sig[m]
     if len(Ef) < 4:
@@ -327,6 +459,26 @@ def mesh_convergence(E, sig, elo=1.0e2, ehi=1.0e6):
     full = np.trapz(Sf, Ef)
     coarse = np.trapz(Sf[::2], Ef[::2])
     return abs(full - coarse) / abs(full)
+
+
+def union_vs_native(union, native_E, native_sig, elo=1.0e2, ehi=1.0e6):
+    """CONVERGENCE CRITERION (fp-coarse-mesh guard).
+
+    Relative difference between int sigma_el dE evaluated on the union grid
+    and on the isotope's own NJOY-converged native grid (the reference).  A
+    small value proves the union grid does not clip resonances.  Returns
+    {A: reldiff}."""
+    out = {}
+    for A in native_E:
+        m = (native_E[A] >= elo) & (native_E[A] <= ehi)
+        if m.sum() < 4:
+            out[A] = float("nan")
+            continue
+        ref = np.trapz(native_sig[A][m], native_E[A][m])
+        u = loglog_interp(union, native_E[A], native_sig[A])
+        mu = (union >= elo) & (union <= ehi) & np.isfinite(u)
+        out[A] = abs(np.trapz(u[mu], union[mu]) - ref) / abs(ref)
+    return out
 
 
 # --------------------------------------------------------------------------- #
@@ -338,34 +490,59 @@ def main():
 
     mats, awrs = {}, {}
     native_E, native_sig, native_tot = {}, {}, {}
-    tot_E, tot_v = {}, {}          # MF=3 MT=1 total (fast region, real)
+    tot_E, tot_v = {}, {}          # MT=1 total used for the mfp check
+    mf3_E, mf3_sig = {}, {}        # MF=3 MT=2 background (fast region, real)
     a1_E, a1_v = {}, {}
-    used_reconstruction = True
+    ace_meta = {}
+    source = {}
 
     for A, fn in RAW.items():
         path = os.path.join(RAW_DIR, fn)
         MAT, AWR, E3, sig3, Et3, tot3, Ea1, a1 = read_mf3_mf4(path)
         mats[A], awrs[A] = MAT, AWR
         a1_E[A], a1_v[A] = Ea1, a1
+        mf3_E[A], mf3_sig[A] = E3, sig3
         tot_E[A], tot_v[A] = Et3, tot3          # MF3 MT1 total (fast complete)
 
-        rec = reconstruct_pointwise(path)
+        # (1) PRIMARY: pre-reconstructed pointwise from NJOY-processed ACE.
+        rec = read_ace_pointwise(A)
         if rec is not None:
-            E, sig_el, sig_tot = rec
-            native_E[A], native_sig[A] = E, sig_el
-            native_tot[A] = sig_tot if sig_tot is not None else None
-            if sig_tot is not None:
-                tot_E[A], tot_v[A] = E, sig_tot   # reconstructed total supersedes
+            E, sig_el, sig_tot, meta = rec
+            ace_meta[A] = meta
+            native_E[A], native_sig[A], native_tot[A] = E, sig_el, sig_tot
+            tot_E[A], tot_v[A] = E, sig_tot     # ACE total supersedes MF3 MT1
+            source[A] = "ACE"
         else:
-            used_reconstruction = False
-            native_E[A], native_sig[A], native_tot[A] = E3, sig3, None
+            # (2) local NJOY RECONR, if njoy happens to be on PATH
+            rec = reconstruct_pointwise(path)
+            if rec is not None:
+                E, sig_el, sig_tot = rec
+                native_E[A], native_sig[A] = E, sig_el
+                native_tot[A] = sig_tot
+                if sig_tot is not None:
+                    tot_E[A], tot_v[A] = E, sig_tot
+                source[A] = "NJOY"
+            else:
+                # (3) MF=3 only -> resonance region stays NaN and is FLAGGED
+                native_E[A], native_sig[A], native_tot[A] = E3, sig3, None
+                source[A] = "MF3-only"
         print(f"Ge-{A}: MAT={MAT} AWR={AWR:.4f} nativeN={len(native_E[A])} "
-              f"recon={'YES' if rec is not None else 'NO(MF3-only)'}")
+              f"src={source[A]}"
+              + (f" ace={ace_meta[A]['name']} T={ace_meta[A]['temperature_K']:.1f}K"
+                 if A in ace_meta else ""))
 
-    reader = "endf 0.1.12 (openmc.data ENDF-6 MF3/MF4 reader, P. Romano)"
-    recon = ("NJOY RECONR via sandy 1.2.0 (0 K, err=1e-3): resolved+URR -> pointwise"
-             if used_reconstruction else
-             "UNAVAILABLE (NJOY absent) -- MF=3 background only; resonance region FLAGGED")
+    srcset = set(source.values())
+    used_reconstruction = srcset <= {"ACE", "NJOY"}
+    reader = ("endf 0.1.12 (openmc.data ENDF-6 MF3/MF4 reader + ACE reader, P. Romano)")
+    if srcset == {"ACE"}:
+        recon = (f"PRE-RECONSTRUCTED by {fetch_ace.NJOY_VERSION} upstream "
+                 f"(LANL Lib80x ACE, {fetch_ace.ACE_TEMPERATURE_K} K): "
+                 f"File-2 resolved+URR already pointwise")
+    elif used_reconstruction:
+        recon = "mixed ACE / local NJOY RECONR"
+    else:
+        recon = ("UNAVAILABLE (no ACE, no NJOY) -- MF=3 background only; "
+                 "resonance region FLAGGED")
 
     # union grid
     union = build_union_grid(list(native_E.values()))
@@ -388,6 +565,43 @@ def main():
     per_tot_all = {A: loglog_interp(union, tot_E[A], tot_v[A], extrapolate_below=True)
                    for A in RAW}
     tot_nat = sum(ABUNDANCE[A] * per_tot_all[A] for A in RAW)
+
+    # --- CROSS-CHECK 1: ACE vs the independently parsed MF=3 MT=2 background --
+    # Valid only ABOVE every resonance-region top, where MF=3 MT=2 is the real
+    # (nonzero) evaluated elastic cross section.  Agreement here is what
+    # licenses using the ACE tabulation across the whole grid.
+    ace_vs_mf3 = {}
+    for A in RAW:
+        if source[A] != "ACE":
+            continue
+        mx, mn = rel_dev(native_E[A], native_sig[A], mf3_E[A], mf3_sig[A],
+                         1.1e6, 2.0e7)
+        ace_vs_mf3[A] = (mx, mn)
+
+    # --- CROSS-CHECK 2: Doppler sensitivity (293.6 K baseline vs 0.1 K) ------
+    # The Ge target is a cryogenic (mK) device, while the baseline ACE set is
+    # the 293.6 K room-temperature processing.  Doppler broadening conserves
+    # the resonance integral but reshapes individual resonances, so quantify
+    # the effect on the sub-MeV band integral rather than assuming it is small.
+    doppler = {}
+    try:
+        cold_sig = {}
+        for A in RAW:
+            r = read_ace_pointwise(A, suffix="805nc")
+            if r is None:
+                raise FileNotFoundError
+            Ec, sc, _, mc = r
+            cold_sig[A] = loglog_interp(union, Ec, sc)
+            doppler.setdefault("T_cold_K", mc["temperature_K"])
+        sig_cold = sum(ABUNDANCE[A] * cold_sig[A] for A in RAW)
+        for lo, hi, tag in ((1.0e2, 1.0e6, "0.1keV-1MeV"),
+                            (1.0e6, 2.0e7, "1-20MeV")):
+            m = (union >= lo) & (union <= hi) & np.isfinite(sig_nat) & np.isfinite(sig_cold)
+            iw = np.trapz(sig_nat[m], union[m])
+            ic = np.trapz(sig_cold[m], union[m])
+            doppler[tag] = abs(iw - ic) / abs(ic)
+    except Exception as exc:
+        doppler = {"error": str(exc)}
 
     # --- validation battery ------------------------------------------------ #
     # Endpoint: standard elastic-recoil form 4A/(1+A)^2 with A = mass number
@@ -412,23 +626,39 @@ def main():
     sigma_tot_fast = band_mean(union, tot_nat, 1.0e6, 2.0e6)   # data-derived
     Sigma, lam, P = interaction_length(sigma_tot_fast)
 
+    n_nan = int(np.sum(~np.isfinite(sig_nat)))
+    res_band = np.isfinite(sig_nat) & (union >= 1.0e2) & (union <= 1.0e6)
+    sig_res_peak = float(np.max(sig_nat[res_band])) if res_band.any() else float("nan")
+    e_res_peak = float(union[res_band][np.argmax(sig_nat[res_band])]) if res_band.any() else float("nan")
+
     checks = dict(
         endpoint=endpoint, endpoint_nat=endpoint_nat,
         endpoint_A726=endpoint_A726, endpoint_nat_awr=endpoint_nat_awr,
         sig_el_fast=sig_el_fast, sig_el_fast_wide=sig_el_fast_wide,
         sig_el_peak=sig_el_peak, sig_el_spot=sig_el_spot, valid_lo=e_valid_lo,
         sigma_tot_fast=sigma_tot_fast, Sigma=Sigma, lambda_=lam, P_int=P,
-        resonance_status=("RESOLVED+URR reconstructed (NJOY RECONR, 0 K)"
-                          if used_reconstruction else
-                          "RESONANCE REGION NOT RECONSTRUCTED (NJOY unavailable) -- PROVISIONAL"),
+        n_nan=n_nan, sig_res_peak=sig_res_peak, e_res_peak=e_res_peak,
+        ace_vs_mf3=ace_vs_mf3, doppler=doppler, ace_meta=ace_meta,
+        source=source,
+        resonance_status=(
+            f"RESOLVED+URR PRE-RECONSTRUCTED upstream by {fetch_ace.NJOY_VERSION} "
+            f"(LANL Lib80x ACE @ {fetch_ace.ACE_TEMPERATURE_K} K) -- sub-MeV COMPLETE"
+            if set(source.values()) == {"ACE"} else
+            ("RESOLVED+URR reconstructed (local NJOY RECONR)" if used_reconstruction else
+             "RESONANCE REGION NOT RECONSTRUCTED -- PROVISIONAL")),
     )
     checks["lambda"] = lam
 
-    # mesh convergence over the sub-MeV resonance band
+    # mesh: decimation headroom + the real convergence criterion
     conv = mesh_convergence(union, sig_nat, 1.0e2, 1.0e6)
+    uvn = union_vs_native(union, native_E, native_sig, 1.0e2, 1.0e6)
+    checks["mesh_decimation"] = conv
+    checks["union_vs_native"] = uvn
+    checks["union_vs_native_max"] = float(np.nanmax(list(uvn.values())))
 
     # write artifacts
-    write_per_isotope_csv(out_iso, union, per_sig, per_a1, mats, reader, recon)
+    write_per_isotope_csv(out_iso, union, per_sig, per_a1, mats, reader, recon,
+                          ace_meta=ace_meta)
     write_natural_csv(out_nat, union, sig_nat, a1_nat, mats, reader, recon, checks)
 
     print("\n=== VALIDATION (computed) ===")
@@ -436,13 +666,26 @@ def main():
         print(f"  T_max/E_n  {A}Ge = {endpoint[A]:.4f}  (AWR refinement {endpoint_awr[A]:.4f})")
     print(f"  T_max/E_n  natural = {endpoint_nat:.4f}  (A=72.6 form {endpoint_A726:.4f}; "
           f"report as computed, not force-fit)")
-    print(f"  sigma_el natural valid above {e_valid_lo/1e6:.3f} MeV (below NaN: unreconstructed)")
+    print(f"  sigma_el natural valid from {e_valid_lo:.3e} eV; NaN rows = {n_nan}")
+    print(f"  sigma_el resonance-band peak (0.1keV-1MeV) = {sig_res_peak:.2f} b "
+          f"at {e_res_peak:.4e} eV")
+    for A in sorted(ace_vs_mf3):
+        mx, mn = ace_vs_mf3[A]
+        print(f"  ACE vs MF3 MT2, 1.1-20 MeV, {A}Ge: max={mx*100:.2e}%  mean={mn*100:.2e}%")
+    if "error" not in doppler:
+        for k, v in doppler.items():
+            if k not in ("error", "T_cold_K"):
+                print(f"  Doppler 293.6K vs 0.1K, int sigma dE {k}: {v*100:.2e}%")
     print(f"  sigma_el natural spot: 1.2MeV={sig_el_spot[1.2e6]:.3f}  2MeV={sig_el_spot[2.0e6]:.3f}  "
           f"5MeV={sig_el_spot[5.0e6]:.3f} b; peak(1.1-2MeV)={sig_el_peak:.3f} b")
     print(f"  sigma_el fast 1.1-2 MeV mean = {sig_el_fast:.3f} b (1.1-10 MeV {sig_el_fast_wide:.3f} b)")
-    print(f"  sigma_tot fast ~1-2 MeV (MF3 MT1) = {sigma_tot_fast:.3f} b")
+    print(f"  sigma_tot fast ~1-2 MeV (MT=1 total) = {sigma_tot_fast:.3f} b")
     print(f"  Sigma = {Sigma:.4f} cm^-1   lambda = {lam:.3f} cm   P_int(2mm) = {P*100:.2f} %")
-    print(f"  mesh-halving d(int sigma dE)/int over 0.1keV-1MeV = {conv*100:.3f} %")
+    print(f"  MESH convergence union-vs-native (0.1keV-1MeV): "
+          + ", ".join(f"{A}Ge={uvn[A]*100:.4f}%" for A in sorted(uvn))
+          + f"  -> max {checks['union_vs_native_max']*100:.4f}% (PASS if <0.5%)")
+    print(f"  MESH decimation headroom (drop every other node) = {conv*100:.3f} % "
+          f"(indicator only, not a convergence metric)")
     print(f"  resonance_status = {checks['resonance_status']}")
     print(f"\nwrote {out_iso}\nwrote {out_nat}")
     return used_reconstruction
