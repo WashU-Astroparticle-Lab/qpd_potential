@@ -1,0 +1,93 @@
+{
+  "title": "Reconstructed-energy background spectra for a Quantum-Parity-Detector germanium wafer: reactor CEvNS, cosmic muons, and environmental gammas",
+  "authors": [
+    {
+      "name": "Lanqing Yuan",
+      "email": "yuan.l@wustl.edu",
+      "affiliation": "Washington University in St. Louis, St. Louis, Missouri, USA [PLACEHOLDER — confirm affiliation and co-authors]"
+    }
+  ],
+  "abstract": "Coherent elastic neutrino-nucleus scattering (CEvNS) from a nuclear reactor produces germanium nuclear recoils of only tens to hundreds of eV, at the threshold of emerging quantum sensors. We present an end-to-end forward model of the reconstructed-energy differential rate spectra measured by a thin (4 in. x 4 in. x 2 mm, ~110 g) single-sided germanium wafer read out by Quantum Parity Detectors (QPDs), for two quasiparticle-trapping designs (Ta->Al and Al->Hf). On a single unified phonon energy scale with no ionization quenching, we compute the deposited-energy spectra of the three dominant channels -- reactor CEvNS, sea-level cosmic muons, and the environmental-gamma Compton continuum -- and fold them through a Monte-Carlo QPD response matrix R(E_rec | E_dep) that includes the bandwidth-limited (25 kHz) censoring of the tunneling readout. The reactor flux, cross section, and background rates are anchored to published values: the CEvNS rate reproduces the Billard et al. (2017) germanium benchmark to within 2.4%, the integral muon rate matches the PDG sea-level flux within ~30%, and the Compton edges fall at the Klein-Nishina energies. The resulting reconstructed-energy spectra show that the reactor-CEvNS signal reconstructs to tens of eV -- the lowest-energy region and the flagship signal band -- while cosmic-muon deposits saturate the readout and pile up into a tens-of-keV feature that is an instrumental artifact of the bandwidth ceiling rather than a physical spectral line. We report the linear-to-saturated crossover deposit energy per design and delimit the saturation region. We treat the saturated-regime response, the site-dependent environmental-gamma normalization, and the sub-1.8 MeV reactor flux as explicit, quantified modeling uncertainties. This forward model establishes the reconstructed-energy regime in which a QPD reactor-CEvNS search must operate.",
+  "sections": [
+    {
+      "heading": "Introduction",
+      "label": "intro",
+      "content": "Coherent elastic neutrino-nucleus scattering (CEvNS) offers a compact, Standard-Model-anchored probe of reactor antineutrinos, but the nuclear recoils it produces in germanium at reactor energies are only tens to hundreds of eV, below the reach of conventional ionization or phonon detectors. Quantum Parity Detectors (QPDs) read out the quasiparticle population of a superconducting sensor through a bandwidth-limited tunneling signal, opening a path to sub-keV thresholds but imposing a reconstruction chain whose response saturates when the instantaneous tunneling rate exceeds the readout bandwidth. This paper computes, end to end, the reconstructed-energy differential rate spectra that such a detector would measure -- the decisive observable, since deposited energy alone omits the bandwidth response. We consider a thin single-sided germanium wafer read out by QPDs in two quasiparticle-trapping designs, and we treat the reactor-CEvNS signal together with its two dominant backgrounds, cosmic muons and environmental gammas, on a common footing. [SEED: expand motivation, prior reactor-CEvNS efforts (CONUS+, Dresden, NUCLEUS), the QPD concept, and the paper's contribution and roadmap.]"
+    },
+    {
+      "heading": "Detector model and energy scale",
+      "label": "model",
+      "content": "We fix a single unified phonon energy scale on which every deposit -- nuclear-recoil (CEvNS) and electron-recoil (muon, Compton) alike -- is expressed with no ionization quenching, appropriate to a fieldless phonon calorimeter. The deposited energy E_dep maps through the QPD efficiency chain to a trapped-quasiparticle number and a tunneling burst, which is censored at the 25 kHz / 40 microsecond bandwidth ceiling to yield the reconstructed energy E_rec. We adopt the non-paralyzable dead-time model as the canonical censoring convention. The two trapping designs (Ta->Al and Al->Hf) share this chain but differ in their device parameters, taken from the QPD paper's Table II. [SEED: expand the E_dep -> E_ph -> n_qp -> tunneling-rate chain, the efficiency epsilon ~ 0.5, the wafer geometry (rho, mass, sensor count), and the censoring convention with the paralyzable/non-paralyzable choice.]"
+    },
+    {
+      "heading": "Reactor antineutrino flux and CEvNS rate",
+      "label": "cevns",
+      "content": "The reactor antineutrino flux is built from the Huber-Mueller conversion spectra above 2 MeV and a summation plus 238U(n,gamma) extension below 1.8 MeV, normalized to 3 GW_th at 25 m. The CEvNS differential rate follows from the Freedman cross section with a Helm form factor, summed per isotope over the five natural germanium isotopes. Folding the flux against the cross section reproduces the Billard et al. (2017) Table 1 germanium rates to within 2.4% once the reactor geometry and power are matched. [SEED: expand the flux construction and its sub-1.8 MeV caveat, the cross-section convention (/4pi, weak charge, (hbar c)^2), the per-isotope sum, the Billard benchmark with the k-rescale, and the resulting deposited-energy dR/dT.]"
+    },
+    {
+      "heading": "Cosmic-muon and environmental-gamma backgrounds",
+      "label": "backgrounds",
+      "content": "The sea-level cosmic-muon deposited-energy spectrum is computed from the Gaisser-Guan angular flux convolved with the ray-box chord-length distribution of the thin wafer and Landau-Vavilov straggling evaluated at its most-probable value; the integral rate matches the PDG sea-level flux within ~30%. The environmental-gamma Compton continuum is computed from a sourced radiogenic gamma spectrum and the Klein-Nishina electron-recoil cross section in the thin-target single-scatter regime, with electron binding included through the incoherent scattering function S(q,Z); the Compton edges fall at the Klein-Nishina energies. [SEED: expand the muon chord/straggling model, the MPV-not-mean requirement, the long-chord high-energy tail, the gamma line list and its site-dependent normalization, and the S(q,Z) binding correction.]"
+    },
+    {
+      "heading": "QPD response and energy reconstruction",
+      "label": "response",
+      "content": "The forward QPD response chain maps deposited energy to a censored tunneling-event count, from which a count-integral estimator reconstructs energy calibrated so that E_rec ~ 0.5 E_dep in the unsaturated regime. Above a per-design crossover deposit energy, at which the peak tunneling rate reaches 25 kHz, the count integral plateaus: this plateau is the modeled bandwidth saturation, not a linear extrapolation. We build a Monte-Carlo response matrix R(E_rec | E_dep) for each design, spanning the linear (CEvNS) and saturated (muon) regimes, and validate its limiting cases. [SEED: expand the count-integral estimator, the EMG tunneling-burst model, the crossover band and its f_prompt/r dependence, the response-matrix construction and convergence, and the absence of a saturated-regime literature anchor.]"
+    },
+    {
+      "heading": "Reconstructed-energy spectra",
+      "label": "results",
+      "content": "Folding the three deposited-energy spectra through the non-paralyzable response matrix yields the reconstructed-energy differential rate spectra for both designs. The reactor-CEvNS signal reconstructs to tens of eV, the lowest-energy region of the spectrum; the cosmic-muon deposits, all far above the crossover, pile up into a tens-of-keV saturation feature that is an instrumental artifact of the bandwidth ceiling; and the environmental-gamma Compton continuum fills the region between. The total in-wafer event rate implies a pileup occupancy of ~3e-5 at 25 kHz, so quiescent reconstruction is not precluded. [SEED: present the deliverable figure, the per-channel reconstructed rates, the pileup stop-condition, and the comparison between the two designs.]"
+    },
+    {
+      "heading": "Discussion",
+      "label": "discussion",
+      "content": "Four modeling uncertainties bound the interpretation. The saturated-regime response shape has no published anchor at any energy and is validated only through its low- and high-energy limits. The environmental-gamma normalization is a representative, factor-of-two, site-dependent estimate rather than a measurement of any specific deployment. The sub-1.8 MeV reactor flux rests on a cited but not directly reproduced model, contributing a few-percent band to the reconstructed CEvNS rate below ~95 eV. The linear-to-saturated crossover energy rides on low-confidence sensor-sharing parameters and is reported as a band. [SEED: interpret each caveat, discuss implications for a QPD reactor-CEvNS search (threshold placement, muon veto, gamma shielding), and connect to CONUS+ and other reactor-CEvNS efforts.]"
+    },
+    {
+      "heading": "Conclusions",
+      "label": "conclusions",
+      "content": "We have presented an end-to-end forward model of the reconstructed-energy background spectra for a QPD-read germanium wafer, anchored to published reactor-flux, CEvNS, muon, and Compton values, and have shown that the reactor-CEvNS signal occupies the tens-of-eV reconstructed-energy region while cosmic muons saturate the bandwidth-limited readout. [SEED: summarize deliverables, the decisive findings, and the outlook toward a measurement.]"
+    }
+  ],
+  "figures": [
+    {
+      "path": "figures/reconstructed_energy_spectra.pdf",
+      "caption": "Reconstructed-energy differential rate spectra dR/dE_rec (counts kg^-1 day^-1 keV^-1) for the two QPD trapping designs, (a) Ta->Al and (b) Al->Hf, under non-paralyzable censoring. Reactor CEvNS (blue) reconstructs to tens of eV; cosmic muons (red) pile up at the saturation plateau (tens of keV, an instrumental artifact of the bandwidth ceiling); environmental-gamma Compton (green) fills the continuum between; the total is shown in black. Shaded bands are the propagated flux uncertainties; grey shading marks the saturation region. Panel (c) shows the true-to-reconstructed energy mapping. Nothing below 10 eV is displayed.",
+      "label": "spectra",
+      "width": "\\textwidth",
+      "double_column": true
+    },
+    {
+      "path": "figures/energy_response.pdf",
+      "caption": "Monte-Carlo QPD response R(E_rec | E_dep) for both designs and both censoring variants, showing the linear E_rec ~ 0.5 E_dep regime, the crossover onset, and the saturation plateau.",
+      "label": "response",
+      "width": "\\columnwidth",
+      "double_column": false
+    },
+    {
+      "path": "figures/cevns_dRdT_deposited.pdf",
+      "caption": "Deposited nuclear-recoil differential CEvNS rate dR/dT on natural germanium at 3 GW_th and 25 m, with the split flux-uncertainty band and the Billard-benchmark reproduction.",
+      "label": "cevns",
+      "width": "\\columnwidth",
+      "double_column": false
+    }
+  ],
+  "acknowledgments": "This research made use of Get Physics Done (GPD), developed by Physical Superintelligence PBC (PSI).",
+  "bib_file": "references",
+  "journal": "prl",
+  "output_filename": "qpd_reactor_cevns_spectra",
+  "appendix_sections": [
+    {
+      "heading": "Cross-section and form-factor conventions",
+      "label": "appendix-cevns",
+      "content": "[SEED: Freedman cross section, Lewin-Smith Helm form factor parameters, per-isotope germanium table, and the closed-form total-cross-section cross-check.]"
+    },
+    {
+      "heading": "Response-matrix Monte Carlo and convergence",
+      "label": "appendix-response",
+      "content": "[SEED: the EMG tunneling-burst model, the count-integral estimator calibration, the response-matrix sampling and per-cell convergence, and the crossover-band scan.]"
+    }
+  ],
+  "attribution_footer": "Generated with Get Physics Done"
+}

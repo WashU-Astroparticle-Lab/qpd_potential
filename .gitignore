@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# GPD local state artifacts
+GPD/state.json.bak
+GPD/state.json.lock

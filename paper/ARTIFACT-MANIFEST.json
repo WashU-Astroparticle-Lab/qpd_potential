@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "paper_title": "Reconstructed-energy background spectra for a Quantum-Parity-Detector germanium wafer: reactor CEvNS, cosmic muons, and environmental gammas",
+  "journal": "prl",
+  "created_at": "2026-07-21T23:37:44.491720+00:00",
+  "artifacts": [
+    {
+      "artifact_id": "tex-paper",
+      "category": "tex",
+      "path": "qpd_reactor_cevns_spectra.tex",
+      "sha256": "5d95748ff0e338f5606b790b3dd17a1e07cbd860b629e07de5a1cfc7577d6141",
+      "produced_by": "build_paper:render_tex",
+      "sources": [],
+      "metadata": {
+        "journal": "prl",
+        "section_count": 8,
+        "appendix_count": 2,
+        "figure_count": 4
+      }
+    },
+    {
+      "artifact_id": "figure-spectra",
+      "category": "figure",
+      "path": "figures/reconstructed_energy_spectra.pdf",
+      "sha256": "314ac661b4c15e610cdb42a4a1350c27b0f3dccf01efd771a854c7e08b2cfd92",
+      "produced_by": "build_paper:prepare_figures",
+      "sources": [
+        {
+          "path": "figures/reconstructed_energy_spectra.pdf",
+          "role": "source-figure"
+        }
+      ],
+      "metadata": {
+        "label": "spectra",
+        "caption_length": 1340,
+        "double_column": true
+      }
+    },
+    {
+      "artifact_id": "figure-mapping",
+      "category": "figure",
+      "path": "figures/true_reconstructed_mapping.pdf",
+      "sha256": "7efe349cd0f6f81b6d806bc5910017ec629500149f71d933ba7ade19de0010c5",
+      "produced_by": "build_paper:prepare_figures",
+      "sources": [
+        {
+          "path": "figures/true_reconstructed_mapping.pdf",
+          "role": "source-figure"
+        }
+      ],
+      "metadata": {
+        "label": "mapping",
+        "caption_length": 402,
+        "double_column": false
+      }
+    },
+    {
+      "artifact_id": "figure-response",
+      "category": "figure",
+      "path": "figures/energy_response.pdf",
+      "sha256": "ff6509f0f0775fd1df08416fe443be1c3fbba7de3dd28b9b8fe15f233b8920a1",
+      "produced_by": "build_paper:prepare_figures",
+      "sources": [
+        {
+          "path": "figures/energy_response.pdf",
+          "role": "source-figure"
+        }
+      ],
+      "metadata": {
+        "label": "response",
+        "caption_length": 181,
+        "double_column": false
+      }
+    },
+    {
+      "artifact_id": "figure-cevns",
+      "category": "figure",
+      "path": "figures/cevns_dRdT_deposited.pdf",
+      "sha256": "787457990e80232859b67701856c5fe3a63b8744f6a5b198f7adae2d9f3f3edb",
+      "produced_by": "build_paper:prepare_figures",
+      "sources": [
+        {
+          "path": "figures/cevns_dRdT_deposited.pdf",
+          "role": "source-figure"
+        }
+      ],
+      "metadata": {
+        "label": "cevns",
+        "caption_length": 173,
+        "double_column": false
+      }
+    },
+    {
+      "artifact_id": "pdf-qpd_reactor_cevns_spectra",
+      "category": "pdf",
+      "path": "qpd_reactor_cevns_spectra.pdf",
+      "sha256": "33823c3fdec73c07f9b58cfe43f9839e4954592dc5619e544692d0f579d196cd",
+      "produced_by": "build_paper:compile",
+      "sources": [
+        {
+          "path": "qpd_reactor_cevns_spectra.tex",
+          "role": "compiled-from"
+        }
+      ],
+      "metadata": {}
+    }
+  ],
+  "manuscript_sha256": "5d95748ff0e338f5606b790b3dd17a1e07cbd860b629e07de5a1cfc7577d6141",
+  "manuscript_mtime_ns": 1784684803683390396
+}

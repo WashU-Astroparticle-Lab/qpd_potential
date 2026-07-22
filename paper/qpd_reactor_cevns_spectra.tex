@@ -1,0 +1,91 @@
+
+
+\documentclass[aps,prd,twocolumn,superscriptaddress,nofootinbib]{revtex4-2}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{wasysym}
+\usepackage{hyperref}
+
+\begin{document}
+
+\title{Reconstructed-energy background spectra for a Quantum-Parity-Detector germanium wafer: reactor CEvNS, cosmic muons, and environmental gammas}
+
+\author{Lanqing Yuan}
+\email{yuan.l@wustl.edu}\affiliation{Washington University in St. Louis, St. Louis, Missouri, USA [PLACEHOLDER --- confirm affiliation and co-authors]}
+\date{\today}
+
+\begin{abstract}
+Coherent elastic neutrino-nucleus scattering (CEvNS) from a nuclear reactor produces germanium nuclear recoils of only tens to hundreds of eV, at the threshold of emerging quantum sensors. We present an end-to-end forward model of the reconstructed-energy differential rate spectra measured by a thin ($4~{\rm in.}\times4~{\rm in.}\times2$~mm, $\sim$110~g) single-sided germanium wafer read out by Quantum Parity Detectors (QPDs), for two quasiparticle-trapping designs (Ta$\to$Al and Al$\to$Hf). On a single unified phonon energy scale with no ionization quenching, we compute the deposited-energy spectra of the three dominant channels---reactor CEvNS, sea-level cosmic muons, and the environmental-gamma Compton continuum---and fold them through a Monte-Carlo QPD response matrix $R(E_{\rm rec}\,|\,E_{\rm dep})$ that includes the bandwidth-limited (25~kHz) censoring of the tunneling readout. The reactor flux, cross section, and background rates are anchored to published values: the CEvNS rate reproduces the Billard \emph{et al.}\ (2017) germanium benchmark to within $2.4\%$, the integral muon rate matches the PDG sea-level flux within $\sim$$30\%$, and the Compton edges fall at the Klein-Nishina energies. The resulting reconstructed-energy spectra show that the reactor-CEvNS signal reconstructs to tens of eV---the lowest-energy region and the flagship signal band---while cosmic-muon deposits saturate the readout and pile up into a tens-of-keV feature that is an instrumental artifact of the bandwidth ceiling rather than a physical spectral line. We report the linear-to-saturated crossover deposit energy per design and delimit the saturation region. We treat the saturated-regime response, the site-dependent environmental-gamma normalization, and the sub-1.8~MeV reactor flux as explicit, quantified modeling uncertainties. This forward model establishes the reconstructed-energy regime in which a QPD reactor-CEvNS search must operate.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+\input{sections/intro}
+\section{Detector model and energy scale}
+\label{sec:model}
+\input{sections/model}
+\section{Reactor antineutrino flux and CEvNS rate}
+\label{sec:cevns}
+\input{sections/cevns}
+\section{Cosmic-muon and environmental-gamma backgrounds}
+\label{sec:backgrounds}
+\input{sections/backgrounds}
+\section{QPD response and energy reconstruction}
+\label{sec:response}
+\input{sections/response}
+\section{Reconstructed-energy spectra}
+\label{sec:results}
+\input{sections/results}
+\section{Discussion}
+\label{sec:discussion}
+\input{sections/discussion}
+\section{Conclusions}
+\label{sec:conclusions}
+\input{sections/conclusions}
+\begin{figure*}
+\centering
+\includegraphics[width=\textwidth]{figures/reconstructed_energy_spectra.pdf}
+\caption{Reconstructed- and deposited-energy differential rate spectra $dR/dE$ (counts~kg$^{-1}$~day$^{-1}$~keV$^{-1}$) for the two QPD trapping designs, (a) Ta$\to$Al and (b) Al$\to$Hf, under non-paralyzable censoring. \emph{Solid} curves are the reconstructed spectra $dR/dE_{\rm rec}$ versus reconstructed energy $E_{\rm rec}$; \emph{dashed} curves overlay the deposited (true, pre-reconstruction) spectra $dR/dE_{\rm dep}$ versus deposited energy $E_{\rm dep}$ on the same axes, exposing the action of the QPD response. Reactor CEvNS (blue) reconstructs to tens of eV, its deposited and reconstructed forms offset only by the linear $E_{\rm rec}=0.5\,E_{\rm dep}$ factor; cosmic-muon deposits (red dashed) span $\sim$1.5--197~MeV yet reconstruct (red solid) to a single tens-of-keV pile-up---an instrumental artifact of the bandwidth ceiling, not a physical line; the environmental-gamma Compton deposit (green dashed) terminates at the MeV Compton edges while its reconstructed continuum (green solid) fills the sub-keV to few-keV region. The total reconstructed spectrum is black. Shaded colored bands are the propagated flux/normalization uncertainties; grey shading marks the reconstructed saturation region. The underlying true-to-reconstructed energy mapping is shown separately in Fig.~\ref{fig:mapping}. Nothing below 10~eV is displayed.}
+\label{fig:spectra}
+\end{figure*}
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/energy_response.pdf}
+\caption{Monte-Carlo QPD response $R(E_{\rm rec}\,|\,E_{\rm dep})$ for both designs and both censoring variants, showing the linear $E_{\rm rec}\approx0.5\,E_{\rm dep}$ regime, the crossover onset, and the saturation plateau.}
+\label{fig:response}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/true_reconstructed_mapping.pdf}
+\caption{True-to-reconstructed energy mapping: the median non-paralyzable response $E_{\rm rec}(E_{\rm dep})$ for both trapping designs (Ta$\to$Al solid, Al$\to$Hf dashed), with the on-spot saturation-onset (orange) and whole-array-plateau (brown) deposit scales and the linear-calibration reference $E_{\rm rec}=0.5\,E_{\rm dep}$ (dotted). Below the onset the mapping is linear; above it the reconstructed energy rolls onto the bandwidth-limited saturation plateau. Nothing below 10~eV is displayed.}
+\label{fig:mapping}
+\end{figure}
+\begin{figure}
+\centering
+\includegraphics[width=\columnwidth]{figures/cevns_dRdT_deposited.pdf}
+\caption{Deposited nuclear-recoil differential CEvNS rate $dR/dT$ on natural germanium at 3~GW$_{\rm th}$ and 25~m, with the split flux-uncertainty band and the Billard-benchmark reproduction.}
+\label{fig:cevns}
+\end{figure}
+
+\begin{acknowledgments}
+This research made use of Get Physics Done (GPD), developed by Physical Superintelligence PBC (PSI).
+\end{acknowledgments}
+
+\appendix
+\section{Cross-section and form-factor conventions}
+\label{sec:appendix-cevns}
+\input{sections/appendix-cevns}
+\section{Response-matrix Monte Carlo and convergence}
+\label{sec:appendix-response}
+\input{sections/appendix-response}
+\bibliography{references}
+
+\begin{center}
+{\footnotesize\textit{Generated with Get Physics Done}}
+\end{center}
+
+\end{document}

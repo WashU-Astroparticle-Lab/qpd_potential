@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "round": 1,
+  "stage_id": "interestingness",
+  "stage_kind": "interestingness",
+  "manuscript_path": "paper/qpd_reactor_cevns_spectra.tex",
+  "manuscript_sha256": "bcc30a3d108c9703a41163f36ae4c2d71773186ebef527d3c374cc184e977a4e",
+  "claims_reviewed": ["CLM-001", "CLM-002", "CLM-003", "CLM-004", "CLM-005"],
+  "summary": "STAGE-INTEGRITY NOTE: no upstream Stage 1/2/4 artifacts exist (GPD/review is empty; there is no CLAIMS.json). The CLM-* IDs used here are PROVISIONAL, synthesized by this stage from the manuscript's own claims, not bound to a validated Stage 1 ClaimIndex; a real run must regenerate them. Significance judgment is therefore based on the manuscript plus GPD/literature/PRIOR-WORK.md, at medium confidence. On the science: this is a technically competent, unusually honest forward-model-only paper. It computes reconstructed-energy differential spectra for a QPD-read Ge wafer by folding three well-anchored deposited-energy channels (reactor CEvNS reproduced to Billard within 2.4%, cosmic muons to PDG within ~30%, Compton edges at Klein-Nishina energies) through a bandwidth-limited (25 kHz) response matrix. The genuinely new object is the QPD saturation/response chain applied to these channels. However, the two headline findings are close to definitional consequences of the setup rather than discoveries: (i) 'CEvNS reconstructs to tens of eV' follows almost tautologically from a definitionally linear E_rec=0.5 E_dep calibration applied to recoils that are already tens-to-hundreds of eV; (ii) 'muons pile up at tens of keV' is the near-inevitable consequence of any monotone saturating ceiling compressing a broad multi-MeV spectrum, and the specific plateau (18.8/15.0 keV) is not a computed precision -- the crossover band that fixes it spans ~50 eV to ~13 keV (three orders of magnitude), and the saturated-regime response shape has NO literature anchor at any energy on a device with NO demonstrated energy reconstruction at any energy. The paper deliberately computes no sensitivity, no S/B, no exposure-to-detection -- i.e. it withholds the one quantitative payoff that would convert a 'map' into a result the field can act on. Venue: the documentclass and the task say PRD, but PAPER-CONFIG.json says journal=prl -- this mismatch is decisive. For a PRL-style venue (broad interest + major advance) this work fails venue fit and should be rejected. For PRD (which does publish detailed detector-feasibility/forward-modeling studies) it is borderline-but-under-delivering and needs major revision: a sensitivity/reach projection or equivalent quantitative deliverable, a consolidated systematics table, honest de-emphasis of the 3-significant-figure plateau energies, and an explicit statement of which backgrounds are omitted. The honest 'feasibility only' framing helps credibility but hurts significance: it insulates against overclaim while leaving the paper as a methods exercise whose principal outputs are partly definitional and partly unvalidated.",
+  "strengths": [
+    "Exemplary claim discipline: explicitly refuses to quote any detection/discovery significance and repeatedly labels the muon pile-up an instrumental artifact, so the abstract/conclusions do not overclaim sensitivity.",
+    "Every rate is anchored to a published benchmark (Billard 2017 within 2.4%, PDG sea-level muon flux within ~30%, Klein-Nishina Compton edges), so the deposited-energy inputs are credible rather than assumed.",
+    "The four dominant modeling uncertainties are separated by provenance and quantified channel-by-channel, and three of the four are correctly shown to act only on the saturated backgrounds, leaving the linear CEvNS placement as the most robust feature.",
+    "The synthesis itself -- folding the Ramanathan QPD bandwidth-saturation readout model together with reactor-CEvNS, muon, and Compton backgrounds on one unquenched phonon scale -- is a novel combination not present in the cited prior work."
+  ],
+  "findings": [
+    {
+      "issue_id": "REF-001",
+      "claim_ids": ["CLM-002"],
+      "severity": "major",
+      "summary": "Venue is unresolved and venue fit is venue-dependent: PAPER-CONFIG.json declares journal=prl, but the documentclass and the review task both say PRD.",
+      "rationale": "The significance verdict flips on the target venue. Against the PRL standard (significant advance + broad cross-physics interest), a single-device, no-data, no-sensitivity forward model whose principal outputs are partly definitional does not clear the bar and warrants rejection. Against the PRD standard, which accommodates detailed detector-feasibility and forward-modeling studies, it is borderline and repairable via major revision. The config/documentclass/task disagreement must be resolved before a recommendation can be trusted; if the true target is PRL, the recommendation_ceiling here should be read as reject.",
+      "evidence_refs": ["paper/PAPER-CONFIG.json#journal", "paper/qpd_reactor_cevns_spectra.tex:3"],
+      "manuscript_locations": ["paper/PAPER-CONFIG.json:78", "paper/qpd_reactor_cevns_spectra.tex:3"],
+      "support_status": "unclear",
+      "blocking": true,
+      "required_action": "Fix the config/documentclass mismatch and confirm the target venue. If PRL, the paper is not competitive on significance/venue fit as written. If PRD, address REF-002/REF-003 to clear the feasibility-study bar."
+    },
+    {
+      "issue_id": "REF-002",
+      "claim_ids": ["CLM-001", "CLM-003"],
+      "severity": "major",
+      "summary": "Both headline findings are close to definitional/obvious consequences of the assumptions rather than genuine advances.",
+      "rationale": "The 'CEvNS reconstructs to tens of eV' result follows almost tautologically from a definitionally linear calibration (E_rec = 0.5 E_dep, with epsilon=0.5 imposed as a forward-model definition, model.tex) applied to CEvNS recoils that are already known to be tens-to-hundreds of eV; the section text even concedes the low-energy recovery is 'a calibration-consistency check, not an independent validation'. The 'muons pile up at tens of keV' result is the near-inevitable behavior of any monotone saturating ceiling compressing a broad ~1.5-197 MeV spectrum onto a bounded plateau, which the paper itself frames as an instrumental artifact. The scientific payload beyond restating known inputs through a plausible response model is therefore thin, which is the core significance concern.",
+      "evidence_refs": ["paper/sections/model.tex:15", "paper/sections/response.tex:20", "paper/sections/results.tex:13", "paper/sections/results.tex:15"],
+      "manuscript_locations": ["paper/sections/results.tex:13", "paper/sections/results.tex:15", "paper/sections/model.tex:15"],
+      "support_status": "partially_supported",
+      "blocking": true,
+      "required_action": "Reframe the contribution around what is genuinely non-obvious (e.g. the quantitative overlap of the Compton continuum with the signal band, or a quantity that changes a design decision) rather than around the near-definitional signal/background axis separation."
+    },
+    {
+      "issue_id": "REF-003",
+      "claim_ids": ["CLM-002"],
+      "severity": "major",
+      "summary": "No sensitivity, S/B, or exposure-to-detection is computed, so the paper withholds the quantitative deliverable that would establish significance.",
+      "rationale": "A detector-feasibility paper earns its place by showing the modeled picture changes an actionable quantity. This manuscript stops at a reconstructed-energy 'map' and explicitly declines a reach estimate. Without at least a signal-to-background in the eV band or a rough exposure-to-3sigma, the reader cannot judge whether the reconstructed-energy regime helps or hurts a real search, which leaves the significance claim ('establishes the regime a QPD reactor-CEvNS search must operate in') under-demonstrated. This is the single highest-leverage addition.",
+      "evidence_refs": ["paper/sections/discussion.tex:93", "paper/sections/conclusions.tex:31"],
+      "manuscript_locations": ["paper/sections/discussion.tex:96", "paper/sections/conclusions.tex:33"],
+      "support_status": "partially_supported",
+      "blocking": true,
+      "required_action": "Add a quantitative payoff: a background-subtracted signal-region S/B in the tens-of-eV band and/or an approximate exposure-to-detection, even with wide bands, so the forward model yields an actionable result."
+    },
+    {
+      "issue_id": "REF-004",
+      "claim_ids": ["CLM-004"],
+      "severity": "major",
+      "summary": "The one genuinely new object -- the saturated-regime response -- has no anchor at any energy, on a device with no demonstrated energy reconstruction at any energy.",
+      "rationale": "response.tex states plainly there is no literature anchor for the response shape between its two limiting cases, and PRIOR-WORK.md confirms QPD energy reconstruction has never been demonstrated at any energy (thresholds are projections; the Sandoval prototype shows no threshold). The paper's methodological core, and the muon-plateau result that rests on it, is thus an unvalidated model of an undemonstrated device. This is disclosed honestly (hence not itself blocking) but it structurally caps how significant the result can be for either venue.",
+      "evidence_refs": ["paper/sections/response.tex:40", "GPD/literature/PRIOR-WORK.md:125"],
+      "manuscript_locations": ["paper/sections/response.tex:1", "paper/sections/response.tex:40"],
+      "support_status": "partially_supported",
+      "blocking": false,
+      "required_action": "State prominently (abstract/intro) that the central response object is unbenchmarked on an undemonstrated readout, and temper significance language ('decisive observable', 'methodological core') accordingly."
+    },
+    {
+      "issue_id": "REF-005",
+      "claim_ids": ["CLM-001"],
+      "severity": "minor",
+      "summary": "False precision: plateau energies are quoted to three significant figures (18.8/15.0 keV) while the crossover band that sets them spans ~50 eV to ~13 keV.",
+      "rationale": "The abstract's 'tens-of-keV' phrasing is proportionate, but results.tex and conclusions.tex repeatedly quote 18.8 keV / 15.0 keV as if computed, whereas response.tex concedes the ~three-order-of-magnitude spread is 'an honest reflection of the sharing uncertainty, not a computed precision.' Quoting these numbers as headline values (even with artifact caveats) implies a precision the model does not have.",
+      "evidence_refs": ["paper/sections/results.tex:15", "paper/sections/response.tex:28", "paper/sections/conclusions.tex:19"],
+      "manuscript_locations": ["paper/sections/results.tex:15", "paper/sections/conclusions.tex:17"],
+      "support_status": "partially_supported",
+      "blocking": false,
+      "required_action": "Quote plateau energies as bands or order-of-magnitude ('tens of keV') consistently, and drop the three-significant-figure central values from the abstract/conclusions."
+    },
+    {
+      "issue_id": "REF-006",
+      "claim_ids": ["CLM-002", "CLM-005"],
+      "severity": "minor",
+      "summary": "Incomplete background model weakens the 'establishes the regime a search must operate in' claim.",
+      "rationale": "Only cosmic muons and environmental gammas are treated. The benchmark reference (Billard 2017) budgets cosmogenic fast neutrons, internal 210Pb/3H/206Pb, and nu-e scattering, and a pending project TODO flags additional RELICS-class backgrounds. The title is honestly scoped to three channels, but the significance claim of defining the operating regime for a real surface search is broader than the two backgrounds modeled.",
+      "evidence_refs": ["GPD/literature/PRIOR-WORK.md:51", "GPD/todos/pending/2026-07-22-add-relics-class-backgrounds-to-forward-model-next-milestone.md"],
+      "manuscript_locations": ["paper/sections/backgrounds.tex:1", "paper/sections/conclusions.tex:31"],
+      "support_status": "partially_supported",
+      "blocking": false,
+      "required_action": "Explicitly enumerate omitted backgrounds (cosmogenic neutrons, internal radioactivity, nu-e) and narrow the regime-defining claim to the channels actually modeled, or add them."
+    },
+    {
+      "issue_id": "REF-007",
+      "claim_ids": ["CLM-005"],
+      "severity": "suggestion",
+      "summary": "No consolidated systematics table.",
+      "rationale": "The four modeling uncertainties are described well in prose but scattered across discussion.tex. A single table (source, magnitude, affected channel, affected E_rec range, path-to-close) would materially strengthen the feasibility framing and make the significance case easier to assess.",
+      "evidence_refs": ["paper/sections/discussion.tex:10"],
+      "manuscript_locations": ["paper/sections/discussion.tex:1"],
+      "support_status": "supported",
+      "blocking": false,
+      "required_action": "Add a compact systematics/uncertainty-budget table consolidating the four caveats with quantified impact."
+    }
+  ],
+  "proof_audits": [],
+  "confidence": "medium",
+  "recommendation_ceiling": "major_revision"
+}

@@ -1,0 +1,951 @@
+{
+  "project_reference": {
+    "project_md_updated": null,
+    "core_research_question": "Reactor-CEvNS, cosmic-muon, and environmental-gamma Compton spectra in reconstructed energy for a 4\"\u00d74\"\u00d72mm single-sided Ge wafer read out by QPDs (Ta\u2192Al and Al\u2192Hf designs).",
+    "current_focus": "Phase 1 complete \u2713 \u2014 next: Phase 2 (Reactor Flux Model) and Phase 4 (Muon & Compton) can start"
+  },
+  "project_contract": {
+    "schema_version": 1,
+    "scope": {
+      "question": "What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton differential rate spectra in reconstructed energy for a 4 inch x 4 inch x 2 mm single-sided Ge wafer read out by QPDs with Ta->Al and Al->Hf trapping designs?",
+      "in_scope": [
+        "Reactor CEvNS differential rate spectrum in reconstructed energy for a 3 GWth commercial reactor at 25 m standoff with a 4-isotope Huber-Mueller-like antineutrino spectrum plus an explicit sub-1.8 MeV treatment",
+        "Cosmic-ray muon energy-deposit spectrum in reconstructed energy for the thin wafer, including chord-length geometry (short vertical crossings and long near-horizontal chords) and Landau-Vavilov straggling",
+        "Compton-scattering electron-recoil spectrum in reconstructed energy from a representative environmental radiogenic gamma background (U/Th chains plus K-40 lines and continuum) in the thin wafer",
+        "Detector response model: deposited energy to ~50% signal efficiency, trapped quasiparticle number, EMG-profiled tunneling burst, 50 kHz bandwidth-limited reconstruction with perfect tunneling identification",
+        "Both trapping designs: Ta absorber to Al trap/junction and Al absorber to Hf trap/junction",
+        "Detector geometry: 4 inch x 4 inch x 2 mm Ge wafer (about 110 g), single instrumented face with QPD sensor density of 1 per mm^2 (about 10300 sensors)"
+      ],
+      "out_of_scope": [
+        "G4CMP phonon-transport simulation (deferred to a later stage)",
+        "Dark-matter sensitivity projections (later milestone)",
+        "Imperfect quasiparticle-tunneling identification and readout-noise modeling",
+        "Neutron-induced nuclear-recoil backgrounds and other backgrounds beyond cosmic-ray muons and environmental-gamma Compton scattering",
+        "Detector geometry and sensor-layout optimization"
+      ],
+      "unresolved_questions": [
+        "How should reconstruction behave in the saturated regime: simple Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)?",
+        "How should the Ta->Al device tunneling parameters be mapped from the QPD paper's tabulated Al- and Hf-junction devices?",
+        "What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment?"
+      ]
+    },
+    "context_intake": {
+      "must_read_refs": [
+        "ref-qpd-paper"
+      ],
+      "must_include_prior_outputs": [],
+      "user_asserted_anchors": [
+        "DOI 10.1103/kqd2-spb1 (QPD paper, Ramanathan et al. 2026)",
+        "/Users/lanqingyuan/Documents/GitHub/qpd/src/qpd/simulator/quasiparticle_bursts.py"
+      ],
+      "known_good_baselines": [
+        "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035 (Ge CEvNS reactor rate predictions, Table 1: 0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr)",
+        "CONUS+ Collaboration, Nature 643, 1229 (2025), arXiv:2501.05206 (observed reactor CEvNS on Ge at 3.6 GWth, 20.7 m)"
+      ],
+      "context_gaps": [
+        "Ta->Al device tunneling parameters (K, Gamma_out, tau_qp) not tabulated in the QPD paper",
+        "Absolute environmental gamma flux normalization for the Compton channel not yet fixed"
+      ],
+      "crucial_inputs": [
+        "100% phonon collection with ~50% overall deposited-energy-to-signal efficiency",
+        "50 kHz signal bandwidth: tunneling faster than the ~25 kHz Nyquist rate is unresolvable",
+        "Perfect identification of quasiparticle tunneling events",
+        "4 inch x 4 inch x 2 mm single-sided Ge wafer, about 110 g",
+        "QPD sensor density of 1 per mm^2 on one face, about 10300 sensors",
+        "Commercial 3 GWth reactor at 25 m standoff",
+        "Sea-level muon flux with no overburden",
+        "Representative environmental radiogenic gamma background for the Compton channel",
+        "Exponentially-modified-Gaussian pulse template from the qpd repo",
+        "Unified phonon energy scale with no ionization quenching for nuclear and electron recoils"
+      ]
+    },
+    "approach_policy": {
+      "formulations": [
+        "Freedman CEvNS differential cross section with Helm form factor on natural Ge folded with a 4-isotope reactor antineutrino spectrum",
+        "Klein-Nishina Compton scattering of a representative environmental gamma spectrum, thin-target single-scatter dominated, on Ge",
+        "Analytic and Monte-Carlo response chain from deposited energy to bandwidth-limited reconstructed energy using the QPD paper pulse model and the qpd-repo EMG template"
+      ],
+      "allowed_estimator_families": [
+        "Direct spectrum folding and Monte-Carlo sampling of the response chain"
+      ],
+      "forbidden_estimator_families": [
+        "G4CMP phonon-transport simulation"
+      ],
+      "allowed_fit_families": [
+        "EMG pulse-template fits for energy reconstruction"
+      ],
+      "forbidden_fit_families": [],
+      "stop_and_rethink_conditions": [
+        "The CEvNS reconstructed spectrum falls entirely below the effective threshold for both designs",
+        "Muon-induced or gamma-induced pileup at sea level makes quiescent reconstruction impossible at 50 kHz bandwidth"
+      ]
+    },
+    "observables": [
+      {
+        "id": "obs-cevns-spectrum",
+        "name": "Reactor CEvNS differential rate spectrum",
+        "kind": "curve",
+        "definition": "Differential CEvNS event rate versus reconstructed energy for the Ge QPD wafer",
+        "regime": null,
+        "units": "counts/kg/day/keV"
+      },
+      {
+        "id": "obs-muon-spectrum",
+        "name": "Cosmic-ray muon spectrum",
+        "kind": "curve",
+        "definition": "Differential cosmic-ray muon event rate versus reconstructed energy for the same wafer, including chord-length geometry",
+        "regime": null,
+        "units": "counts/kg/day/keV"
+      },
+      {
+        "id": "obs-compton-spectrum",
+        "name": "Environmental-gamma Compton spectrum",
+        "kind": "curve",
+        "definition": "Differential Compton electron-recoil event rate versus reconstructed energy from environmental radiogenic gammas in the wafer",
+        "regime": null,
+        "units": "counts/kg/day/keV"
+      },
+      {
+        "id": "obs-energy-response",
+        "name": "Energy response curve",
+        "kind": "curve",
+        "definition": "Reconstructed energy versus deposited energy per trapping design, including 50 kHz bandwidth saturation",
+        "regime": null,
+        "units": null
+      }
+    ],
+    "claims": [
+      {
+        "id": "claim-cevns",
+        "statement": "The reactor CEvNS spectrum in reconstructed energy is computed for both trapping designs and its total rate agrees with published Ge reactor predictions within a factor of about 2",
+        "claim_kind": "result",
+        "observables": [
+          "obs-cevns-spectrum",
+          "obs-energy-response"
+        ],
+        "deliverables": [
+          "deliv-fig-spectra",
+          "deliv-code"
+        ],
+        "acceptance_tests": [
+          "test-cevns-benchmark"
+        ],
+        "references": [
+          "ref-qpd-paper",
+          "ref-huber",
+          "ref-cevns-benchmark"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      },
+      {
+        "id": "claim-muon",
+        "statement": "The sea-level muon spectrum in reconstructed energy is computed for both designs with the chord-length geometry and bandwidth-saturation regime made explicit, and the integral muon rate matches the PDG sea-level flux through the wafer",
+        "claim_kind": "result",
+        "observables": [
+          "obs-muon-spectrum",
+          "obs-energy-response"
+        ],
+        "deliverables": [
+          "deliv-fig-spectra",
+          "deliv-code"
+        ],
+        "acceptance_tests": [
+          "test-muon-flux"
+        ],
+        "references": [
+          "ref-pdg-muon"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      },
+      {
+        "id": "claim-compton",
+        "statement": "The Compton electron-recoil spectrum from a representative environmental radiogenic gamma background is computed in reconstructed energy for the wafer, showing Compton continua and edges on the unified phonon energy scale",
+        "claim_kind": "result",
+        "observables": [
+          "obs-compton-spectrum",
+          "obs-energy-response"
+        ],
+        "deliverables": [
+          "deliv-fig-spectra",
+          "deliv-code"
+        ],
+        "acceptance_tests": [
+          "test-compton-edges"
+        ],
+        "references": [
+          "ref-qpd-paper",
+          "ref-environmental-gamma"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      },
+      {
+        "id": "claim-response",
+        "statement": "The reconstructed-versus-deposited energy response, including saturation from the 25 kHz maximum resolvable tunneling rate, is derived for both trapping designs",
+        "claim_kind": "result",
+        "observables": [
+          "obs-energy-response"
+        ],
+        "deliverables": [
+          "deliv-fig-response",
+          "deliv-code",
+          "deliv-note"
+        ],
+        "acceptance_tests": [
+          "test-response-limits"
+        ],
+        "references": [
+          "ref-qpd-paper",
+          "ref-qpd-repo"
+        ],
+        "parameters": [],
+        "hypotheses": [],
+        "quantifiers": [],
+        "conclusion_clauses": [],
+        "proof_deliverables": []
+      }
+    ],
+    "deliverables": [
+      {
+        "id": "deliv-fig-spectra",
+        "kind": "figure",
+        "path": "artifacts/stage1/reconstructed_energy_spectra.pdf",
+        "description": "CEvNS, muon, and Compton differential rate spectra versus reconstructed energy for both trapping designs",
+        "must_contain": [
+          "all three channels: CEvNS, muon, Compton",
+          "both trapping designs",
+          "counts/kg/day/keV normalization"
+        ]
+      },
+      {
+        "id": "deliv-fig-response",
+        "kind": "figure",
+        "path": "artifacts/stage1/energy_response.pdf",
+        "description": "Reconstructed versus deposited energy response with the saturation onset marked",
+        "must_contain": [
+          "saturation onset",
+          "both trapping designs"
+        ]
+      },
+      {
+        "id": "deliv-code",
+        "kind": "code",
+        "path": "src/",
+        "description": "Python implementation of the CEvNS, muon, and Compton spectrum calculations and the QPD response pipeline",
+        "must_contain": [
+          "response chain from deposited to reconstructed energy",
+          "wafer geometry and chord-length model"
+        ]
+      },
+      {
+        "id": "deliv-note",
+        "kind": "note",
+        "path": "artifacts/stage1/ASSUMPTIONS.md",
+        "description": "Assumptions and results note for the stage-1 rough estimate",
+        "must_contain": [
+          "stated efficiency and bandwidth assumptions",
+          "wafer geometry and gamma-background assumptions"
+        ]
+      }
+    ],
+    "acceptance_tests": [
+      {
+        "id": "test-cevns-benchmark",
+        "subject": "claim-cevns",
+        "kind": "benchmark",
+        "procedure": "Reproduce Billard et al. (2017) Table 1 Ge rates under their assumptions, then rescale to 3 GWth at 25 m and compare",
+        "pass_condition": "Billard Table 1 reproduced within about 20 percent and rescaled rate consistent within a factor of 2",
+        "evidence_required": [
+          "deliv-fig-spectra",
+          "ref-cevns-benchmark"
+        ],
+        "automation": "hybrid"
+      },
+      {
+        "id": "test-muon-flux",
+        "subject": "claim-muon",
+        "kind": "consistency",
+        "procedure": "Integrate the muon event rate through the wafer and compare with the PDG sea-level flux times the wafer geometric acceptance",
+        "pass_condition": "Agreement within about 30 percent",
+        "evidence_required": [
+          "deliv-code",
+          "ref-pdg-muon"
+        ],
+        "automation": "hybrid"
+      },
+      {
+        "id": "test-compton-edges",
+        "subject": "claim-compton",
+        "kind": "limiting_case",
+        "procedure": "Check that Compton edges appear at the Klein-Nishina energies E_edge = 2 E_gamma^2 / (m_e c^2 + 2 E_gamma) for the assumed gamma lines and that the total interaction rate matches the assumed flux times the Ge Compton cross section over the wafer",
+        "pass_condition": "Compton edges at predicted energies and interaction rate within a factor of about 2 of the flux-times-cross-section estimate",
+        "evidence_required": [
+          "deliv-fig-spectra",
+          "ref-environmental-gamma"
+        ],
+        "automation": "hybrid"
+      },
+      {
+        "id": "test-response-limits",
+        "subject": "claim-response",
+        "kind": "limiting_case",
+        "procedure": "Check the low-energy limit (reconstructed energy equals 0.5 times deposited energy within statistical scatter) and the high-energy limit (response saturates once the tunneling rate exceeds 25 kHz)",
+        "pass_condition": "Both limiting behaviors reproduced by the pipeline",
+        "evidence_required": [
+          "deliv-fig-response"
+        ],
+        "automation": "hybrid"
+      }
+    ],
+    "references": [
+      {
+        "id": "ref-qpd-paper",
+        "kind": "paper",
+        "locator": "K. Ramanathan et al., APS Open Science 1, 000013 (2026), DOI 10.1103/kqd2-spb1, arXiv:2405.17192",
+        "aliases": [
+          "QPD paper"
+        ],
+        "role": "method",
+        "why_it_matters": "Defines the QPD detection concept, efficiency chain, pulse model, and Table II device parameters",
+        "applies_to": [
+          "claim-cevns",
+          "claim-muon",
+          "claim-compton",
+          "claim-response"
+        ],
+        "carry_forward_to": [
+          "planning",
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "read",
+          "use",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-qpd-repo",
+        "kind": "prior_artifact",
+        "locator": "/Users/lanqingyuan/Documents/GitHub/qpd/src/qpd/simulator/quasiparticle_bursts.py",
+        "aliases": [
+          "qpd repo EMG template"
+        ],
+        "role": "method",
+        "why_it_matters": "Canonical exponentially-modified-Gaussian tunneling-burst template to reuse for the pulse model",
+        "applies_to": [
+          "claim-response"
+        ],
+        "carry_forward_to": [
+          "planning",
+          "execution"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "read",
+          "use"
+        ]
+      },
+      {
+        "id": "ref-huber",
+        "kind": "paper",
+        "locator": "P. Huber, Phys. Rev. C 84, 024617 (2011), arXiv:1106.0687",
+        "aliases": [
+          "Huber reactor spectra"
+        ],
+        "role": "method",
+        "why_it_matters": "Reactor antineutrino spectrum input for the CEvNS flux calculation",
+        "applies_to": [
+          "claim-cevns"
+        ],
+        "carry_forward_to": [
+          "execution"
+        ],
+        "must_surface": false,
+        "required_actions": [
+          "use",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-cevns-benchmark",
+        "kind": "paper",
+        "locator": "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035",
+        "aliases": [
+          "Billard Ge reactor rates"
+        ],
+        "role": "benchmark",
+        "why_it_matters": "Published Ge CEvNS reactor rate prediction used as the normalization cross-check",
+        "applies_to": [
+          "claim-cevns"
+        ],
+        "carry_forward_to": [
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "compare",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-pdg-muon",
+        "kind": "paper",
+        "locator": "R. L. Workman et al. (Particle Data Group), Prog. Theor. Exp. Phys. 2022, 083C01 (2022), Cosmic Rays review",
+        "aliases": [
+          "PDG muon flux"
+        ],
+        "role": "benchmark",
+        "why_it_matters": "Anchor for the integral sea-level muon rate through the wafer",
+        "applies_to": [
+          "claim-muon"
+        ],
+        "carry_forward_to": [
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "compare",
+          "cite"
+        ]
+      },
+      {
+        "id": "ref-environmental-gamma",
+        "kind": "paper",
+        "locator": "G. Heusser, Annu. Rev. Nucl. Part. Sci. 45, 543 (1995), Low-Radioactivity Background Techniques",
+        "aliases": [
+          "Heusser environmental radioactivity"
+        ],
+        "role": "background",
+        "why_it_matters": "Reference for the environmental radiogenic gamma lines and flux used to drive the Compton channel",
+        "applies_to": [
+          "claim-compton"
+        ],
+        "carry_forward_to": [
+          "execution",
+          "verification"
+        ],
+        "must_surface": true,
+        "required_actions": [
+          "use",
+          "cite"
+        ]
+      }
+    ],
+    "forbidden_proxies": [
+      {
+        "id": "fp-deposited-only",
+        "subject": "claim-cevns",
+        "proxy": "Reporting spectra in deposited energy only without the reconstruction and bandwidth model",
+        "reason": "The decisive output is the spectrum in reconstructed energy"
+      },
+      {
+        "id": "fp-no-saturation",
+        "subject": "claim-muon",
+        "proxy": "Muon spectrum computed without the 50 kHz bandwidth saturation model or without chord-length geometry",
+        "reason": "Saturation and thin-wafer geometry shape the muon response and omitting them would look like progress while skipping the decisive physics"
+      },
+      {
+        "id": "fp-full-absorption",
+        "subject": "claim-compton",
+        "proxy": "Treating gamma deposits as full-energy photopeaks instead of the Compton continuum expected in a thin 2 mm wafer",
+        "reason": "In a thin wafer gammas predominantly single-Compton-scatter and escape, so the continuum, not photopeaks, is the physical signal"
+      }
+    ],
+    "links": [
+      {
+        "id": "link-cevns",
+        "source": "claim-cevns",
+        "target": "deliv-fig-spectra",
+        "relation": "supports",
+        "verified_by": [
+          "test-cevns-benchmark"
+        ]
+      },
+      {
+        "id": "link-muon",
+        "source": "claim-muon",
+        "target": "deliv-fig-spectra",
+        "relation": "supports",
+        "verified_by": [
+          "test-muon-flux"
+        ]
+      },
+      {
+        "id": "link-compton",
+        "source": "claim-compton",
+        "target": "deliv-fig-spectra",
+        "relation": "supports",
+        "verified_by": [
+          "test-compton-edges"
+        ]
+      },
+      {
+        "id": "link-response",
+        "source": "claim-response",
+        "target": "deliv-fig-response",
+        "relation": "supports",
+        "verified_by": [
+          "test-response-limits"
+        ]
+      }
+    ],
+    "uncertainty_markers": {
+      "weakest_anchors": [
+        "The lumped ~50% deposited-to-signal efficiency replaces the paper's design-dependent efficiency chain",
+        "Ta->Al device tunneling parameters are extrapolated rather than tabulated in the QPD paper",
+        "The absolute environmental gamma flux normalization for the Compton channel is a representative assumption, not a site measurement"
+      ],
+      "unvalidated_assumptions": [
+        "Perfect quasiparticle-tunneling identification",
+        "Uniform phonon-energy sharing among the ~10300 QPD sensors on the single instrumented face",
+        "qpd-repo EMG template parameters apply to a Ge wafer",
+        "Thin-wafer single-Compton-scatter dominance for the gamma background"
+      ],
+      "competing_explanations": [],
+      "disconfirming_observations": [
+        "Computed total CEvNS rate disagrees with published Ge reactor predictions by more than an order of magnitude",
+        "The response chain shows no saturation even when tunneling rates far exceed the 25 kHz Nyquist limit",
+        "Compton edges appear at energies inconsistent with the Klein-Nishina prediction"
+      ]
+    }
+  },
+  "position": {
+    "current_phase": "1",
+    "current_phase_name": "Conventions & Energy-Scale Foundation",
+    "total_phases": 6,
+    "current_plan": "01-02",
+    "total_plans_in_phase": 2,
+    "status": "Phase 1 complete (verified passed 15/15, HIGH)",
+    "last_activity": "Phase 1 executed and verified \u2014 qpd_potential package (params, cevns, energy_scale), 26/26 tests, CONVENTIONS.md + ASSUMPTIONS.md",
+    "last_activity_desc": null,
+    "progress_percent": 100,
+    "paused_at": null
+  },
+  "active_calculations": [],
+  "intermediate_results": [],
+  "open_questions": [
+    "What crystal area is instrumented (one face vs all faces), fixing N_sens from the 1/mm^2 sensor density?",
+    "[RESOLVED Phase 5] Saturated-regime reconstruction: non-paralyzable dead-time model (count-integral estimator; plateau = saturation). User decision 2026-07-21.",
+    "[RESOLVED Phase 5] Ta->Al tunneling params: Table II Al-trap column; Ta absorber gap is a binary trapping gate (\u03b1-Ta ratio 3.58\u22652), response numerically independent of it above the gate.",
+    "What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment? [Phase 4: sourced from Heusser 1995 with a factor-2 site-dependent band; edges exact, total rate MEDIUM.]"
+  ],
+  "resolved_questions": [],
+  "performance_metrics": {
+    "rows": [
+      {
+        "label": "Phase 01 P01-01",
+        "duration": "900s",
+        "tasks": "3",
+        "files": "8"
+      },
+      {
+        "label": "Phase 01 P01-02",
+        "duration": "330s",
+        "tasks": "3",
+        "files": "4"
+      },
+      {
+        "label": "Phase 02 P02-01",
+        "duration": "5400s",
+        "tasks": "3",
+        "files": "13"
+      },
+      {
+        "label": "Phase 02 P02-02",
+        "duration": "3600s",
+        "tasks": "3",
+        "files": "9"
+      },
+      {
+        "label": "Phase 03 P03-01",
+        "duration": "3600s",
+        "tasks": "3",
+        "files": "6"
+      },
+      {
+        "label": "Phase 03 P03-02",
+        "duration": "2400s",
+        "tasks": "3",
+        "files": "7"
+      },
+      {
+        "label": "Phase 04 P04-01",
+        "duration": "2700s",
+        "tasks": "3",
+        "files": "9"
+      },
+      {
+        "label": "Phase 04 P04-02",
+        "duration": "2100s",
+        "tasks": "3",
+        "files": "10"
+      },
+      {
+        "label": "Phase 04 P04-03",
+        "duration": "240s",
+        "tasks": "2",
+        "files": "5"
+      },
+      {
+        "label": "Phase 05 P05-01",
+        "duration": "2700s",
+        "tasks": "3",
+        "files": "4"
+      },
+      {
+        "label": "Phase 05 P05-02",
+        "duration": "2400s",
+        "tasks": "3",
+        "files": "6"
+      },
+      {
+        "label": "Phase 06 P06-01",
+        "duration": "1500s",
+        "tasks": "3",
+        "files": "5"
+      },
+      {
+        "label": "Phase 06 P06-02",
+        "duration": "360s",
+        "tasks": "3",
+        "files": "5"
+      }
+    ]
+  },
+  "decisions": [
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Design->parameter mapping locked in code: Ta->Al uses Table II Aluminum column, Al->Hf uses Hafnium column; absorber supplies only Delta_abs.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Hf tau_qp = 400 us adopted (caption/lit) over the 1 ms table cell, flagged MEDIUM.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Ta absorber gap encoded as bulk alpha-Ta BCS assumption 0.68 meV (MEDIUM), film phase flagged for Phase 5.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Saturation ordering fixed as the plateau Gamma_in Hf/Al ratio (3.17x); the 4.75x N_qp-per-eV ratio is the raw yield, not the saturation driver.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Per-design saturation onset energies (~1.27 eV Al / ~0.77 eV Hf) carry the two-exponential peak factor p (0.25 Al / 0.13 Hf); Hf saturates first.",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "E_rec estimator implemented as an explicit Phase-5 stub (NotImplementedError by default; linear_placeholder=True returns 0.5*E_dep, valid only in the unsaturated regime).",
+      "rationale": null
+    },
+    {
+      "phase": "01-conventions-energy-scale-foundation",
+      "summary": "Both censoring variants exposed as a switch at tau_d=40us; the paralyzable-vs-non-paralyzable choice is preserved OPEN as a Phase-5 blocker, not silently chosen.",
+      "rationale": null
+    },
+    {
+      "phase": "02-reactor-flux-model",
+      "summary": "Huber(235/239/241)+Mueller(238U) coefficients fetched from primary arXiv e-prints with provenance; reconstructed 235U within 0.73%/0.13% of published Huber at 3/5 MeV.",
+      "rationale": null
+    },
+    {
+      "phase": "02-reactor-flux-model",
+      "summary": "238U(n,gamma) shape from sourced AME2020 Q-values, normalized to 0.6/fission (Kopeikin 2004).",
+      "rationale": null
+    },
+    {
+      "phase": "02-reactor-flux-model",
+      "summary": "Sub-1.8 MeV fission summation is a flagged seam-anchored non-negative placeholder pending Kopeikin-2012 grounding in 02-02; NOT invented, NOT truncated. Covered by the below-2-MeV uncertainty band (pre-anticipated ROADMAP risk).",
+      "rationale": null
+    },
+    {
+      "phase": "02-reactor-flux-model",
+      "summary": "Normalization chain R_f=P_th/<E_f>=9.10e19 fissions/s (3 GW_th, effective-thermal <E_f>=205.8 MeV Ma-2013 NOT total Q) x 1/(4 pi d^2) at d=2500 cm applied ONCE; int Phi dE=7.50e12 nu-bar/cm2/s, emission 1.96e20/s/GW_th (Hayes-Vogel ~2e20).",
+      "rationale": null
+    },
+    {
+      "phase": "02-reactor-flux-model",
+      "summary": "Frozen data/flux/reactor_flux_v1.0.csv with 7-col additive schema, SPLIT band (2-5% >2 MeV -> 20-25% <1.8 MeV, non-uniform), region flags, and version/git-sha/normalization/provenance/integral-check header.",
+      "rationale": null
+    },
+    {
+      "phase": "02-reactor-flux-model",
+      "summary": "Billard-2017 closure variant (HM constant below 2 MeV, fractions 55.6/32.6/7.1/4.7 isotope-labelled, no 238U<->239Pu swap) emitted as a distinct table (4.59e12) for the Phase-3 Billard Table-1 reproduction.",
+      "rationale": null
+    },
+    {
+      "phase": "02-reactor-flux-model",
+      "summary": "Sub-1.8 MeV shape kept as a Kopeikin-2012-cited placeholder (no machine-readable Kopeikin table sourceable; none fabricated), covered by the wide low-E band; limitation documented in CSV header, SUMMARY, and ASSUMPTIONS.md.",
+      "rationale": null
+    },
+    {
+      "phase": "03-cevns-cross-section-rate",
+      "summary": "Per-isotope exact kinematics: E_min^(i)(T)=(T+sqrt(T^2+2 M_i T))/2, T_max^(i)=2E_nu^2/(M_i+2E_nu); PCHIP log-flux interp + adaptive quad fold. sigma(72Ge,4MeV)=1.0026e-40 (0.26% from anchor); closed-form identity to <=6e-8.",
+      "rationale": null
+    },
+    {
+      "phase": "03-cevns-cross-section-rate",
+      "summary": "dR/dT = 67.8 counts/kg/day above 50 eV_nr at OUR 3 GW_th/25 m config",
+      "rationale": "genuine physics (~90x Billard's 0.76 at 8.54 GW/400 m, matching the geometry/power ratio). >20% backtrack trigger NOT met; absolute Billard/CONUS+ comparison deferred to 03-02 via the k~=0.0111 rescale."
+    },
+    {
+      "phase": "03-cevns-cross-section-rate",
+      "summary": "Helm F^2 (Lewin-Smith): 0.9963 at 200 eV, 0.9639 at 2 keV endpoint; turning F off shifts integrated rate 0.38%. CONVENTIONS 'F^2>0.998' = dominant sub-200 eV regime; 0.964 = rare E_nu~8-10 MeV tail. Reconciled to avoid downstream misflag.",
+      "rationale": null
+    },
+    {
+      "phase": "03-cevns-cross-section-rate",
+      "summary": "Ge isotope abundances = IUPAC/CIAAW representative number fractions (MEDIUM); M_i=A*931.494 MeV; 73Ge axial term ~1/N^2 not modeled (stated assumption).",
+      "rationale": null
+    },
+    {
+      "phase": "03-cevns-cross-section-rate",
+      "summary": "Derived Billard renormalization k=(P_B/P_v)(d_v/d_B)^2: single-source (8.54 GW/400 m) 0.011120 vs two-core (4.27 GW at 355.39 & 468.76 m) 0.011092, agree 0.25%; k-rescaled Billard integral flux 5.10e10 nu cm^-2 s^-1. Both powers thermal (GW_th), distance squared (fp-gwe-gwth rejected).",
+      "rationale": null
+    },
+    {
+      "phase": "03-cevns-cross-section-rate",
+      "summary": "Billard 2017 Table 1 reproduced WITH k: 0.7415/0.5009/0.2567 counts/kg/day above 50/100/200 eV_nr vs 0.76/0.51/0.26 (-2.4/-1.8/-1.3%, all <2.5%, well inside ~20%). WITHOUT k the fold overshoots by exactly 1/k=89.9x (66.7/45.0/23.1). 100/200 eV bins <2% so no ROADMAP backtrack. Per-isotope Ge sum (fp-lumped-A-billard rejected).",
+      "rationale": null
+    },
+    {
+      "phase": "03-cevns-cross-section-rate",
+      "summary": "CONUS+ coarse factor-2 cross-check: flagship (67.75/kg/day >50 eV) and Billard Table 1 both rescaled to CONUS+ config (3.6 GW_th/20.7 m) give 118.6 vs 119.6, ratio 0.99. Two independently-normalized flux models agree at a common config. eV_ee quenching caveat -> coarse scale check only, MEDIUM confidence.",
+      "rationale": null
+    },
+    {
+      "phase": "03-cevns-cross-section-rate",
+      "summary": "Flux band propagation: rigorous 1-sigma band 3.4% (>=95 eV, matches well-anchored 2-5% high-E flux) rising to 6.2%/9.8% at 50/20 eV_nr; sub-1.8 MeV toggle localizes the placeholder systematic below ~95 eV (E_min(95 eV)~1.78 MeV): sub-1.8 rate fraction 17.8% at 50 eV, 33.8% at 20 eV, ~0 above 95 eV, T>200 eV unchanged <1e-3. The plan's 20-25% guess is corrected (finding, not a bug).",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Muon dR/dE_dep folded from Gaisser-Guan flux (P1-P5 verbatim, arXiv:1509.06176) x analytic ray-box chord (Cauchy <ell>=0.385 cm reproduced to 0.03%) x Landau-Vavilov MPV. Integral rate 1.366 +/- 0.005 Hz (deterministic quadrature 1.415 Hz), within ~15% of PDG 1.5-2 Hz (VALD-02). Surface-flux measure I*A_proj*sin(theta) validated by J_horiz=pi*I_v/2 to 0.01%.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Landau-Vavilov MPV computed in code (not memorized): vertical-chord xi=0.0721 MeV (PDG 0.072), Delta_p=1.232 MeV strictly below mean 1.459 MeV. Custom Landau inverse-CDF sampler (mode -0.22278); deposit=Delta_p+xi*(lambda-lambda_mode) so sampled mode=Delta_p; NOT mean, NOT Moyal. kappa=xi/T_max<0.07 for all chords -> Landau/mild-Vavilov. Guards fp-mean-not-mpv.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Long near-horizontal chords importance-sampled (zenith uniform in [0,pi/2] with reweighting) so the deposit tail is resolved to ~197 MeV (66 bins >30 MeV) - the Phase-5 saturation input. Deposits on the unified phonon E_dep scale, NO quenching, no keVee/keVnr (electron recoil, zero Frenkel correction). Guards fp-angular-bias, fp-quenching-muon.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Compton dR/dE_dep built as a Klein-Nishina angle-sampled ELECTRON-recoil continuum (deposit T_e=E_gamma-E_prime, scattered photon escapes the optically-thin 2mm wafer; NO photopeaks) up to each self-validating edge E_edge=2E^2/(m_ec^2+2E). VALD-03 edges reproduced: 40K->1243.4, 208Tl->2381.8, 214Bi->1541.3 keV (max sampled T_e = E_edge per line, exact). No signal above the max edge or at E_gamma=2614.5. Guards fp-full-absorption, fp-electron-not-photon.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Total single-scatter Compton rate 0.268 Hz vs independent flux x sigma_KN x N_e anchor 0.273 Hz (ratio 0.983, within VALD-03 factor 2). Thin-target on the ONE pinned Cauchy mean chord ell_bar=4V/S=0.385 cm: mu*ell_bar=0.117@1MeV / 0.084@2MeV, double-scatter 1.4%; normal-incidence mu*t=0.061 quoted as optically-thin demo only. Same ell_bar in P, double-scatter, and rate. Energy closure to ~1e-5.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Gamma flux table is a DOCUMENTED TUNABLE input, not invented: line energies + DDEP emission probabilities = nuclear data; absolute flux anchored to cited LABChico EPJP2022 measured spectrum (40K 0.036, 208Tl 2614.5 0.0016 cm^-2 s^-1); Th siblings scaled by DDEP intra-chain ratios; U chain via documented Phi_U=Phi_Th assumption (factor-2 band). NIST XCOM Ge mu/rho frozen (4 cited points, log-log interp). Unified phonon scale, no quenching. Guards fp-invented-flux, fp-quenching-compton.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Muon and Compton deposited-energy spectra assembled on the byte-identical shared log E_dep grid (584 bins, 0.01 keV -> 197 MeV; np.array_equal True, max rel dev 0.0; centers = geometric means of shared_energy_grid() edges to 5e-7). Combined table data/combined_dRdEdep.csv (muon+Compton+total) and figs/phase4_deposited_spectra.png emitted; deposited (phonon) energy only, NO E_rec fold. Guards fp-grid-mismatch, fp-reconstructed-not-deposited.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Energy closure per channel: int dR/dE_dep dE = rate_Hz*86400/mass_kg (mass 0.1099 kg). Muon 1.0729e6 vs 1.0737e6 -> ratio 0.99928 (+/-3.6e-3 MC, 0.07% sub-grid-floor shortfall); Compton 2.1105e5 vs 2.1105e5 -> 0.99997; total-spectrum closure 0.9994. Rates parsed from CSV headers (1.3657 / 0.26846 Hz), not hard-coded. First-moment deposited power reported as a physical diagnostic (mean deposit muon 2.33 MeV > 1.46 MeV vertical, Compton 589 keV), explicitly not an independent number.",
+      "rationale": null
+    },
+    {
+      "phase": "04-muon-compton-deposited-energy-spectra",
+      "summary": "Pileup stop-condition: R_tot=1.634 Hz (muon 1.366 + Compton 0.268), occupancy R*tau=3.27e-5 (20us/50kHz sample) / 6.54e-5 (40us/25kHz resolving), R/50kHz=3.27e-5; non-paralyzable dead-time 6.5e-5, paralyzable live fraction 0.999935; mean interval 0.612 s ~ 1.5e4 resolving times. Occupancy << 1 -> stop-condition NOT triggered, quiescent reconstruction not precluded. Within-event muon ~197 MeV saturation flagged for Phase 5. Guards fp-pileup-unchecked.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Count-integral estimator adopted (D-estimator): E_rec=C*sum N_obs with a single global per-design C fixed to slope 0.5; plateau IS the modeled saturation.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Event-count mapping locked (Pitfall 1): expected_n_qp = INT Gamma_in dt = K*tau_qp*N_qp/V_tr (0.03x N_qp Al / 0.008x Hf), NOT the trapped count.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Crossover reported as a band: default ~52.9 eV (Ta->Al) / ~32.1 eV (Al->Hf), equal-split anchor ~13.1/7.9 keV, whole-array plateau ~18.6/11.3 keV; Hf first.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Muon-tail E_rec: non_paralyzable plateau ~35 keV (Ta->Al)/~27 keV (Al->Hf); paralyzable rollover ~3.3/~2.6 keV; both >3 orders below the linear line.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Ta gap handled as a binary trapping gate (ratio 3.58>=2, T_c gate 2.5 K); response invariant to Delta_abs in alpha-phase; beta-Ta design-invalidating; no film value fabricated.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); stop-condition does NOT trigger.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "R(E_rec|E_dep) built per design x both censoring variants by uniform log-E_dep importance sampling on the Phase-4 grid (584 cols, 10.14 eV->197 MeV, 80/decade); reuses Plan 05-01 response.py (no re-implementation).",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Aggregate off-spot ensemble (~10,287 sensors as one multinomial/Poisson draw per realization); on-spot ~pi r^2 sensors individual; per-class mean pinned to analytic censored_count so the response curve = the validated Plan 05-01 estimator.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Feasibility split EC_EMG_MAX=2000: MUST-USE ref-qpd-repo EMG event train where feasible (CEvNS/low-E), deep-saturation registered-count Poisson (EMG train O(1e8) events infeasible; relative spread ~1e-3 there).",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Convergence: peak well-populated cell <=~1.8% at N_s=5000, clean 1/sqrt(N_s) scaling; columns normalize to 1; per-cell MC error stored; straddle-bins flagged. Stable crc32 sub-seeding => reproducible across processes.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Muon-end E_rec: non_paralyzable plateau ~34.8 keV (Ta->Al)/~26.9 keV (Al->Hf); paralyzable rollover ~3.3/~2.6 keV; both ~3-4 orders below 0.5*E_dep (fp-no-saturation). Onset ~52.9/32.1 eV, plateau ~18.6/11.3 keV; Hf first.",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Time-over-saturation kept as a LABELED SECONDARY (tos_t_over_s), never auto-switched into the baseline (fp-tos-autoswitch); ceiling pile-up labeled an instrument artifact on the figure (fp-ceiling-peak).",
+      "rationale": null
+    },
+    {
+      "phase": "05",
+      "summary": "Task 3 checkpoint:human-verify self-assessed satisfied pending orchestrator/researcher review (autonomous run); Phase-5 stop-condition does NOT trigger.",
+      "rationale": null
+    },
+    {
+      "phase": "05 / USER DECISION 2026-07-21",
+      "summary": "**Censoring switch RESOLVED to non-paralyzable project-wide** (CONVENTIONS F closed). User accepted Phase 5 and chose non_paralyzable for the rest of the project after both variants were computed. params.DEFAULT_CENSORING already = \"non_paralyzable\"; Phase 6 + downstream use it as the single canonical variant. Paralyzable R matrices retained in response_matrix_*.npz as a sensitivity, not a live switch. Operative high-E response = the plateau (~34.8/26.8 keV muon tail).",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "Fold conserves counts per channel per design: muon/Compton rel <=2.2e-16 (unit-sum R columns), CEvNS rel <=1.3e-16; CEvNS rebin total 9.6e-5 vs trapz, above-50-eV 67.67 vs 67.752 (0.12%).",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "Reconstructed peaks (non-paralyzable): CEvNS ~42 eV (0.5*E_dep, sub-keV), muon 18.8/15.0 keV, Compton 16.8/13.3 keV (Ta->Al/Al->Hf); muon MeV deposits saturate to tens of keV (fp-deposited-only guarded).",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "CEvNS 5-10.14 eV low edge retained (7.27 cts/kg/day) via exact E_rec=0.5*E_dep, not dropped (fp-drop-lowE-cevns); only R_non_paralyzable folded (fp-paralyzable-swap).",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "deliv-fig-spectra rendered: dR/dE_rec vs E_rec (log-log, counts/kg/day/keV), CEvNS/muon/Compton + total, both designs, from the committed 06-01 CSVs; reconstructed axis not deposited (fp-deposited-only); non-paralyzable only, no paralyzable overlay (fp-paralyzable-swap).",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "Saturation delimited on E_rec axis (fp-no-saturation-mark): onset (E_dep ~52.9/32.1 eV -> E_rec ~23/14 eV) + whole-array plateau (~18.6/11.3 keV E_dep -> ~4.1/2.5 keV E_rec) shaded; muon pile-up marked at 18.8/15.0 keV E_rec, inside the plateau band -> muon shown reconstructed entirely in saturation.",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "Mapping panel reuses Phase-5 E_rec_median_non_paralyzable vs E_dep_centers (both designs) with the 0.5*E_dep calibration line + onset/plateau markers; not recomputed.",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "ASSUMPTIONS.md finalized: censoring OPEN switch retired to RESOLVED non-paralyzable (CONVENTIONS F closed, USER 2026-07-21); Phase-4 gamma-background note + Phase-6 fold addendum added; four caveats + compact stage-1 results (Billard 2.4%, CEvNS ~68/kg/day >50 eV_nr dep, muon 1.37 Hz, pileup 3.3e-5); no live OPEN switch (fp-note-stale).",
+      "rationale": null
+    },
+    {
+      "phase": "06",
+      "summary": "Stage-1 milestone CLOSED by Plan 06-02.",
+      "rationale": null
+    }
+  ],
+  "approximations": [],
+  "convention_lock": {
+    "metric_signature": "not_applicable \u2014 no relativistic field theory in this detector/rate pipeline",
+    "fourier_convention": "not_applicable",
+    "natural_units": "internal-only (hbar=c=1) for CEvNS cross section; k_B EXPLICIT (not =1); I/O in eV/keV/MeV, counts/kg/day/keV, s, cm/um; (hbar c)^2 = 3.894e-28 GeV^2 cm^2",
+    "gauge_choice": "not_applicable",
+    "regularization_scheme": "not_applicable",
+    "renormalization_scheme": "tree-level SM (no loops); only scheme-dependent input is sin2thetaW = 0.2387 (low-energy MS-bar)",
+    "coordinate_system": "Cartesian wafer frame: x,y in-plane 4in x 4in face, z through 2mm thickness; sensors on one z-face",
+    "spin_basis": "not_applicable",
+    "state_normalization": "not_applicable",
+    "coupling_convention": "CEvNS dsigma/dT = (G_F^2 M/4pi) Q_W^2 (1 - M T/2 E_nu^2) F^2(q^2); prefactor /4pi NOT /8pi; Q_W = N-(1-4 sin2thetaW)Z; sin2thetaW=0.2387 (low-E MSbar); 1-4sin2thetaW=0.0452; Helm F, F(0)=1",
+    "index_positioning": "not_applicable",
+    "time_ordering": "not_applicable",
+    "commutation_convention": "not_applicable",
+    "levi_civita_sign": "not_applicable",
+    "generator_normalization": "not_applicable",
+    "covariant_derivative_sign": "not_applicable",
+    "gamma_matrix_convention": "not_applicable",
+    "creation_annihilation_order": "not_applicable",
+    "custom_conventions": {
+      "energy_scale_chain": "single unified phonon scale, NO ionization quenching, for BOTH NR (CEvNS) and ER (muon/Compton): T=E_nr -> E_ph -> E_dep -> E_rec; E_ph=E_dep-E_stored(defects) (few-% NR-only, 0 for muons/Compton); E_rec(low-E)~=0.5*E_dep; FORBIDDEN: keVee/keVnr mixing, Lindhard/ionization quenching",
+      "detector_normalization": "Ge 8.29e24 atoms/kg, rho=5.323 g/cm^3, M=72.63 g/mol; wafer 4inx4inx2mm=20.65 cm^3~=110 g, ~10300 sensors 1/mm^2 one face; reactor 3 GW_th (thermal) at 25 m => ~7-8e12 nubar/cm^2/s; adopt 110 g geometry but KEEP per-kg (counts/kg/day) normalization; '1 kg' framing in SUMMARY.md is STALE",
+      "efficiency_mapping": "eps~=0.5 deposited-to-signal, imposed forward-model definition, SAME baseline both designs with +/-10-20% design-dependent band; Ta->Al and Al->Hf may split to per-design numbers in Phase 5; paper physical estimate eta_ce~=0.3 is an independent cross-reference, NOT baseline",
+      "bandwidth_censoring": "LOCKED resolving time: 25 kHz max resolvable tunneling rate => 40 us (Nyquist from 50 kHz bw); 20 us at 50 kHz sampling itself (state both); paralyzable-vs-non-paralyzable AND merge-vs-drop kept as EXPLICIT CODE SWITCH (not fixed); OPEN QUESTION BLOCKS Phase 5; both variants must be implementable",
+      "cevns_benchmark_target": "Phase-3 unit test: FULL Q_W => sigma(Ge,4 MeV)~=1.0e-40 cm^2 (canonical); N-only quick-check ~1.1e-40 cm^2 (1.08e-40, ~20% tol); coefficient sigma~=4.22e-45 N^2 (E_nu/MeV)^2 cm^2; closed form sigma_tot=G_F^2 Q_W^2 E_nu^2/4pi; PITFALLS.md ~1e-42 value is WRONG (100x)"
+    }
+  },
+  "propagated_uncertainties": [],
+  "pending_todos": [],
+  "blockers": [],
+  "continuation": {
+    "schema_version": 1,
+    "handoff": {
+      "resume_file": null,
+      "stopped_at": null,
+      "last_result_id": null,
+      "recorded_at": null,
+      "recorded_by": null
+    },
+    "bounded_segment": null,
+    "machine": {
+      "recorded_at": null,
+      "hostname": null,
+      "platform": null
+    }
+  },
+  "contract_alignment": {
+    "confirmed_at": "2026-07-20T21:56:24.017799+00:00",
+    "confirmed_contract_hash": "sha256:8aba34ccb645a2a564e70e462a5ddde82f0b00727295397da3ead966e235e364",
+    "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
+  },
+  "_version": 1,
+  "_synced_at": "2026-07-21T21:23:14.046830+00:00"
+}

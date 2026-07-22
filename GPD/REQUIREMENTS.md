@@ -1,0 +1,75 @@
+# Research Requirements
+
+## Current Requirements
+
+### Conventions & Energy-Scale Foundation
+
+- [ ] **CONV-01**: Establish the stage-1 conventions — unit system, unified phonon energy scale with **no ionization quenching** for both nuclear and electron recoils, the E_dep→n_qp mapping definition, and the 50 kHz/25 kHz bandwidth-censoring convention (paralyzable vs non-paralyzable) — recorded in `GPD/CONVENTIONS.md`.
+
+### Calculation (CALC)
+
+- [ ] **CALC-01**: Build the reactor antineutrino flux model — 4-isotope Huber–Mueller spectrum with an explicit sub-1.8 MeV treatment (summation / neutron-capture components), normalized to 3 GW_th at 25 m (~1×10¹³ ν/cm²/s).
+- [ ] **CALC-02**: Compute the CEvNS differential rate dR/dT on natural Ge (Freedman cross section with (ħc)² unit discipline, Helm form factor, isotope-averaged over Ge abundances), folded with CALC-01, in **deposited** nuclear-recoil energy.
+- [ ] **CALC-03**: Compute the muon deposited-energy spectrum for the 4″×4″×2 mm wafer — Gaisser-Guan angular flux ⊗ chord-length distribution (short vertical crossings to long near-horizontal chords) ⊗ Landau-Vavilov straggling.
+- [ ] **CALC-04**: Compute the environmental-gamma Compton electron-recoil deposited-energy spectrum — representative radiogenic gamma spectrum (U/Th chains + ⁴⁰K lines + continuum) × Ge Compton cross section over the wafer, Klein-Nishina continuum, thin-target single-scatter dominated.
+
+### Simulation (SIMU)
+
+- [ ] **SIMU-01**: Implement the QPD forward response chain for both Ta→Al and Al→Hf designs — E_dep → ~50% signal → trapped-QP number → EMG tunneling burst (reuse `qpd` repo template) → 50 kHz/25 kHz bandwidth censoring → reconstructed energy. Report the linear→saturated **crossover deposit energy** (E_dep at which peak tunneling rate hits 25 kHz) per design as an explicit design number.
+- [ ] **SIMU-02**: Build the Monte-Carlo response matrix R(E_rec | E_dep) per design (uniform importance sampling in E_dep, convergence ≤~3%/cell), spanning threshold to the saturated regime.
+- [ ] **SIMU-03**: Fold CALC-02, CALC-03, and CALC-04 through R to produce the **reconstructed-energy** CEvNS, muon, and Compton spectra (deliverable figures), both designs, in counts/kg/day/keV.
+
+### Validation (VALD)
+
+- [ ] **VALD-01**: CEvNS rate reproduces Billard et al. (2017) Table 1 under their assumptions (~20%), then agrees with rescaled/CONUS+ Ge predictions within ~factor 2.
+- [ ] **VALD-02**: Integral muon rate matches PDG sea-level flux (~1/cm²/min) through the wafer geometric acceptance within ~30%.
+- [ ] **VALD-03**: Compton edges appear at Klein-Nishina energies E_edge = 2E_γ²/(m_ec² + 2E_γ) for the assumed lines, and total interaction rate matches flux × Ge Compton cross section within ~factor 2.
+- [ ] **VALD-04**: Response limiting cases — E_rec ≈ 0.5·E_dep at low energy; saturation onset once tunneling rate exceeds 25 kHz.
+
+## Future Work
+
+(To be identified as project progresses — e.g., CEvNS sensitivity/exclusion projection, dark-matter reach, G4CMP-based response, imperfect tunneling identification, noise/threshold modeling.)
+
+## Out of Scope
+
+- G4CMP phonon-transport simulation — deferred; stage 1 uses an analytic/MC response chain.
+- Dark-matter sensitivity projections — later milestone.
+- Imperfect tunneling identification and readout-noise modeling — idealized (perfect ID) for stage 1.
+- Neutron-induced nuclear-recoil backgrounds and other backgrounds beyond muons and environmental-gamma Compton.
+- Detector geometry / sensor-layout optimization.
+
+## Contract Coverage
+
+| Requirement | Contract claim / deliverable | Anchor / benchmark | False-progress risk guarded |
+| ----------- | ---------------------------- | ------------------ | --------------------------- |
+| CONV-01 | claim-response, deliv-note | ref-qpd-paper; no-quenching unified scale | mixing keVee/keVnr scales |
+| CALC-01 | claim-cevns | ref-huber; sub-1.8 MeV flagged | Huber-Mueller misused below IBD threshold |
+| CALC-02 | claim-cevns, obs-cevns-spectrum | ref-cevns-benchmark (Billard) | (ħc)² omission, Q_w /4π factor |
+| CALC-03 | claim-muon, obs-muon-spectrum | ref-pdg-muon | mean vs MPV dE/dx; ignoring long chords |
+| CALC-04 | claim-compton, obs-compton-spectrum | ref-environmental-gamma; Klein-Nishina | photopeaks instead of Compton continuum |
+| SIMU-01 | claim-response, obs-energy-response | ref-qpd-paper, ref-qpd-repo | no saturation modeling |
+| SIMU-02 | claim-response, deliv-fig-response | ref-qpd-paper | response matrix non-convergence |
+| SIMU-03 | deliv-fig-spectra (all 3 channels) | — | deposited-energy-only spectra |
+| VALD-01 | test-cevns-benchmark | ref-cevns-benchmark, CONUS+ | rate off by orders of magnitude |
+| VALD-02 | test-muon-flux | ref-pdg-muon | flux normalization error |
+| VALD-03 | test-compton-edges | Klein-Nishina, ref-environmental-gamma | wrong edge positions |
+| VALD-04 | test-response-limits | ref-qpd-paper | missing low-E linearity or saturation |
+
+## Traceability
+
+Roadmap: `GPD/ROADMAP.md` (6 phases, created 2026-07-20). Coverage: 12/12 requirements mapped to exactly one primary phase; no orphans, no duplicates.
+
+| REQ-ID | Phase | Status |
+| ------ | ----- | ------- |
+| CONV-01 | 1 — Conventions & Energy-Scale Foundation | Ready to plan |
+| CALC-01 | 2 — Reactor Flux Model | Planned |
+| CALC-02 | 3 — CEvNS Cross Section & Rate | Planned |
+| CALC-03 | 4 — Muon & Compton Deposited-Energy Spectra | Planned |
+| CALC-04 | 4 — Muon & Compton Deposited-Energy Spectra | Planned |
+| SIMU-01 | 5 — QPD Response Chain & Energy Reconstruction | Planned |
+| SIMU-02 | 5 — QPD Response Chain & Energy Reconstruction | Planned |
+| SIMU-03 | 6 — Fold & Produce Reconstructed-Energy Spectra | Planned |
+| VALD-01 | 3 — CEvNS Cross Section & Rate | Planned |
+| VALD-02 | 4 — Muon & Compton Deposited-Energy Spectra | Planned |
+| VALD-03 | 4 — Muon & Compton Deposited-Energy Spectra | Planned |
+| VALD-04 | 5 — QPD Response Chain & Energy Reconstruction | Planned |

@@ -1,0 +1,43 @@
+The reactor antineutrino signal enters our pipeline as a deposited nuclear-recoil spectrum $dR/dT$, where $T\equiv E_{\rm nr}$ is the germanium recoil kinetic energy on the unified phonon scale of Sec.~\ref{sec:model}. We build it in three steps: an absolute antineutrino flux $\Phi(E_\nu)$, the coherent-scattering cross section $d\sigma/dT$, and their fold over the five natural germanium isotopes. All rates in this section are on the \emph{deposited} energy $T$; the mapping to reconstructed energy $E_{\rm rec}$ is deferred to Secs.~\ref{sec:response} and~\ref{sec:results}.
+
+\subsection{Reactor antineutrino flux}
+
+We take the emitted per-fission spectra $S_i(E_\nu)$ from the Huber conversion fits~\cite{huber2011} for ${}^{235}$U, ${}^{239}$Pu, and ${}^{241}$Pu and from the Mueller fit~\cite{mueller2011} for ${}^{238}$U above 2~MeV, with coefficients taken from the primary arXiv e-prints; our reconstructed ${}^{235}$U spectrum agrees with the published Huber tabulation to 0.73\% at 3~MeV and 0.13\% at 5~MeV. Below 1.8~MeV, where the conversion fits do not extend, we seam-match (continuous through the derivative) a summation-style continuation plus a ${}^{238}$U$(n,\gamma)$ component normalized to 0.6~$\bar\nu_e$ per fission. The absolute flux at the detector is
+\begin{equation}
+\begin{aligned}
+\Phi(E_\nu) &= \frac{R_f}{4\pi d^2}\left[\sum_i f_i\, S_i(E_\nu) + S_{n\gamma}(E_\nu)\right],\\
+R_f &= \frac{P_{\rm th}}{\langle E_f\rangle},
+\end{aligned}
+\label{eq:flux}
+\end{equation}
+where $R_f$ is the fission rate, $P_{\rm th}=3$~GW$_{\rm th}$ is the \emph{thermal} reactor power, $\langle E_f\rangle=205.8$~MeV is the fission-fraction-weighted effective thermal energy per fission (not the total $Q$-value, which double-counts the escaping neutrinos), $f_i$ are the fission fractions, and $d=25$~m is the standoff, treated as a point source. This gives $R_f=9.10\times10^{19}$~fissions~s$^{-1}$ and an integrated flux $\int\Phi\,dE_\nu = 7.5\times10^{12}$~$\bar\nu_e$~cm$^{-2}$s$^{-1}$. The corresponding emission of $1.96\times10^{20}$~$\bar\nu_e$~s$^{-1}$GW$_{\rm th}^{-1}$ reproduces the Hayes--Vogel reactor-accounting value $\sim2\times10^{20}$~\cite{hayesvogel2016}. The sub-1.8~MeV shape is a model placeholder consistent with, but not directly digitized from, Kopeikin~\cite{kopeikin2012}; we carry it with a wide below-2-MeV uncertainty band and quantify its downstream impact at the end of this section.
+
+\subsection{Coherent cross section}
+
+For each isotope $i$ we use the Freedman coherent cross section~\cite{freedman1974,drukier1984},
+\begin{equation}
+\frac{d\sigma_i}{dT} = \frac{G_F^2 M_i}{4\pi}\, Q_{W,i}^2\left(1 - \frac{M_i T}{2 E_\nu^2}\right) F_i^2(q),
+\label{eq:dsigma}
+\end{equation}
+with the $/4\pi$ prefactor (the $/8\pi$ form is a factor-of-two error), $G_F$ the Fermi constant, $M_i$ the nuclear mass, and weak charge $Q_{W,i}=N_i-(1-4\sin^2\theta_W)Z$ evaluated at the low-energy value $\sin^2\theta_W=0.2387$. Because $1-4\sin^2\theta_W=0.045$, the proton coupling nearly vanishes and the rate scales as $N^2$ to $\sim0.5\%$. The momentum transfer is $q=\sqrt{2M_i T}$ and $F_i(q)$ is the Lewin--Smith Helm form factor~\cite{lewinsmith1996,helm1956}, which stays above 0.998 at reactor recoil energies on germanium. The cross section is evaluated in natural units and restored to cm$^2$ with $(\hbar c)^2=3.894\times10^{-28}$~GeV$^2$cm$^2$; dropping this factor is the single most common normalization error in reactor CEvNS. Equation~\eqref{eq:dsigma} integrates to the closed form $\sigma_{\rm tot}=G_F^2 Q_W^2 E_\nu^2/4\pi$ to better than $6\times10^{-8}$, and yields $\sigma({}^{72}\mathrm{Ge},4~\mathrm{MeV})=1.0026\times10^{-40}$~cm$^2$, within 0.26\% of the first-principles anchor. The Helm parameters and the per-isotope germanium table are collected in Sec.~\ref{sec:appendix-cevns}.
+
+\subsection{Deposited-energy rate}
+
+The differential rate follows from folding Eq.~\eqref{eq:flux} against Eq.~\eqref{eq:dsigma} over the five stable germanium isotopes, retaining each isotope's own weak charge, nuclear mass, and kinematic threshold rather than a lumped-$A$ approximation:
+\begin{equation}
+\begin{aligned}
+\frac{dR}{dT} &= N_T \sum_i x_i \int_{E_\nu^{\min}(T)}^{\infty} \Phi(E_\nu)\, \frac{d\sigma_i}{dT}\, dE_\nu,\\
+E_\nu^{\min}(T) &= \sqrt{\tfrac{1}{2}M_i T},
+\end{aligned}
+\label{eq:cevnsfold}
+\end{equation}
+where $N_T=8.29\times10^{24}$~Ge atoms~kg$^{-1}$ is the target density, $x_i$ the natural isotopic abundances (neutron numbers $N_i=38,40,41,42,44$), and $E_\nu^{\min}(T)=\sqrt{M_iT/2}$ is the minimum antineutrino energy that produces a recoil $T$. Integrating Eq.~\eqref{eq:cevnsfold} gives the deposited spectrum $dR/dT$ shown in Fig.~\ref{fig:cevns}, with $67.8$~counts~kg$^{-1}$day$^{-1}$ above a $50$~eV$_{\rm nr}$ deposited threshold at $3$~GW$_{\rm th}$ and $25$~m. Propagating the split flux band through Eq.~\eqref{eq:cevnsfold} yields a $1\sigma$ uncertainty of $3.4$--$10\%$ on the deposited rate, dominated at the lowest recoils by the sub-1.8~MeV placeholder: it contributes $18$--$34\%$ of the rate below $95$~eV$_{\rm nr}$, corresponding to a $\sim6$--$10\%$ band there, while the well-anchored $>1.8$~MeV flux controls the rate at every higher recoil.
+
+\subsection{Absolute-normalization benchmark}
+
+The decisive external check is a reproduction of the Billard~\emph{et~al.} germanium reactor-CEvNS rates~\cite{billard2017}. Their Table~1 is quoted for a $8.54$~GW$_{\rm th}$ source at $\sim400$~m, so we rescale a flux variant built under their assumptions (Huber--Mueller held constant below 2~MeV, no $n$-capture) to that configuration by the geometry-and-power factor
+\begin{equation}
+k = \frac{P_B}{P_{\rm th}}\left(\frac{d}{d_B}\right)^2 = 0.01112,
+\label{eq:kfactor}
+\end{equation}
+with $P_B=8.54$~GW$_{\rm th}$ and $d_B\simeq400$~m; both powers are thermal, so only the $1/d^2$ geometry survives in the ratio. Single-source and explicit two-core evaluations of Eq.~\eqref{eq:kfactor} agree to 0.25\%. Folding with $k$ reproduces the Billard rates $0.76/0.51/0.26$~counts~kg$^{-1}$day$^{-1}$ above $50/100/200$~eV$_{\rm nr}$ as $0.742/0.501/0.257$, within 2.4\%. Omitting $k$ overshoots by exactly $1/k=89.9\times$ in every bin, confirming that the residual mismatch is purely the geometry-and-power normalization and not the spectral shape or the cross section. As a second, coarser anchor, rescaling both our flagship prediction and the Billard rate to the CONUS+ configuration~\cite{conus2025} agrees to a factor 0.99, though this comparison is at the ionization (eV$_{\rm ee}$) scale and requires a quenching model to relate to our deposited phonon scale, so we treat it as a rate-scale cross-check only. Together these anchors fix the absolute normalization of the deposited CEvNS signal that Secs.~\ref{sec:response} and~\ref{sec:results} carry through the QPD response.
