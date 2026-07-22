@@ -1,0 +1,104 @@
+The reconstructed spectra of Fig.~\ref{fig:spectra} are best read not as a
+rate prediction but as a map of \emph{where}, on the axis a
+bandwidth-limited QPD readout actually records, the reactor signal and each
+ambient background come to rest. That map is the deliverable of this work:
+it tells a would-be experiment which instrumental knob is decisive before
+any exposure is accumulated. Its interpretation, however, is bounded by four
+modeling uncertainties of very different character and provenance, and an
+honest reading requires keeping them separate.
+
+\emph{Saturated-regime response shape.} The most consequential uncertainty
+is also the one with the least external support. Between the linear regime
+($E_{\rm rec}\approx0.5\,E_{\rm dep}$) and the fully saturated plateau, the
+shape of $R(E_{\rm rec}\,|\,E_{\rm dep})$ has no published anchor at any
+energy; it is fixed only by its two limiting cases and by calibration
+consistency (Sec.~\ref{sec:response}). The direct consequence is that the
+tens-of-keV muon pile-up of Fig.~\ref{fig:spectra} is an \emph{instrumental
+artifact} of the modeled 25~kHz ceiling rather than a physical spectral
+line. What would tighten it is unambiguous: a direct QPD saturation
+measurement on a thin wafer, or a full microphysical readout simulation
+resolving the tunneling-burst statistics through the censoring transition.
+Crucially, this caveat is quarantined to the channels that actually
+saturate---muons and the high-recoil gamma tail---because the reactor-CEvNS
+recoils sit entirely within the linear regime and never test the
+unbenchmarked shape.
+
+\emph{Environmental-gamma normalization.} The absolute Compton rate is a
+representative, site-dependent estimate good to a factor of $\sim$2, driven
+by the assumed radiogenic flux and, in particular, by the ${}^{238}$U-chain
+balance rather than a measured line intensity (Sec.~\ref{sec:backgrounds}).
+The Compton edge positions, by contrast, are fixed by kinematics and carry
+high confidence. A factor-of-two shift rescales the continuum but preserves
+both the edge structure and the qualitative conclusion that the gamma
+continuum overlaps the signal region, so the \emph{ranking} of this
+background is robust even though its normalization is not. Only an on-site
+gamma survey at the intended deployment can replace the representative
+estimate with a measured one.
+
+\emph{Sub-1.8~MeV reactor flux.} Below the reach of the Huber--Mueller
+conversion fits, the antineutrino spectrum is a cited but not directly
+reproduced model placeholder, carried with a wide band that translates into
+a $\sim$6--10\% uncertainty on the reconstructed CEvNS rate below $\sim$95~eV
+(Sec.~\ref{sec:cevns}). This is the leading \emph{signal-side} systematic,
+and it acts precisely where the reconstructed CEvNS spectrum peaks. It is,
+however, a band on the rate, not an ambiguity in the spectral placement: the
+signal remains anchored at tens of eV regardless of where in the band the
+true low-energy flux lies. Digitizing a per-isotope summation or CONFLUX
+table below 1.8~MeV, following the approach of Ref.~\cite{kopeikin2012},
+would collapse this band to the percent level.
+
+\emph{Crossover deposit energy.} The linear-to-saturated crossover rides on
+the two low-confidence sensor-sharing parameters $f_{\rm prompt}$ and $r$,
+for which no thin-wafer QPD measurement exists; we therefore report it as a
+band spanning $\sim$50~eV to $\sim$13~keV rather than a single number
+(Sec.~\ref{sec:response}). Because the CEvNS recoils fall below even the
+lowest end of this band, the signal reconstructs linearly across the entire
+scan, so its placement is insensitive to where the true crossover sits; the
+uncertainty is inherited only by the saturated backgrounds, whose pile-up
+energies shift with the band. A dedicated thin-wafer sensor-sharing
+measurement would fix $f_{\rm prompt}$ and $r$ and turn the band into a line.
+
+Read together, three of the four uncertainties act on the saturated
+backgrounds and leave the flagship result---that reactor CEvNS reconstructs
+to tens of eV---as the most robust feature of the analysis. This is the
+sense in which the reconstructed axis is informative despite the model risk.
+
+The implications for a QPD reactor-CEvNS search follow directly and are
+mostly about detector design rather than statistics. First, \emph{threshold
+placement is decisive}: the CEvNS signal populates the very lowest
+reconstructed energies, so recovering it demands an eV-scale reconstruction
+floor, not merely a low deposited threshold---a requirement that places the
+signal below the sub-100~eV regimes now being probed by cryogenic
+low-threshold detectors~\cite{nucleus} and reactor-CEvNS experiments
+generally. Second, cosmic muons do \emph{not} preclude quiescent operation:
+their pile-up lands at tens of keV, well \emph{above} the CEvNS band, and the
+pileup occupancy is tiny ($R\tau\approx3\times10^{-5}$), so muon events are
+sparse and spectrally displaced from the signal. A surface deployment would
+nonetheless benefit from muon tagging or an active veto, since the rare
+long-chord muon tail is the very driver of readout saturation and any
+misreconstruction leaks downward in energy. Third, and most limiting for a
+signal search, the environmental-gamma Compton continuum \emph{overlaps} the
+CEvNS region, at the level of $\sim$$10^{3}$ counts~kg$^{-1}$day$^{-1}$
+keV$^{-1}$; unlike the muons it sits directly on top of the signal and is the
+dominant reducible background. Its mitigation---passive shielding and,
+ultimately, underground or low-background siting---is therefore the primary
+lever for turning this forward model into a viable search. These conclusions
+place the QPD concept squarely within the reactor-CEvNS program pioneered at
+the ionization scale by CONUS+~\cite{conus2025}, the Dresden-II point-contact
+germanium result~\cite{dresden2022}, and the germanium rate benchmarks
+of Ref.~\cite{billard2017}; the distinction here is the unified phonon scale
+and the bandwidth-limited reconstruction, both inherited from the QPD device
+concept of Ref.~\cite{ramanathan2026}.
+
+We close by stating the scope plainly. This is a stage-one forward-model
+feasibility study: it establishes the reconstructed-energy regime in which a
+QPD germanium wafer would operate and identifies the design choices that
+regime forces. It does \emph{not} compute a sensitivity, and it makes no
+claim of detectability or discovery significance. Converting this map into a
+sensitivity would require an exposure model, a noise-and-resolution
+treatment of the reconstruction floor, and---above all---the measured inputs
+that the four caveats above call for: a QPD saturation calibration, an
+on-site gamma survey, a digitized low-energy reactor flux, and a thin-wafer
+sensor-sharing measurement. Each is a concrete, bounded next step, and
+together they define the path from the present feasibility map to a
+quantitative reactor-CEvNS reach.

@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "paper_title": "Reconstructed-energy background spectra for a Quantum-Parity-Detector germanium wafer: reactor CEvNS, cosmic muons, and environmental gammas",
+  "journal": "prl",
+  "created_at": "2026-07-21T23:37:44.491720+00:00",
+  "artifacts": [
+    {
+      "artifact_id": "tex-paper",
+      "category": "tex",
+      "path": "qpd_reactor_cevns_spectra.tex",
+      "sha256": "f7a5dbe38d2001d5fccbbb5b2c50f37796e57a8e93a75dd51808db9af7e08cf5",
+      "produced_by": "build_paper:render_tex",
+      "sources": [],
+      "metadata": {
+        "journal": "prl",
+        "section_count": 8,
+        "appendix_count": 2,
+        "figure_count": 3
+      }
+    },
+    {
+      "artifact_id": "figure-spectra",
+      "category": "figure",
+      "path": "figures/reconstructed_energy_spectra.pdf",
+      "sha256": "47b8856b2ee3525f8ea059b3a3c1d93ae15a2e61297b9e6fed5a84d58dd5e099",
+      "produced_by": "build_paper:prepare_figures",
+      "sources": [
+        {
+          "path": "figures/reconstructed_energy_spectra.pdf",
+          "role": "source-figure"
+        }
+      ],
+      "metadata": {
+        "label": "spectra",
+        "caption_length": 627,
+        "double_column": true
+      }
+    },
+    {
+      "artifact_id": "figure-response",
+      "category": "figure",
+      "path": "figures/energy_response.pdf",
+      "sha256": "ff6509f0f0775fd1df08416fe443be1c3fbba7de3dd28b9b8fe15f233b8920a1",
+      "produced_by": "build_paper:prepare_figures",
+      "sources": [
+        {
+          "path": "figures/energy_response.pdf",
+          "role": "source-figure"
+        }
+      ],
+      "metadata": {
+        "label": "response",
+        "caption_length": 181,
+        "double_column": false
+      }
+    },
+    {
+      "artifact_id": "figure-cevns",
+      "category": "figure",
+      "path": "figures/cevns_dRdT_deposited.pdf",
+      "sha256": "787457990e80232859b67701856c5fe3a63b8744f6a5b198f7adae2d9f3f3edb",
+      "produced_by": "build_paper:prepare_figures",
+      "sources": [
+        {
+          "path": "figures/cevns_dRdT_deposited.pdf",
+          "role": "source-figure"
+        }
+      ],
+      "metadata": {
+        "label": "cevns",
+        "caption_length": 173,
+        "double_column": false
+      }
+    },
+    {
+      "artifact_id": "pdf-qpd_reactor_cevns_spectra",
+      "category": "pdf",
+      "path": "qpd_reactor_cevns_spectra.pdf",
+      "sha256": "af784eec131dab0e13f98475b4adc4b73bfe89ae941a1df0ea74df1c796c7a24",
+      "produced_by": "build_paper:compile",
+      "sources": [
+        {
+          "path": "qpd_reactor_cevns_spectra.tex",
+          "role": "compiled-from"
+        }
+      ],
+      "metadata": {}
+    }
+  ],
+  "manuscript_sha256": "f7a5dbe38d2001d5fccbbb5b2c50f37796e57a8e93a75dd51808db9af7e08cf5",
+  "manuscript_mtime_ns": 1784677063435250596
+}

@@ -1,0 +1,150 @@
+Two irreducible ambient radiation fields dominate the deposited-energy
+budget of an unshielded surface wafer: through-going cosmic-ray muons and
+the radiogenic environmental-gamma continuum. We compute each deposited
+spectrum $dR/dE_{\rm dep}$ on the unified phonon scale (no ionization
+quenching; both channels are electron recoils), and we anchor each to a
+published benchmark so that the downstream reconstructed spectra rest on
+validated inputs rather than assumed shapes. Neither channel involves new
+physics; the care lies entirely in the thin-wafer geometry, the
+straggling statistics, and the single-scatter kinematics.
+
+\subsection{Cosmic muons}
+
+We sample the sea-level muon intensity from the modified-Gaisser
+(``Gaisser--Guan'') parametrization~\cite{gaisser,guan2015}, which
+incorporates the low-energy/large-angle correction that plain Gaisser
+lacks,
+\begin{equation}
+\frac{dI}{dE_\mu\,d\Omega}
+= 0.14\,\Big(\frac{E_\mu}{\rm GeV}\Big)^{-2.7}
+\left[\frac{1}{1+\tfrac{1.1 E_\mu\cos\theta^\ast}{115~{\rm GeV}}}
++\frac{0.054}{1+\tfrac{1.1 E_\mu\cos\theta^\ast}{850~{\rm GeV}}}\right],
+\label{eq:gaisser}
+\end{equation}
+in cm$^{-2}$s$^{-1}$sr$^{-1}$GeV$^{-1}$, where $E_\mu$ is the muon
+energy and the effective zenith angle
+$\cos\theta^\ast=[(\cos^2\theta+P_1^2+P_2\cos^{P_3}\theta+P_4\cos^{P_5}\theta)/(1+P_1^2+P_2+P_4)]^{1/2}$
+softens the horizontal divergence of the plain $\sec\theta$ scaling
+($P_1$--$P_5=0.102573,\,-0.068287,\,0.958633,\,0.0407253,\,0.817285$).
+
+Each muon piercing the wafer traverses a chord $\ell$ fixed by the
+ray--box intersection of its straight trajectory with the
+$10.16\times10.16\times0.20$ cm slab. The chord ranges from the $0.20$ cm
+vertical thickness to the $14.37$ cm space diagonal, with the
+isotropic-flux mean pinned by Cauchy's theorem to
+$\langle\ell\rangle=4V/S=0.385$ cm. The deposited spectrum is the
+flux-weighted, projected-area chord distribution folded with the
+straggling density,
+\begin{equation}
+\frac{dR}{dE_{\rm dep}}
+= \frac{1}{m}\int d\Omega\,(\hat{n}\!\cdot\!\hat{\Omega})_{+}\,A
+\int dE_\mu\,\frac{dI}{dE_\mu\,d\Omega}\;
+f_{\rm L}\!\big(E_{\rm dep};\,\Delta_p(\ell,E_\mu),\,\xi(\ell)\big),
+\label{eq:muonfold}
+\end{equation}
+where $m$ is the wafer mass, $A$ the entry-face area,
+$(\hat{n}\!\cdot\!\hat{\Omega})_{+}$ the inward surface projection, and
+$f_{\rm L}$ the Landau--Vavilov density whose mode sits at the
+\emph{most-probable value} (MPV) $\Delta_p$. Using the mean deposit here,
+or the Moyal approximation, would misplace the peak and suppress the
+high-energy tail; we use neither. With mass thickness $x=\rho\ell$, the
+width and MPV follow the standard forms
+\begin{equation}
+\xi=\frac{K}{2}\frac{Z}{A}\frac{x}{\beta^2},\qquad
+\Delta_p=\xi\!\left[\ln\frac{2m_ec^2\beta^2\gamma^2}{I}+\ln\frac{\xi}{I}
++j-\beta^2-\delta(\beta\gamma)\right],
+\label{eq:landau}
+\end{equation}
+with $K=0.307$ MeV\,mol$^{-1}$cm$^2$, $Z/A=0.4406$ for Ge, mean
+excitation $I\approx350$ eV, $j=0.200$, and $\delta(\beta\gamma)$ the
+density-effect correction. For a vertically incident minimum-ionizing
+muon ($x=1.065$ g\,cm$^{-2}$) we obtain $\xi=0.072$ MeV, matching the PDG
+value~\cite{pdg}, and $\Delta_p=1.23$ MeV --- strictly below the mean
+deposit $\langle\Delta\rangle=1.46$ MeV. This ordering
+$\Delta_p<\langle\Delta\rangle$ is the signature of the strongly
+right-skewed Landau distribution and is the single most consequential
+modeling choice in this channel.
+
+Rare near-horizontal trajectories traverse up to the full $14.37$ cm
+diagonal and deposit up to $\sim$197 MeV; we importance-sample these long
+chords so this high-deposit tail is statistically resolved. It is the
+tail --- not the $\sim$MeV bulk --- that drives the bandwidth-limited
+readout into saturation, as analyzed in Sec.~\ref{sec:response}.
+Integrating Eq.~\eqref{eq:muonfold} over flux and projected area gives a
+total muon rate through the wafer of $1.366$ Hz. This is consistent with
+the PDG sea-level expectation ($\sim$1 muon\,cm$^{-2}$min$^{-1}$,
+$I_v\approx70$ m$^{-2}$s$^{-1}$sr$^{-1}$) to within $\sim$20\%, well
+inside the VALD-02 validation tolerance of 30\%; the residual reflects
+the known $30$--$35\%$ inter-experiment normalization spread of the
+Gaisser--Guan flux and is the weakest anchor of this otherwise
+textbook-grade channel.
+
+\subsection{Environmental gammas}
+
+The wafer sits in a radiogenic gamma field sourced by $^{40}$K and the
+$^{238}$U and $^{232}$Th decay chains. The line energies are fixed
+nuclear data; we take the absolute per-line fluxes from the LABChico
+measured survey~\cite{labchico2022} (for example, the $^{40}$K
+$1461$ keV line at $0.036$ cm$^{-2}$s$^{-1}$), with the line list
+following the standard low-background compilation~\cite{heusser1995}.
+Because the $2$ mm wafer is optically thin to MeV photons --- the
+interaction probability is $\mu\bar\ell\approx0.117$ per mean chord at
+$1$ MeV, so the double-scatter fraction is only $\sim$1.4\% --- each
+photon Compton-scatters at most once and the scattered photon escapes.
+The deposit is therefore the recoil-electron kinetic energy
+$T_e=E_\gamma-E'$, a \emph{continuum}, and not a full-energy photopeak.
+
+We sample the scattering angle $\theta$ from the bound-electron
+incoherent cross section,
+\begin{equation}
+\frac{d\sigma}{d\Omega}
+=\frac{r_e^2}{2}\Big(\frac{E'}{E_\gamma}\Big)^{2}
+\Big(\frac{E'}{E_\gamma}+\frac{E_\gamma}{E'}-\sin^2\theta\Big)\,S(x,Z),
+\qquad E'=\frac{E_\gamma}{1+\alpha(1-\cos\theta)},
+\label{eq:kn}
+\end{equation}
+with classical electron radius $r_e$, incident photon energy $E_\gamma$,
+scattered energy $E'$, and $\alpha=E_\gamma/m_ec^2$. The Klein--Nishina
+factor~\cite{kleinnishina1929} sets the continuum shape and the
+free-electron edge; the Hubbell incoherent scattering
+function~\cite{hubbell1975} $S(x,Z\!=\!32)$, evaluated at the
+momentum-transfer variable
+\begin{equation}
+x=\frac{E_\gamma\,[{\rm keV}]\,\sin(\theta/2)}{12.39842}~\text{\AA}^{-1},
+\label{eq:momtransfer}
+\end{equation}
+imposes electron binding: since $S(x\!\to\!0)\to0$, it suppresses
+near-forward (low-recoil) scattering, rolling the deposited continuum off
+near $30$--$50$ eV and removing the unphysical free-Klein--Nishina
+low-energy plateau, while $S(x\!\to\!\infty)\to Z$ leaves the bulk
+Compton continuum unchanged. The recoil deposit for each line terminates
+at the Compton edge,
+\begin{equation}
+E_{\rm edge}=\frac{2E_\gamma^2}{m_ec^2+2E_\gamma},
+\label{eq:comptonedge}
+\end{equation}
+which places the $^{40}$K, $^{214}$Bi, and $^{208}$Tl edges at $1243$,
+$1541$, and $2382$ keV respectively. These edge positions are the
+sharpest, most model-independent features of the channel: they are fixed
+by Compton kinematics alone and are reproduced by the angle-sampled
+maxima to better than $0.5$ keV.
+
+Summed over lines, the single-scatter interaction rate is $0.267$ Hz,
+within $2\%$ of the independent $\Phi\,\sigma_{\rm KN}\,N_e$ estimate
+($0.273$ Hz, ratio $0.98$), where $\Phi$ is the integral gamma flux,
+$\sigma_{\rm KN}$ the Klein--Nishina cross section, and $N_e$ the wafer
+electron number. We are explicit about the split in confidence: the edge
+positions are exact (HIGH confidence), whereas the absolute
+normalization inherits the site-dependent gamma flux and is a
+representative estimate good to a factor of $\sim$2 (MEDIUM confidence).
+The $^{238}$U-chain flux in particular is set by an assumed chain balance
+rather than a directly measured line intensity, and a different
+deployment site would rescale the overall rate --- but not the edge
+structure --- accordingly.
+
+Both deposited spectra are computed on the shared phonon energy grid, so
+they are directly co-added and folded through the detector response of
+Sec.~\ref{sec:response} to yield the reconstructed background spectra of
+Fig.~\ref{fig:spectra}. There the gamma continuum populates the sub-keV
+to few-keV reconstructed region, while the muon high-deposit tail is the
+agent of readout saturation.

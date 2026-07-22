@@ -1,0 +1,50 @@
+We have built and executed an end-to-end, published-value-anchored forward
+model of the reconstructed-energy background spectra for a thin single-sided
+germanium QPD wafer. Starting from the deposited-energy spectra of the three
+dominant surface channels---reactor CEvNS, through-going cosmic muons, and the
+radiogenic environmental-gamma continuum---we placed all three on a single
+unified phonon energy scale with no ionization quenching, and folded them
+through a common bandwidth-limited response matrix $R(E_{\rm rec}\,|\,E_{\rm dep})$
+for two quasiparticle-trapping designs, Ta$\to$Al and Al$\to$Hf. The output is
+the reconstructed-energy differential rate $dR/dE_{\rm rec}$ that a $25$~kHz
+readout actually records, rather than the deposited energy that is physically
+inaccessible to it.
+
+Three findings organize the result. The reactor-CEvNS signal reconstructs
+\emph{linearly} to tens of eV, peaking near $42$~eV in $E_{\rm rec}$ with
+$\sim$$85\%$ of its counts below $100$~eV: this is the flagship signal band, and
+it lies below the sub-$100$~eV thresholds now being probed by reactor-CEvNS
+experiments~\cite{conus2025}. Cosmic muons, depositing $\sim$$1.5$--$197$~MeV,
+drive the readout deep into saturation and collapse onto a single tens-of-keV
+pile-up ($\approx$$18.8$~keV for Ta$\to$Al, $\approx$$15.0$~keV for Al$\to$Hf)---an
+instrumental artifact of the modeled ceiling, not a physical line. The
+environmental-gamma Compton continuum fills the region between the two and,
+overlapping the signal band directly, is the dominant reducible background. The
+raw event rate, though dominated by the two saturating channels, yields a
+pileup occupancy of only $R\tau\approx3.3\times10^{-5}$, so quiescent
+reconstruction is not precluded. Every channel is anchored: the deposited CEvNS
+rate reproduces the Billard germanium benchmark to within
+$2.4\%$~\cite{billard2017}, the muon flux matches the Particle Data Group
+sea-level value within its $\sim$$30\%$ spread, and the Compton edges are fixed
+exactly by scattering kinematics.
+
+We state the scope plainly. This is a stage-one forward-model feasibility
+study. It establishes the reconstructed-energy regime in which a QPD germanium
+wafer would operate; it does \emph{not} compute a sensitivity and makes no claim
+of detectability or discovery significance. Four modeling uncertainties bound
+the interpretation and, deliberately, three of them act only on the saturated
+backgrounds while the flagship result---that reactor CEvNS reconstructs to tens
+of eV---remains the most robust feature: the unbenchmarked saturated-regime
+response shape, the factor-of-$\sim$2 site-dependent gamma normalization, the
+cited-but-not-reproduced sub-$1.8$~MeV reactor flux, and the crossover deposit
+energy carried as a $\sim$$50$~eV--$13$~keV band.
+
+Each caveat maps to a concrete next step. A direct QPD saturation calibration
+would replace the modeled ceiling shape; an on-site gamma survey would fix the
+absolute Compton normalization; a thin-wafer sensor-sharing measurement would
+turn the crossover band into a line; and a digitized low-energy reactor flux
+would collapse the signal-side band. Combined with an exposure model and a
+noise-and-resolution treatment of the reconstruction floor, these define the
+path from the present feasibility map to a quantitative QPD reactor-CEvNS
+sensitivity, extending the phonon-scale reach of the QPD concept~\cite{ramanathan2026}
+into the reactor-antineutrino program.

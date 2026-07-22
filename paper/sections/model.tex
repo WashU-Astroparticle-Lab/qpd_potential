@@ -1,0 +1,45 @@
+The detector is a single-sided germanium wafer, 4~in.\ $\times$~4~in.\ $\times$~2~mm, of density $\rho = 5.323$~g\,cm$^{-3}$, giving a volume of $\sim$20.6~cm$^3$ and a mass of $\sim$110~g. At the natural-abundance molar mass this corresponds to $8.29\times10^{24}$ germanium atoms per kilogram; we quote all differential rates per unit target mass (counts kg$^{-1}$ day$^{-1}$ keV$^{-1}$) so they can be compared directly with the reactor-CEvNS benchmark literature, while the physical target for absolute rates is the 110~g wafer. One face carries $\sim$10{,}300 Quantum Parity Detector (QPD) sensors at a $1$~mm pitch, each a superconducting quasiparticle trap read out through a charge-parity junction~\cite{ramanathan2026}. We consider the two trapping designs of that work, Ta$\to$Al and Al$\to$Hf, whose device parameters are taken verbatim from its Table~II and summarized in Table~\ref{tab:designs}. The two designs differ only in the trap material and its junction parameters; they share the geometry, the energy scale, and the reconstruction chain developed below.
+
+\emph{Unified phonon energy scale.} A fieldless phonon calorimeter has no ionization-collection channel and no Luke--Neganov gain, so the full recoil energy of a deposit thermalizes into the phonon system regardless of whether the primary recoil is nuclear (CEvNS) or electronic (cosmic-muon ionization, Compton). We therefore place every channel on a single unified phonon energy scale with \emph{no} ionization quenching: a nuclear recoil and an electron recoil of equal deposited energy $E_{\rm dep}$ land at the same point on the observable axis. Applying a Lindhard or ionization-yield factor here would suppress the CEvNS rate by $\sim$5--7$\times$ and would be physically incorrect for this sensor~\cite{freedman1974}; we consequently never mix keV$_{\rm ee}$ and keV$_{\rm nr}$ scales. The phonon energy is $E_{\rm ph} = E_{\rm dep} - E_{\rm stored}$, where the defect (Frenkel-pair) storage $E_{\rm stored}$ is a few-percent nuclear-recoil-only correction and is zero for muon and Compton deposits; we take $E_{\rm ph}\simeq E_{\rm dep}$ throughout.
+
+\emph{Deposit-to-signal chain.} The phonon energy is partitioned among the sensors (the localized-plus-diffuse partition, which sets the per-sensor share $E_s$, is specified in Sec.~\ref{sec:response}). A per-sensor share $E_s$ breaks Cooper pairs to yield a trapped-quasiparticle count $N_{\rm qp}$, a density $n_{\rm qp}$ over the effective trap volume $V_{\rm tr}$, and a plateau tunneling rate $\Gamma_{\rm in}$ set by the per-design tunneling constant $K$:
+\begin{align}
+N_{\rm qp} &= \varepsilon\,\frac{E_s}{\Delta_{\rm tr}}, &
+n_{\rm qp} &= \frac{N_{\rm qp}}{V_{\rm tr}}, \nonumber\\
+\Gamma_{\rm in} &= K\,n_{\rm qp}, &
+\Gamma_{\rm in}^{\rm pk} &= p\,\Gamma_{\rm in},
+\label{eq:chain}
+\end{align}
+where $\Delta_{\rm tr}$ is the trap superconducting gap and $\varepsilon$ the deposited-to-signal efficiency (below). The steady rate $\Gamma_{\rm in} = K n_{\rm qp}$ is dimensionally consistent ($K$ in Hz\,$\mu$m$^3$, $n_{\rm qp}$ in $\mu$m$^{-3}$), and $N_{\rm qp}=\varepsilon E_s/\Delta_{\rm tr}$ is a pure count. The instantaneous burst peaks above its plateau by a two-exponential pulse peak factor $p$ (from the injection/recombination profile of Ref.~\cite{ramanathan2026}, Eq.~4), giving the peak rate $\Gamma_{\rm in}^{\rm pk}$ that governs saturation.
+
+\emph{Efficiency.} We impose $\varepsilon \approx 0.5$ as a forward-model definition lumping phonon collection, pair-breaking, and trapping, so that in the unsaturated regime the reconstructed energy is $E_{\rm rec}\approx \varepsilon\,E_{\rm dep} = 0.5\,E_{\rm dep}$. This is a definitional baseline, not a derived value; we carry a design-dependent $\pm$10--20\% band on it and adopt the same central value for both designs. It is distinct from, and should not be conflated with, the paper's physical efficiency estimate $\eta_{\rm ce}\approx 0.3$, which we retain only as an independent cross-reference.
+
+\begin{table}[t]
+\caption{Trap device parameters for the two designs, from Table~II of Ref.~\cite{ramanathan2026}. $\Delta_{\rm tr}$ is the trap gap, $V_{\rm tr}$ the effective trap volume, $K$ the tunneling constant ($\Gamma_{\rm in}=K n_{\rm qp}$), and $p$ the two-exponential peak factor.}
+\label{tab:designs}
+\begin{ruledtabular}
+\begin{tabular}{lcc}
+Parameter & Ta$\to$Al & Al$\to$Hf \\
+\colrule
+Trap material & Al & Hf \\
+$\Delta_{\rm tr}$ ($\mu$eV) & 190 & 40 \\
+$V_{\rm tr}$ ($\mu$m$^3$) & 100 & 1000 \\
+$K$ (kHz\,$\mu$m$^3$) & 3 & 20 \\
+$p$ & 0.25 & 0.13 \\
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+
+\emph{Bandwidth-limited readout and saturation.} The tunneling readout is sampled at 50~kHz (interval $20~\mu$s), which by the Nyquist criterion resolves tunneling transients up to $25$~kHz, i.e.\ a resolving (dead) time $\tau_d = 40~\mu$s. A deposit saturates the readout when its peak tunneling rate exceeds this ceiling,
+\begin{equation}
+\Gamma_{\rm in}^{\rm pk} > \Gamma_{\rm max} \equiv \frac{1}{\tau_d} = 25~\text{kHz},
+\qquad \tau_d = 40~\mu\text{s}.
+\label{eq:sat}
+\end{equation}
+Because $\Delta_{\rm tr}$, $V_{\rm tr}$, $K$, and $p$ differ between designs, the two designs reach this ceiling at different deposit energies; the Al$\to$Hf design saturates first (its plateau $\Gamma_{\rm in}$ per unit deposit is $\sim$3.2$\times$ that of Ta$\to$Al). The per-design crossover deposit energy and the whole-array plateau are quoted in Sec.~\ref{sec:response}. The mapping from the true tunneling rate $\Gamma$ to the observed count rate $m$ is a dead-time censoring model, and the choice of model is not fixed by electronics reasoning alone; both the non-paralyzable and paralyzable idealizations are defensible:
+\begin{equation}
+m = \frac{\Gamma}{1+\Gamma\tau_d}\ \ \text{(non-paralyzable)},\quad
+m = \Gamma\,e^{-\Gamma\tau_d}\ \ \text{(paralyzable)}.
+\label{eq:censor}
+\end{equation}
+The non-paralyzable form is monotone and saturates at $m\to 1/\tau_d = 25$~kHz; the paralyzable form is non-monotone, peaking at $\Gamma = 1/\tau_d$ and rolling over thereafter. This was an open modeling choice, closed by decision: we adopt \emph{non-paralyzable} censoring as the canonical convention for all results and retain the paralyzable variant only as a sensitivity. Equations~\eqref{eq:chain}--\eqref{eq:censor} fix the setup on which the flux and background channels (Secs.~\ref{sec:cevns} and~\ref{sec:backgrounds}) and the reconstruction estimator (Sec.~\ref{sec:response}) are built.

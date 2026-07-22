@@ -1,0 +1,52 @@
+This appendix collects the cross-section and form-factor detail deferred from Sec.~\ref{sec:cevns}: the full Freedman differential cross section with its normalization conventions, the closed-form total against which the differential is checked, the Lewin--Smith Helm form factor and its parameters, and the per-isotope natural-germanium table that enters the fold of Eq.~\eqref{eq:cevnsfold}.
+
+\subsection{Freedman cross section and closed-form check}
+
+For a neutrino of energy $E_\nu$ scattering coherently off isotope $i$ with recoil energy $T\equiv E_{\rm nr}$, we use the Freedman standard-model cross section~\cite{freedman1974,drukier1984}
+\begin{equation}
+\frac{d\sigma_i}{dT} = \frac{G_F^2 M_i}{4\pi}\, Q_{W,i}^2
+\left(1 - \frac{M_i T}{2 E_\nu^2}\right) F_i^2(q)\,(\hbar c)^2 ,
+\label{eq:app-dsigma}
+\end{equation}
+with the Fermi constant $G_F$, nuclear mass $M_i$, and weak charge $Q_{W,i}=N_i-(1-4\sin^2\theta_W)Z$ evaluated at $\sin^2\theta_W=0.2387$ (low-energy $\overline{\rm MS}$ value, not the $M_Z$ value $0.2312$) and $Z=32$. Two normalization choices are load-bearing and are the most common reactor-CEvNS errors: the $/4\pi$ prefactor (the $/8\pi$ form is a factor-of-two error), and the explicit conversion $(\hbar c)^2=3.894\times10^{-28}$~GeV$^2$cm$^2$ that restores the natural-unit cross section (evaluated with $G_F$ in GeV$^{-2}$, $M_i$ and $E_\nu$ in GeV) to cm$^2$. Because $1-4\sin^2\theta_W=0.0452$ the proton coupling nearly vanishes and $Q_{W,i}^2$ scales as $N_i^2$ to $\sim0.5\%$. The kinematic factor $(1-M_iT/2E_\nu^2)$ enforces the endpoint $T_{\max}^{(i)}(E_\nu)=2E_\nu^2/(M_i+2E_\nu)$, and each fold in Eq.~\eqref{eq:cevnsfold} runs above $E_\nu^{\min,(i)}(T)=\tfrac12\!\left(T+\sqrt{T^2+2M_iT}\right)\simeq\sqrt{M_iT/2}$.
+
+Setting $F_i=1$ and integrating Eq.~\eqref{eq:app-dsigma} over $0\le T\le T_{\max}$ uses $\int_0^{T_{\max}}(1-M_iT/2E_\nu^2)\,dT=E_\nu^2/M_i$, giving the closed-form total
+\begin{equation}
+\sigma_{{\rm tot},i}(E_\nu) = \frac{G_F^2 Q_{W,i}^2 E_\nu^2}{4\pi}\,(\hbar c)^2 .
+\label{eq:app-sigmatot}
+\end{equation}
+Our differential reproduces Eq.~\eqref{eq:app-sigmatot} to a relative $3\times10^{-9}$--$6\times10^{-8}$ across the five isotopes and $E_\nu\in\{2,4,8\}$~MeV, and yields $\sigma({}^{72}\mathrm{Ge},4~\mathrm{MeV})=1.0026\times10^{-40}$~cm$^2$, $0.26\%$ from the first-principles $1.0\times10^{-40}$~cm$^2$ anchor. Dimensionally $[G_F^2 M_i E_\nu^2]=\mathrm{GeV}^{-1}$, and $(\hbar c)^2$ carries the remaining $\mathrm{GeV}^2\mathrm{cm}^2$, so $d\sigma/dT$ is in cm$^2$/GeV with $Q_W^2$, the kinematic factor, and $F^2$ dimensionless.
+
+\subsection{Lewin--Smith Helm form factor}
+
+The nuclear form factor is the Lewin--Smith parametrization~\cite{lewinsmith1996} of the Helm ansatz~\cite{helm1956},
+\begin{equation}
+F(q) = \frac{3\, j_1(qR_0)}{qR_0}\,\exp\!\left(-\tfrac12 q^2 s^2\right),
+\qquad
+R_0^2 = c^2 + \tfrac{7}{3}\pi^2 a^2 - 5 s^2 ,
+\label{eq:helm}
+\end{equation}
+with $j_1$ the first spherical Bessel function, diffraction radius $c=1.23\,A^{1/3}-0.60$~fm, surface diffuseness $a=0.52$~fm, and skin thickness $s=0.90$~fm; $F(0)=1$ by construction. The momentum transfer $q=\sqrt{2M_iT}$ is expressed in fm$^{-1}$ via $q[\mathrm{fm}^{-1}]=q[\mathrm{MeV}]/(\hbar c)$ with $\hbar c=197.327$~MeV\,fm, so that $qR_0$ and $qs$ are dimensionless (feeding $q$ in the wrong units produces a large spurious suppression). For germanium at reactor recoils the form factor is nearly unity: $F^2>0.998$ in the sub-$100$~eV region that carries most of the rate, falling to $F^2({}^{72}\mathrm{Ge})=0.9963$ at $T=200$~eV and to $0.9639$ only at the rare $\sim\!2$~keV endpoint reached by $E_\nu\sim8$--$10$~MeV neutrinos. These are consistent: the $>0.998$ figure is the dominant low-recoil regime and the $\sim\!0.96$ value is the high-recoil tail. The integrated deposited rate above $50$~eV is form-factor independent at the sub-percent level---turning $F$ off shifts it by $0.38\%$---so reactor CEvNS on Ge sits in the form-factor-insensitive regime and the exact skin parameters are not a systematic driver.
+
+\subsection{Natural-germanium isotope table}
+
+The fold retains each stable isotope's own weak charge, nuclear mass, kinematic endpoint, and number abundance rather than a lumped-$A$ approximation, which would smooth the five-step endpoint structure and bias the near-threshold and near-endpoint bins. Table~\ref{tab:ge-isotopes} lists the five isotopes, with $M_i=A_i\times931.494$~MeV and $T_{\max}^{(i)}$ at the $E_\nu=10$~MeV reactor endpoint; the per-isotope target density is $N_{T,i}=x_i\times8.29\times10^{24}$~kg$^{-1}$ ($\sum_i N_{T,i}=8.29\times10^{24}$~kg$^{-1}$). The five distinct endpoints ($2824$--$3066$~eV) produce the stepped superposition seen at the high-recoil edge of $dR/dT$.
+
+\begin{table}[t]
+\centering
+\caption{The five stable natural-germanium isotopes ($Z=32$) entering the CEvNS fold of Eq.~\eqref{eq:cevnsfold}: neutron number $N_i$, number abundance $x_i$ (IUPAC/CIAAW representative values, $\sum_i x_i=1$), nuclear mass $M_i=A_i\times931.494$~MeV, and kinematic endpoint $T_{\max}^{(i)}$ at the $E_\nu=10$~MeV reactor endpoint.}
+\label{tab:ge-isotopes}
+\begin{ruledtabular}
+\begin{tabular}{lcccc}
+Isotope & $N_i$ & $x_i$ & $M_i$ (GeV) & $T_{\max}^{(i)}$ (eV) \\
+\colrule
+${}^{70}$Ge & 38 & 0.2057 & 65.13 & 3066 \\
+${}^{72}$Ge & 40 & 0.2745 & 66.99 & 2981 \\
+${}^{73}$Ge & 41 & 0.0775 & 67.93 & 2940 \\
+${}^{74}$Ge & 42 & 0.3650 & 68.86 & 2901 \\
+${}^{76}$Ge & 44 & 0.0773 & 70.72 & 2824 \\
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+
+The ${}^{73}$Ge nuclear spin contributes a spin-dependent axial term that is $\sim\!1/N^2$ suppressed and negligible for the coherent rate; we state it but do not model it.
