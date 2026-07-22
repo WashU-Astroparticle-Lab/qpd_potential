@@ -549,12 +549,27 @@ def make_spectra_figure(
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
+    from matplotlib.lines import Line2D
 
     if out_path is None:
         out_path = os.path.join(art_dir, SPECTRA_FIG_FILE)
 
     spectra = {d: _read_recon_csv(d, art_dir) for d in designs}
     npz = {d: dict(np.load(os.path.join(art_dir, rm.DESIGN_FILE[d]))) for d in designs}
+
+    # Deposited (true, pre-reconstruction) spectra dR/dE_dep vs E_dep [keV].
+    # These are design-independent (the deposit precedes the QPD response), and are
+    # overlaid (dashed) on top of the reconstructed spectra to expose the response:
+    # the MeV-scale muon deposits are compressed onto the tens-of-keV reconstructed
+    # pile-up, while the tens-of-eV CEvNS deposits map ~linearly.
+    _cev = read_cevns()
+    _mu = read_channel_dRdEdep(MUON_CSV)
+    _cp = read_channel_dRdEdep(COMPTON_CSV)
+    deposited = {
+        "cevns": (_cev["T_eV"] / 1e3, _cev["dRdT_total"]),
+        "muon": (_mu["E_dep_eV"] / 1e3, _mu["dRdEdep"]),
+        "compton": (_cp["E_dep_eV"] / 1e3, _cp["dRdEdep"]),
+    }
 
     # E_rec image of the two saturation E_dep scales, per design.
     sat = {}
@@ -582,16 +597,22 @@ def make_spectra_figure(
     # Do NOT display anything below 10 eV: the sub-10-eV region is grid-floor /
     # electron-binding-artifact territory (Compton S(q,Z) roll-off, CEvNS sub-floor
     # 0.5*E_dep extension) and is not trustworthy for presentation (user directive).
-    xmin, xmax = 1e-2, 1e2  # keV  (10 eV floor)
+    # 10 eV floor on the low end; the high end is extended to ~300 MeV so the
+    # deposited (true) muon spectrum, which reaches the ~197 MeV endpoint, is
+    # visible alongside the reconstructed spectra (10 eV floor is the display rule).
+    xmin, xmax = 1e-2, 3e5  # keV
     for col, d in enumerate(designs):
         ax = axes[col]
         s = spectra[d]
         E = s["E_rec_keV"]
-        # saturation shading (E_dep > onset -> reconstructed under saturation)
+        # saturation shading, capped at the top of the RECONSTRUCTED range (no
+        # reconstructed events land beyond ~35 keV; the far-right axis is the
+        # deposited-only region, which must not read as reconstructed-saturated).
+        sat_xmax = 5e1  # keV
         o = sat[d]["onset_Erec_keV"]
         p = sat[d]["plateau_Erec_keV"]
-        ax.axvspan(o, xmax, color="0.86", zorder=0)
-        ax.axvspan(p, xmax, color="0.72", zorder=0)
+        ax.axvspan(o, sat_xmax, color="0.86", zorder=0)
+        ax.axvspan(p, sat_xmax, color="0.72", zorder=0)
         mu_peak = _MUON_PEAK_keV[d]
         ax.axvline(mu_peak, color="#d62728", ls=":", lw=1.3, zorder=1)
         # bands
@@ -610,13 +631,18 @@ def make_spectra_figure(
         if xb.size:
             ax.fill_between(xb, lo, hi, color=_CH_STYLE["muon"]["color"],
                             alpha=0.18, lw=0, zorder=2)
-        # central curves
+        # deposited (true) spectra: dashed, same channel colors, design-independent
+        for ch in ("cevns", "muon", "compton"):
+            dx, dy = _mask_pos(deposited[ch][0], deposited[ch][1])
+            ax.plot(dx, dy, color=_CH_STYLE[ch]["color"], lw=1.2, ls="--",
+                    alpha=0.85, zorder=3)
+        # reconstructed central curves (solid)
         for ch in ("cevns", "muon", "compton"):
             xx, yy = _mask_pos(E, s[f"{ch}_dRdErec"])
             ax.plot(xx, yy, color=_CH_STYLE[ch]["color"], lw=1.8,
-                    label=_CH_STYLE[ch]["label"], zorder=4)
+                    label=_CH_STYLE[ch]["label"], zorder=5)
         xx, yy = _mask_pos(E, s["total_dRdErec"])
-        ax.plot(xx, yy, color="0.15", lw=1.1, ls="-", label="total", zorder=3)
+        ax.plot(xx, yy, color="0.15", lw=1.1, ls="-", label="total (reconstructed)", zorder=4)
 
         ax.annotate("muon pile-up\n(saturated)", xy=(mu_peak, 3e5),
                     xytext=(mu_peak * 0.14, 3e7),
@@ -624,13 +650,23 @@ def make_spectra_figure(
                     arrowprops=dict(arrowstyle="->", color="#d62728", lw=1.0))
         ax.set_xscale("log"); ax.set_yscale("log")
         ax.set_xlim(xmin, xmax); ax.set_ylim(ymin, ymax)
-        ax.set_xlabel(r"reconstructed energy $E_{\rm rec}$  [keV]")
+        ax.set_xlabel(r"energy  [keV]   (solid: reconstructed $E_{\rm rec}$;  "
+                      r"dashed: deposited $E_{\rm dep}$)")
         if col == 0:
-            ax.set_ylabel(r"$dR/dE_{\rm rec}$  [counts kg$^{-1}$ day$^{-1}$ keV$^{-1}$]")
+            ax.set_ylabel(r"$dR/dE$  [counts kg$^{-1}$ day$^{-1}$ keV$^{-1}$]")
         ax.set_title(f"({'ab'[col]}) {d}   (non-paralyzable)", fontsize=11)
         ax.grid(True, which="major", alpha=0.25)
         if col == 0:
             ax.legend(loc="lower left", fontsize=8.0, framealpha=0.9, ncol=1)
+        if col == len(designs) - 1:
+            style_handles = [
+                Line2D([0], [0], color="0.3", lw=1.8, ls="-",
+                       label=r"reconstructed ($E_{\rm rec}$)"),
+                Line2D([0], [0], color="0.3", lw=1.2, ls="--",
+                       label=r"deposited / true ($E_{\rm dep}$)"),
+            ]
+            ax.legend(handles=style_handles, loc="lower left", fontsize=8.0,
+                      framealpha=0.9)
 
     fig.tight_layout()
     fig.savefig(out_path)
