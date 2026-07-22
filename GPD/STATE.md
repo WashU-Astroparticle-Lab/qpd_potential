@@ -11,12 +11,12 @@ See: GPD/PROJECT.md
 
 ## Current Position
 
-**Current Phase:** none
-**Current Phase Name:** none
-**Total Phases:** 6
+**Current Phase:** 7
+**Current Phase Name:** Scenario & Nuclear-Data Lock
+**Total Phases:** 12
 **Current Plan:** none
 **Total Plans in Phase:** none
-**Status:** Planning
+**Status:** Ready to plan
 **Last Activity:** 2026-07-21
 
 **Progress:** [██████████] 100%
@@ -114,6 +114,7 @@ None yet.
 - [Phase 06]: ASSUMPTIONS.md finalized: censoring OPEN switch retired to RESOLVED non-paralyzable (CONVENTIONS F closed, USER 2026-07-21); Phase-4 gamma-background note + Phase-6 fold addendum added; four caveats + compact stage-1 results (Billard 2.4%, CEvNS ~68/kg/day >50 eV_nr dep, muon 1.37 Hz, pileup 3.3e-5); no live OPEN switch (fp-note-stale).
 - [Phase 06]: Stage-1 milestone CLOSED by Plan 06-02.
 - [Phase 0]: Started milestone v1.1: Neutron & Radiogenic Backgrounds — New milestone cycle — neutron NR (muon-induced/cosmogenic/radiogenic) + Ge-bulk & housing radioactivity in reconstructed energy
+- [Phase 0]: v1.1 roadmap finalized: 6 phases (7-12), 11/11 objectives mapped — Critical path 7->8->9->10->12, Phase 11 parallel; three gating inputs handled via representative cited defaults + explicit band (fixed in Phase 7)
 
 ### Active Approximations
 

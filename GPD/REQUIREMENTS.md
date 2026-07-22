@@ -83,7 +83,7 @@ Deferred to future milestones. Tracked but not in the v1.1 roadmap.
 
 ## Traceability
 
-Proposed phase mapping (finalized by the roadmapper; phases continue from v1.0's phase 6).
+Phase mapping **finalized by the roadmapper** (2026-07-21); phases continue from v1.0's phase 6. See `GPD/ROADMAP.md` for phase detail, success criteria, dependency DAG, and risk register.
 
 | Requirement | Phase | Status |
 | ----------- | -------------------- | ------- |
@@ -110,4 +110,4 @@ Proposed phase mapping (finalized by the roadmapper; phases continue from v1.0's
 ---
 
 _Requirements defined: 2026-07-21_
-_Last updated: 2026-07-21 after v1.1 objective definition_
+_Last updated: 2026-07-21 after v1.1 roadmap finalization (Phases 7–12; mapping locked by the roadmapper)_
