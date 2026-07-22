@@ -530,7 +530,7 @@
     "total_phases": 12,
     "current_plan": null,
     "total_plans_in_phase": null,
-    "status": "Phase complete \u2014 ready for verification",
+    "status": "Verified",
     "last_activity": "2026-07-22",
     "last_activity_desc": null,
     "progress_percent": 100,
@@ -927,6 +927,11 @@
       "phase": "07-02",
       "summary": "RESIDUAL UNCERTAINTY: ACE baseline is 293.6 K vs a mK cryogenic target. Band integrals insensitive (2.5e-4%) but resonance LINE SHAPES differ materially (Ge-73 peak 9253.7 b at 0.1 K vs 8533.0 b at 293.6 K). Any downstream use resolving line shapes must switch to the .805nc (0.1 K) files",
       "rationale": "Doppler broadening is convolution with a normalized kernel so the integral is conserved; only line shape changes"
+    },
+    {
+      "phase": "07-verify",
+      "summary": "Phase 7 VERIFIED with gaps (19/22, HIGH confidence): no committed number wrong, all gating quantities independently reproduced. Gaps: D1 sigma_el table ends at 20 MeV while phi(E_n) runs to 197 MeV (26.9% of on-grid flux, 86.4% of on-grid >10 MeV flux, has no cross section) - BLOCKS Phase 9; D2 flux anchor not reproducible in-repo (no PARMA driver committed); D3 test-resonance-grid passed on a vacuous metric (physical no-clipping guard independently re-proved by set containment); D4 log-log interp of lin-lin ENDF (<=4% pointwise, <=0.11% band integrals); D5 stale 0.0538 endpoint label FIXED to 0.0536",
+      "rationale": "Independent verifier recomputation; D5 corrected in REQUIREMENTS.md + ROADMAP.md this commit"
     }
   ],
   "approximations": [],
@@ -982,5 +987,5 @@
     "confirmed_context_hash": "sha256:618a743b0d29768e03d1c80a76d3a9ace89c7f5f22f252c3d06f3746d39c9b8b"
   },
   "_version": 1,
-  "_synced_at": "2026-07-22T17:54:59.056041+00:00"
+  "_synced_at": "2026-07-22T18:17:01.289849+00:00"
 }

@@ -16,7 +16,7 @@ See: GPD/PROJECT.md
 **Total Phases:** 12
 **Current Plan:** none
 **Total Plans in Phase:** none
-**Status:** Phase complete — ready for verification
+**Status:** Verified
 **Last Activity:** 2026-07-22
 
 **Progress:** [██████████] 100%
@@ -118,6 +118,7 @@ None yet.
 - [Phase 07-02]: n-Ge elastic FROZEN thermal->fast, 23155-pt resonance-resolved union grid, zero NaN. Sub-MeV sigma_el filled from NJOY-2016.68 Lib80x ACE (HTTP-range extraction of 5 members, 11.8MB of a 7.05GB zip); ACE binaries gitignored, reproducible via committed fetcher+sha256 — MF3 MT2 is exactly zero across resolved+URR (sub-MeV sigma_el lives in File-2); openmc/NJOY unbuildable on osx-arm64. USER DECISION 2026-07-22: pre-reconstructed ACE
 - [Phase 07-02]: LOCKED for CALC-06/08: sigma_tot(1-2MeV)=3.729 b, Sigma=0.1646 cm^-1, lambda=6.076 cm, P_int(2mm)=3.24%, endpoint natural 0.0536 (as-computed, NOT force-fit to 0.0538); 0.1-1 MeV band now 100% of nodes in 3-7 b (median 5.08 b) — sigma_tot drifted +2.4% (3.643->3.729 b) moving from MF3 MT1 background to ACE MT=1 pointwise; recorded, not silently absorbed
 - [Phase 07-02]: RESIDUAL UNCERTAINTY: ACE baseline is 293.6 K vs a mK cryogenic target. Band integrals insensitive (2.5e-4%) but resonance LINE SHAPES differ materially (Ge-73 peak 9253.7 b at 0.1 K vs 8533.0 b at 293.6 K). Any downstream use resolving line shapes must switch to the .805nc (0.1 K) files — Doppler broadening is convolution with a normalized kernel so the integral is conserved; only line shape changes
+- [Phase 07-verify]: Phase 7 VERIFIED with gaps (19/22, HIGH confidence): no committed number wrong, all gating quantities independently reproduced. Gaps: D1 sigma_el table ends at 20 MeV while phi(E_n) runs to 197 MeV (26.9% of on-grid flux, 86.4% of on-grid >10 MeV flux, has no cross section) - BLOCKS Phase 9; D2 flux anchor not reproducible in-repo (no PARMA driver committed); D3 test-resonance-grid passed on a vacuous metric (physical no-clipping guard independently re-proved by set containment); D4 log-log interp of lin-lin ENDF (<=4% pointwise, <=0.11% band integrals); D5 stale 0.0538 endpoint label FIXED to 0.0536 — Independent verifier recomputation; D5 corrected in REQUIREMENTS.md + ROADMAP.md this commit
 
 ### Active Approximations
 

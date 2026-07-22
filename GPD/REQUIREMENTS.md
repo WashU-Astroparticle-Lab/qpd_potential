@@ -12,7 +12,7 @@ Requirements for the v1.1 in-band background budget. Each maps to exactly one ro
 ### Calculations
 
 - [ ] **CALC-05**: Assemble the incident fast-neutron flux φ(E_n) for all three sources — ambient cosmogenic sea-level (Gordon-2004), local muon-induced (driven by the v1.0 Gaisser–Guan muon population × local wafer+housing production, explicitly guarded against double-counting the v1.0 muon deposits), and radiogenic (α,n)+²³⁸U spontaneous fission — each provenance-tagged and keV_nr-axis-tagged, on the shared energy grid.
-- [ ] **CALC-06**: Compute the neutron-induced Ge nuclear-recoil deposited-energy spectrum dR/dE_dep via the isotropic-CM flat-box recoil-kernel single-scatter fold (dσ/dT = σ_el/T_max, T_max = 4A/(1+A)²·E_n = 0.0538·E_n for natural Ge) over ENDF/B-VIII.0 n-Ge elastic cross sections, on the unified phonon scale (no quenching), for the thin 2 mm wafer.
+- [ ] **CALC-06**: Compute the neutron-induced Ge nuclear-recoil deposited-energy spectrum dR/dE_dep via the isotropic-CM flat-box recoil-kernel single-scatter fold (dσ/dT = σ_el/T_max, T_max = 4A/(1+A)²·E_n = 0.0536·E_n for natural Ge, abundance-weighted; per-isotope exact 0.0555/0.0540/0.0533/0.0526/0.0513 for Ge-70/72/73/74/76) over ENDF/B-VIII.0 n-Ge elastic cross sections, on the unified phonon scale (no quenching), for the thin 2 mm wafer.
 - [ ] **CALC-07**: Compute the detector-material radiogenic **electron-recoil** spectrum dR/dE_dep — Ge-crystal-bulk + housing/nearby-component U/Th/⁴⁰K gammas as a Compton continuum (reuse v1.0 Klein–Nishina machinery) with self-shielding and solid-angle/attenuation, plus intrinsic β/EC full-energy deposits — for the assumed representative radiopurity budget.
 - [ ] **CALC-08**: Compute the radiogenic **neutron** nuclear-recoil contribution from (α,n) reactions and ²³⁸U spontaneous fission for the assumed material assay, folded through the CALC-06 recoil kernel.
 - [ ] **CALC-09**: Build the cosmogenic-activation isotope inventory A(t) (³H, ⁶⁸Ge/⁶⁸Ga, ⁶⁵Zn, ⁶⁰Co, ⁵⁷Co, …) for the assumed Ge surface-exposure/cool-down scenario and produce the in-band electron-recoil templates (³H β-continuum to the 18.6 keV endpoint; EC K/L X-ray lines).
@@ -24,7 +24,7 @@ Requirements for the v1.1 in-band background budget. Each maps to exactly one ro
 
 ### Validations
 
-- [ ] **VALD-05**: Neutron recoil kinematics — reproduce the maximum recoil fraction T_max/E_n = 4A/(1+A)² = 0.0538 for natural Ge, per contributing isotope.
+- [ ] **VALD-05**: Neutron recoil kinematics — reproduce the maximum recoil fraction T_max/E_n = 4A/(1+A)² per contributing isotope (exact: 0.0555/0.0540/0.0533/0.0526/0.0513 for Ge-70/72/73/74/76), giving abundance-weighted natural Ge = 0.0536 as computed. (Corrected 2026-07-22 from a stale 0.0538 label, which matches neither the mass-number form 0.0536 nor the AWR mass-ratio form 0.0541.)
 - [ ] **VALD-06**: Interaction consistency — fast-neutron interaction probability in 2 mm Ge ~3–4% (λ ~ 5–6 cm, Σ ~ 0.18 cm⁻¹ = 1/(N_Ge σ_tot)); count-conservation preserved through the recoil fold and the response fold.
 - [ ] **VALD-07**: Source-term normalization anchors — Gordon-2004 >10 MeV sea-level flux 3.5×10⁻³ cm⁻²s⁻¹; ²³⁸U spontaneous-fission yield 1.353×10⁻¹¹ n/g/s per ppb U; ³H cosmogenic production 74–82 atoms/kg/day — reproduced within stated tolerances.
 - [ ] **VALD-08**: Peer-experiment in-band cross-check — modeled 10–100 eV in-band nuclear-recoil rate compared against the NUCLEUS ~250 dru shielded lower bound; the unshielded surface result must exceed it (consistency direction, not equality).

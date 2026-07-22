@@ -21,7 +21,7 @@ v1.1 extends the completed v1.0 forward-model/response chain to the in-band back
 | Cosmogenic-activation A(t) inventory + in-band ER templates (CALC-09) | Phase 11 | Planned |
 | Combined in-band dR/dE_rec budget vs. v1.0 CEvNS, both designs (CALC-10) | Phase 12 | Planned |
 | Single-scatter/escape MC cross-check + >1 MeV a₁ tail correction (SIMU-04) | Phase 9 | Planned |
-| Recoil kinematics T_max/E_n = 0.0538 per isotope (VALD-05) | Phase 9 | Planned |
+| Recoil kinematics T_max/E_n per isotope, natural 0.0536 (VALD-05) | Phase 9 | Planned |
 | Interaction probability ~3–4% in 2 mm Ge; count-conservation (VALD-06) | Phase 9 | Planned |
 | Source-term anchors (Gordon flux, ²³⁸U SF yield, ³H production) (VALD-07) | Phase 11 (sub-anchors exercised in 8/10) | Planned |
 | Peer in-band cross-check vs. NUCLEUS ~250 dru (VALD-08) | Phase 12 | Planned |
@@ -118,7 +118,7 @@ Milestone audit: PASS with open questions ([`milestones/v1.0-MILESTONE-AUDIT.md`
 **Success Criteria** (what must be TRUE):
 
 1. dR/dE_dep is produced for all three neutron channels on `shared_energy_grid()`, labeled, on the unified phonon scale with NO quenching (no Lindhard/QF anywhere).
-2. **VALD-05:** T_max/E_n = 4A/(1+A)² = 0.0538 for natural Ge is reproduced per contributing isotope, and the flat-box kernel integrates to σ_el·N_Ge.
+2. **VALD-05:** T_max/E_n = 4A/(1+A)² is reproduced per contributing isotope (0.0555/0.0540/0.0533/0.0526/0.0513 for Ge-70/72/73/74/76 → abundance-weighted natural 0.0536, verified Phase 7), and the flat-box kernel integrates to σ_el·N_Ge.
 3. **VALD-06:** the fast-neutron interaction probability in 2 mm Ge is 3–4% (λ ~ 5–6 cm, Σ ~ 0.18 cm⁻¹), and count-conservation is preserved through the recoil fold (≤1e-3).
 4. **SIMU-04:** a bespoke single-scatter/escape MC (or analytic multiple-scatter estimate) quantifies the multi-scatter and escape fractions (≲1%) and the >1 MeV a₁ forward-peaking (File-4 Legendre) tail correction to the flat-box kernel.
 
