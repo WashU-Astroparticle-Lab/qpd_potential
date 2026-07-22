@@ -8,15 +8,18 @@ A study of the particle-physics potential of a Quantum Parity Detector (QPD) bas
 
 What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton differential rate spectra in reconstructed energy for a 4″×4″×2 mm single-sided Ge wafer read out by QPDs with Ta→Al and Al→Hf trapping designs, given the stated efficiency and bandwidth assumptions?
 
-## Current Milestone: v1.1 Neutron & Radiogenic Backgrounds
+## Current Milestone: v2.0 QPD at the NUCLEUS Chooz Very-Near-Site
 
-**Goal:** Compute the in-band (CEvNS-band) background spectra in reconstructed energy from neutron-induced nuclear recoils and detector-material radioactivity for the ~110 g QPD Ge wafer, using the v1.0 forward-model/response chain and benchmarked against how similar Ge/cryogenic CEvNS experiments quote these backgrounds.
+**Goal:** Compute the reactor-CEvNS signal and the full in-band background budget in reconstructed energy for the ~110 g QPD Ge wafer **deployed at the NUCLEUS Very-Near-Site (VNS) behind the NUCLEUS shielding**, adopting that experiment's measured environment and shielding attenuation as input while re-folding the target response for Ge, and extending every spectrum down to **100 meV**.
 
 **Target results:**
 
-- Neutron-recoil dR/dE_rec on the unified phonon scale (both trapping designs) from three fast-neutron sources: muon-induced (in-situ, correlated with the v1.0 muon flux), cosmogenic sea-level ambient, and radiogenic (α,n)/spontaneous-fission.
-- Detector-material radiogenic dR/dE_rec from Ge-crystal bulk contamination (intrinsic U/Th/⁴⁰K + cosmogenic activation products) and housing/nearby-component radioactivity.
-- Combined in-band background budget compared against the v1.0 reactor-CEvNS signal in the flagship reconstructed-energy band, with peer-experiment (CONUS/NUCLEUS/RICOCHET/ν-cleus) normalization cross-checks.
+- Reactor-CEvNS dR/dE_rec at the VNS normalization (∫Φ = 2.1×10¹² ν̄/cm²/s; two Chooz-B cores, 4.25 GW_th each, at 72 m and 102 m; 80% duty), replacing the v1.0/v1.1 3 GW_th / 25 m scenario — signal drops ~3.6×.
+- Residual background dR/dE_rec for Ge behind the NUCLEUS shielding: atmospheric neutrons (dominant), environmental gammas, atmospheric muons, and material radioactivity — each adopted from NUCLEUS's measured normalizations and attenuations, but folded through **Ge** cross sections and kinematics, not scaled from their CaWO₄/Al₂O₃ residuals.
+- All spectra extended from the current 10.14 eV grid floor down to 100 meV, including the sub-eV regime below the per-sensor saturation onsets (~1.27 eV Ta→Al, ~0.77 eV Al→Hf), with the modeling validity of the unified phonon scale re-examined there.
+- Signal-to-background in the 10–100 eV RoI and below, with the LEE carried as an explicit parameterized input, compared against NUCLEUS's published CaWO₄ (S/B ≈ 1.2) and Al₂O₃ (S/B ≈ 0.13) benchmarks.
+
+**Headline risk (surfaced up front, not deferred):** Ge's CEvNS rate per kg is ~2× below CaWO₄ (N²/A = 22.7 vs 65.8, confirmed against NUCLEUS's published signal ratio to 1%) while its neutron background is only ~1.2–1.8× below, because Ge's T_max/E_n = 0.0536 vs W's 0.0215 spreads neutron recoils ~2.5× wider. Expected S/B ≈ 0.65–1.2 — at best ~1, plausibly below.
 
 ## Scoping Contract Summary
 
@@ -39,9 +42,11 @@ What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton dif
 
 **In scope**
 
-- Reactor CEvNS spectrum: 3 GW_th commercial reactor at 25 m standoff, 4-isotope Huber–Mueller-like antineutrino spectrum with an explicit sub-1.8 MeV treatment, Freedman cross section with Helm form factor on natural Ge.
-- Cosmic-ray muon deposit spectrum (sea level, no overburden) for the thin wafer, including chord-length geometry (short vertical crossings, long near-horizontal chords) and Landau-Vavilov straggling.
-- Environmental-gamma Compton electron-recoil spectrum: representative radiogenic background (U/Th chains + ⁴⁰K lines + continuum), thin-target single-scatter dominated, on Ge.
+- **[v2.0]** Reactor CEvNS spectrum at the **Chooz Very-Near-Site**: two Chooz-B cores, 4.25 GW_th each, at 72 m and 102 m, ∫Φ = 2.1×10¹² ν̄/cm²/s, 80% duty; 4-isotope Huber–Mueller-like antineutrino spectrum with an explicit sub-1.8 MeV treatment, Freedman cross section with Helm form factor on natural Ge. *(Supersedes the v1.0/v1.1 3 GW_th / 25 m scenario, which remains valid under its own stated premise.)*
+- **[v2.0]** Residual particle backgrounds behind the **NUCLEUS shielding** (5 cm plastic-scintillator muon veto + 5 cm low-activity Pb + 20 cm 5%-borated HDPE; internal Pb/PE + ~4π 4 cm B₄C + cold muon veto; HPGe cryogenic outer veto at 1 keV_ee; Si inner veto), with NUCLEUS's measured normalizations and attenuations adopted and the **target response re-folded for Ge**.
+- **[v2.0]** All spectra extended down to **100 meV**, two decades below the current 10.14 eV shared-grid floor and below the per-sensor saturation onsets (~1.27 eV Ta→Al, ~0.77 eV Al→Hf).
+- Cosmic-ray muon deposit spectrum for the thin wafer at the VNS overburden (2.92 m.w.e., attenuation 1.41), including chord-length geometry (short vertical crossings, long near-horizontal chords) and Landau-Vavilov straggling.
+- Environmental-gamma Compton electron-recoil spectrum driven by the **measured VNS gamma ambience** (5.03 cm⁻²s⁻¹; ⁴⁰K 59.6, ²³²Th 3.28, ²³⁸U 5.65 Bq/kg), thin-target single-scatter dominated, on Ge.
 - Response chain: E_dep → ~50% to signal (100% phonon collection × ph→QP losses) → trapped QP number → EMG-profiled tunneling burst → 50 kHz bandwidth-limited reconstruction, perfect tunneling identification.
 - Both trapping designs: Ta absorber → Al trap/junction and Al absorber → Hf trap/junction.
 - Detector geometry: 4″×4″×2 mm Ge wafer (~110 g), single instrumented face at 1/mm² QPD density (~10,300 sensors).
@@ -66,6 +71,13 @@ What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton dif
 - **ref-cevns-benchmark**: J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035 — Ge CEvNS reactor rate normalization cross-check — compare | cite
 - **ref-pdg-muon**: PDG, PTEP 2022, 083C01 (2022), Cosmic Rays review — integral sea-level muon rate anchor — compare | cite
 - **ref-environmental-gamma**: G. Heusser, Annu. Rev. Nucl. Part. Sci. 45, 543 (1995) — environmental radiogenic gamma lines/flux for the Compton channel — use | cite
+  - **[v2.0] SUPERSEDED as the absolute normalization** by the measured VNS ambience (ref-nucleus-bkg Table 2); retained for line composition and as a site-to-site sanity band.
+- **ref-nucleus-bkg** *(v2.0, front-of-milestone INPUT)*: H. Abele et al. (NUCLEUS Collab.), Eur. Phys. J. C 86, 29 (2026), doi:10.1140/epjc/s10052-025-15168-9, arXiv:2509.03559
+  - Why it matters: supplies the entire adopted environment — overburden 2.92 m.w.e., muon attenuation 1.41, VNS neutron spectrum (Fig. 4), gamma ambience (Table 2), material screening (Table 3), normalization uncertainties (Table 4), and the residual background benchmarks (Table 5)
+  - Carry forward: planning | execution | verification — Required action: read | use | compare | cite
+- **ref-nucleus-cevns** *(v2.0)*: G. Angloher et al. (NUCLEUS Collab.), Eur. Phys. J. C 79, 1018 (2019), doi:10.1140/epjc/s10052-019-7454-4, arXiv:1905.10258
+  - Why it matters: Fig. 1 Ge CEvNS curve — reproduced to 5% under their own assumptions by the VALD-02 anchor (`tests/test_cevns_nucleus.py`); establishes the VNS site geometry
+  - Carry forward: execution | verification — Required action: compare | cite
 
 ### Carry-Forward Inputs
 
@@ -84,9 +96,13 @@ What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton dif
 
 ### Open Contract Questions
 
-- How should reconstruction behave in the saturated regime: Nyquist rate-clip or a dead-time model (paralyzable vs non-paralyzable)?
-- How should the Ta→Al device tunneling parameters be mapped from the paper's tabulated Al- and Hf-junction devices?
-- What absolute environmental gamma flux/line composition best represents a surface-level reactor-site deployment?
+- [RESOLVED v1.0 Phase 5] Saturated-regime reconstruction — non-paralyzable dead-time model, user decision 2026-07-21.
+- [RESOLVED v1.0 Phase 5] Ta→Al tunneling parameters — Table II Al-trap column; Ta absorber gap is a binary trapping gate.
+- [RESOLVED v2.0] Absolute environmental gamma flux — the measured VNS ambience (5.03 cm⁻²s⁻¹, ref-nucleus-bkg Table 2) replaces the Heusser factor-2 band.
+- **[v2.0 OPEN, gating]** Does a 4″×4″×2 mm, ~110 g Ge wafer fit the NUCLEUS COV/IV veto envelope, which is dimensioned for 6.8 g CaWO₄ / 4.5 g Al₂O₃ 3×3 arrays? If not, the adopted veto rejection factors do not transfer and the milestone premise must be revisited. **Must be checked before the background chain is built on top of it.**
+- **[v2.0 OPEN, gating]** Reaching 100 meV recoil requires ν̄ down to **58.7 keV**, but the frozen flux table floors at 100 keV — which only feeds recoils ≥ 0.290 eV. Extending it enters a region where the reactor ν̄ spectrum is a model placeholder with no measurement, weaker even than the existing sub-1.8 MeV placeholder. How is the sub-100 keV flux to be bounded, and with what uncertainty?
+- **[v2.0 OPEN]** Is the unified phonon scale (no quenching, E_rec ≈ 0.5·E_dep) still defensible between 100 meV and ~20 eV? Ge nuclear recoils there sit below the ~15–20 eV displacement threshold and approach the ~37 meV optical-phonon scale, so the recoiling-free-nucleus picture that underlies the CEvNS kinematics does not obviously apply.
+- **[v2.0 OPEN]** What LEE amplitude and spectral shape should be carried? It is absent from the NUCLEUS particle-background budget yet is plausibly dominant below ~100 eV on a phonon-only device.
 
 ## Research Questions
 
@@ -97,11 +113,13 @@ What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton dif
 - [x] What does the environmental-gamma Compton spectrum look like in reconstructed energy? — **v1.0:** Klein–Nishina electron-recoil continuum reconstructing to a sub-keV–few-keV region; edges at 1243/1541/2382 keV; single-scatter rate 0.267 Hz (site-flux band ×2).
 - [x] What is the E_rec(E_dep) response, effective threshold, and saturation onset for each design? — **v1.0:** MC response matrix R(E_rec|E_dep) with non-paralyzable censoring; per-sensor onset 1.27/0.77 eV, crossover band ~53/32 eV (default), whole-array plateau ~18.6/11.3 keV. Saturated-regime shape validated by limiting cases only (no literature anchor).
 
-### Active (v1.1 — this milestone)
+### Active (v2.0 — this milestone)
 
-- [ ] Neutron-induced nuclear-recoil background in E_rec: muon-induced (in-situ), cosmogenic sea-level ambient, and radiogenic (α,n)/spontaneous-fission fast neutrons on Ge, both designs — undiscriminable on the phonon scale, so they land in the flagship CEvNS band.
-- [ ] Detector-material radiogenic background in E_rec: Ge-crystal bulk (intrinsic U/Th/⁴⁰K + cosmogenic activation) and housing/nearby components.
-- [ ] Combined in-band background budget vs. the reactor-CEvNS signal, cross-checked against peer Ge/cryogenic CEvNS experiments.
+- [ ] What is the reactor-CEvNS spectrum in E_rec at the VNS normalization (2.1×10¹² ν̄/cm²/s, 80% duty), and how far does it fall relative to the v1.0 3 GW_th / 25 m flagship?
+- [ ] What is the residual background in E_rec for a Ge wafer behind the NUCLEUS shielding — atmospheric neutrons (dominant), environmental gammas, atmospheric muons, material radioactivity — folded through Ge rather than transferred from CaWO₄/Al₂O₃?
+- [ ] Does a ~110 g, 4″×4″×2 mm Ge wafer physically fit the NUCLEUS COV/IV veto envelope, which is built around gram-scale targets? If not, the adopted veto rejection factors are invalid and the milestone premise needs revisiting.
+- [ ] What do all channels look like down to 100 meV, two decades below the current grid floor and below the per-sensor saturation onsets — and does the unified phonon scale (no quenching, E_rec ≈ 0.5·E_dep) still hold there?
+- [ ] What is the achievable S/B in the 10–100 eV RoI and below, once the LEE is carried as an explicit parameterized input rather than omitted?
 
 ### Deferred (future milestones)
 
@@ -133,7 +151,9 @@ Neutrino–nucleus coherent elastic scattering (Freedman cross section, Helm for
 | Trap gaps | Δ_tr | Al: ~180 µeV; Hf: ~20–40 µeV | design A: Ta→Al; design B: Al→Hf |
 | Absorber gaps | Δ_abs | Ta: ~700 µeV; Al: ~190 µeV | Δ_abs/Δ_tr ≈ 4 both designs |
 | Vertical muon deposit | — | ~1.5 MeV (MPV ~1 MeV) | 7.3 MeV/cm × 0.2 cm; long chords → tens of MeV |
-| Reactor | P_th, L | 3 GW_th at 25 m | ~1e13 ν/cm²/s |
+| Reactor **[v2.0]** | P_th, L | 2 × 4.25 GW_th at 72 m / 102 m (Chooz VNS) | ∫Φ = 2.1×10¹² ν̄/cm²/s, 80% duty (was 3 GW_th at 25 m, 7.5×10¹²) |
+| Overburden **[v2.0]** | m₀ | 2.92 ± 0.01 m.w.e. | muon attenuation 1.41 ± 0.02 (was sea level, none) |
+| Spectrum floor **[v2.0]** | E_min | 100 meV | two decades below the v1.0 10.14 eV grid floor; needs ν̄ down to 58.7 keV |
 | Muon flux | Φ_µ | ~1 /cm²/min (sea level) | no overburden |
 | Env. gamma | — | U/Th + ⁴⁰K lines + continuum | representative surface-lab flux |
 | CEvNS recoil scale | E_R | ≲ few keV_nr for reactor ν on Ge | max recoil ~2E_ν²/M_N |
@@ -195,9 +215,12 @@ Mirror of the contract-critical anchors above: Ramanathan et al. (2026) [must-re
 | Sensor density 1/mm² on one face | User-specified | — Confirmed by user |
 | Adopt non-paralyzable dead-time censoring project-wide (CONVENTIONS §F) | Monotone, saturates cleanly at 1/τ_d; paralyzable retained only as a sensitivity | — Good (v1.0; user-verified in Phase 5) |
 | Frame stage-1 as a feasibility forward model (no sensitivity/discovery claim) | Saturated-regime response has no literature anchor; keeps claims honest | — Good (v1.0; upheld by peer review) |
+| **[v2.0] Relocate to the NUCLEUS Chooz VNS and assume the NUCLEUS shielding** | Self-projecting an unshielded surface background answers the wrong question; NUCLEUS's environment is measured, published, and 2–3 orders of magnitude lower | — Confirmed by user 2026-07-22 |
+| **[v2.0] Adopt their environment, re-fold the target for Ge** | Scaling their CaWO₄/Al₂O₃ residuals by mass discards the target dependence the paper itself emphasizes; full Geant4 transport is out of scope for an analytic pipeline | — Confirmed by user 2026-07-22 |
+| **[v2.0] Extend all spectra down to 100 meV** | Retracts the earlier 10 eV display floor; the sub-eV region is below both per-sensor saturation onsets and is where the QPD advantage and the LEE both live | — Confirmed by user 2026-07-22 |
 
 Full log: `GPD/DECISIONS.md`
 
 ---
 
-_Last updated: 2026-07-21 — started milestone v1.1 (neutron & radiogenic backgrounds)_
+_Last updated: 2026-07-22 — started milestone v2.0 (QPD at the NUCLEUS Chooz Very-Near-Site); v1.1 Phases 8–12 superseded, Phase 7 carried forward_

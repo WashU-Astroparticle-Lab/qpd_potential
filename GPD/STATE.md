@@ -16,7 +16,7 @@ See: GPD/PROJECT.md
 **Total Phases:** 12
 **Current Plan:** none
 **Total Plans in Phase:** none
-**Status:** Verified
+**Status:** Planning
 **Last Activity:** 2026-07-22
 
 **Progress:** [██████████] 100%
@@ -121,6 +121,7 @@ None yet.
 - [Phase 07-verify]: Phase 7 VERIFIED with gaps (19/22, HIGH confidence): no committed number wrong, all gating quantities independently reproduced. Gaps: D1 sigma_el table ends at 20 MeV while phi(E_n) runs to 197 MeV (26.9% of on-grid flux, 86.4% of on-grid >10 MeV flux, has no cross section) - BLOCKS Phase 9; D2 flux anchor not reproducible in-repo (no PARMA driver committed); D3 test-resonance-grid passed on a vacuous metric (physical no-clipping guard independently re-proved by set containment); D4 log-log interp of lin-lin ENDF (<=4% pointwise, <=0.11% band integrals); D5 stale 0.0538 endpoint label FIXED to 0.0536 — Independent verifier recomputation; D5 corrected in REQUIREMENTS.md + ROADMAP.md this commit
 - [Phase 07-verify]: GAP D1 RESOLVED (USER DECISION 2026-07-22): Phase 9 truncates the neutron fold at 20 MeV (ENDF/B-VIII.0 ceiling) and explicitly documents the omitted >20 MeV contribution; sigma_el must NOT be extrapolated above 20 MeV. Wired into ROADMAP Phase 9 as success criterion 5 + a forbidden proxy — >20 MeV neutrons give ~MeV recoils (0.0536*197 MeV ~ 10.6 MeV) landing above the flagship CEvNS band in the saturated region, so the in-band result is unaffected; omission bounds total rate and high-E tail only. Avoids a cross-library seam
 - [Phase 07-verify]: Phase 7 addendum items carried (non-blocking): D2 commit a PARMA driver so the flux anchor integrals are reproducible in-repo; D3 test-resonance-grid metric is vacuous (no-clipping guard independently re-proved by native-node set containment); D4 log-log interpolation of lin-lin ENDF pointwise data (<=4% pointwise, <=0.11% band integrals) undisclosed in artifact headers — Verifier recommendation: fold into a short Phase-7 addendum rather than re-opening the data lock
+- [Phase 0]: Started milestone v2.0: QPD at the NUCLEUS Chooz Very-Near-Site with NUCLEUS shielding — USER DECISION 2026-07-22. Stop self-projecting surface backgrounds; adopt the measured, published, shielded VNS environment (Abele et al., EPJC 86, 29 (2026), arXiv:2509.03559) and re-fold the target response for Ge. Supersedes v1.1 Phases 8-12; Phase 7 (ENDF n-Ge elastic, 0.0536 kinematics) carried forward. Locked scenario convention moves from 3 GW_th/25 m/7.5e12 to 2x4.25 GW_th at 72/102 m, 2.1e12, 80% duty (signal /3.6). All spectra extended down to 100 meV (retracts the earlier 10 eV floor).
 
 ### Active Approximations
 

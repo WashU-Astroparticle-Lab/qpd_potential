@@ -530,7 +530,7 @@
     "total_phases": 12,
     "current_plan": null,
     "total_plans_in_phase": null,
-    "status": "Verified",
+    "status": "Planning",
     "last_activity": "2026-07-22",
     "last_activity_desc": null,
     "progress_percent": 100,
@@ -942,6 +942,11 @@
       "phase": "07-verify",
       "summary": "Phase 7 addendum items carried (non-blocking): D2 commit a PARMA driver so the flux anchor integrals are reproducible in-repo; D3 test-resonance-grid metric is vacuous (no-clipping guard independently re-proved by native-node set containment); D4 log-log interpolation of lin-lin ENDF pointwise data (<=4% pointwise, <=0.11% band integrals) undisclosed in artifact headers",
       "rationale": "Verifier recommendation: fold into a short Phase-7 addendum rather than re-opening the data lock"
+    },
+    {
+      "phase": "0",
+      "summary": "Started milestone v2.0: QPD at the NUCLEUS Chooz Very-Near-Site with NUCLEUS shielding",
+      "rationale": "USER DECISION 2026-07-22. Stop self-projecting surface backgrounds; adopt the measured, published, shielded VNS environment (Abele et al., EPJC 86, 29 (2026), arXiv:2509.03559) and re-fold the target response for Ge. Supersedes v1.1 Phases 8-12; Phase 7 (ENDF n-Ge elastic, 0.0536 kinematics) carried forward. Locked scenario convention moves from 3 GW_th/25 m/7.5e12 to 2x4.25 GW_th at 72/102 m, 2.1e12, 80% duty (signal /3.6). All spectra extended down to 100 meV (retracts the earlier 10 eV floor)."
     }
   ],
   "approximations": [],
@@ -997,5 +1002,5 @@
     "confirmed_context_hash": "sha256:618a743b0d29768e03d1c80a76d3a9ace89c7f5f22f252c3d06f3746d39c9b8b"
   },
   "_version": 1,
-  "_synced_at": "2026-07-22T18:22:09.493338+00:00"
+  "_synced_at": "2026-07-22T19:17:17.381673+00:00"
 }
