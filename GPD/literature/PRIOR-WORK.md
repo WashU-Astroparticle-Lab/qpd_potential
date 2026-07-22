@@ -1,10 +1,12 @@
-# Prior Work: Reactor CEvNS + Cosmic Muons in Low-Threshold Ge with Quasiparticle-Tunneling Sensors
+# Prior Work: Neutron-Induced Nuclear Recoils and Detector-Material Radiogenic Backgrounds for a Surface Ge CEvNS Detector
 
-**Surveyed:** 2026-07-20
-**Domain:** Neutrino physics (CEvNS), reactor antineutrino fluxes, cosmic-ray muons, superconducting quantum sensors
-**Confidence:** HIGH overall (each entry carries its own level; derived estimates are labeled DERIVED)
+**Surveyed:** 2026-07-21
+**Domain:** Low-background detector physics — cosmogenic and radiogenic neutron backgrounds, cosmogenic activation, and material radioassay for surface-deployed cryogenic/Ge CEvNS experiments
+**Confidence:** HIGH overall (each entry carries its own level; DERIVED estimates are labeled)
 
-**Project framing this survey serves:** differential rate spectra in *reconstructed* energy for reactor CEvNS and sea-level cosmic muons in a 1 kg monolithic Ge crystal read out by quantum parity detectors (QPDs; Ta absorber→Al trap and Al absorber→Hf trap), commercial 3 GW_th reactor at 25 m standoff, no overburden.
+**Milestone this survey serves (v1.1):** extends the v1.0 QPD-Ge forward model to the *in-band* (CEvNS-band) background budget from neutron-induced nuclear recoils and detector-material radioactivity, on the **unified phonon energy scale (no ionization quenching)**, for a ~110 g single-sided natural-Ge wafer, **SURFACE deployment (no overburden)**, 25 m from a 3 GW_th reactor. Analytic / Monte-Carlo response chain only — no G4CMP.
+
+**The single most important framing fact for v1.1:** On the QPD unified phonon scale there is **no keVnr/keVee distinction**. A fast neutron that elastically scatters off a Ge nucleus deposits its full recoil energy `T` as phonons and lands on the *same axis* as a CEvNS recoil of energy `T`. Neutron elastic scattering in Ge is therefore an **irreducible, kinematically-identical in-band background** to the CEvNS signal — the defining background of this milestone. Electron-recoil backgrounds (betas, gammas, activation X-rays) also land on the same phonon axis but with a different spectral shape (this is the v1.0 Compton channel generalized).
 
 ---
 
@@ -12,74 +14,62 @@
 
 | Result | Expression / Value | Conditions | Source | Year | Confidence |
 | --- | --- | --- | --- | --- | --- |
-| SM CEvNS differential cross section | dσ/dE_R = (G_F²/4π) M Q_W² (1 − M E_R/2E_ν²) F²(q²), Q_W = N − Z(1 − 4 sin²θ_W) | E_ν ≲ 50 MeV (full coherence for reactor ν̄); F(q²) ≈ 1 at reactor energies | Freedman, PRD 9, 1389 (1974); form as used in Billard et al., J. Phys. G 44, 105101 (2017) | 1974 | HIGH |
-| Max Ge recoil energy from reactor ν̄ | E_R^max = 2E_ν²/M ≈ 1.9 keV_nr for E_ν = 8 MeV on ⁷²·⁶Ge (M ≈ 67.6 GeV) | kinematic endpoint; most recoils ≪ 1 keV_nr | kinematics (DERIVED, standard) | — | HIGH |
-| Predicted Ge CEvNS rate (phonon/recoil energy, no quenching) | 0.76 / 0.51 / 0.26 counts kg⁻¹ day⁻¹ above 50 / 100 / 200 eV_nr | 8.54 GW_th (two Chooz cores), 400 m standoff; Huber ²³⁵U,²³⁹Pu,²⁴¹Pu + Mueller ²³⁸U flux; fission fractions 55.6/32.6/7.1/4.7%; ν̄ spectrum taken constant below 2 MeV; ±5% rate uncertainty assumed | Billard et al., J. Phys. G 44, 105101 (2017), Table 1; arXiv:1612.09035 | 2017 | HIGH |
-| Scaled to this project's scenario | ×(3/8.54)(400/25)² ≈ ×90 → ≈ 68 / 46 / 23 counts kg⁻¹ day⁻¹ above 50 / 100 / 200 eV_nr | 3 GW_th at 25 m, same flux model; pure 1/r² + power scaling, ignores core geometry and fuel-cycle differences | DERIVED from Billard Table 1 | 2026 | MEDIUM (derived anchor, must be recomputed in-project) |
-| First reactor CEvNS observation (Ge) | 395 ± 106 events observed vs 347 ± 59 predicted (SM); 3.7σ | CONUS+, Leibstadt KKL, 3.6 GW_th at 20.7 m; 3 of 4 HPGe PPC detectors (total fiducial 3.73 ± 0.02 kg), thresholds 160–180 eVee; 119 live days reactor-on | Ackermann et al. (CONUS+), Nature 643, 1229 (2025); arXiv:2501.05206 | 2025 | HIGH |
-| Implied CONUS+ signal rate | ≈ 1.0 counts kg⁻¹ day⁻¹ above ≈160 eVee (ionization energy) | 347 predicted / 119 d / ~2.8 kg used; ionization (quenched) energy scale, Lindhard-type yield | DERIVED from CONUS+ numbers above | 2026 | MEDIUM (derived) |
-| CONUS upper limit (pre-observation) | < 85 CEvNS events (90% CL) in ROI | Brokdorf, 3.9 GW_th at 17.1 m; 248.7 kg·d ON / 58.8 kg·d OFF; quenching parameter k = 0.18 | Bonet et al. (CONUS), PRL 126, 041804 (2021) | 2021 | HIGH |
-| Dresden-II "suggestive evidence" | > 3σ preference for CEvNS, only with elevated (Fef) quenching model | NCC-1701, 2.924 kg PPC HPGe, ~10 m from 2.96 GW_th Dresden-II BWR; signal region ≲ 0.4 keVee; contested (see Open Questions) | Colaresi et al., PRL 129, 211802 (2022) | 2022 | MEDIUM (claim is contested) |
-| TEXONO/Kuo-Sheng limit | σ < 4.7 × SM (90% CL) at Lindhard k = 0.162 | electro-cooled p-type PPC Ge, 200 eVee threshold; 242 kg·d ON / 357 kg·d OFF at Kuo-Sheng reactor | arXiv:2411.18812 (TEXONO) | 2024 | MEDIUM-HIGH (arXiv, established group) |
-| Ricochet detector performance | 30 eVee ionization resolution demonstrated; 40 eVee baseline at ILL site; science phase started July 2025 | 42 g Ge cryogenic bolometers (CryoCube), ILL research reactor, ν̄ flux ~10¹² cm⁻² s⁻¹ | Ricochet Collab., EPJ C 84 (2024); arXiv:2507.22751 (PRD 2025) | 2024–25 | HIGH |
-| NUCLEUS status | ~20 eV nuclear-recoil thresholds in 10 g CaWO₄/Al₂O₃ gram-scale calorimeters; TUM commissioning complete, installing at Chooz | Chooz-B, between two 4.25 GW_th cores; first measurement targeted from ~2025–26 | NUCLEUS Collab., arXiv:2508.02488 (PRD 2025); arXiv:2211.04189 | 2025 | HIGH (status), MEDIUM (schedule) |
-| Reactor ν̄ yield | ≈ 6 ν̄ per fission, ≈ 2 × 10²⁰ ν̄ s⁻¹ GW_th⁻¹ | standard fission ν̄ accounting; all energies | Hayes & Vogel, Ann. Rev. Nucl. Part. Sci. 66, 219 (2016), arXiv:1605.02047 | 2016 | HIGH |
-| Flux at this project's detector | ~7–8 × 10¹² ν̄ cm⁻² s⁻¹ | 3 GW_th at 25 m, point-source 1/4πr² | DERIVED (consistent with CONUS+ ~1.4×10¹³ at 20.7 m / 3.6 GW) | 2026 | MEDIUM (derived) |
-| Below-IBD-threshold ν̄ component | ²³⁸U(n,γ)²³⁹U (Q = 1.26 MeV) → ²³⁹Np (Q = 0.72 MeV) → ²³⁹Pu adds ~0.6 capture per fission; sizeable flux below 1.8 MeV never measured | equilibrium power reactor; component contributes at low E_ν only, hence only to lowest recoil energies | Kopeikin et al., Phys. At. Nucl. 67, 1892 (2004), hep-ph/0308186; Huber & Jaffke, PRL 116, 122503 (2016); Liao, Liu & Marfatia, PRD 108, 033002 (2023), arXiv:2302.10460 | 2004–23 | HIGH (existence), MEDIUM (spectral shape) |
-| Sea-level vertical muon intensity | I_v ≈ 70 m⁻² s⁻¹ sr⁻¹ above 1 GeV/c ("~1 cm⁻² min⁻¹" through a horizontal surface); recent data favor 10–15% lower normalization; angular distribution ∝ cos²θ; mean E_μ ≈ 4 GeV | sea level, geomagnetic mid-latitudes, solar-cycle averaged | PDG Review of Particle Physics, "Cosmic Rays" (e.g., rpp2024) | ongoing | HIGH |
-| Muon stopping power in Ge | ⟨dE/dx⟩_min = 1.370 MeV cm² g⁻¹; ρ = 5.323 g cm⁻³ → ≈ 7.3 MeV cm⁻¹; muon critical energy 298 GeV | minimum-ionizing muons (~0.3–100 GeV); restricted losses/straggling need Landau-Vavilov treatment | PDG Atomic & Nuclear Properties of Materials (Ge) | ongoing | HIGH |
-| Typical muon deposit in cm-scale Ge | tens of MeV per through-going muon (e.g., ~40 MeV for ~5.7 cm vertical chord of a 1 kg cube); Landau-distributed with MPV below mean | sea-level spectrum; geometry-dependent chord distribution | DERIVED from PDG dE/dx; consistent with Ge γ-spectrometry background literature (e.g., Dortmund LBF, arXiv:1512.01824) | 2026 | MEDIUM (derived; exact spectrum is a project deliverable) |
-| Muon rate through 1 kg Ge crystal | O(0.3–0.6) Hz | 1 kg Ge ≈ 188 cm³; e.g., cube face ~33 cm² × ~1 μ cm⁻² min⁻¹ with cos²θ acceptance and side entries; no overburden | DERIVED order-of-magnitude; project must compute properly with angular flux + chord geometry | 2026 | LOW-MEDIUM (derived; to be computed) |
-| QPD concept and projected threshold | Charge-parity flip of a qubit-like element from quasiparticle tunneling bursts; meV-scale thresholds projected, sub-eV deposit thresholds on stated R&D path; readout, energy reconstruction, multiplexing schemes given | phonon-mediated sensing in crystalline substrate; sensor-array operation | Ramanathan et al., APS Open Science 1, 000013 (2026), DOI 10.1103/kqd2-spb1; arXiv:2405.17192 | 2026 | HIGH (published; thresholds are *projections*, not demonstrations) |
-| QPD device demonstration | Quiescent quasiparticle density 1.8 ± 0.8 μm⁻³ measured in ion-milled phonon-mediated QPD; multi-step JJ fabrication without parasitic junctions | single prototype device; no energy threshold demonstrated yet | Sandoval et al., arXiv:2509.18637 | 2025 | MEDIUM-HIGH |
-| SQUAT projected sensitivity | Sensitivity to 1 meV phonons in substrate and single THz photons predicted, μs timescale | transmon + quasiparticle-amplification stage; predictions, first demonstration in progress (FERMILAB-PUB-26-0007) | Fink et al., PRApplied 22, 054009 (2024), arXiv:2310.01345 | 2024 | HIGH (published projection) |
-| QCD demonstrated single-photon sensitivity | Single 1.5 THz photons (~6 meV) counted; NEP < 10⁻²⁰ W Hz⁻¹ᐟ² | antenna-coupled quantum capacitance detector (photon-coupled, not phonon-mediated in massive crystal) | Echternach et al., Nat. Astron. 2, 90 (2018) | 2018 | HIGH |
+| Sea-level cosmic-ray fast-neutron flux (>10 MeV) | Φ_n(>10 MeV) = 3.50×10⁻³ cm⁻² s⁻¹ | Sea level, NYC, mid solar modulation, outdoor, no overburden; two-lognormal spectral parameterization φ(E) valid thermal→GeV | Gordon et al., IEEE TNS 51, 3427 (2004) | 2004 | HIGH |
+| Sea-level total neutron flux (broad, all E) | Φ_n,tot ≈ 1.3×10⁻² cm⁻² s⁻¹ (≈ order 10⁻²) | Sea level; integral of Gordon/Ziegler spectrum over thermal→GeV; strong site/altitude/geomagnetic/solar and **local-shielding** dependence | Gordon 2004; Ziegler, IBM J. Res. Dev. 42, 117 (1998) | 2004 | MEDIUM (absolute normalization site-dependent) |
+| **Fast-neutron NR rate in Ge (in-band, no quenching)** | full recoil-energy spectrum spans the entire CEvNS band; elastic n-Ge scattering deposits T_recoil on the phonon axis with **no quenching** | surface, unshielded thin Ge; the dominant irreducible in-band NR background for v1.1 | DERIVED from Gordon flux + n-Ge elastic kinematics; template in Billard et al. 2017 background budget | 2026 | MEDIUM (must be computed in-project) |
+| Cosmic-ray-induced neutrons dominate even at a *shielded shallow* CEvNS site | ≈ 250 counts keV⁻¹ kg⁻¹ d⁻¹ (dru) in the 10–100 eV ROI, after >2 orders-of-magnitude rejection; residual "strongly dominated by cosmic-ray-induced neutrons" | NUCLEUS at Chooz (shallow overburden + active/passive shield + muon veto); CaWO₄/Al₂O₃ gram-scale | NUCLEUS Collab., EPJC 86 (2026); arXiv:2509.03559 | 2026 | HIGH |
+| Muon-induced neutrons vs muon veto (shallow) | μ-induced neutrons ≈ 80% of total μ-induced contribution below 10 keV; muon veto (97.0±0.5)% efficient → suppresses μ-induced background by >1 order of magnitude | CONUS, 24 m.w.e. overburden, 25 cm Pb + 10 cm borated PE shield + plastic-scintillator muon veto | CONUS Collab., "Full background decomposition," arXiv:2112.09585 | 2021 | HIGH |
+| Sub-keV total background achieved (shielded, shallow) | 5–15 counts kg⁻¹ d⁻¹ in [0.4,1] keV (ionization scale); detector-dependent 6–13 kg⁻¹ d⁻¹ sub-keV | CONUS, heavily shielded + vetoed, 24 m.w.e. | CONUS, arXiv:2112.09585 & EPJC 79 (2019) 699 (arXiv:1903.09269) | 2019–21 | HIGH |
+| Spontaneous-fission neutron yield (²³⁸U) | 1.353×10⁻¹¹ n g⁻¹ s⁻¹ per ppb U, **material-independent**; ⟨E_n⟩ ≈ 2 MeV (Watt spectrum) | secular equilibrium; ²³⁸U SF branch only | Mei, Zhang & Hime, NIMA 606, 651 (2009); arXiv:0812.4307 | 2009 | HIGH |
+| Radiogenic (α,n) neutron yield, material-dependent | expressed as n g⁻¹ s⁻¹ per ppb U/Th; ⟨E_n⟩ ≈ 0.8 MeV in Cu; Si yield only 7.4×10⁻⁸ per α; ≲30% yield uncertainty (up to O(100%) for some nuclides, esp. F) | U/Th chain α on light/mid-Z nuclei; SOURCES4 / NeuCBOT / Mei-Zhang-Hime | Mei-Zhang-Hime 2009; review IOP J.Phys.G 52 (2025) 10.1088/1361-6471/adeffa | 2009–25 | MEDIUM-HIGH |
+| Example integrated radiogenic yields | ≈ 0.12±0.04 (Th chain α,n), 0.27±0.09 (U chain α,n), 0.8±0.3 (²³⁸U SF) n kg⁻¹ yr⁻¹ | for a stated ppb-level U/Th contamination in a detector material | (α,n) literature compilation (see Sources) | — | MEDIUM |
+| **Ge cosmogenic activation — EDELWEISS-III** | production (nuclei kg⁻¹ d⁻¹, sea level): ³H 82±21; ⁶⁵Zn 106±13; ⁵⁵Fe 4.6±0.7; ⁴⁹V 2.8±0.6; ⁶⁸Ge >71 (90% CL LL) | sea-level cosmic-ray exposure; rates saturate over years above ground | Armengaud et al. (EDELWEISS-III), Astropart. Phys. 91, 51 (2017); arXiv:1607.04560 | 2017 | HIGH |
+| **Ge cosmogenic activation — CDMSlite/SuperCDMS** | production (atoms kg⁻¹ d⁻¹, sea level): ³H 74±9; ⁶⁵Zn 17±5; ⁵⁵Fe 1.5±0.7; ⁶⁸Ge 30±18 | sea level | Amman et al. (SuperCDMS/CDMSlite), Astropart. Phys. 105, 44 (2019); arXiv:1806.07043 | 2018 | HIGH |
+| Ge cosmogenic activation — CONUS in-situ | ⁶⁸Ge 40–70; ⁶⁵Zn 60±10 atoms kg⁻¹ d⁻¹; ⁷¹Ge in-situ (thermal-n capture) | measured from CONUS HPGe spectra | CONUS, arXiv:2112.09585 | 2021 | HIGH |
+| Tritium (³H) in-band signature | continuous β⁻, Q = 18.6 keV, t₁/₂ = 12.3 yr; on the phonon scale a **smooth electron-recoil continuum from 0 to 18.6 keV** | activity ∝ surface cosmic-ray exposure history; ~74–82 atoms kg⁻¹ d⁻¹ production saturating over decades | EDELWEISS/CDMSlite above; standard nuclear data | 2017–18 | HIGH |
+| Activation X-ray lines (EC daughters) | ⁶⁸Ge/⁶⁸Ga & ⁷¹Ge → 10.37 keV (Ga K); ⁵⁵Fe → 5.9 keV (Mn K); ⁶⁵Zn → 8.98 keV (Cu K); plus L-shell lines ≈ 1.1–1.3 keV | discrete phonon-scale peaks; **L-shell captures (~1.1–1.3 keV) sit just above the CEvNS band** | Ge cosmogenics literature (EDELWEISS, CDMSlite, MAJORANA) | 2017–18 | HIGH |
+| Thermal/epithermal neutron capture → NR ≲100 eV | radiative-capture γ-cascade recoils the Ge nucleus; spectrum "strongly overlaps CEvNS for recoils ≲100 eV"; requires effective thermal flux ≲ 7×10⁻⁴ n cm⁻² s⁻¹ (≈60% of sea-level) for 5σ in 100 kg·yr | Ge (Si needs ~10× lower); thermal flux is the key parameter | Biffl, Gevorgian, Harris & Villano, PRD 107, 092011 (2023); arXiv:2212.14148 | 2023 | HIGH |
+| Reactor-correlated thermalized neutron field | (745±30) cm⁻² d⁻¹ thermal fluence at the shield; core neutrons reduced ~10²⁰ en route; ROI contribution ≪ signal with realistic quenching | CONUS at Brokdorf, 17.1 m from 3.9 GW_th | Hakenmüller et al. (CONUS), EPJC 79 (2019) 699; arXiv:1903.09269 | 2019 | HIGH |
+| Ge intrinsic bulk U/Th radiopurity | ultra-low: bulk ²²⁶Ra, ²²⁸Th, ²²⁷Ac 90% CL limits ≈ µBq kg⁻¹ (≈10⁻¹²–10⁻¹³ g/g U/Th) | zone-refined HPGe crystal bulk | Agostini et al. (GERDA), "Limits on U/Th bulk content in GERDA Phase I," arXiv:1611.06884 | 2017 | HIGH |
+| Electroformed-Cu radiopurity (housing benchmark) | < 0.3 µBq kg⁻¹ U and Th (electroformed Cu); common Cu / stainless ~mBq–Bq kg⁻¹; ⁴⁰K ~mBq–Bq kg⁻¹ in many structural materials | underground-electroformed Cu vs commercial materials | MAJORANA contamination-control & assay, OSTI 1481666; standard radioassay databases (ILIAS/SNOLAB) | 2016 | HIGH |
 
 ---
 
 ## Foundational Work
 
-### Freedman (1974) — Coherent neutrino-nucleus scattering
+### Gordon et al. (2004) — Sea-level cosmic-ray neutron spectrum — **surface-flux anchor**
 
-**Key contribution:** Predicted CEvNS in the SM: neutral-current elastic scattering off the whole nucleus with cross section ∝ Q_W² ≈ N² (sin²θ_W suppression of the proton contribution).
-**Method:** Tree-level SM neutral-current calculation.
-**Limitations:** None relevant at reactor energies; nuclear form factor F(q²) ≈ 1 (deviation ≲1% for Ge at reactor recoil energies).
-**Relevance:** This is the signal cross section for the project. On natural Ge, sum over the five stable isotopes weighted by abundance (N varies 38–44).
+**Key contribution:** The reference measurement + parameterization of the ground-level cosmic-ray-induced neutron energy spectrum, from thermal to GeV, measured at five US sites and scaled to sea-level NYC at mid solar modulation. Two-lognormal fit φ(E) reproduces the data to ~2%; integral flux >10 MeV = 3.50×10⁻³ cm⁻² s⁻¹, total broad flux ~1.3×10⁻² cm⁻² s⁻¹.
+**Method:** Bonner-sphere / large-area neutron spectrometry, unfolded to a differential spectrum.
+**Limitations:** Absolute normalization varies strongly with **altitude, geomagnetic rigidity, solar cycle, and — critically for us — local shielding** (building roof/walls can both attenuate and, via (n,xn) and moderation, reshape the spectrum). "Surface, no overburden" must specify indoor vs. outdoor.
+**Relevance:** This IS the surface number. A thin unshielded Ge wafer at the surface sees essentially this full flux; the elastic-scatter NR spectrum from it is the dominant irreducible in-band background for v1.1. **Directly transferable** (it is already a sea-level surface number), modulo the local-shielding caveat.
 
-### Billard et al. (2017) — Ge/Zn bolometers at Chooz (arXiv:1612.09035, J. Phys. G 44, 105101) — **project benchmark anchor**
+### Mei, Zhang & Hime (2009) — Radiogenic (α,n) + SF neutron yields — **radiogenic anchor**
 
-**Key contribution:** End-to-end reactor-CEvNS sensitivity study for cryogenic *phonon* detectors, i.e., rates in true nuclear-recoil energy with **no ionization quenching** — the same energy variable a QPD-instrumented Ge crystal measures. Table 1 gives Ge: 0.76/0.51/0.26 counts kg⁻¹ day⁻¹ above 50/100/200 eV_nr for 8.54 GW_th at 400 m. Also provides a complete background budget template (Compton γ, cosmogenic fast neutrons, ²¹⁰Pb/³H/²⁰⁶Pb internal, ν̄–e⁻ scattering ~10⁻⁵ kg⁻¹ day⁻¹).
-**Method:** Huber (²³⁵U, ²³⁹Pu, ²⁴¹Pu) + Mueller (²³⁸U) flux; spectrum approximated constant below 2 MeV; GEANT4 background propagation; reactor-on/off correlation analysis.
-**Limitations:** 140 m.w.e. overburden site (our scenario has none — cosmogenics dominate differently); constant-below-2-MeV flux approximation is crude exactly where a low-threshold detector gains events; fixed fission fractions.
-**Relevance:** Primary numerical validation anchor. Our scenario (3 GW_th, 25 m) is a ×~90 flux rescale of their Table 1 (DERIVED: ≈ 68/46/23 counts kg⁻¹ day⁻¹ above 50/100/200 eV_nr). Any in-project rate calculation should reproduce their Table 1 under their stated assumptions before rescaling.
+**Key contribution:** Tabulated neutron yields and energy spectra from U/Th-chain (α,n) reactions and ²³⁸U spontaneous fission for materials common in low-background detectors, in n g⁻¹ s⁻¹ per ppb U/Th. SF of ²³⁸U is material-independent at 1.353×10⁻¹¹ n g⁻¹ s⁻¹ per ppb; (α,n) is strongly material-dependent (high in light elements, low in Si/Ge/high-Z).
+**Method:** SOURCES4-type convolution of α stopping powers with (α,n) cross sections; validated against measured yields.
+**Limitations:** (α,n) cross-section libraries carry ~30% uncertainty typically, up to O(100%) for poorly-measured nuclides (esp. ¹⁹F in PTFE). Requires the U/Th assay of each material as input.
+**Relevance:** Sets the radiogenic-neutron in-band NR budget from the wafer, mount, and cryostat. **For an unshielded surface wafer this channel is subdominant to the ambient cosmogenic flux** (radiogenic yields are ~1 n kg⁻¹ yr⁻¹-scale for realistic contamination, vs. the ambient sea-level neutron field), but it is the source that *dominates underground* — so peer numbers quoting radiogenic dominance are underground numbers and must not be transferred naively to the surface.
 
-### Huber (2011) & Mueller et al. (2011) — Conversion reactor ν̄ spectra
+### EDELWEISS-III (Armengaud et al. 2017) & CDMSlite (Amman et al. 2018) — Ge cosmogenic activation — **activation anchors**
 
-**Key contribution:** The standard "Huber–Mueller" (HM) reactor ν̄ spectrum model: conversion of the ILL measured fission-β spectra for ²³⁵U, ²³⁹Pu, ²⁴¹Pu (Huber, PRC 84, 024617, arXiv:1106.0687) plus summation-anchored ²³⁸U (Mueller et al., PRC 83, 054615, arXiv:1101.2663).
-**Method:** Virtual-β-branch conversion of measured aggregate β spectra; per-fission spectra above ~2 MeV.
-**Limitations:** (i) Defined only above ≈ 1.8–2 MeV — silent exactly where CEvNS with sub-100-eV thresholds gains rate; (ii) ~6% flux excess vs. data ("reactor antineutrino anomaly", Mention et al., PRD 83, 073006 (2011)), now largely attributed to a biased ILL ²³⁵U/²³⁹Pu β-ratio normalization (Kopeikin, Skorokhvatov & Titov, PRD 104, L071301 (2021), arXiv:2103.01684 — "KI" model) and supported by Daya Bay fuel-evolution data (PRL 118, 251801 (2017)); (iii) ~10% spectral distortion at 5–7 MeV ("bump") relative to HM.
-**Relevance:** Use HM (or HM×KI-corrected normalization) above 2 MeV; the model choice is a leading systematic on the predicted CEvNS normalization (~5% level) and should be a stated assumption of the project's rate table.
+**Key contribution:** Direct measurements of cosmogenic isotope production rates in Ge from decay-rate-vs-exposure analysis. The two independent measurements agree on ³H (82±21 vs 74±9 kg⁻¹ d⁻¹) and bracket ⁶⁵Zn (106±13 vs 17±5) and ⁶⁸Ge (>71 vs 30±18) — the spread reflects differing exposure/altitude histories and analysis methods.
+**Method:** Fit decay-corrected line and continuum activities against known above-ground exposure and cooldown times.
+**Limitations:** Activation is entirely **history-dependent** — production happens at the surface/altitude, saturating over the isotope lifetime; underground the clock stops and activity decays. Absolute activity for a specific detector requires its true exposure/transport/storage timeline.
+**Relevance:** ³H is the headline in-band background: a smooth 0–18.6 keV electron-recoil β continuum on the phonon scale, directly under and through the CEvNS band, with no line to subtract against. For a **freshly-fabricated, surface-deployed** wafer with recent cosmic exposure, ³H (and the EC activation X-ray lines at ~1.1–1.3 keV L-shell and ~10 keV K-shell) are near saturation — the *worst-case* activation scenario. This is a genuinely different regime from the deep, well-aged detectors these papers describe.
 
-### Kopeikin, Mikaelyan & Sinev (2004) + Huber & Jaffke (2016) — Below-IBD-threshold ν̄ emission
+### Biffl, Gevorgian, Harris & Villano (2023) — Neutron-capture NR overlap with CEvNS
 
-**Key contribution:** Catalogued the six components of reactor ν̄ emission including non-fission ν̄ from neutron capture: ²³⁸U(n,γ)²³⁹U (β, Q = 1.26 MeV, t₁/₂ = 23.5 min) → ²³⁹Np (β, Q = 0.72 MeV, t₁/₂ = 2.3 d), at ~0.6 capture per fission in a power reactor — a large ν̄ population entirely below the 1.8 MeV IBD threshold, plus capture on accumulated fission fragments (Phys. At. Nucl. 67, 1892, hep-ph/0308186; PRL 116, 122503).
-**Method:** Summation from nuclear databases; reactor-physics capture rates.
-**Limitations:** Never measured; summation carries database uncertainties (10%+ at low E_ν); component reaches equilibrium on the ²³⁹Np lifetime (days), so it correlates imperfectly with instantaneous reactor power.
-**Relevance:** For a detector with eV–meV-scale thresholds, the sub-1.8 MeV flux contributes real rate at the lowest recoil energies (E_R ≲ 50 eV region). Liao, Liu & Marfatia (PRD 108, 033002 (2023), arXiv:2302.10460) show low-threshold CEvNS is the *only* way to probe this region and that establishing the neutron-capture component is hard even for NUCLEUS. The project must decide explicitly whether to include a below-2-MeV component (recommended: summation-based or the Kopeikin parametrization, stated as an assumption) since Billard et al. simply froze the spectrum below 2 MeV.
+**Key contribution:** Showed that **thermal/epithermal radiative neutron capture** on Ge (and Si) recoils the capturing nucleus via the de-excitation γ cascade, producing a nuclear-recoil spectrum that "strongly overlaps the CEvNS signal for recoils ≲100 eV." Quantified the thermal-flux ceiling: effective thermal flux must stay ≲ 7×10⁻⁴ n cm⁻² s⁻¹ (~60% of sea-level) to reach 5σ in 100 kg·yr at 10 m from a 1 MW reactor; Si needs ~10× lower.
+**Method:** Capture-γ cascade kinematics + neutron-transport flux modeling.
+**Relevance:** Identifies a *second* neutron channel distinct from elastic scattering, populating exactly the lowest CEvNS bins (≲100 eV) where v1.0 places its flagship signal. Thermal-neutron capture also produces ⁷¹Ge (in-situ activation → 10.37 keV EC line). For a surface wafer the ambient thermal-neutron flux is a real, on-band NR source and cannot be reactor-on/off subtracted (it is cosmogenic, not reactor-correlated).
 
-### Gaisser (1990, updated) + PDG Cosmic-Ray Review — Sea-level muon flux
+### NUCLEUS particle-background study (2026) — surface-like CEvNS background benchmark
 
-**Key contribution:** Standard analytic sea-level muon spectrum: Gaisser's formula (Cosmic Rays and Particle Physics, CUP), valid for θ < 70°, E_μ > ~100/cosθ GeV; PDG canonical numbers: I_v ≈ 70 m⁻² s⁻¹ sr⁻¹ above 1 GeV/c (≈1 cm⁻² min⁻¹ horizontal), cos²θ zenith dependence near E_μ ~ 3 GeV, mean sea-level energy ≈ 4 GeV, with recent measurements favoring 10–15% lower normalization.
-**Method:** Analytic cascade solution to atmospheric production; compilation of spectrometer data.
-**Limitations:** Plain Gaisser fails at low energy (< few GeV) and large zenith angle — exactly the region carrying most of the sea-level rate. Use the modified Gaisser parametrization of Guan et al. (arXiv:1509.06176), which corrects both regimes.
-**Relevance:** The muon differential rate in the 1 kg crystal is (flux model) ⊗ (chord-length distribution) ⊗ (Landau-Vavilov restricted energy-loss straggling at ⟨dE/dx⟩ ≈ 7.3 MeV/cm in Ge). All three pieces are established physics; the composition for this specific geometry/readout is the project's deliverable. Low-background Ge γ-spectrometry literature confirms through-muon deposits of tens of MeV in cm-scale HPGe (e.g., Dortmund Low Background Facility, arXiv:1512.01824).
-
-### Ramanathan et al. (2026) — Quantum Parity Detectors (APS Open Science 1, 000013; DOI 10.1103/kqd2-spb1; arXiv:2405.17192) — **project design anchor**
-
-**Key contribution:** Defines the QPD: phonons from particle interactions in a crystalline substrate drive a quasiparticle cascade in a surface-patterned superconducting element; single-quasiparticle tunneling across a coherent weak link flips the device charge parity — a binary, digital signature. Paper supplies readout schemes, energy-reconstruction methods (tunneling-rate/burst counting), multiplexing strategies for sensor arrays, and an R&D path to meV-scale thresholds and sub-eV deposit thresholds.
-**Method:** Device modeling extending superconducting-qubit quasiparticle-poisoning physics (charge-parity switching) to deliberate particle detection.
-**Limitations:** Thresholds are *projected*, not demonstrated; energy reconstruction saturates when the quasiparticle tunneling rate exceeds the readout bandwidth (the project's 50 kHz signal bandwidth / ~25 kHz max resolvable tunneling rate makes this the central reconstruction nonlinearity, especially for multi-MeV muon deposits); calibration of deposited-energy → tunneling-rate transfer function is design-dependent (Ta→Al vs Al→Hf gap hierarchies).
-**Relevance:** This is the sensor model for the project. The reconstructed-energy spectrum calculation must implement this paper's rate-based energy estimator, including EMG-profiled burst pulse shapes and rate saturation, for both absorber/trap material stacks.
+**Key contribution:** End-to-end Geant4 + site-measurement prediction for a reactor CEvNS experiment at a **shallow** site. After passive shield + active veto giving >2 orders-of-magnitude rejection, the residual 10–100 eV background is ≈ 250 counts keV⁻¹ kg⁻¹ d⁻¹ and is **strongly dominated by cosmic-ray-induced neutrons**.
+**Method:** Environmental γ/neutron measurements at Chooz + full-geometry Geant4 with cosmic-ray, environmental-γ, and material-radioactivity generators.
+**Limitations:** NUCLEUS has *some* overburden and full shielding; our v1.1 scenario has **none**, so the ambient neutron term is *larger* and less moderated for us.
+**Relevance:** The closest published demonstration that, for a low-threshold reactor CEvNS detector near the surface, **cosmogenic neutrons — not radiogenic neutrons, not muon-induced neutrons, not gammas — set the in-band floor.** This validates prioritizing the ambient fast-neutron elastic-scatter channel as the leading v1.1 deliverable.
 
 ---
 
@@ -87,68 +77,84 @@
 
 | Paper | Authors | Year | Advance | Impact on Our Work |
 | --- | --- | --- | --- | --- |
-| Nature 643, 1229; arXiv:2501.05206 | CONUS+ Collab. (Ackermann et al.) | 2025 | First direct observation of reactor CEvNS: 3.7σ, 395±106 events, 119 d, 3.73 kg HPGe fiducial, 160–180 eVee thresholds, 3.6 GW_th at 20.7 m | Closest existing experimental configuration to our scenario; anchors expected counts (~1 kg⁻¹ d⁻¹ above 160 eVee, DERIVED) and validates that commercial-reactor, ~20 m, few-kg Ge CEvNS is real and SM-consistent |
-| arXiv:2407.11912; EPJ C 84 (2024) | CONUS+ Collab. | 2024 | Full setup description: 4 × ~1 kg PPC HPGe, shield design, site background at 20.7 m | Template for reactor-site backgrounds at shallow depth near a commercial core (though our scenario has *no* overburden) |
-| PRL 133, 251802; arXiv:2401.07684 | CONUS Collab. | 2024 | Final Brokdorf limits (no signal at 210 eVee-class thresholds, 17.1 m, 3.9 GW_th) | Shows threshold, not flux, was the limiting factor pre-CONUS+ |
-| PRL 134, 231801 (2025); arXiv:2406.13806 | COHERENT Collab. | 2024–25 | Evidence of CEvNS on natural Ge at the SNS (π-DAR source): 20.6 +7.1/−6.3 counts, 3.9σ, 1.5 keVee analysis threshold, 10.22 GWh·kg | Independent Ge quenching/cross-section cross-check; used in global Ge CEvNS fits (e.g., arXiv:2605.27121) |
-| PRL 129, 211802 | Colaresi et al. (Dresden-II/NCC-1701) | 2022 | "Suggestive evidence" (>3σ) at ~10 m from 2.96 GW_th BWR with 2.924 kg PPC Ge | Contested — see Open Questions; matters to us mainly through the Ge ionization-yield controversy, which a phonon-based detector sidesteps |
-| EPJ C 84 (2024) 12433; arXiv:2507.22751 (PRD 2025) | Ricochet Collab. | 2024–25 | 30 eVee ionization resolution; mini-CryoCube commissioning at ILL; science phase from July 2025 | State of the art for cryogenic Ge at a reactor; their reactor-on/off noise experience is directly relevant |
-| arXiv:2508.02488 (PRD 2025) | NUCLEUS Collab. | 2025 | Full-system commissioning at TUM; moving to Chooz; ~20 eV thresholds in gram-scale crystals | Lowest demonstrated nuclear-recoil thresholds among reactor CEvNS experiments; sets the competitive context for meV-threshold projections |
-| PRD 104, L071301; arXiv:2103.01684 | Kopeikin, Skorokhvatov, Titov | 2021 | Re-measured ²³⁵U/²³⁹Pu β ratio → 5% lower ²³⁵U flux (KI model), largely resolving the reactor antineutrino anomaly | Choose HM vs HM+KI normalization explicitly; ~5% normalization systematic on predicted rates |
-| PRL 123, 022502 (2019), "Updated Summation Model: An Improved Agreement with the Daya Bay Antineutrino Fluxes" | Estienne, Fallot et al. | 2019 | Modern summation spectrum agreeing with measured Daya Bay IBD flux without anomaly | Candidate model for the below-2-MeV extension of the CEvNS flux |
-| PRD 108, 033002; arXiv:2302.10460 | Liao, Liu, Marfatia | 2023 | Framework for probing the never-measured sub-1.8 MeV reactor flux with low-threshold CEvNS | Defines what our lowest reconstructed-energy bins are actually sensitive to |
-| PRApplied 22, 054009; arXiv:2310.01345 | Fink et al. (SQUAT) | 2024 | Transmon + quasiparticle-amplification sensor; predicted 1 meV phonon sensitivity; first-demonstration paper in press (FERMILAB-PUB-26-0007) | Nearest-neighbor technology to QPDs; useful for cross-checking quasiparticle-cascade and threshold assumptions |
-| arXiv:2509.18637 | Sandoval et al. | 2025 | Operated ion-milled phonon-mediated QPD; quiescent QP density 1.8±0.8 μm⁻³ as expected; parasitic-junction-free multi-step JJ process | Confirms baseline QP environment assumed in QPD energy reconstruction; still no demonstrated energy threshold |
-| arXiv:2512.20309 | (QPD qubit-array study) | 2025 | Light-DM projections for QPD qubit arrays | Adjacent sensitivity study; check consistency of sensor-response modeling choices |
-| Nature 594, 369 (2021) | Wilen et al. | 2021 | Cosmic rays/γs produce correlated charge-parity and phonon bursts across qubit chips | Direct experimental proof that ionizing radiation (including muons) drives exactly the parity-flip channel QPDs read out — i.e., our muon "background" signal is empirically established in qubit devices |
+| arXiv:2509.03559 (EPJC 2026) | NUCLEUS Collab. | 2026 | ~250 dru cosmic-neutron-dominated 10–100 eV background at a shallow shielded reactor site | Primary peer benchmark for the surface neutron floor; our unshielded case is an upper bound relative to it |
+| arXiv:2503.08859 | LEE community (Ge/CEvNS/DM) | 2025 | Review of "Low-Energy Excess" and sub-keV backgrounds in phonon/charge detectors | Cautions that near threshold an unexplained excess (LEE) often dominates over all modeled backgrounds — relevant if v1.1 quotes a floor near eV scale |
+| arXiv:2212.14148 (PRD 107, 092011) | Biffl, Villano et al. | 2023 | Neutron-capture NR overlaps CEvNS ≲100 eV; thermal-flux ceiling 7×10⁻⁴ n/cm²/s | Adds capture channel to elastic; sets thermal-neutron requirement for the surface scenario |
+| arXiv:2112.09585 | CONUS Collab. | 2021 | Full background decomposition: μ-induced neutrons ~80% of μ term <10 keV; 97% veto | Quantifies muon-correlated neutron fraction and veto leverage (we have no overburden, so μ-induced share differs) |
+| J.Phys.G 52 (2025) 10.1088/1361-6471/adeffa | (α,n) review | 2025 | Modern (α,n) yield methods; 30%–O(100%) yield uncertainties | Sets the honest error bar on the radiogenic-neutron budget |
+| arXiv:1706.05324 | Wei, Mei et al. | 2017 | Cosmogenic Ge activation for tonne-scale searches (Geant4, natural + enriched Ge) | Cross-check for ³H/⁶⁸Ge/⁶⁵Zn production and exposure-history modeling |
+| arXiv:2605.16534 | (shallow-depth cosmogenics) | 2026 | Cosmogenic activation at shallow depths | Directly addresses the shallow/surface regime our wafer occupies |
 
 ---
 
 ## Known Limiting Cases
 
-| Limit | Known Result | Source | Verified By |
+| Limit | Known Result | Source | Notes |
 | --- | --- | --- | --- |
-| F(q²) → 1 (reactor energies, Ge) | dσ/dE_R → (G_F²/4π) M Q_W² (1 − M E_R/2E_ν²); form-factor correction ≲ 1% | Billard et al. 2017; standard CEvNS reviews (e.g., arXiv:2203.07361) | COHERENT/CONUS+ SM consistency |
-| Threshold → 0 | Total Ge CEvNS rate approaches flux-weighted total cross section; rate rises steeply below 100 eV_nr (≈50% gain from 100→50 eV in Billard Table 1) | Billard et al. 2017, Table 1 | — |
-| Billard Table 1 reproduction | 0.76/0.51/0.26 kg⁻¹ d⁻¹ (Ge; 50/100/200 eV_nr; 8.54 GW; 400 m) | Billard et al. 2017 | required in-project validation target |
-| CONUS+ counts | 347 ± 59 predicted events / 119 d / ~2.8 kg above 160–180 eVee (ionization scale, Lindhard-type quenching) | CONUS+ Nature 2025 | secondary in-project validation target (requires a quenching model to map from E_nr) |
-| Muon MIP limit | ⟨dE/dx⟩ → 1.370 MeV cm² g⁻¹ in Ge (7.3 MeV/cm); deposit ≈ chord × 7.3 MeV/cm with Landau straggling | PDG Atomic & Nuclear Properties | — |
-| Horizontal-detector muon rate | ≈ 1 cm⁻² min⁻¹ (with 10–15% downward revision) | PDG Cosmic Rays review | project geometry integral must reduce to this for a thin horizontal slab |
+| Deep underground (μ shielded out) | in-situ **muon-induced** + **radiogenic** neutrons dominate the NR background; ambient atmospheric neutrons negligible | Mei & Hime, PRD 73, 053004 (2006), astro-ph/0512125; EDELWEISS at Modane (4800 m.w.e., Φ_n(2–10 MeV) ≈ 4×10⁻⁶ cm⁻² s⁻¹) | **Do NOT transfer underground radiogenic-dominance to the surface** |
+| Surface, no overburden (our case) | **ambient cosmogenic fast-neutron elastic scattering dominates**; muon-induced and radiogenic neutrons subdominant; activation (³H) near saturation | Gordon 2004 flux; NUCLEUS shallow-site finding | The defining regime for v1.1 |
+| Thermal-flux → 0 | capture-induced NR ≲100 eV vanishes; only elastic fast-n and CEvNS remain in that band | Biffl/Villano 2023 | Motivates a moderator/absorber in any real design |
+| U/Th → 0 in materials | radiogenic (α,n)+SF neutron term → 0; only cosmogenic + reactor-correlated neutrons remain | Mei-Zhang-Hime scaling (linear in ppb) | Ge bulk is already ~µBq/kg, so intrinsic radiogenic term is tiny |
+| No cosmic exposure history | cosmogenic activation (³H, ⁶⁸Ge, ⁶⁵Zn, ⁵⁵Fe) → 0 | EDELWEISS/CDMSlite exposure scaling | Unphysical for a surface detector, but bounds the activation term from below |
 
 ---
 
 ## Open Questions
 
-1. **Dresden-II claim status** — The >3σ NCC-1701 result requires an ionization yield well above Lindhard below ~1.35 keV_nr (Fef model, YBe-calibrated). No single quenching model reconciles Dresden-II with COHERENT-Ge and CONUS+ simultaneously (e.g., arXiv:2605.27121); Migdal-effect explanations were examined and disfavored as a full explanation (arXiv:2307.12911). Community status: unconfirmed/contested. *Impact on us:* minimal for signal modeling (phonon readout has no ionization quenching), but it is the cautionary tale for low-energy energy-scale claims in Ge — our reconstructed-energy calibration assumptions deserve the same scrutiny.
-2. **Reactor flux below 1.8 MeV** — Never measured; summation and neutron-capture components carry ≳10% shape uncertainty and imperfect power correlation (²³⁹Np equilibrium timescale). Determines the honest error band on our lowest reconstructed-energy bins.
-3. **Ge quenching at E_nr < 1 keV** (relevant only if we ever compare to ionization-scale data) — Persistent measurement discrepancies; CONUS performed dedicated measurements; Lindhard k ≈ 0.16 vs k ≈ 0.18 choices shift ionization-scale predictions at the tens-of-% level near threshold.
-4. **QPD energy reconstruction at high deposit energy** — No published demonstration of QPD energy reconstruction at any energy, let alone the multi-MeV muon regime where quasiparticle tunneling rates far exceed the ~25 kHz resolvable rate. The saturation/pile-up behavior of the rate-based estimator (with EMG burst shapes) is a genuinely open modeling question this project will answer in simulation; no literature result exists to anchor it (checked: arXiv:2405.17192, 2509.18637, 2310.01345 contain no high-energy saturation measurements).
-5. **CONUS+ full-dataset significance** — Follow-ups (sub-keV ⁷¹Ge M-shell calibration, arXiv:2604.25748; parameter extractions, arXiv:2501.10355, 2501.17843, 2605.27121) are appearing; a higher-exposure CONUS+ result may sharpen the ~1 kg⁻¹ d⁻¹ anchor. Worth re-checking at phase-research time.
+1. **Absolute ambient neutron normalization at the actual deployment.** Gordon gives the outdoor sea-level spectrum to ~2%, but the *local* flux depends on building overburden, roof material, and moderation — factor-of-a-few uncertainty. v1.1 must state whether "surface, no overburden" means bare outdoor or inside a reactor building, since that sets the leading in-band background normalization. **Biggest single normalization uncertainty.**
+2. **Fast-neutron elastic-scatter recoil spectrum in a thin (2 mm) Ge wafer.** The thinness matters: many fast neutrons deposit only a partial recoil or multiple-scatter; the single-vs-multiple-scatter fraction and the escape probability in 2 mm change the in-band spectral shape. Requires an MC transport step (elastic n-Ge cross sections, ENDF/B), not just flux × cross-section.
+3. **Cosmogenic activation for THIS wafer's history.** ³H and the EC X-ray lines depend entirely on the fabrication/transport/storage/deployment timeline. Near-saturation (worst case) vs. a freshly-zone-refined-and-quickly-deployed crystal differ by an order of magnitude. Needs an assumed exposure model stated as a v1.1 input.
+4. **Muon-correlated vs. uncorrelated neutron separation at the surface.** With no overburden, is the QPD muon-tag (v1.0 channel) able to veto the in-situ muon-induced neutron component, and what fraction of the total neutron NR rate is muon-correlated vs. ambient-atmospheric? CONUS's 80% figure is at 24 m.w.e. and does not transfer.
+5. **Reactor-correlated thermal neutrons at 25 m / 3 GW.** CONUS measured (745±30) cm⁻² d⁻¹ at 17.1 m / 3.9 GW behind shielding. Unshielded at 25 m the reactor-correlated thermal fluence and its capture-NR contribution need a dedicated estimate; unlike cosmogenic neutrons this one *is* reactor-on/off separable.
+6. **Low-Energy Excess (LEE).** Every low-threshold phonon detector to date shows an unmodeled rising excess near threshold (arXiv:2503.08859) that dwarfs modeled backgrounds below ~100 eV. v1.1 should flag that its modeled in-band floor is a *lower* bound; the LEE is not yet predictable from first principles.
 
-## Notation Conventions in the Literature
+---
 
-| Quantity | Standard Symbol(s) | Variations | Our Choice | Reason |
+## Notation & Convention Reconciliation (backgrounds)
+
+| Quantity | Standard Symbol(s) | Variations in literature | Our (v1.1) choice | Reason |
 | --- | --- | --- | --- | --- |
-| Nuclear recoil energy | E_R, E_nr, T | keV_nr vs keVee (ionization-equivalent) | E_nr in eV/keV_nr; reconstructed energy separately as E_rec | Phonon/QPD readout measures recoil energy; never mix with keVee without an explicit quenching model |
-| Ionization-equivalent energy | E_ee (keVee) | "detected energy" in PPC papers | keVee, only when quoting CONUS+/TEXONO/Dresden-II | Their thresholds are ionization-scale |
-| Quenching / ionization yield | Q(E_nr), Y, Lindhard k | k = 0.157–0.18 in Ge literature | not applied to signal model; k stated explicitly if mapping to keVee | Phonon detectors measure full recoil energy (no Luke gain either: no drift field) |
-| Weak charge | Q_W = N − Z(1 − 4 sin²θ_W) | sign/factor conventions; sin²θ_W(0) ≈ 0.2387 vs on-shell | Billard et al. convention, low-E sin²θ_W | Match the benchmark anchor |
-| Reactor ν̄ spectrum | dN/dE_ν per fission | per second per GW; per fission per MeV | per fission per MeV, weighted by fission fractions | HM/summation native units |
-| Muon flux | dΦ/dE_μ dΩ | I_v (vertical intensity), J₁ (integrated) | differential in (E_μ, θ), Guan-modified Gaisser | Need low-E/large-θ validity for a surface detector |
+| Neutron elastic recoil energy | T, E_R, E_nr | keVnr in quenched detectors | phonon-scale T (eV/keV), **no quenching** | QPD reads full recoil as phonons — same axis as CEvNS |
+| Background rate unit | dru = counts keV⁻¹ kg⁻¹ d⁻¹ | c/keV/kg/day; counts kg⁻¹ d⁻¹ (integrated) | dru (differential) + integrated kg⁻¹ d⁻¹ | Match NUCLEUS/CONUS |
+| Cosmogenic production rate | R (nuclei kg⁻¹ d⁻¹) | atoms/(kg·day) | nuclei kg⁻¹ d⁻¹, sea-level, saturation-corrected | Match EDELWEISS/CDMSlite |
+| Radiogenic yield | Y (n g⁻¹ s⁻¹ per ppb) | n/yr; n per 10⁶ α; n/(g·ppb) | n g⁻¹ s⁻¹ per ppb U/Th (Mei-Zhang-Hime) | Standard radiogenic convention |
+| U/Th contamination | ppb (mass) or Bq/kg | mBq/kg, µBq/kg, g/g | µBq/kg (assay) → ppb via 1 ppb U ≈ 12.4 mBq/kg, 1 ppb Th ≈ 4.06 mBq/kg | Assay databases quote Bq/kg; yield code wants ppb |
+| Neutron flux | Φ_n (cm⁻² s⁻¹) | cm⁻² d⁻¹ (fluence rate); m⁻² s⁻¹ | cm⁻² s⁻¹, energy-differential where needed | Gordon native units |
+
+---
+
+## Transferability Verdict (for the roadmapper)
+
+**Directly transferable to a thin ~110 g unshielded surface Ge wafer (no rescale):**
+- Gordon (2004) sea-level neutron flux — it *is* the surface number (state indoor/outdoor).
+- Ge cosmogenic production rates (EDELWEISS/CDMSlite) — sea-level production; apply the wafer's own exposure-history/saturation model.
+- Mei-Zhang-Hime radiogenic yields per ppb — apply the wafer/mount/cryostat U/Th assay.
+- Ge bulk radiopurity (GERDA µBq/kg) and Cu/structural assay budgets — material-intrinsic, deployment-independent.
+
+**Needs rescaling / re-derivation before use:**
+- NUCLEUS ~250 dru and CONUS sub-keV rates — these include overburden + heavy shield + veto; the unshielded surface wafer sees a **higher** ambient-neutron rate (treat NUCLEUS as a *shielded lower bound*).
+- CONUS "μ-induced = 80% of μ term" and 97% veto leverage — 24 m.w.e. numbers, not valid at zero overburden.
+- Any underground radiogenic/muon-induced-neutron-dominance statement (EDELWEISS-Modane etc.) — inverted regime; ambient cosmogenic dominates at the surface.
+
+**Biggest normalization uncertainties (rank-ordered):**
+1. Local ambient-neutron flux (building shielding / indoor-vs-outdoor) — factor of a few, dominant.
+2. Cosmogenic activation (³H especially) — exposure-history-dependent, ~order of magnitude.
+3. (α,n) yields — 30% to O(100%) per nuclide.
+4. Thin-wafer single/multiple-scatter and escape fraction — spectral-shape systematic.
+5. LEE — unmodeled, potentially dominant below ~100 eV.
+
+---
 
 ## Sources
 
-- Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035 — benchmark Ge phonon-detector CEvNS rates (Table 1 read directly from the paper) and background budget template.
-- Ackermann et al. (CONUS+), Nature 643, 1229–1233 (2025), arXiv:2501.05206; setup paper arXiv:2407.11912; background paper arXiv:2412.13707 — first reactor CEvNS observation, closest configuration to our scenario.
-- Bonet et al. (CONUS), PRL 126, 041804 (2021); Ackermann et al., PRL 133, 251802 (2024), arXiv:2401.07684 — Ge limits at Brokdorf.
-- Colaresi et al., PRL 129, 211802 (2022) — Dresden-II claim; critiques/global fits: arXiv:2202.10829, 2203.02414, 2208.13262, 2307.12911, 2605.27121.
-- TEXONO, arXiv:2411.18812 — Kuo-Sheng PPC Ge limit (ρ < 4.7 SM at 200 eVee).
-- Ricochet Collab., EPJ C 84 (2024) (30 eVee resolution); arXiv:2507.22751 (PRD 2025) — cryogenic Ge at ILL.
-- NUCLEUS Collab., arXiv:2211.04189; arXiv:2508.02488 (PRD 2025) — gram-scale ~20 eV-threshold program at Chooz.
-- Huber, PRC 84, 024617 (2011); Mueller et al., PRC 83, 054615 (2011); Mention et al., PRD 83, 073006 (2011); Kopeikin et al., PRD 104, L071301 (2021), arXiv:2103.01684; Estienne et al., PRL 123, 022502 (2019); Hayes & Vogel, ARNPS 66, 219 (2016), arXiv:1605.02047 — reactor flux models and anomaly status.
-- Kopeikin, Mikaelyan, Sinev, Phys. At. Nucl. 67, 1892 (2004), hep-ph/0308186; Huber & Jaffke, PRL 116, 122503 (2016); Liao, Liu, Marfatia, PRD 108, 033002 (2023), arXiv:2302.10460 — below-IBD-threshold ν̄ components.
-- PDG Review of Particle Physics, Cosmic Rays chapter; PDG Atomic & Nuclear Properties (Ge: 1.370 MeV cm²/g, ρ = 5.323 g/cm³, E_μc = 298 GeV); Gaisser, *Cosmic Rays and Particle Physics* (CUP); Guan et al., arXiv:1509.06176 — sea-level muon flux and energy loss.
-- Ramanathan et al., APS Open Science 1, 000013 (2026), DOI 10.1103/kqd2-spb1, arXiv:2405.17192 — QPD concept, readout, energy reconstruction (project design anchor).
-- Sandoval et al., arXiv:2509.18637 — QPD device operating characteristics (quiescent QP density).
-- Fink et al., PRApplied 22, 054009 (2024), arXiv:2310.01345 (+ FERMILAB-PUB-26-0007) — SQUAT; Echternach et al., Nat. Astron. 2, 90 (2018) — QCD single-THz-photon counting.
-- Wilen et al., "Correlated charge noise and relaxation errors in superconducting qubits", Nature 594, 369–373 (2021) — radiation-induced correlated charge/quasiparticle-poisoning events in qubit arrays (empirical basis for muon response of parity sensors).
+- Gordon et al., "Measurement of the Flux and Energy Spectrum of Cosmic-Ray Induced Neutrons on the Ground," IEEE Trans. Nucl. Sci. 51, 3427 (2004) — surface fast-neutron flux anchor. Ziegler, IBM J. Res. Dev. 42, 117 (1998) — earlier sea-level parameterization.
+- Mei, Zhang & Hime, "Evaluation of (α,n) induced neutrons as a background for dark matter experiments," NIMA 606, 651 (2009), arXiv:0812.4307 — radiogenic (α,n)+SF yields (²³⁸U SF = 1.353×10⁻¹¹ n/g/s/ppb). (α,n) review, J. Phys. G 52 (2025), doi:10.1088/1361-6471/adeffa; SOURCES4/NeuCBOT (arXiv:2211.02080, 2408.10910). Radiogenic-yield calc: arXiv:1702.02465.
+- Mei & Hime, "Muon-induced background study for underground laboratories," PRD 73, 053004 (2006), astro-ph/0512125 — muon-induced neutron yield vs depth (why in-situ μ-neutrons dominate underground, not at the surface).
+- Armengaud et al. (EDELWEISS-III), "Measurement of the cosmogenic activation of germanium detectors in EDELWEISS-III," Astropart. Phys. 91, 51 (2017), arXiv:1607.04560 — Ge activation rates (³H 82±21, ⁶⁵Zn 106±13, ⁶⁸Ge >71 kg⁻¹ d⁻¹).
+- Amman et al. (SuperCDMS/CDMSlite), "Production Rate Measurement of Tritium and Other Cosmogenic Isotopes in Germanium," Astropart. Phys. 105, 44 (2019), arXiv:1806.07043 — ³H 74±9, ⁶⁵Zn 17±5, ⁶⁸Ge 30±18 atoms/kg/day. Wei/Mei et al., arXiv:1706.05324 — tonne-scale Ge cosmogenics. Shallow-depth cosmogenics, arXiv:2605.16534. Cebrián review, arXiv:1708.07449.
+- Biffl, Gevorgian, Harris & Villano, "Neutron capture-induced nuclear recoils as background for CEvNS measurements at reactors," PRD 107, 092011 (2023), arXiv:2212.14148 — thermal-capture NR overlap ≲100 eV; thermal-flux ceiling 7×10⁻⁴ n/cm²/s.
+- NUCLEUS Collab., "Particle background characterization and prediction for the NUCLEUS reactor CEvNS experiment," EPJC 86 (2026), arXiv:2509.03559 — ~250 dru cosmic-neutron-dominated 10–100 eV background at a shallow shielded site. Commissioning: arXiv:2508.02488.
+- CONUS Collab.: Hakenmüller et al., "Neutron-induced background in the CONUS experiment," EPJC 79, 699 (2019), arXiv:1903.09269 (reactor-correlated thermal fluence 745±30 cm⁻² d⁻¹); "Full background decomposition of the CONUS experiment," arXiv:2112.09585 (μ-induced fraction, 97% veto, sub-keV rates, in-situ Ge activation).
+- Agostini et al. (GERDA), "Limits on uranium and thorium bulk content in GERDA Phase I detectors," Astropart. Phys. 91, 15 (2017), arXiv:1611.06884 — Ge bulk U/Th ~µBq/kg limits. MAJORANA contamination control & assay, OSTI 1481666 — electroformed-Cu <0.3 µBq/kg U/Th and structural-material radioassay budgets.
+- "Low-Energy Backgrounds in Solid-State Phonon and Charge Detectors," arXiv:2503.08859 — LEE / sub-keV background review (flags the unmodeled near-threshold excess).
+- EDELWEISS at Modane (Φ_n(2–10 MeV) ≈ 4×10⁻⁶ cm⁻² s⁻¹, μ flux ~4 m⁻² d⁻¹) and CEvNS review arXiv:2203.07361 — underground limiting-case anchors.

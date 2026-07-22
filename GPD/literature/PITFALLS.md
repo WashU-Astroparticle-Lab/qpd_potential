@@ -1,368 +1,529 @@
-# Known Pitfalls Research
+# Known Pitfalls Research — v1.1 Neutron-NR + Detector-Radioactivity Extension
 
-**Domain:** Reactor CEvNS + sea-level muon rate prediction in reconstructed energy for a 1 kg Ge crystal read out by quasiparticle-poisoning detectors (QPDs; Ta→Al and Al→Hf designs)
-**Researched:** 2026-07-20
-**Confidence:** HIGH (reactor flux, CEvNS conventions, muon flux); MEDIUM (defect-loss magnitudes, QPD saturation behavior — anchor paper does not fully specify saturation model)
+**Domain:** Reactor-CEvNS forward model, extended to neutron-induced nuclear recoils
+(cosmic-ray, muon-induced, radiogenic (α,n)/fission) and detector-material radioactivity,
+on a thin (2 mm, ~110 g) natural-Ge wafer at the surface, read out by ~10,300 QPD sensors.
+**Unit/scale regime:** unified phonon energy scale, **NO ionization quenching**, E_rec ≈ 0.5·E_dep
+in the linear regime, 25 kHz non-paralyzable saturation (both trapping designs, Ta→Al and Al→Hf).
+**Researched:** 2026-07-21
+**Confidence:** HIGH on the quenching, double-counting, thin-detector transport, and saturation
+pitfalls (grounded in v1.0 `GPD/CONVENTIONS.md` + published Ge quenching/activation/(α,n)/flux
+literature); MEDIUM on absolute normalization details (depend on an as-yet-unspecified QPD
+materials/radiopurity budget and housing geometry).
 
-Scope note: this file covers pitfalls in four areas: (1) reactor CEvNS rate prediction, (2) recoil-energy bookkeeping in phonon detectors, (3) QP-sensor response modeling, (4) sea-level muon estimates. Project constants assumed: 3 GW_th reactor at 25 m, natural Ge, sensor density 1/mm², ~50% deposited-energy-to-signal efficiency, 50 kHz bandwidth (max resolvable tunneling rate ~25 kHz), EMG-profiled bursts, no G4CMP.
+> **Scope note.** This file catalogues pitfalls SPECIFIC to the v1.1 neutron + radiogenic
+> extension. The generic CEvNS/muon/response pitfalls (/4π prefactor, (ħc)², GW_th vs GW_e,
+> sin²θ_W scheme, 40 µs vs 20 µs) are already locked in `GPD/CONVENTIONS.md` and the v1.0
+> `PITFALLS.md`; they are not repeated here except where a v1.1 channel re-triggers them.
+
+> **Phase handles.** v1.1 phases are not yet numbered by the roadmapper. Pitfalls below are
+> mapped to *suggested* phase handles the roadmapper can rename/renumber:
+> - **P-NSRC** — Neutron source terms & flux normalization (cosmic-ray CRN, muon-induced, radiogenic (α,n)/fission).
+> - **P-NTRANS** — Neutron transport & recoil deposition in the thin wafer (single/multi-scatter, escape, kinematics).
+> - **P-RAD** — Detector-material radioactivity budget (U/Th/K → γ ER + (α,n) NR, self-shielding, solid angle).
+> - **P-COSMO** — Cosmogenic activation history model (68Ge/68Ga, 65Zn, 3H, 60Co; exposure/cooldown).
+> - **P-FOLD** — Response folding & reconstructed-energy spectra (25 kHz saturation, E_rec≈0.5·E_dep, band-overlap reporting).
+
+---
 
 ## Critical Pitfalls
 
-### Pitfall 1: Using a conversion-method reactor spectrum (Huber-Mueller) below the IBD threshold
+### Pitfall 1: Quenching confusion — importing keV_ee-quoted rates onto the phonon (keV_nr = E_dep) axis, or "helpfully" applying Lindhard
 
 **What goes wrong:**
-The Huber/Mueller conversion spectra are constructed from ILL beta-spectrum measurements and are only defined/validated for E_nu ≳ 2 MeV. Most reactor antineutrinos (~60-70% by number) have E_nu < 1.8 MeV and have never been directly measured. Naively extrapolating conversion spectra to low energy, or truncating at 1.8 MeV, corrupts the low-recoil CEvNS prediction — exactly where a meV-threshold QPD detector has its rate.
+Neutron-NR and dark-matter literature quotes nuclear-recoil spectra in one of two axes:
+**keV_nr** (true recoil kinetic energy) or **keV_ee** (electron-equivalent = ionization signal
+after multiplying the recoil by the Lindhard quenching factor QF). In Ge at CEvNS-relevant
+energies the measured QF is small — **QF ≈ 0.15–0.25 over 0.3–8.5 keV_nr** (Lindhard k ≈ 0.157–0.18;
+Collar 2021, Bonhomme 2022). This project's observable is the **unified phonon scale = full
+deposited energy E_dep with NO quenching**, so:
+
+- A **keV_nr** number is *already* E_dep for a nuclear recoil (up to the few-% Frenkel/defect
+  storage that is NR-only in `CONVENTIONS.md §B`). It transfers to the E_dep axis **essentially
+  1:1, with NO quenching applied.**
+- A **keV_ee** number for an NR background has *already* been multiplied by QF. Treating that
+  keV_ee axis as the phonon E_dep axis places the recoil at ~0.2× its true deposited energy —
+  shifting the whole NR background **down in energy by ~5×** and, because the differential
+  rate carries the Jacobian dE_ee = QF·dE_nr (plus a dQF/dE term), **mis-normalizing dR/dE by
+  a factor ~1/QF ≈ 4–6** as well.
+- The mirror error: taking a keV_nr spectrum and "applying Lindhard to be safe" **suppresses the
+  CEvNS/NR rate by ~5–7×** — exactly the mistake `CONVENTIONS.md §B` forbids ("Applying
+  Lindhard/ionization quenching would suppress CEvNS ~5–7× and is physically wrong here").
+
+The RELICS reference numbers in the v1.1 seed todo mix both axes: the CRN and muon-induced NR
+rates are in **keV_nr** (`[0.63, 1.36] keV_nr`) → transfer to E_dep directly; the ER background
+`[0, 20] keV_ee` is in electron-equivalent. For an *electron* recoil, keV_ee ≈ deposited energy
+already (ER quenching ≡ 1 on the ionization scale, and the phonon scale is also full energy), so
+ER keV_ee ≈ E_dep — but this is a *coincidence of the ER case*, not a licence to treat keV_ee and
+E_dep as interchangeable for the NR channels.
 
 **Why it happens:**
-Huber-Mueller is the "default" reactor flux in most CEvNS codes and papers because IBD experiments never needed the sub-threshold part.
+Nearly every transferable Ge background number in the literature is quoted in a quenched or
+electron-equivalent axis because real Ge ionization detectors measure charge. Physicists on
+autopilot reach for "recoil → apply QF → keV_ee" as a reflex. On a fieldless phonon calorimeter
+that reflex is exactly backwards.
 
 **How to avoid:**
-Use a summation (ab initio) calculation for E_nu < 2 MeV (e.g., the approach in arXiv:2302.10460 / PRD 108, 033002 (2023), or the CONFLUX framework, arXiv:2503.18966), and explicitly add the non-fission components: beta decays following neutron capture on ²³⁸U (²³⁹U, ²³⁹Np chains, E_nu ≲ 1.3 MeV) and captures on accumulated fission fragments. Assign a generous (≳10-20%) uncertainty band to the sub-2-MeV region; it is model, not data.
+- Tag **every** imported NR/ER number with its **native axis (keV_nr vs keV_ee)** at the point
+  of transfer, in a provenance table. Never let an untagged number enter the pipeline.
+- Transfer NR backgrounds on the **keV_nr axis** and set **E_dep = E_nr** (minus the few-% NR-only
+  Frenkel storage). Apply **no** QF.
+- If a source gives an NR background only in **keV_ee**, you must **un-quench**: E_nr = E_ee/QF(E_nr)
+  solved self-consistently, and rescale the differential rate by the Jacobian dE_nr/dE_ee = 1/QF +
+  (E_ee/QF²)(dQF/dE_nr). Document the QF(E) model used (Lindhard k≈0.157–0.18) and its uncertainty.
+- Add a guard/assertion in the transfer code mirroring `CONVENTIONS.md §B` FORBIDDEN list: no
+  keV_ee/keV_nr mixing, no Lindhard factor on the phonon scale.
 
 **Warning signs:**
-Predicted spectrum has a discontinuity or hard cutoff near E_nu = 1.8-2 MeV; low-recoil CEvNS rate insensitive to the neutron-capture component; quoted flux uncertainty below 5% at low E_nu.
+- A neutron-NR background peaks ~5× lower in energy than the naive recoil kinematics predict.
+- The neutron-NR differential rate is a factor ~4–6 off a same-flux cross-check.
+- The CEvNS rate drops by ~5–7× when a "background comparison" branch is enabled (Lindhard leaked in).
+- Any code path multiplies a recoil energy by a number in the 0.1–0.3 range labelled "quenching."
 
-**Kinematic quantification for this project:** E_nu,min(T) ≈ sqrt(M T/2). For natural Ge (M ≈ 67.7 GeV), a 10 eV recoil requires only E_nu ≳ 0.58 MeV, and neutrinos below the 1.8 MeV IBD threshold populate all recoils T ≲ 96 eV (T_max = 2E_nu²/(M+2E_nu)). The sub-IBD flux dominates the lowest reconstructed-energy bins that QPDs are designed to reach.
-
-**Phase to address:** Reactor flux model phase.
+**Phase to address:** **P-NSRC** (tag axes at import) and **P-NTRANS** (set E_dep = E_nr, no QF);
+guard enforced project-wide, mirrored from `CONVENTIONS.md §B`.
 
 ---
 
-### Pitfall 2: Flux-per-fission normalization chain errors (thermal power → fission rate → flux)
+### Pitfall 2: Muon–neutron double counting — re-counting the same muons already in the v1.0 direct-ionization channel
 
 **What goes wrong:**
-Order-1 errors from any of: (a) using electric instead of thermal power (~×3); (b) wrong energy-per-fission; (c) double-counting "~6 neutrinos per fission" on top of a spectrum already normalized per fission; (d) MeV↔J unit slips; (e) 1/(4πL²) with L in the wrong unit or with diameter instead of radius.
+v1.0 already models the through-going cosmic muon as a **direct ionization deposit**
+(⟨dE/dx⟩ ≈ 1.370 MeV·cm²·g⁻¹ ≈ 7.3 MeV/cm × chord length, with straggling; `CONVENTIONS.md §G`).
+Muon-induced fast neutrons are produced by the **same muon population**. Two distinct
+double-counting errors are possible:
+
+1. **Energy double-count within an event.** Attributing part of the muon's energy loss to
+   "neutron production" *and* still counting the full ionization deposit. The spallation-neutron
+   energy is a tiny, separate sink; the neutron carries its energy *away* from the muon track. The
+   muon direct deposit and the neutron-induced recoil are **two independent deposits**, never one
+   summed deposit.
+2. **Rate/acceptance double-count.** Normalizing the muon-induced-neutron rate as "a fraction of
+   the direct-muon events already in the model." This is wrong because the two channels have
+   **different geometric acceptance**: a muon that spalls a neutron in the surrounding
+   rock/floor/housing and **never crosses the 2 mm wafer** contributes a neutron-NR but **zero**
+   direct deposit. Conversely most wafer-crossing muons produce no wafer-reaching neutron. The
+   channels overlap only partially.
 
 **Why it happens:**
-The normalization is a chain of 4-5 conversions, each with a convention.
+The neutron channel is genuinely a *secondary* of an already-modeled primary, so it feels like it
+should be bookkept "inside" the muon channel. Muon-induced neutron yields are also usually quoted
+per muon per g/cm² of *converter material* (e.g., (3–6)×10⁻³ n/muon/(g/cm²) in lead; Kluck 2015),
+inviting a naive "multiply the modeled muon rate by a yield" that ignores where the converter is
+and where the neutron goes.
 
 **How to avoid:**
-- Fission rate R_f = P_th / Σ_i f_i ⟨E_f⟩_i where f_i are fission fractions and ⟨E_f⟩_i is the *effective thermal* energy release per fission (includes neutron-capture gammas in reactor materials, excludes the ~9 MeV carried away by antineutrinos). Standard values (Kopeikin-type / Ma et al. evaluations): ≈202 MeV (²³⁵U), ≈206 MeV (²³⁸U), ≈210-211 MeV (²³⁹Pu), ≈214 MeV (²⁴¹Pu). Do not use the *total* Q-value (~207-215 MeV including neutrinos) here.
-- The summation/conversion spectra S_i(E_nu) are in neutrinos per fission per MeV; their integral is already ~6-7 nu/fission. Never multiply by 6 again.
-- Sanity anchor: a 3 GW_th core emits ~6×10²⁰ nu/s; at 25 m, Φ ≈ 6×10²⁰/(4π(2500 cm)²) ≈ 7-8×10¹² nu/cm²/s. Any pipeline result far from this is wrong.
-- Use burnup-averaged fission fractions (typical PWR mid-cycle: f_235 ≈ 0.55-0.60, f_239 ≈ 0.28-0.30, f_238 ≈ 0.07-0.08, f_241 ≈ 0.05) and state them.
+- Treat the muon-induced-neutron channel as a **fully independent source term** feeding the same
+  neutron-transport stage as cosmic-ray and radiogenic neutrons (P-NTRANS), **not** as a modifier
+  of the v1.0 muon deposit.
+- Normalize it as: (surface muon flux) × (neutron yield per muon per g/cm², **for the actual
+  converter** — wafer Ge is a negligible converter at 2 mm; the floor/housing/rock dominate) ×
+  (neutron transport probability to the wafer) × (recoil deposition). The parent-muon's own
+  direct deposit is counted **only** when that muon also crosses the wafer, exactly as in v1.0 —
+  no change to the v1.0 muon channel.
+- Keep the two channels as **separate labelled contributions** to dR/dE_dep so their sum is
+  auditable and neither is silently folded into the other.
 
 **Warning signs:**
-Flux differs from the 7×10¹² cm⁻²s⁻¹ anchor by more than ~2×; rate predictions differ from published Ge-at-reactor predictions (CONUS/NUCLEUS-type configurations, scaled by power/distance) by more than a factor ~2.
+- The muon-induced-neutron NR rate scales rigidly as a fixed fraction of the v1.0 muon deposit rate.
+- Turning on the neutron channel changes the *direct* muon spectrum (it must not).
+- The muon-induced-neutron rate ignores the surrounding-material converter mass and depends only
+  on wafer-crossing muons (it should be dominated by neutrons made *outside* the wafer).
 
-**Phase to address:** Reactor flux model phase (unit-tested normalization function).
+**Phase to address:** **P-NSRC** (independent source-term normalization) with an explicit
+"does not modify the v1.0 muon channel" invariant checked in **P-FOLD**.
 
 ---
 
-### Pitfall 3: CEvNS cross-section convention traps (Q_w definition, factor 4 vs 8, sin²θ_W value)
+### Pitfall 3: Single-scatter / full-absorption assumptions in a 2 mm wafer — neutrons mostly escape after one recoil
 
 **What goes wrong:**
-Factor-of-2/4 errors from mixing conventions. The standard form is
-dσ/dT = (G_F² M / 4π) · Q_w² · (1 − T/E_nu − M T / (2E_nu²)) · F²(q²), with Q_w = N − (1 − 4 sin²θ_W) Z.
-Some references instead write G_F² M/(8π) with Q_w defined including an extra factor of 2, or absorb Q_w²/4 into a "weak charge" with different normalization. Mixing the two gives ×4 or ×1/4 rate errors. A second trap: using sin²θ_W(M_Z) = 0.2312 vs the low-energy running value ≈0.2387 (small here, since the proton coupling nearly vanishes either way, but be consistent when comparing to precision analyses such as arXiv:2605.27121).
+Fast-neutron transport intuition is calibrated on **thick** detectors (kg–tonne, cm–dm), where
+neutrons multiple-scatter and can thermalize. In a **2 mm** Ge wafer the opposite regime holds.
+With Ge number density n = 4.41×10²² cm⁻³ and a fast-neutron elastic cross section σ ≈ 3–7 b, the
+**mean free path is λ ≈ 3–8 cm ≫ 2 mm**. Consequences:
+
+- **Interaction probability per crossing is only ~3–6%** — most neutrons pass straight through
+  depositing nothing.
+- **Conditional on interacting, the neutron overwhelmingly single-scatters and then escapes**
+  (P(second scatter) ~ 0.1–0.4%). There is **no thermalization and no full-energy absorption** in
+  2 mm.
+- Each elastic scatter deposits only a **kinematic fraction** of the neutron energy: the maximum
+  Ge elastic recoil is **4A/(A+1)² ≈ 5.4% of E_n**, sampled from the angular distribution — **not**
+  the full neutron energy.
+
+Two opposite errors follow: (a) **depositing the full neutron energy** (thick-target /
+full-absorption assumption) grossly over-counts the per-neutron deposit; (b) blindly reusing a
+**single-scatter recoil spectrum with multiples vetoed** (standard in thick-detector NR analyses)
+mis-states the deposited-energy spectrum for the rare multi-site events — on the phonon scale
+there is **no position resolution and no multi-site veto**, so the ~0.1–0.4% of events that do
+double-scatter have their two recoils **summed into one calorimetric bucket** (a small high-energy
+tail), rather than being discarded.
 
 **Why it happens:**
-Literature genuinely uses both conventions; the kinematic factor also appears in truncated form (1 − MT/2E_nu²), which is fine at reactor energies but differs at percent level.
+Neutron-background templates are almost all developed for large low-background detectors where
+multiple scattering, thermalization, and multi-site vetoes are central. Porting those templates to
+a wafer without redoing the transport regime is the trap.
 
 **How to avoid:**
-Fix ONE convention in a conventions document. Validate the implemented dσ/dT against two independent anchors: (a) the coherent total cross section σ ≈ G_F² Q_w² E_nu² / (4π) in the E_nu ≪ M limit; (b) a published number, e.g., reproduce the predicted Ge CEvNS rate from a published reactor-Ge analysis (CONUS+ / Dresden-II predictions) within stated flux differences.
-Unit discipline: with G_F = 1.1664×10⁻⁵ GeV⁻², multiply by (ħc)² = 0.3894 GeV²·mbarn = 3.894×10⁻²⁸ GeV²·cm² to get cm². Omitting (ħc)² is the single most common CEvNS unit bug.
+- Work in the **thin-target single-scatter regime**: per interacting neutron, sample **one**
+  elastic recoil from the Ge angular distribution (occasionally two, summed); do **not** deposit
+  the full neutron energy and do **not** assume thermalization.
+- Use the interaction probability P ≈ 1 − exp(−n σ(E_n) t), t = 0.2 cm, with energy-dependent
+  σ(E_n) from ENDF/JEFF (not a single constant), for the absolute normalization of deposited
+  events. Most of the incident neutron flux escapes.
+- On the phonon scale, **sum** multi-site recoils within one resolving-time window into a single
+  E_dep (do not veto them); verify the multiple-scatter fraction is the expected ≲1% so the tail
+  is a controlled, not dominant, feature.
 
 **Warning signs:**
-Total σ at E_nu = 4 MeV not in the ~1×10⁻⁴⁰ cm² ballpark for Ge (first-principles: σ = G_F²Q_w²E²/4π ≈ 4.2×10⁻⁴⁵·N²·(E_ν/MeV)² cm² → ≈1.1×10⁻⁴⁰ cm² for Ge at 4 MeV; an earlier draft of this note mistakenly quoted ~10⁻⁴², which is 100× too low — do not use it as the validation target); rate off by exactly 4× from a published benchmark signals a Q_w /4π-vs-/8π convention slip.
+- Per-neutron deposited energy approaches the incident neutron energy (should cap near ~5% of E_n).
+- The neutron-NR spectrum extends to MeV-scale recoils from MeV neutrons (kinematically forbidden).
+- The interaction/efficiency per neutron is order-unity rather than a few percent.
+- A "multiple-scatter veto" appears anywhere in the wafer analysis (there is no position handle).
 
-**Phase to address:** Cross-section implementation phase (dimensioned unit tests).
+**Phase to address:** **P-NTRANS** (thin-target single-scatter transport + kinematics), with the
+multiple-scatter fraction reported as a checked ≲1% number.
 
 ---
 
-### Pitfall 4: "N² scaling" misuse and lumped-A treatment of natural germanium
+### Pitfall 4: Self-shielding & solid angle — a thin wafer is optically thin to γ, and absolute normalization needs attenuation × geometry
 
 **What goes wrong:**
-Two related errors. (a) Treating the per-kg rate as ∝ N²: the cross section per nucleus scales ~N², but atoms per kg ∝ 1/A and the recoil endpoint T_max ≈ 2E_nu²/M ∝ 1/A, so above a fixed detector threshold the per-mass rate scaling is much weaker than N² and can even invert. (b) Computing the Ge spectrum with a single averaged A = 72.63 instead of abundance-weighting the five isotopes: ⁷⁰Ge (20.5%), ⁷²Ge (27.4%), ⁷³Ge (7.8%), ⁷⁴Ge (36.5%), ⁷⁶Ge (7.7%). Each isotope has different N (38-44, ~±8% in Q_w²… actually ~±15% in N²) and a different endpoint (e.g., at E_nu = 8 MeV: T_max ≈ 1.96 keV for ⁷⁰Ge vs 1.81 keV for ⁷⁶Ge). Lumped-A smooths real per-isotope endpoint structure and biases the near-endpoint and near-threshold spectrum.
+Two coupled normalization errors, one internal and one external:
+
+**(a) Ge-bulk γ self-absorption runs *backwards* for a thin wafer.** The instinct "a Ge crystal
+self-shields its own gammas" is a *thick*-crystal statement. At 1 MeV the Ge attenuation length is
+~3 cm ≫ 2 mm, so the wafer is **optically thin to its own MeV gammas** (interaction probability
+~6% over 2 mm) — internal γ lines from decays (e.g., 65Zn 1115 keV, 68Ga annihilation/γ) mostly
+**escape**, depositing only a partial Compton edge, **not** a full-energy peak. Assuming
+full-energy deposition of internal γ lines **over-counts** those peaks. But the mirror subtlety is
+dangerous: **low-energy internal emissions deposit fully.** At ~100 keV the Ge attenuation length
+is ~1.6 mm (photoelectric dominates), so K/L-capture X-rays, Auger cascades, and β continua are
+**absorbed in the wafer** — e.g., 68Ge/71Ge electron-capture X-rays (~10.4 keV K, ~1.3 keV L) and
+the 3H β continuum (18.6 keV endpoint) land **right in the CEvNS band** and deposit their full
+energy. So the correct picture is: **internal γ peaks mostly escape (do not count them full-energy),
+internal X-rays/Augers/low-E β deposit fully (these are the in-band killers).**
+
+**(b) External/housing sources need attenuation × solid angle, and thin-target interaction.** A γ
+from a housing component reaches the wafer with flux ∝ (activity) × (Ω/4π geometric solid angle)
+× (self-absorption in the source component) × (attenuation through intervening material), and then
+deposits with the **thin-target** probability ~μ(E)·t (~6% at 1 MeV), **not** a thick-detector
+full-absorption efficiency. Getting the solid angle wrong (e.g., assuming 4π/isotropic capture),
+ignoring self-absorption inside the source part, or using a full-absorption efficiency mis-normalizes
+the **absolute rate by large factors**.
 
 **Why it happens:**
-The "coherent N² enhancement" slogan; averaged atomic masses are convenient.
+"Germanium self-shields" and "full-energy peak efficiency" are ingrained from HPGe γ-spectroscopy
+with cm-scale crystals. A 2 mm wafer inverts both. External-source normalization is also
+notoriously error-prone because solid angle and attenuation multiply into order-of-magnitude swings.
 
 **How to avoid:**
-Compute dR/dT per isotope (correct N_i, Z, M_i, atoms/kg_i = x_i N_A ×1000/A_bulk with x_i the number abundance) and sum. Number of Ge atoms per kg natural Ge: 8.29×10²⁴. ⁷³Ge spin: the axial/spin-dependent contribution is ~1/N² suppressed and negligible for rate prediction — state this rather than silently ignoring it.
+- For internal decays, deposit **γ lines with the thin-target escape-corrected fraction** (most
+  MeV γ energy escapes) but deposit **X-rays/Augers/low-E β in full**; treat the low-energy,
+  fully-absorbed emissions as the in-band signal-mimicking component.
+- For external/housing sources, build the normalization explicitly as
+  activity × (Ω/4π) × source-self-absorption × path attenuation × wafer thin-target interaction
+  (μ(E)·t), with each factor auditable. Do **not** use a full-absorption detector efficiency.
+- Sanity-check absolute rates against RELICS's detector-radioactivity ER magnitude
+  (~3.1×10⁻¹ kg⁻¹day⁻¹keV⁻¹ dominant ER) **only after** correcting for their shielding/geometry
+  vs our unshielded thin wafer — not as a direct transfer (see Pitfall 7).
 
 **Warning signs:**
-Spectrum endpoint is a single sharp cutoff instead of a stepped superposition; claimed rate advantage over lighter targets quoted as (N_Ge/N_Si)² without threshold discussion.
+- Internal γ lines appear as sharp full-energy peaks in E_dep (should be suppressed Compton continua).
+- The predicted rate is insensitive to source-to-wafer distance or housing thickness (solid
+  angle/attenuation not wired in).
+- A "full-energy peak efficiency" or "self-shielding factor >1" appears for the 2 mm wafer.
 
-**Phase to address:** Cross-section/target-model phase.
+**Phase to address:** **P-RAD** (internal + external radioactivity normalization, self-absorption,
+solid angle), feeding E_dep templates to **P-FOLD**.
 
 ---
 
-### Pitfall 5: Over- or under-worrying about the nuclear form factor and neutron radius
+### Pitfall 5: Cosmogenic activation history-dependence — quoting saturation activity instead of the as-deployed, isotope-specific activity
 
 **What goes wrong:**
-Two opposite failure modes. (a) Spending effort on Helm vs Klein-Nystrand vs neutron-skin modeling: at reactor energies q = sqrt(2MT) ≲ 16 MeV (T ≲ 2 keV in Ge), F²(q²) deviates from 1 by well under 1%, and form-factor/neutron-radius uncertainties are demonstrated to be irrelevant for reactor CEvNS (arXiv:1902.07398, JHEP 06 (2019) 141: relevant only for q ≳ 20-50 MeV). (b) Importing a form-factor routine tuned for COHERENT (stopped-pion, q ~ 30-70 MeV) with a wrong q-unit convention (fm⁻¹ vs MeV vs GeV) — a wrong-unit form factor CAN produce a large spurious suppression even at reactor energies.
+Cosmogenic isotope activities are **not** a single material constant — they depend on the
+**exposure time above ground** and the **cooldown time** before operation:
+A(t) = R·N_target·[1 − exp(−λ t_exp)]·exp(−λ t_cool), where R is the production rate and λ the
+decay constant. Quoting the **saturation activity** R·N (the t_exp → ∞ limit) when the crystal has
+only been exposed for months **over-states** short-lived isotopes; forgetting cooldown decay
+**over-states** them if the design assumes shielded/underground storage before running. Because
+each isotope has its own half-life, **a single "as-deployed" snapshot cannot be used for all of
+them**:
+
+- Sea-level Ge production rates (CDMSlite, Amman 2018): **3H ≈ 74 atoms/kg/day, 65Zn ≈ 17,
+  68Ge ≈ 30** (with large spreads); ~90% of production is neutron-induced.
+- Half-lives: **68Ge 271 d** (→ 68Ga, then in secular equilibrium), **65Zn 244 d**, **3H 12.3 yr**,
+  **60Co 5.27 yr** (Cu/steel housing), **55Fe 2.74 yr**.
+- For a **permanently-surface** detector run continuously above ground (this project), 68Ge and
+  65Zn reach **secular equilibrium (saturate)** on ~1-yr timescales, but **3H (12.3 yr) never
+  saturates** on realistic exposures — its activity **grows ~linearly** with exposure time. So the
+  3H in-band β background depends directly on how long the wafer has sat at the surface.
+
+**Why it happens:**
+Activation numbers are most often tabulated as production rates or saturation activities for
+convenience, and underground experiments (which cool down for years) have different bookkeeping
+than a continuously-surface detector. Grabbing a saturation number is the path of least resistance.
 
 **How to avoid:**
-Include the Helm form factor with standard Ge parameters for completeness, verify F²(q_max) > 0.99 across the reactor-recoil domain, and freeze it. Unit-test that F(0) = 1 and that q is built as sqrt(2 M T) in consistent units.
+- State an explicit **exposure/cooldown scenario** (t_exp above ground, t_cool if any) and compute
+  each isotope's activity with its own λ — never a blanket saturation value.
+- For this surface, continuously-operating detector: treat 68Ge/65Zn as saturated, but carry **3H
+  as exposure-time-dependent** (a stated t_exp, with sensitivity to it). Flag 3H (β endpoint
+  18.6 keV) and the 68Ge/71Ge EC X-rays (~1.3/10.4 keV) as the **in-band** cosmogenic components.
+- Because production is neutron-dominated and the surface neutron flux is ~10⁶× underground, do
+  **not** import underground/shielded activation rates (see Pitfall 7).
 
 **Warning signs:**
-Form factor differing from 1 by >1% below 2 keV recoil; sensitivity of the predicted rate to R_n at the >0.1% level.
+- A single "saturation activity" is used for 3H alongside 68Ge/65Zn.
+- The cosmogenic background is independent of the stated surface-exposure time.
+- Activation rates are quoted from an underground/deep-storage reference for a surface detector.
 
-**Phase to address:** Cross-section implementation phase.
+**Phase to address:** **P-COSMO** (isotope-specific A(t) with explicit exposure/cooldown scenario).
 
 ---
 
-### Pitfall 6: Applying ionization quenching (Lindhard) to a phonon-only energy scale
+### Pitfall 6: (α,n) yield material dependence — a generic yield is a trap; the QPD stack's low-Z content sets everything
 
 **What goes wrong:**
-Multiplying the nuclear-recoil energy by a Lindhard ionization yield (~0.15-0.25) to get the "detected" energy. In an *unbiased* phonon calorimeter (this project: QPDs read athermal phonons; no Neganov-Trofimov-Luke bias), essentially the full recoil energy thermalizes into phonons regardless of the electronic/nuclear partition — the electron-hole pairs recombine and return their energy to the phonon system. Applying Lindhard suppresses the predicted nuclear-recoil spectrum by ~5-7× and shifts the CEvNS energy scale disastrously. Conversely, the *muon* (electron-recoil) and CEvNS (nuclear-recoil) deposits land on the *same* phonon energy scale here — do not put muons in "keVee" and recoils in "keVnr."
+Radiogenic (α,n) neutron production depends **very strongly on the light-element content** of the
+material the α stops in, because the α range is short (~tens of µm) so only low-Z nuclei within
+that range contribute. Using a **single generic yield per ppb U/Th** across the whole QPD stack is
+wrong by large factors: αs stopping in **pure Ge** produce almost no neutrons (few accessible
+light isotopes, high thresholds), whereas αs in **oxides/fluorides/light-element films** (SiO₂ or
+Al₂O₃ substrate, Al/Ta/Hf sensor films, wirebonds, adhesives) produce far more. The (α,n) yield is
+also sensitive to the **spatial distribution of contaminants** and, for **thin films**, to whether
+the α **stops in the film or escapes** it before producing a neutron (Westerdale 2017; NeuCBOT /
+SOURCES-4C both flag this microphysical sensitivity).
 
 **Why it happens:**
-Most Ge CEvNS literature (CONUS, Dresden-II, TEXONO) uses ionization detectors where the quenching factor is central, and the keVee/keVnr distinction is deeply embedded in the field. Note also that the Ge quenching factor itself is contested at low energy (arXiv:2202.03754 vs comment arXiv:2203.00750; anomalously high yield at 254 eVnr, arXiv:2405.10405; cryogenic-temperature deviations) — a further reason not to import it where it does not belong.
+It is tempting to fold all U/Th contamination into one bulk (α,n) number. The short α range makes
+that physically meaningless — the yield is a per-material, per-microstructure quantity.
 
 **How to avoid:**
-Define one energy bookkeeping chain: true recoil energy T → phonon energy E_ph = T − E_stored(defects) → sensor signal = η(position, E) × E_ph. Quenching enters nowhere. Only use Lindhard if cross-checking against published ionization-detector spectra (then convert *their* eVee axis, not yours).
+- Compute (α,n) **per material** with the actual U/Th siting in each component of the QPD stack
+  (Ge crystal, substrate, sensor films, wirebonds, housing), using **NeuCBOT** and/or **SOURCES-4C**
+  with the real elemental composition — never a generic bulk yield.
+- Account for **thin-film α escape**: a µm-scale sensor film may not stop the α, so the neutron
+  yield is set by the substrate the α actually stops in.
+- Pair each (α,n) source with a **spontaneous-fission** neutron term (238U SF) from the same U
+  contamination; report both.
+- State the assumed U/Th assay per material as an explicit input with its uncertainty (this is a
+  materials/radiopurity budget assumption, flagged MEDIUM confidence until an assay exists).
 
 **Warning signs:**
-Any appearance of "eVee" in the CEvNS pipeline; predicted CEvNS rate ~5× below a phonon-detector benchmark.
+- One (α,n) yield-per-ppb is applied to the whole detector regardless of composition.
+- The (α,n) rate is dominated by α stopping in pure Ge (should be small there).
+- Thin sensor films are treated as full α absorbers.
 
-**Phase to address:** Detector-response phase; energy-scale definition must be written down before any spectrum is produced.
+**Phase to address:** **P-RAD** (per-material (α,n)+SF neutron source terms into P-NTRANS).
 
 ---
 
-### Pitfall 7: Ignoring (or over-modeling) Frenkel-defect energy storage at the lowest recoil energies
+### Pitfall 7: Surface vs underground flux confusion — importing shielded/deep numbers into an unshielded surface deployment
 
 **What goes wrong:**
-A nuclear recoil can store part of its energy in lattice defects (Frenkel pairs), which never appears as phonons. Displacement threshold energies in Ge span ~7-30 eV (direction-dependent). MD-based studies (arXiv:2210.01550; PRD 106, 063012 (2022); SuperCDMS ²⁰⁶Pb result arXiv:1805.09942) find the *fractional* stored energy is largest — up to ~10-20% — for recoils of tens of eV to ~1 keV, exactly the reactor-CEvNS window, and drops to zero below the displacement threshold (sub-threshold recoils give 100% of energy to phonons). Ignoring this biases the reconstructed-energy mapping for CEvNS recoils; conversely, treating it as a precise known function overstates knowledge — MD values carry large model spread.
+This detector is **unshielded at the surface**. Underground/shielded neutron and muon fluxes are
+**orders of magnitude lower**: deep-site neutron fluxes are ~10⁶× below the surface, muon fluxes
+~10⁵–10⁶× below. The RELICS reference numbers in the v1.1 seed are **post-shielding residuals**
+(after a 5 m water roof + 4π active veto) — e.g., the CRN residual (6.0±0.6)×10⁻² kg⁻¹day⁻¹ in
+[0.63, 1.36] keV_nr. **Importing such a residual as the unshielded surface rate under-counts by
+orders of magnitude.** The correct surface inputs are the **raw sea-level fluxes**:
+
+- **Cosmic-ray neutrons:** Gordon (2004) sea-level spectrum, integral ~3.6×10⁻³ cm⁻²s⁻¹ above
+  10 MeV (NYC, mid solar modulation); use the full meV–GeV Gordon parametrization, and note CRY
+  under-predicts the >10 MeV tail and must be normalized to Gordon.
+- **Muons:** I_v ≈ 70 m⁻²s⁻¹sr⁻¹ vertical (`CONVENTIONS.md §G`), already the surface value in v1.0.
+- **Cosmogenic activation:** a **surface-rate** process (neutron-dominated) — surface activation
+  ≫ underground.
+
+The reverse error (using surface fluxes where a shielded number is meant) also corrupts
+cross-checks against RELICS.
 
 **Why it happens:**
-The effect is invisible in ionization measurements and only ~percent-to-tens-of-percent in phonon energy, so it's often dropped.
+Most CEvNS/DM background literature is written for shielded, deep experiments; their headline
+numbers are residuals after heavy mitigation. Surface, unshielded operation is unusual and its
+raw fluxes are much larger. Numbers get transferred without their **depth + shielding provenance**.
 
 **How to avoid:**
-Include a defect-loss term as a *systematic band* (e.g., 0-15% loss for 20 eV-2 keV recoils, zero below ~2×E_d), not a point estimate. Also note the reverse process: delayed relaxation of stress/defects can *release* energy later (low-energy-excess hypothesis, arXiv:2112.14495; stress-induced phonon bursts, Nature Comm. 15, 6444 (2024); neutron-damage phonon bursts, arXiv:2603.17964) — a candidate background at the lowest energies, not a signal.
+- Tag **every** imported neutron/γ/muon flux and background rate with its **(depth, shielding)
+  provenance**; never mix a shielded residual with an unshielded surface flux.
+- Use raw **surface** fluxes (Gordon neutrons, sea-level muons) with **no shielding factor** for
+  the baseline; treat any RELICS number as a **shielded cross-check**, back-corrected for their
+  water roof + veto, not a direct transfer.
+- Where the seed asks whether the flagship "CEvNS reconstructs to tens of eV" framing survives,
+  the surface (not underground) NR background level is the correct comparator — expect it far above
+  the RELICS residual.
 
 **Warning signs:**
-CEvNS reconstructed-energy spectrum claimed to <5% accuracy below 100 eV without a defect-loss systematic; unexplained low-energy event excess treated as CEvNS.
+- A background rate matches a RELICS/underground residual to order unity (should be much larger
+  unshielded).
+- A "shielding suppression factor" appears with no shield in the geometry.
+- Neutron flux inputs carry no depth/shielding label.
 
-**Phase to address:** Detector-response phase (energy bookkeeping); uncertainty budget phase.
+**Phase to address:** **P-NSRC** (surface flux normalization with provenance tags), enforced in
+**P-FOLD** band-overlap comparisons.
 
 ---
 
-### Pitfall 8: Treating the 50% deposited-energy-to-signal efficiency as constant (position, energy, and time independent)
+### Pitfall 8: Reporting deposited-energy-only spectra — MeV neutron/γ deposits saturate the 25 kHz readout and reconstruct at E_rec ≈ 0.5·E_dep, exactly like muons
 
 **What goes wrong:**
-Phonon collection efficiency in phonon-mediated detectors is not a constant: it is set by competition between absorption in active sensors vs losses to mounting contacts, "dead" (non-instrumented) metal, and surface down-conversion of phonons below the pair-breaking threshold 2Δ of the absorber film. The QPD anchor paper (Ramanathan et al., APS Open Science 1, 000013 (2026), DOI 10.1103/kqd2-spb1 / arXiv:2405.17192) itself estimates η_ce ≈ 0.3 dominated by mounting losses (f_loss ~ 0.35), with a literature range η ~ 0.1-0.4, and warns that "care must be taken to properly understand the f_loss term across different architectures." Position dependence: events near the instrumented surface feed sensors before down-conversion; events near mounting points lose more. A flat 50% is a *definition* for this project's forward model, but presenting reconstructed spectra without an efficiency-variation systematic misstates the resolution and energy-scale uncertainty.
+MeV-scale neutron-recoil and γ deposits produce large phonon signals that drive the per-sensor
+tunneling rate **above 25 kHz**, entering the **non-paralyzable saturation** plateau
+(m = Γ/(1+Γτ_d), 1/τ_d = 25 kHz; `CONVENTIONS.md §F`) — **the same saturation the v1.0 muons
+already exhibit**. In the linear regime E_rec ≈ 0.5·E_dep, and the full response matrix
+R(E_rec|E_dep) compresses high deposits toward the saturation ceiling. Reporting a
+**deposited-energy-only** dR/dE_dep for the new neutron/γ channels and comparing it to the CEvNS
+**reconstructed** spectrum is an apples-to-oranges error: it (a) ignores the ~0.5× reconstruction
+scale, (b) ignores saturation compression of high-energy deposits, and (c) misplaces the
+band-overlap with the CEvNS ROI.
+
+Because the phonon scale has **no NR/ER discrimination and no fiducial/position handle**, the
+signal-mimicking overlap **must be evaluated in E_rec after folding**: a neutron recoil depositing
+~1 keV lands at ~0.5 keV E_rec, **indistinguishable** from a 1 keV CEvNS recoil; and saturating
+MeV deposits get pulled down toward the ceiling and can **leak into the ROI from above**.
 
 **Why it happens:**
-Constant efficiency makes convolution trivially separable.
+Neutron/γ background templates are naturally produced in deposited (true) energy, and it is easy to
+stop there. The v1.0 pipeline's whole point — folding every channel through the same
+saturation+reconstruction response — must be re-applied to each new channel, not skipped.
 
 **How to avoid:**
-Keep η = 0.5 as the baseline per the project spec, but propagate a position/energy-dependent variation (e.g., ±10-20% event-to-event spread) as a resolution-like smearing term and as an energy-scale systematic. Note the Ta/Al/Hf gap hierarchy: phonons that down-convert below 2Δ_absorber are lost; Al (Δ ≈ 0.18 meV) collects lower-energy phonons than Ta (Δ ≈ 0.7 meV), so the two designs do NOT share one efficiency number by default.
+- Fold **every** new channel (cosmic/muon-induced/radiogenic neutron-NR, intrinsic γ ER, (α,n) NR,
+  cosmogenic β/X-ray) through the **same** R(E_rec|E_dep) response matrix used in v1.0, for **both**
+  designs (Ta→Al, Al→Hf), under the **non-paralyzable** 25 kHz convention.
+- Report **reconstructed-energy** spectra as the deliverable; deposited-energy spectra are
+  intermediate only (the v1.0 paper's convention of overlaying deposited/true is fine as an
+  auxiliary, but the comparison axis is E_rec).
+- Evaluate each channel's **CEvNS-band overlap in E_rec**, explicitly, since there is no NR/ER
+  discrimination — including high-E deposits that saturate and leak downward.
+- Respect the project memory floor: **do not display spectra below 10 eV** (grid-floor/binding
+  artifact territory).
 
 **Warning signs:**
-Reconstructed-energy resolution reported as purely statistical (counting) with no collection-variance term; identical response assumed for Ta→Al and Al→Hf designs.
+- A neutron/γ background is plotted on a deposited-energy axis next to the reconstructed CEvNS
+  spectrum.
+- MeV deposits appear at MeV E_rec (should be compressed by saturation, not linear).
+- Band-overlap fractions are computed on E_dep rather than E_rec.
+- The two designs give identical folded spectra (the response differs per design).
 
-**Phase to address:** Detector-response phase.
-
----
-
-### Pitfall 9: Quasiparticle-poisoning background treated as independent per-sensor Poisson noise
-
-**What goes wrong:**
-Quiescent QP tunneling in superconducting devices has two components: a steady poisoning rate (residual density n₀ ~ 0.01-1 μm⁻³ in Al per the qubit literature; the QPD paper shows even n₀ = 0.05 μm⁻³ in the absorber concentrates to ~0.15 μm⁻³ in the trap) and *correlated bursts* from environmental radioactivity — muons and gammas depositing energy in the substrate produce phonon bursts that elevate tunneling rates across MANY sensors simultaneously (Wilen et al., Nature 594, 369 (2021); Cardani et al., Nat. Comm. 12, 2733 (2021); McEwen et al., Nat. Phys. 18, 107 (2022); gamma-irradiation study arXiv:2503.07354; phonon-only correlated poisoning arXiv:2503.09554). Modeling background as independent per-sensor Poisson noise underestimates the low-energy background pile-down from muon/gamma events and misses that at sea level, the muon "background" and the QP-poisoning burst background are largely the SAME events entering through different bookkeeping.
-
-**Why it happens:**
-Independence is the natural first model; correlations require event-level simulation.
-
-**How to avoid:**
-Simulate backgrounds at event level: each muon/gamma deposit creates a crystal-wide phonon burst → correlated multi-sensor tunneling. Use multi-sensor coincidence as the discriminator (this is also what makes the muon spectrum measurable). Keep a separate steady n₀ term for true quiescent poisoning (IR photons, residual sources — cf. arXiv:2606.07339 for how low shielded baselines can go).
-
-**Warning signs:**
-Background model with zero inter-sensor correlation; sea-level quiescent rates taken from underground/shielded qubit measurements without rescaling.
-
-**Phase to address:** Sensor-response phase + background-model phase (shared event generator with muon phase).
-
----
-
-### Pitfall 10: Saturation and aliasing of the tunneling-rate energy estimator at high energy (the muon end of the spectrum)
-
-**What goes wrong:**
-The project's energy estimator is a tunneling rate capped at ~25 kHz per sensor (50 kHz bandwidth). A through-going muon deposits ~40 MeV mean in a ~5.7 cm Ge path (MIP ⟨dE/dx⟩ ≈ 1.37 MeV cm²/g × 5.32 g/cm³ ≈ 7.3 MeV/cm) — some 10⁷-10⁸ times a CEvNS recoil. Even spread over ~3×10³ sensors (1/mm² on a ~33 cm² face), per-sensor tunneling rates during the burst vastly exceed 25 kHz: rates above the cap alias/censor to the ceiling, so reconstructed energy compresses. Naive forward models produce a fake "peak" at the saturation ceiling that is an instrument artifact, not a Landau feature. Additional subtleties from the anchor paper: CPB-style devices have asymmetric tunneling (an occupied island blocks further entry — a per-sensor dead-time/occupancy effect), and QP recombination is quadratic in density, so signal vs energy is sublinear at high density even below the rate cap.
-
-**Why it happens:**
-Linear rate→energy conversion validated at low energy gets extrapolated seven orders of magnitude.
-
-**How to avoid:**
-Build the rate→energy response as an explicit saturating function per sensor (EMG burst amplitude × occupancy/dead-time × 25 kHz cap), and forward-fold. Present the muon spectrum in reconstructed energy with the saturation region clearly delimited; validate the estimator's linear range and quote where it ends. Check limiting cases: at low energy the response must reduce to linear; at high energy total reconstructed energy must plateau near (N_sensors_hit × cap × burst duration × energy-per-tunnel).
-
-**Warning signs:**
-Reconstructed muon spectrum extends linearly to tens of MeV; no plateau/pile-up feature despite a hard 25 kHz cap; mean and MPV of the muon deposit used interchangeably (Landau mean > MPV; use the full straggling + path-length distribution, not ⟨dE/dx⟩ × length).
-
-**Phase to address:** Sensor-response phase (this is the project's central modeling deliverable); validation phase for limiting cases.
-
----
-
-### Pitfall 11: Sea-level muon flux normalization and angular bookkeeping errors
-
-**What goes wrong:**
-Classic factor traps: (a) confusing vertical *intensity* I_v ≈ 70 m⁻²s⁻¹sr⁻¹ (E_μ > 1 GeV) with the *flux through a horizontal surface* J ≈ 1 muon cm⁻²min⁻¹ ≈ 170 m⁻²s⁻¹ — they differ by the ∫cos²θ·cosθ dΩ projection integral; (b) forgetting the cosθ projection factor when integrating I(θ) = I_v cos²θ over solid angle (for cosⁿθ intensity, J_horiz = 2πI_v/(n+2)); (c) counting only the top face of a small 3D crystal — for a ~5.7 cm cube the side faces add a non-negligible contribution from inclined muons; (d) using the Gaisser formula at low energy: it is valid only for E_μ ≳ 100/cosθ GeV and θ < 70°, and *overestimates* the flux in the few-GeV regime that dominates sea-level rates — use a modified parameterization (Guan et al., arXiv:1509.06176) or a data-driven model (see the model comparison in Front. Energy Res. 9, 750159 (2021)); (e) the cos²θ shape itself is only exact near ~3 GeV — steeper at lower E_μ, flatter at higher.
-
-**Why it happens:**
-"1 per cm² per minute" and "cos²θ" are memorized without their qualifiers.
-
-**How to avoid:**
-Monte Carlo the geometry: sample the horizontal-flux distribution correctly (pdf ∝ cosⁿθ · cosθ · sinθ in θ), track path lengths through the actual crystal shape, and cross-check the integrated rate: ~0.5-1 Hz through a 1 kg Ge cube is the sanity anchor (33 cm² top face × ~1/cm²/min ≈ 0.55 Hz plus side-face contributions).
-
-**Warning signs:**
-Muon rate on the crystal off from ~0.5-1 Hz by >2×; rate independent of crystal orientation; flux quoted in m⁻²s⁻¹ compared against numbers in m⁻²s⁻¹sr⁻¹.
-
-**Phase to address:** Muon-flux phase (unit-tested angular integrals).
-
----
-
-### Pitfall 12: Ignoring muon secondaries, showers, and coincident deposits
-
-**What goes wrong:**
-Counting only through-going primary muons. At sea level the electromagnetic soft component (electrons/photons, ~tens of MeV) has a number flux comparable to muons; muons also produce delta rays and bremsstrahlung in the cryostat, shielding, and crystal, giving (a) additional lower-energy deposits not on the muon Landau band, (b) *coincident* multi-deposit events (muon + delta ray, muon + shower fragment) that alter the reconstructed-energy spectrum shape, and (c) stopped muons (μ⁻ capture / μ⁺ decay, ~Michel electrons up to 53 MeV). For a QPD readout, any of these also acts as a correlated QP-poisoning burst (see Pitfall 9). Cryogenic detectors' long pulse/recovery times relative to a 0.5-1 Hz muon rate can also produce event pile-up in the reconstruction window.
-
-**Why it happens:**
-Small-detector estimates default to "muon flux × area."
-
-**How to avoid:**
-Include at minimum: path-length + Landau straggling for primaries, a soft-component/secondary term (either from a parametrized sea-level electron/photon flux or a conservative scaling), and a pile-up model given the burst duration and 0.5-1 Hz rate. State explicitly what is excluded (e.g., hadronic component, neutron-induced recoils — note neutrons produce *nuclear* recoils that fall exactly in the CEvNS signal region and are the dominant surface background for reactor CEvNS; if out of scope, say so prominently).
-
-**Warning signs:**
-Muon reconstructed spectrum has no low-energy tail below the Landau band; zero events between the CEvNS region and the muon band; background claims made for the CEvNS region based on muons alone.
-
-**Phase to address:** Muon-flux phase; scope-definition in roadmap (neutron background in/out of scope must be an explicit decision).
+**Phase to address:** **P-FOLD** (response folding + reconstructed-energy deliverables + E_rec
+band-overlap), reusing the v1.0 `response.py` / `response_matrix.py` pipeline.
 
 ---
 
 ## Approximation Shortcuts
 
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
-| --- | --- | --- | --- |
-| Truncate reactor spectrum at 1.8 MeV (IBD-validated region only) | Uses well-validated flux | Wipes out lowest-recoil CEvNS bins (T ≲ 96 eV), the QPD flagship region | Only for a "conservative floor" variant, clearly labeled |
-| Single lumped A = 72.63 for Ge | One integral instead of five | Wrong endpoints, smoothed spectrum near threshold; ~% level rate error | Order-of-magnitude estimates only |
-| F(q²) = 1 (no form factor) | Simpler code | <1% at reactor energies | Acceptable for reactor CEvNS if stated; NOT for any COHERENT cross-check |
-| Constant η = 0.5 collection efficiency | Separable convolution | Underestimated resolution/energy-scale systematic | Baseline OK (project spec), but must carry a variation systematic |
-| Zero defect-energy loss | Simpler energy bookkeeping | Up to ~10-20% energy-scale bias for 20 eV-1 keV recoils | Only with an explicit systematic band covering it |
-| Linear tunneling-rate→energy map | Trivial reconstruction | Completely wrong above saturation; fake spectral features | Only below the validated linear range (low-energy CEvNS region) |
-| ⟨dE/dx⟩ × path for muon deposits | No straggling sampling | Overestimates typical deposit (mean ≫ MPV for thin absorbers) | Never for spectrum shape; OK for total-power estimates |
-| Gaisser formula at few GeV | Familiar closed form | Overestimates sea-level flux where it matters most | Never below ~100/cosθ GeV; use modified Gaisser (1509.06176) |
-| Muons only (no secondaries/neutrons) | Small event generator | Missing low-energy tail; unquantified CEvNS-region background | Only with explicit scope statement |
+| -------- | ----------------- | -------------- | --------------- |
+| Apply Lindhard QF to put NR backgrounds on a "detector" axis | Matches most literature axes | Wrong scale/normalization by ~5×; violates `CONVENTIONS.md §B` | **Never** on the phonon scale |
+| Deposit full neutron energy per interacting neutron | Trivial energy bookkeeping | Over-counts deposit ~20× (max recoil 5.4% of E_n); wrong spectrum | **Never** for the thin wafer |
+| Single constant neutron cross section for σ(E_n) | Fast normalization | Mis-normalizes interaction probability across the fast-neutron band | Order-of-magnitude scoping only |
+| Treat muon-induced neutrons as a fixed fraction of modeled muon deposits | One-line coupling | Double-counts / wrong acceptance (Pitfall 2) | **Never**; keep source terms independent |
+| Full-energy γ absorption / HPGe peak efficiency for the 2 mm wafer | Reuses spectroscopy intuition | Over-counts internal γ peaks; wrong external normalization (Pitfall 4) | **Never**; wafer is optically thin to MeV γ |
+| Generic (α,n) yield per ppb U/Th across the whole stack | Avoids per-material assay | Wrong by large factors from low-Z dependence (Pitfall 6) | Rough upper bound only, flagged as such |
+| Saturation activity for all cosmogenic isotopes | Single number per isotope | Over-states 3H (never saturates); ignores exposure history (Pitfall 5) | 68Ge/65Zn on a continuously-surface detector only |
+| Import RELICS/underground residual as the surface rate | Ready-made number | Under-counts by orders of magnitude (Pitfall 7) | Shielded cross-check only, back-corrected |
+| Report deposited-energy-only spectra | Skips folding | Ignores 0.5× scale + 25 kHz saturation; wrong band overlap (Pitfall 8) | Intermediate/auxiliary plots only |
 
 ## Convention Traps
 
 | Convention Issue | Common Mistake | Correct Approach |
-| --- | --- | --- |
-| CEvNS prefactor and Q_w definition | Mixing G_F²M/4π with Q_w = N−(1−4s²_W)Z against G_F²M/8π forms with rescaled Q_w → ×4 or ×1/4 | Fix one convention; unit-test against σ ≈ G_F²Q_w²E_nu²/4π and one published Ge rate |
-| Natural-unit conversion | Dropping (ħc)² when converting GeV⁻² → cm² | Multiply by (ħc)² = 3.894×10⁻²⁸ GeV²·cm²; assert σ units in tests |
-| sin²θ_W value | Using 0.2312 (M_Z) in a low-energy analysis comparing to papers using 0.2387 | State the value and scheme; effect is small but must be consistent for precision comparisons |
-| Kinematic factor | (1−MT/2E²) vs (1−T/E−MT/2E²) silently different between codes | Pick full form; document |
-| q in form factor | q in fm⁻¹ fed to a routine expecting MeV (or vice versa) | Build q = sqrt(2MT) with explicit units; assert F(0)=1, F²>0.99 at 2 keV |
-| Spectrum normalization | Multiplying per-fission spectrum (already ∫≈6 nu/fission) by 6 again | Spectrum is nu/fission/MeV; only multiply by fission rate and 1/4πL² |
-| Energy per fission | Total Q (~207-215 MeV, incl. neutrinos) instead of effective thermal (~202-214 MeV, excl. neutrinos, incl. capture gammas) | Use effective thermal release per isotope, fission-fraction weighted |
-| Reactor power | GW_e instead of GW_th (~×3) | 3 GW_th per project spec; label all powers |
-| Per-nucleus vs per-kg | Using N_A/A with A in amu but mass in g without the ×1000; or per-mole-of-nucleons | 8.29×10²⁴ Ge atoms per kg natural Ge; unit-test this constant |
-| eVnr vs eVee | Applying quenching to a phonon energy scale, or mixing muon (ER) and CEvNS (NR) scales | Single phonon-energy scale; quenching only for external ionization-detector comparisons |
-| Muon flux vs intensity | Comparing J (m⁻²s⁻¹, horizontal surface) with I_v (m⁻²s⁻¹sr⁻¹) | Track sr explicitly; J_horiz = 2πI_v/(n+2) for cosⁿθ |
-| "1/cm²/min" qualifier | Applying the E>1 GeV horizontal-surface number to all muons/all faces | State energy cutoff and surface orientation; MC the 3D geometry |
+| ---------------- | -------------- | ---------------- |
+| keV_nr vs keV_ee axis of a transferred NR number | Treating keV_ee as the phonon E_dep axis (recoil placed ~5× too low, dR/dE off ~1/QF) | Transfer NR on keV_nr = E_nr = E_dep (no QF); un-quench any keV_ee-quoted NR with the Jacobian |
+| "Quenching factor" on a phonon calorimeter | Multiplying recoils by QF≈0.15–0.25 "to be safe" | No QF on the phonon scale; QF only used to *un-quench* keV_ee imports |
+| NR recoil energy scale | Depositing full neutron energy | Cap at kinematic recoil ≤ 5.4% of E_n; sample the angular distribution |
+| Muon-induced neutron normalization | Per-muon yield tied to wafer-crossing muons only | Normalize to surrounding-converter mass and transport; independent of the v1.0 muon deposit acceptance |
+| Ge "self-shielding" | Assuming the crystal absorbs its own γ (thick-crystal reflex) | 2 mm is optically thin to MeV γ (λ~3 cm): peaks escape, only low-E X-ray/β deposit fully |
+| Cosmogenic activity | Saturation activity for all isotopes | Isotope-specific A(t) with exposure/cooldown; 3H exposure-time-dependent |
+| Flux provenance | Mixing shielded/underground residuals with surface fluxes | Tag every flux with (depth, shielding); surface baseline uses raw Gordon/sea-level fluxes |
+| Reconstruction axis | Comparing E_dep backgrounds to E_rec CEvNS | Fold every channel to E_rec through R(E_rec|E_dep); compare in E_rec |
 
 ## Numerical Traps
 
 | Trap | Symptoms | Prevention | When It Breaks |
-| --- | --- | --- | --- |
-| Coarse E_nu grid near the recoil threshold E_min(T)=sqrt(MT/2) | Jagged/biased dR/dT at low T | Log-spaced E_nu grid; adaptive quadrature near E_min | Steeply falling flux × threshold kinematics, i.e., everywhere below ~100 eV |
-| Cubic-spline interpolation of tabulated summation spectra | Negative flux values between table points; ringing at the 5 MeV bump | Monotone (PCHIP) interpolation in log-flux | Sparse tables, spectrum kinks (bump, endpoint) |
-| Per-isotope endpoints in a shared T grid | Spurious steps or smoothing at T_max,i | Integrate each isotope on its own kinematic domain, then sum | Near-endpoint region (1.8-2.0 keV) |
-| Saturating-rate simulation with naive Poisson sampling | Rates > bandwidth produced then clipped inconsistently between sensors | Simulate parity flips in time domain with dead-time/occupancy; cap = detection, not generation | Any deposit ≳ keV-scale; all muon events |
-| EMG burst convolution normalization | Total reconstructed energy depends on time-bin width | Normalize EMG to unit integral analytically; test energy closure on synthetic events | Fine time binning, long tails |
-| Landau sampling for muons | Mean of sampled deposits ≫ MPV, spectrum shifted | Sample Landau/Vavilov (or Bichsel-like) straggling per path length; verify MPV against PDG | Thin paths (short chords through crystal corners) |
-| Angular MC sampling | Using pdf ∝ cos²θ instead of ∝ cos²θ·cosθ·sinθ for horizontal-flux sampling | Derive the sampling pdf from the flux definition; validate against analytic J_horiz | Always (silent ~30% bias) |
-| Rate closure across pipeline | Total predicted counts differ between differential and integrated code paths | Closure test: ∫dR/dT dT vs direct rate integral, per isotope | After any refactor |
+| ---- | -------- | ---------- | -------------- |
+| Thick-target neutron transport in a thin wafer | Per-neutron deposit ~ E_n; interaction prob ~ order unity | Thin-target single-scatter model; P≈nσt~3–6% | 2 mm wafer, fast neutrons (λ~3–8 cm) |
+| Multiple-scatter veto reused on the phonon scale | Multi-site events discarded | Sum multi-site recoils into one E_dep (~0.1–0.4% tail) | No position/NR-ER handle in QPD wafer |
+| Constant σ(E_n) | Wrong energy-dependence of interaction probability | Use ENDF/JEFF σ(E_n) across the fast band + resonances | Broad neutron spectra (meV–GeV) |
+| Full-energy γ peak deposition | Sharp internal peaks in E_dep | Escape-correct MeV γ; deposit only low-E X-ray/Auger/β fully | 2 mm wafer, MeV γ |
+| Saturation ignored for MeV deposits | E_rec grows linearly to MeV | Apply non-paralyzable 25 kHz + R matrix to every channel | Peak Γ > 25 kHz (MeV-scale deposits) |
+| Displaying spectra below 10 eV | Rising counts at few-eV E_rec | Enforce 10 eV display floor (project memory) | Grid-floor/binding-artifact region |
 
 ## Interpretation Mistakes
 
 | Mistake | Risk | Prevention |
-| --- | --- | --- |
-| Reading saturation-ceiling pile-up in the reconstructed muon spectrum as a physical peak | Fake "feature" reported; wrong dynamic-range conclusions | Delimit the saturated region; show true-vs-reconstructed mapping explicitly |
-| Comparing this phonon-scale CEvNS spectrum to ionization-detector (eVee) spectra without conversion | Apparent 5-7× discrepancies; wrong validation verdict | Convert axes explicitly; document quenching model used for the *other* experiment |
-| Treating the sub-IBD flux prediction as validated | Overconfident low-bin rates; ~10-20% model uncertainty presented as <5% | Carry separate uncertainty bands above/below 1.8 MeV |
-| Attributing all low-energy background to QP poisoning noise | Misses correlated burst background = muons/gammas; double-counts when muon spectrum added | One shared event generator for muons feeding both "signal" (muon spectrum) and "background" (burst) channels |
-| Ignoring that surface neutron-induced nuclear recoils mimic CEvNS exactly | CEvNS "detectability" claims that would not survive contact with data | Explicit scope statement; cite neutron background as dominant caveat (cf. arXiv:2212.14148) |
-| Assuming Ta→Al and Al→Hf designs share one response | Wrong per-design spectra; gap hierarchy (Δ_Ta ≈ 0.7 meV, Δ_Al ≈ 0.18 meV, Δ_Hf ≈ 0.02 meV) changes phonon acceptance, trap depth, and burst kinetics | Separate response parameters per design from the start |
-| 5 MeV bump treated as resolved physics or ignored entirely | Percent-level spectral shape bias in 4-7 MeV E_nu (recoil shape above ~500 eV) | Include as a shape systematic; note unresolved origin (NEOS/Daya Bay PRL 118, 042502) |
+| ------- | ---- | ---------- |
+| Reading a keV_ee-quoted NR background as if on the phonon E_dep axis | NR background shifted ~5× low and mis-normalized; wrong ROI overlap conclusion | Axis-provenance tags; un-quench keV_ee imports |
+| Concluding neutron-NR is negligible from an underground/shielded residual | Under-states the dominant surface NR background; false "CEvNS clean" claim | Use surface fluxes; RELICS only as back-corrected cross-check |
+| Treating deposited-energy band overlap as the physical overlap | Wrong signal/background separation on an axis the detector never measures | Evaluate overlap in E_rec after folding both designs |
+| Assuming NR/ER discrimination suppresses these backgrounds | Over-optimistic ROI; the phonon scale has NO discrimination | State explicitly: every channel lands undiscriminated on the E_rec axis |
+| Quoting one cosmogenic snapshot for all isotopes | 3H (in-band β) mis-stated; exposure dependence hidden | Isotope-specific A(t); carry 3H exposure sensitivity |
 
 ## Publication Pitfalls
 
 | Pitfall | Impact | Better Approach |
-| --- | --- | --- |
-| Quoting one rate without the flux-model dependence | Result not comparable to CONUS/NUCLEUS-style predictions | Report with two flux models (summation baseline + HM-above-2MeV variant) |
-| Not stating the energy-scale definition (phonon energy, no quenching) | Readers assume eVee; apparent factor ~5 disagreement | Conventions section defining T, E_ph, E_reconstructed and all efficiencies |
-| Presenting reconstructed spectra without the response matrix | Irreproducible; unfolding temptation downstream | Publish/plot the true→reconstructed mapping and saturation boundary alongside spectra |
-| Claiming CEvNS sensitivity without the neutron/secondary background caveat | Credibility risk with reactor-CEvNS community | Explicit background scope statement |
-| Muon rate without geometry/orientation definition | Unreproducible ±50% differences | State crystal dimensions, orientation, flux model, and energy cutoff |
+| ------- | ------ | --------------- |
+| Comparing our surface, unshielded rates to RELICS residuals without noting their 5 m water roof + veto | Reviewer flags an apples-to-oranges background comparison | State shielding/depth provenance in every comparison; back-correct or label clearly |
+| Reporting neutron/γ backgrounds in deposited energy only | Inconsistent with the E_rec CEvNS deliverable; not reproducible on the observable axis | Report E_rec spectra for both designs; deposited energy auxiliary only |
+| Not stating the exposure/cooldown scenario behind cosmogenic activities | Cosmogenic numbers non-reproducible; 3H ambiguous | State t_exp, t_cool, half-lives, production rates explicitly |
+| Presenting an (α,n) rate without the per-material assay assumptions | Yield unreproducible; hides the low-Z sensitivity | Tabulate U/Th per material + tool (NeuCBOT/SOURCES) used |
+| Implying the phonon scale discriminates NR from ER | Overstates background rejection | Explicitly state no discrimination; overlaps quoted in E_rec |
 
 ## "Looks Correct But Is Not" Checklist
 
-- [ ] **CEvNS rate integral:** Often missing the (ħc)² conversion or double-counting nu/fission — verify total flux ≈ 7×10¹² cm⁻²s⁻¹ at 25 m from 3 GW_th, and rate against a published Ge prediction scaled by power/distance.
-- [ ] **Low-recoil spectrum:** Often missing the sub-IBD and neutron-capture flux — verify the T < 96 eV bins respond when the sub-1.8 MeV flux is toggled.
-- [ ] **Isotope sum:** Often missing per-isotope endpoints — verify five distinct T_max values appear (1.81-1.96 keV at E_nu = 8 MeV).
-- [ ] **Energy bookkeeping:** Often quietly applies Lindhard — verify a 1 keV nuclear recoil and a 1 keV electron recoil reconstruct to the same energy (minus the NR defect-loss band).
-- [ ] **Sensor response at high energy:** Often linear extrapolation — verify reconstructed energy plateaus for injected deposits ≫ saturation and reduces to linear at low energy.
-- [ ] **Muon angular integral:** Often missing the cosθ projection — verify J_horiz = πI_v/2 analytically for cos²θ before trusting the MC.
-- [ ] **Muon deposit spectrum:** Often uses mean dE/dx — verify the MPV of the simulated deposit distribution sits below the mean by the expected Landau offset.
-- [ ] **Background correlation:** Often independent-Poisson sensors — verify a single injected muon lights up spatially correlated sensors in the sim.
+- [ ] **Transferred NR background:** often missing the axis tag — verify it is keV_nr (→ E_dep, no QF), and that no keV_ee number was placed on the phonon axis.
+- [ ] **Neutron deposit per interaction:** often set to full E_n — verify it caps at ≤5.4% of E_n and comes from the angular distribution.
+- [ ] **Neutron interaction rate:** often order unity — verify P ≈ nσ(E_n)t ~ 3–6% per crossing (λ~3–8 cm ≫ 2 mm).
+- [ ] **Muon-induced neutron channel:** often coupled to the v1.0 muon deposit — verify it is an independent source term and does not modify the direct muon spectrum.
+- [ ] **Internal γ lines:** often deposited full-energy — verify MeV γ peaks are escape-suppressed while low-E X-ray/Auger/β are deposited fully.
+- [ ] **External source normalization:** often missing solid angle or attenuation — verify activity × (Ω/4π) × self-absorption × path atten × thin-target μt.
+- [ ] **Cosmogenic 3H:** often quoted at saturation — verify exposure-time-dependent A(t) with the stated surface scenario.
+- [ ] **(α,n) yield:** often generic — verify per-material composition + thin-film α-escape handling.
+- [ ] **Flux inputs:** often unlabelled — verify each carries (depth, shielding) provenance; surface baseline uses Gordon/sea-level with no shield.
+- [ ] **Final spectra:** often on E_dep — verify every channel is folded to E_rec through R for both designs under non-paralyzable 25 kHz, and nothing is displayed below 10 eV.
 
 ## Recovery Strategies
 
 | Pitfall | Recovery Cost | Recovery Steps |
-| --- | --- | --- |
-| Wrong cross-section convention discovered late | LOW | Single constant fix + rerun; prevented cheaply by early benchmark test |
-| Quenching wrongly applied to phonon scale | MEDIUM | Redefine energy chain, regenerate all spectra; all downstream plots invalid |
-| Flux truncated at IBD threshold | LOW-MEDIUM | Swap in summation table below 2 MeV; regenerate low-T bins |
-| Linear response used for muons | HIGH | Requires building the time-domain saturation model that should have existed; all muon results redone |
-| Muon angular bookkeeping error | LOW | Fix sampling pdf; rates shift ~30%, rerun MC |
-| Uncorrelated background model | MEDIUM-HIGH | Restructure background sim around event-level generator shared with muon pipeline |
+| ------- | ------------- | -------------- |
+| keV_ee imported as phonon E_dep | MEDIUM | Re-tag the source axis; un-quench with QF(E) + Jacobian; re-fold; re-evaluate ROI overlap |
+| Muon–neutron double count | LOW | Decouple the neutron source term from the muon channel; renormalize to converter mass; confirm muon spectrum unchanged |
+| Full-absorption / thick-target neutron transport | MEDIUM | Switch to thin-target single-scatter; recompute interaction prob and recoil kinematics; re-fold |
+| Full-energy internal γ peaks | LOW | Apply thin-wafer escape correction; keep only low-E fully-absorbed emissions in-band; re-fold |
+| Generic (α,n) yield | MEDIUM | Recompute per-material with NeuCBOT/SOURCES + stated assay; add SF term |
+| Saturation activity for 3H | LOW | Replace with exposure-dependent A(t); re-quote with scenario |
+| Underground residual used as surface rate | MEDIUM | Replace with raw surface flux (Gordon/sea-level); demote RELICS to cross-check |
+| Deposited-energy-only deliverable | LOW | Fold every channel through R to E_rec for both designs; re-plot with 10 eV floor |
 
 ## Pitfall-to-Phase Mapping
 
-| Pitfall | Prevention Phase | Verification |
-| --- | --- | --- |
-| 1, 2 (flux model, normalization) | Reactor flux phase | Flux anchor test (7×10¹² cm⁻²s⁻¹); toggle test of sub-IBD component |
-| 3, 4, 5 (cross-section conventions, isotopes, form factor) | Cross-section phase | Closed-form σ limit test; published-rate benchmark; per-isotope endpoint check |
-| 6, 7 (energy bookkeeping, defects) | Detector-response phase (first deliverable: energy-scale definition doc) | ER/NR same-scale test; defect-band systematic in uncertainty budget |
-| 8 (efficiency constancy) | Detector-response phase | Resolution budget includes collection-variance term; per-design (Ta/Al vs Al/Hf) parameters |
-| 9 (correlated poisoning) | Sensor-response + background phase | Injected-muon correlation test across sensors |
-| 10 (saturation/aliasing) | Sensor-response phase | Low-energy linearity + high-energy plateau limiting-case tests |
-| 11, 12 (muon flux, secondaries) | Muon-flux phase | Analytic J_horiz check; 0.5-1 Hz crystal-rate anchor; scope statement for neutrons/secondaries |
+| Pitfall | Prevention Phase (suggested handle) | Verification |
+| ------- | ----------------------------------- | ------------ |
+| 1. Quenching confusion (keV_nr vs keV_ee) | P-NSRC (tag axes) + P-NTRANS (E_dep=E_nr, no QF) | Provenance table lists native axis of every imported number; guard rejects keV_ee/keV_nr mixing and any Lindhard factor on the phonon scale |
+| 2. Muon–neutron double counting | P-NSRC (independent source term) | v1.0 muon spectrum byte-identical with neutron channel on/off; neutron rate normalized to surrounding-converter mass, not wafer-crossing muons |
+| 3. Thin-wafer multiple scattering / escape | P-NTRANS (single-scatter transport) | Per-neutron deposit ≤ 5.4% E_n; interaction prob ~3–6%; multi-scatter fraction ≲1% reported |
+| 4. Self-shielding & solid angle | P-RAD (internal + external normalization) | Internal MeV γ escape-suppressed; external rate = activity×(Ω/4π)×atten×μt; distance/thickness sensitivity present |
+| 5. Cosmogenic history-dependence | P-COSMO (isotope-specific A(t)) | Explicit t_exp/t_cool scenario; 3H exposure-dependent; per-isotope half-lives applied |
+| 6. (α,n) material dependence | P-RAD (per-material (α,n)+SF) | Yields computed per material with NeuCBOT/SOURCES; thin-film α-escape handled; assay stated |
+| 7. Surface vs underground flux | P-NSRC (surface flux + provenance) | Every flux tagged (depth, shielding); surface baseline uses Gordon/sea-level with no shield; RELICS only back-corrected |
+| 8. Deposited-only spectra / saturation | P-FOLD (response folding to E_rec) | Every channel folded through R for both designs under non-paralyzable 25 kHz; overlaps in E_rec; no display below 10 eV |
 
 ## Sources
 
-Reactor flux and CEvNS below IBD threshold:
-- Hayen & Kostensalo (eds.) review: "Reactor antineutrino flux and anomaly," arXiv:2310.13070 (Prog. Part. Nucl. Phys. 2024) — anomaly status, HM vs summation, 5 MeV bump.
-- "How to measure the reactor neutrino flux below the inverse beta decay threshold with CEvNS," arXiv:2302.10460, PRD 108, 033002 (2023) — sub-IBD spectrum modeling, neutron-capture component unobservability.
-- Kopeikin et al., "Components of antineutrino emission in nuclear reactor," Phys. At. Nucl. 67, 1892 (2004) — six emission components incl. ²³⁹U/²³⁹Np capture chains.
-- "Neutron capture and the antineutrino yield from nuclear reactors," PRL 116, 122503 (2016) — flux-dependent low-energy excess nuclides.
-- CONFLUX flux framework, arXiv:2503.18966. Reevaluation of ²³⁵U/²³⁹Pu ratio: arXiv:2103.01684. NEOS/Daya Bay bump isotope analysis: PRL 118, 042502 (2017).
-
-Cross-section, form factor, Ge parameters:
-- Aristizabal Sierra, De Romeri, Rojas, "Impact of form factor uncertainties on CEvNS interpretations," JHEP 06 (2019) 141, arXiv:1902.07398 — form-factor irrelevance at reactor q.
-- "Refined extraction of electroweak and nuclear parameters from germanium CEvNS data," arXiv:2605.27121 — Q_w/sin²θ_W conventions, Ge neutron radius.
-- Neutron-capture recoil backgrounds at reactors: arXiv:2212.14148.
-
-Quenching / recoil bookkeeping / defects:
-- Bonhomme et al., Ge quenching measurement, EPJC 82, 815 (2022), arXiv:2202.03754; critical comment arXiv:2203.00750 — unresolved QF systematics.
-- 254 eVnr ionization measurement (above-Lindhard yield), arXiv:2405.10405. CDMSlite photo-neutron yield: arXiv:2202.07043; ⁸⁸Y/Be: arXiv:1608.03588.
-- SuperCDMS, "Energy loss due to defect formation from ²⁰⁶Pb recoils," arXiv:1805.09942, APL 113, 092101 (2018).
-- "Energy loss due to defect creation in solid state detectors," arXiv:2210.01550; "Energy loss in low energy nuclear recoils in dark matter detector materials," PRD 106, 063012 (2022); low-energy excess from crystal defects, arXiv:2112.14495.
-- Stress-induced phonon bursts and QP poisoning, Nat. Commun. 15 (2024), DOI 10.1038/s41467-024-50173-8; neutron-damage phonon bursts, arXiv:2603.17964.
-
-QPD / quasiparticle sensors:
-- Ramanathan et al., "Quantum parity detectors: a qubit-based particle-detection scheme with meV thresholds," APS Open Science 1, 000013 (2026), DOI 10.1103/kqd2-spb1, arXiv:2405.17192 — η_ce ≈ 0.3, f_loss ~ 0.35, n₀ trap concentration, QP injection burst model, Fano-factor caveat, CPB tunneling asymmetry. Follow-up device characterization: arXiv:2509.18637.
-- Wilen et al., Nature 594, 369 (2021); Cardani et al., Nat. Commun. 12, 2733 (2021); McEwen et al., Nat. Phys. 18, 107 (2022) — correlated radiation-induced QP bursts.
-- QP poisoning under active gamma irradiation, arXiv:2503.07354; phonon-only correlated poisoning, arXiv:2503.09554; IR-shielding suppression of poisoning, arXiv:2606.07339.
-
-Muons:
-- Guan et al., "A parametrization of the cosmic-ray muon flux at sea-level," arXiv:1509.06176 — modified Gaisser valid at low energy.
-- Cecchini & Spurio, "Atmospheric muons: experimental aspects," arXiv:1208.1171 — angular distribution energy dependence, measurement systematics (30-35% inter-experiment spread).
-- "A comparison of muon flux models at sea level," Front. Energy Res. 9, 750159 (2021).
-- Synchronous cosmic-ray detection in qubit arrays, arXiv:2402.03208 — sea-level muon-qubit coincidence rates.
-- PDG Cosmic Rays review (vertical intensity, 1 cm⁻²min⁻¹ anchor, cos²θ domain of validity).
+- v1.0 project convention lock: `GPD/CONVENTIONS.md` (§B unified phonon scale/no quenching, §E ε≈0.5, §F 25 kHz non-paralyzable, §G symbol registry) — authoritative internal reference.
+- v1.1 seed: `GPD/todos/pending/2026-07-22-add-relics-class-backgrounds-to-forward-model-next-milestone.md`; RELICS design study Chang Cai et al., **PRD 110, 072011 (2024)** (same 3 GW, 25 m reactor configuration; background channel taxonomy and post-shield residuals).
+- **Ge quenching / Lindhard:** Collar et al., *Germanium response to sub-keV nuclear recoils*, **Phys. Rev. D 103, 122003 (2021)**; Bonhomme et al., *Direct measurement of the ionization quenching factor of nuclear recoils in germanium*, **EPJC 82, 815 (2022)** [arXiv:2202.03754] (QF≈0.15–0.25 over 0.3–8.5 keV_nr, k≈0.157–0.18); 88Y/Be photoneutron measurement (k=0.179±0.001), OSTI 1423260.
+- **Muon-induced neutrons:** H. Kluck, *Production Yield of Muon-Induced Neutrons in Lead* (Springer Theses, 2015); muon-induced neutrons in lead/copper at shallow depth, NIM/Astropart. Phys.; Mei & Hime, *Muon-induced background study for underground laboratories*, **Phys. Rev. D 73, 053004 (2006)** [astro-ph/0512125] (depth dependence, yield scaling).
+- **Neutron cross sections / transport:** ENDF/JEFF Ge elastic cross sections (~3–7 b fast); fast-neutron scattering from Ge (OSTI 4765768); CDMS Ge neutron-interaction benchmark (hep.umn.edu/cdms). Mean-free-path and kinematics computed in this survey (λ≈3–8 cm, max recoil 4A/(A+1)²≈5.4%).
+- **Cosmogenic activation of Ge:** Amman et al. / CDMSlite, *Production rate measurement of tritium and other cosmogenic isotopes in Germanium*, **Astropart. Phys. 104, 1 (2019)** [arXiv:1806.07043] (3H≈74, 65Zn≈17, 68Ge≈30 atoms/kg/day; ~90% neutron-induced); cosmogenic-activation review [arXiv:1708.07449]; shallow-depth activation [arXiv:2301.12970].
+- **(α,n) yields:** Westerdale & Meyers, *Radiogenic neutron yield calculations for low-background experiments* (NeuCBOT), **NIM A 875, 57 (2017)** [arXiv:1702.02465]; SOURCES-4C; (α,n) yield review, **J. Phys. G (2024)** — strong low-Z / microstructure dependence.
+- **Surface neutron flux:** Gordon et al., *Measurement of the flux and energy spectrum of cosmic-ray induced neutrons on the ground*, **IEEE Trans. Nucl. Sci. 51, 3427 (2004)** (sea-level spectrum, ~3.6×10⁻³ cm⁻²s⁻¹ >10 MeV, NYC); CRY generator (normalize to Gordon).
+- **γ attenuation in Ge:** NIST XCOM mass attenuation coefficients (μ/ρ≈0.061 cm²/g at 1 MeV → λ≈3 cm; ~1.6 mm at 100 keV) — computed in this survey for the thin-wafer optical-thinness argument.
 
 ---
 
-_Known pitfalls research for: reactor CEvNS + muon spectra in reconstructed energy for QPD-instrumented Ge_
-_Researched: 2026-07-20_
+_Known pitfalls research for: v1.1 neutron-NR + detector-radioactivity extension of the QPD-Ge CEvNS forward model (thin surface wafer, unified phonon scale, no quenching)_
+_Researched: 2026-07-21_

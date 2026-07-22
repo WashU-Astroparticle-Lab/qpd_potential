@@ -1,172 +1,182 @@
-# Computational Approaches: Reactor-CEvNS + Cosmic-Muon Reconstructed-Energy Spectra in a QPD-Instrumented Ge Crystal
+# Computational Approaches: v1.1 Neutron-NR & Radiogenic In-Band Backgrounds (QPD-Ge)
 
-**Surveyed:** 2026-07-20
-**Domain:** Low-energy neutrino/cosmic-ray rate calculation + Monte-Carlo readout-chain simulation (superconducting quasiparticle detectors)
-**Confidence:** HIGH for local-repo inventory (code read directly); MEDIUM-HIGH for external package status (verified via GitHub/paper pages); MEDIUM for background-knowledge numbers flagged inline
+**Surveyed:** 2026-07-21
+**Domain:** Low-background nuclear/particle physics — neutron elastic recoils and detector radioactivity for a ~110 g surface Ge wafer
+**Confidence:** MEDIUM-HIGH (tools/versions and Python access paths verified against GitHub/docs/papers; a few exact patch versions and the 238U SF Watt parameters carry documented spread)
+
+> **Milestone note:** This is the **v1.1** computational survey. It supersedes the v1.0 `COMPUTATIONAL.md` (Reactor-CEvNS + cosmic-muon reconstructed spectra), which remains in git history. The v1.0 pipeline is **reused, not re-researched** (see reuse constraint below).
+
+## Scope and Reuse Constraint
+
+v1.1 adds neutron-nuclear-recoil (NR) and detector-radioactivity in-band backgrounds to the existing forward model. The v1.0 stack is reused verbatim: Python (numpy/scipy/matplotlib); `shared_energy_grid()` (~584 log bins, ~0.01 keV to 197 MeV); Monte-Carlo response matrices `R(E_rec|E_dep)` stored per trapping design in `.npz`; non-paralyzable dead-time censoring (~25 kHz, 40 us resolving time); count-conserving fold utilities (`src/flux/assemble_spectrum.py`, `src/qpd_potential/deposited_spectra.py`, `response.py`, `response_matrix.py`); CSV tables with provenance headers (`data/flux/reactor_flux_v1.0.csv`, `data/gamma_lines.csv`, `data/ge_xcom_mu.csv`).
+
+**Every v1.1 deposited-energy spectrum must be produced on the same `shared_energy_grid()` and folded through the same `R` matrices** so it is directly comparable to the v1.0 CEvNS / muon / Compton spectra.
+
+**HARD CONSTRAINT:** no G4CMP. Prefer nuclear-data-driven analytic/MC over heavy transport codes (Geant4, MCNP, FLUKA). The recommendations honor this: physics is extracted from evaluated nuclear data via lightweight Python parsers, and the wafer response is computed by an **analytic thin-target single-scatter fold**, not a transport simulation.
 
 ## Recommended Stack
 
-Pure Python (numpy/scipy/matplotlib) on the local macOS workstation. Nothing in this project needs HPC, Geant4, or G4CMP: the physics rates are 1-2D integrals, the muon generator is an analytic-formula sampler, and the readout chain is a vectorizable point-process Monte Carlo. The single heaviest computation (a detector response matrix built by MC) is minutes on a laptop.
+**Neutron-NR channel.** Do NOT run a transport code for the wafer. A 2 mm Ge wafer is optically thin to fast neutrons: with n_Ge = 4.4e22 cm^-3 (rho = 5.323 g/cm^3, A = 72.6) and fast-neutron total cross section sigma_tot ~ 3-5 b, the macroscopic Sigma ~ 0.18 cm^-1 gives a mean free path ~ 5-6 cm >> 0.2 cm, so P(interaction) ~ Sigma*t ~ 3-4% and multiple scattering is negligible (<0.1%). The correct method is a **thin-target single-scatter analytic fold**: extract elastic cross sections sigma(E_n) (ENDF MF=3, MT=2) and CM angular distributions (ENDF MF=4, MT=2) per Ge isotope with **`openmc.data.IncidentNeutron.from_endf`**, convert each angular distribution to a recoil-energy kernel dsigma/dE_R via two-body kinematics, and integrate over the incident neutron flux. Use **`openmc.data`** as the ENDF reader (pure-Python, no NJOY needed for File 3/File 4); keep **NJOY2016 / ENDFtk / sandy** as fallbacks for resonance reconstruction or File-4 edge cases. Ge NR quenching is a physics input handled by the methods/roadmap layer, not by these tools.
 
-**Reuse strategy (opinionated):**
+**Radiogenic channel.** Build a decay line/continuum source from evaluated decay data with **`radioactivedecay`** (ICRP-107 default; ENSDF dataset optional) plus curated ENSDF/DDEP line energies and per-decay intensities (the v1.0 `data/gamma_lines.csv` convention already does this for the environmental Compton channel and should be extended, not replaced). Photon self-shielding/attenuation in the thin wafer uses **`xraylib`** (Python bindings) or the frozen NIST XCOM points already in `data/ge_xcom_mu.csv`. Beta and internal-conversion/Auger/X-ray spectra (3H endpoint 18.6 keV, 68Ga beta+, 65Zn/68Ge EC with K/L X-rays) are the physically important in-band deposits and are built from tabulated endpoints/branching, then binned onto the shared grid. Cosmogenic activation yields (surface exposure) come from published tabulations (Saldanha 2020, CDMSlite, EDELWEISS-III) with **ACTIVIA/COSMO** only as a cross-check — do not stand up a Geant4/CRY chain.
 
-1. **Readout chain — reuse the local qpd repo nearly verbatim.** `qpd/src/qpd/simulator/quasiparticle_bursts.py` (`QuasiparticleBurstModel`, `BurstTruth`, `poisson_burst_times`) is exactly the EMG-burst point-process generator this project needs: per burst, `N ~ Poisson(expected_n_qp)`, offsets `= Normal(mu, sigma) + Exponential(tau)`, sorted absolute event times plus ground truth. `parity.py` (`parity_from_flip_times`, `generate_parity_trajectory`) provides the searchsorted-based flip-time-to-grid machinery and the burst/background merge logic. Add fresh, thin layers on top: per-event Bernoulli thinning (50% efficiency), a bandwidth/pile-up censoring model (25 kHz max resolvable rate), and the energy-to-`expected_n_qp` map for the Ta→Al and Al→Hf designs.
-2. **CEvNS rate — write fresh (~150 lines), validate against wimprates and bradkav/CEvNS.** The local wimprates repo (v0.5.0) has the right *pattern* (`rate_elastic` = flux-weighted `scipy.integrate.quad` over a kinematic threshold, `helm_form_factor_squared` from Lewin & Smith, `Ge` already in `ATOMIC_WEIGHT`), but it is hardwired to dark-matter halo velocity integrals and the global-state `numericalunits` package. Do not import it as a dependency; copy the Helm form-factor formula into plain-keV units and cross-check numerically against `wimprates.helm_form_factor_squared` (should agree to float precision).
-3. **Reactor spectrum — tabulate Huber-Mueller >2 MeV; extend below with a summation-model table.** Hard-code the Huber (arXiv:1106.0687) exponential-polynomial fits for 235U/239Pu/241Pu and Mueller et al. (arXiv:1101.2663) for 238U. The sub-IBD-threshold region (Eν < 1.8-2 MeV) matters for low-threshold Ge CEvNS and is NOT covered by Huber tables — take a digitized/tabulated summation-model spectrum (see Data Gaps below; CONFLUX can generate one if a published table is not adopted).
-4. **Muon flux — reimplement the Guan et al. modified-Gaisser formula (arXiv:1509.06176) as a ~50-line numpy rejection sampler.** EcoMug (the standard lightweight Geant4 alternative) is header-only C++; wrapping it costs more than reimplementing the analytic flux formula it parametrizes.
+Both channels terminate identically: produce `dR/dE_dep` on `shared_energy_grid()` as a provenance-headed CSV, then fold through the existing `R(E_rec|E_dep)` and censoring utilities.
 
 ## Numerical Algorithms
 
 | Algorithm | Problem | Convergence | Cost per Step | Memory | Key Reference |
-| --- | --- | --- | --- | --- | --- |
-| Flux-folded rate integral (quad or log-grid trapezoid) | dR/dT = N_T ∫_{Eν,min(T)} dEν Φ(Eν) dσ/dT | quad: `epsrel=1e-6`; trapezoid: 2nd order in grid spacing | O(n_Eν) per recoil-energy point | O(n_Eν) | wimprates `rate_elastic` pattern; Freedman CEvNS xsec (standard) |
-| Rejection sampling of (E, cosθ) muon flux | Draw muons from modified Gaisser | Exact (acceptance-rejection); efficiency set by envelope tightness | O(1)/trial, vectorized | O(N) | Guan et al. arXiv:1509.06176; EcoMug NIM A 1014, 165732 (2021) |
-| Chord-length sampling on a box | Muon path length in crystal | Exact (analytic ray-box intersection) | O(1), vectorized | O(N) | standard geometry |
-| Landau-like straggling via `scipy.stats.moyal` | Energy-deposit fluctuations around ⟨dE/dx⟩·L | Exact sampling of Moyal approx to Landau (approximation error is physical, not numerical) | O(1) | O(N) | PDG passage-of-particles review; scipy ≥1.1 |
-| Lewis-Shedler thinning | Inhomogeneous Poisson event streams (if a time-varying burst rate is needed) | Exact given majorant λ* ≥ λ(t) for all t | O(1)/candidate; efficiency λ̄/λ* | O(N) | Lewis & Shedler, Nav. Res. Logist. Q. 26, 403 (1979) |
-| EMG burst sampling (Normal + Exponential) | Tunneling-event times within a burst | Exact | O(N_qp) per burst | O(N_qp) | qpd repo `quasiparticle_bursts.py` (already implemented) |
-| Bernoulli thinning | 50% sensor efficiency | Exact | O(1)/event | O(N) | elementary |
-| Sort-and-merge pile-up censoring | 25 kHz max resolvable tunneling rate (50 kHz bandwidth): events closer than the resolving time are merged/lost | Exact given the chosen censoring rule | O(N log N) per trace (sort) | O(N) | fresh code; convention must be fixed in CONVENTIONS.md |
-| MC response matrix R(E_rec \| E_true) | Fold analytic dR/dT through the readout chain | Per-cell relative error ≈ 1/√n_ij; target ≤3% per populated cell | O(N_samples × ⟨N_qp⟩) | O(n_true × n_rec) matrix, trivially small | standard detector-response folding |
+| --------- | ------- | ----------- | ------------- | ------ | ------------- |
+| Two-body elastic recoil kinematics + angular-dist transform | Convert sigma(E_n), dsigma/dOmega_cm to dsigma/dE_R per isotope | Exact (analytic Jacobian); accuracy set by ENDF interpolation | O(N_En x N_ang) | O(N_En x N_ER) | Two-body kinematics; ENDF-6 Formats Manual (MF=4) |
+| Thin-target single-scatter flux fold | dR/dE_R = N_atoms * INT dPhi/dE_n * sum_i a_i dsigma_i/dE_R dE_n | Trapz/Simpson on log grid; O(h^2) | O(N_En x N_ER x N_iso) | O(N_ER) | Standard NR-rate formalism (e.g. Lewin-Smith 1996) |
+| Watt spectrum eval/sample (SF) | 238U SF neutron source N(E)=C e^{-E/a} sinh(sqrt(bE)) | Analytic pdf; normalize numerically | O(N_E) | O(N_E) | Verbeke et al. UCRL-AR-228518; SOURCES-4C |
+| (alpha,n) yield fold | Thick-target yield x normalized spectrum per (isotope, matrix) | Table interpolation | O(N_lines) | O(N_E) | SOURCES-4C (CCC-0661); published thick-target yields |
+| Bateman decay-chain solver | Activity of U/Th chains + cosmogenic isotopes vs exposure/cooldown | Analytic (eigendecomp) or SymPy high-precision | O(N_nuc^3) once | O(N_nuc^2) | `radioactivedecay` (Fleming 2022, arXiv:2203.09761) |
+| Photon self-shielding (thin slab) | Escape/absorption of decay gammas in 2 mm wafer | Analytic (1 - e^{-mu rho t})/(mu rho t) LOS avg | O(N_lines x N_mu) | O(1) | Beer-Lambert; NIST XCOM / xraylib |
+| Count-conserving rebin to shared grid | Map any dR/dE onto `shared_energy_grid()` | Exact under integral preservation | O(N_bins) | O(N_bins) | Reuse v1.0 fold utilities |
 
 ### Convergence Properties
 
-- **Rate integral.** Criterion: quad `epsrel=1e-6` (wimprates default pattern), or for the vectorized trapezoid, halve the log-Eν grid spacing until the total rate changes by <0.1%. Failure mode: the integrand support is a narrow window just above Eν,min(T) = (T + √(T² + 2 M_Ge T))/2 ≈ √(M_Ge T/2), multiplied by a steeply falling reactor flux; a linear Eν grid that does not resolve the region near Eν,min underestimates the rate at the highest recoil energies. Use a log grid anchored exactly at Eν,min per T value.
-- **Muon MC.** Statistical error scales as 1/√N per histogram bin. Criterion: N large enough that every reported reconstructed-energy bin has ≥1000 accepted events (≤3% relative error). Rejection efficiency: with a power-law envelope in E and uniform cosθ, expect ≳10% acceptance; a flat envelope over a wide E range can drop below 1% — tighten the envelope rather than brute-forcing.
-- **Response matrix.** Sample uniformly (or log-uniformly) in E_true per column — this is importance sampling that decouples MC cost from the steeply falling physical spectrum. Criterion: ≥10⁴ burst realizations per E_true column; verify the folded spectrum changes by <1% when doubling samples. Failure mode: direct event-by-event MC of the physical CEvNS spectrum instead of response folding — reactor CEvNS in 1 kg Ge is O(1-100) counts/kg/day depending on site, so simulating "one live-time" gives statistically useless spectra; always fold.
-- **Pile-up model.** Not a convergence issue but a convention issue: the mapping from "events within one resolving time" to "counted events" (merge to one count vs. dead-time loss) changes the saturation curve. Fix the rule once, document it, and verify the counting statistics against the analytic Type-I (non-paralyzable) dead-time formula m = n/(1 + n·τ_d) in the constant-rate limit.
+- **Recoil-kernel + flux fold:** Criterion — halving the internal E_n integration mesh changes total NR rate by < 0.5% and each shared-grid bin by < 1%. Rate: algebraic O(h^2) (trapezoid on log mesh). Failure mode: sharp Ge(n,el) resonances below ~1 MeV are under-resolved on a fixed coarse mesh — integrate on the **union** of the ENDF native energy grid and the flux grid.
+- **Watt / (alpha,n) source:** Normalize the analytic pdf to unit integral; check the mean energy reproduces literature (238U SF mean ~ 2.0 MeV). Failure mode: parameter-set ambiguity shifts the mean ~10% (see caveats).
+- **Bateman solver:** `radioactivedecay` is analytic; only failure mode is catastrophic cancellation when two half-lives are within floating-point ratio — use its SymPy high-precision mode for U/Th chains with widely separated half-lives.
+- **Shared-grid rebin:** Criterion is exact count conservation — assert `sum(counts_out) == sum(counts_in)` to machine tolerance (reuse the v1.0 pattern in `tests/test_deposited_spectra_closure.py`).
 
 ## Software Ecosystem
 
 ### Primary Tools
 
 | Tool | Version | Purpose | License | Maturity |
-| --- | --- | --- | --- | --- |
-| numpy | ≥1.23 | All array math, `default_rng` sampling | BSD | stable |
-| scipy | ≥1.9 | `integrate.quad`, `stats.moyal`, `special.erf` | BSD | stable |
-| matplotlib | ≥3.3 | Spectra figures | PSF-like | stable |
-| pyyaml | ≥5.4 | Read `materials.yaml`-style config | MIT | stable |
-| local qpd repo (`/Users/lanqingyuan/Documents/GitHub/qpd`) | 0.1.0 | EMG burst model, parity/flip-time machinery, materials DB | see repo LICENSE | working research code, tested via `checks/` |
-| local wimprates (`/Users/lanqingyuan/Documents/GitHub/wimprates`) | 0.5.0 | Helm form-factor validation reference; rate-integral pattern | per repo | stable (Zenodo DOI 10.5281/zenodo.2604222) |
+| ---- | ------- | ------- | ------- | -------- |
+| `openmc` (openmc.data) | 0.15.x (conda-forge; osx-64 + osx-arm64) | Pure-Python ENDF MF=3/MF=4 reader: `IncidentNeutron.from_endf`, `AngleDistribution.from_endf`, `Reaction.xs` | MIT | Stable |
+| numpy / scipy / matplotlib | numpy >= 1.26, scipy >= 1.11 | Fold, interpolation, integration, plotting (already in v1.0) | BSD | Stable |
+| `radioactivedecay` | 0.6.x (PyPI) | Decay-chain activities, half-lives, branching; ICRP-107 default, ENSDF option | MIT | Stable |
+| `xraylib` | 4.1.x (conda-forge, Python bindings) | Photon mass attenuation mu/rho for Ge/compounds (XCOM-equivalent) | BSD-style | Stable |
+| ENDF/B-VIII.0 evaluated files | VIII.0 (2018) | Ge (70,72,73,74,76) neutron elastic xs + angular dist | Public (NNDC) | Established, widely benchmarked |
 
-### Supporting Tools (reference/validation only — do not add as dependencies)
+### Supporting Tools
 
 | Tool | Version | Purpose | When Needed |
-| --- | --- | --- | --- |
-| bradkav/CEvNS (github.com/bradkav/CEvNS) | v1.0 (2018), MIT, Python | Independent SM CEvNS rate benchmark; ships a CHOOZ reactor flux table | Validation of the fresh CEvNS code (clone locally, run once) |
-| Ikaroshu/pyCEvNS (github.com/Ikaroshu/pyCEvNS) | github | Alternative CEvNS/NSI package | Only if bradkav/CEvNS is insufficient; not needed for SM rates |
-| CONFLUX (github.com/CNFLUX/conflux) | 0.7 docs, MIT, LLNL; arXiv:2503.18966 | Summation-method reactor spectrum incl. Eν < 1.8 MeV, from ENDF/JEFF/ENSDF | If no published low-energy spectrum table is adopted; heavy (downloads nuclear DBs) — run once offline to produce a frozen CSV |
-| EcoMug (NIM A 1014, 165732, 2021) | header-only C++11 | Reference implementation of surface muon generation (>10⁵ μ/s) | Cross-check of the numpy Guan-formula sampler only; do not integrate |
-| qutip, iminuit, resonator_tools (qpd repo deps) | — | Dispersive-readout theory in qpd repo | NOT needed here: this project works at the tunneling-event-count level, not I/Q waveforms |
+| ---- | ------- | ------- | ----------- |
+| `sandy` | latest PyPI (`pip install sandy`) | ENDF-6 -> pandas dataframes (xs, decay, fission yields); covariance sampling | If `openmc.data` mis-parses a File-4 section or uncertainty bands are wanted |
+| ENDFtk | njoy/ENDFtk (conda-forge `endftk`; C++/Python) | Robust low-level ENDF-6 read/write mirroring the Formats Manual | Deep ENDF surgery, non-standard MT sections |
+| NJOY2016 | 2016.x | Resonance reconstruction, Doppler broadening, group averaging | Only if pointwise reconstruction below broadened resonances is required (heavier; compile) |
+| SOURCES-4C | RSICC CCC-0661 (Fortran) | (alpha,n) + SF + delayed neutron source spectra | Cross-check the analytic Watt/(alpha,n) source; NOT required if published yields are used |
+| ACTIVIA / COSMO | ACTIVIA (Back & Ramachers 2008, C++) | Cosmogenic production cross sections/yields for surface exposure | Cross-check Saldanha-2020/CDMSlite tabulated rates only |
+| ENDF/B-VIII.1 | VIII.1 (2024; arXiv:2511.03564) | Newest evaluation | Sensitivity check vs VIII.0; not the default anchor |
+| EXPACS / PARMA | PARMA-4.0 (Sato) | Cosmic-ray ground-level neutron flux, location-scaled | If Gordon-2004 form needs geomagnetic/altitude scaling for the site |
 
-### Local Repo Inventory (inspected directly)
-
-**qpd repo — reuse directly:**
-
-- `src/qpd/simulator/quasiparticle_bursts.py` — `QuasiparticleBurstModel(times, tau, mu, sigma, expected_n_qp)` with `.sample(rng) -> (event_times, list[BurstTruth])`; `poisson_burst_times(rate_hz, duration, rng)` for homogeneous-Poisson burst arrivals. `expected_n_qp` accepts a per-burst array — this is precisely the hook for mapping deposited energy → expected tunneling count per burst. `BurstTruth` records `t_arrival, n_qp, t_start, t_end, event_times` (perfect-tunneling-ID ground truth is already the design of this class).
-- `src/qpd/simulator/parity.py` — `parity_from_flip_times` (vectorized searchsorted, `side="right"` convention) and `generate_parity_trajectory` (two-state CTMC with burst flips as external forcing, exact resampling via memorylessness). Needed only if the analysis descends to parity-trajectory level; for count-level spectra, `quasiparticle_bursts` alone suffices.
-- `src/qpd/theory/materials.yaml` — DOS, T_c, Δ for Al (Δ=1.89e-4 eV), AlMn, Hf (Δ=2.25e-5 eV, T_c=0.128 K), Nb, TiN, plus constants (BCS ratio 1.764). **Gap: no tantalum entry.** The Ta→Al design requires adding Ta (T_c≈4.48 K, Δ≈0.7 meV — verify against literature before adding; do not trust these from memory).
-- `src/qpd/mlebench/generate.py` — chunked dataset-generation pattern (frozen physics config + per-chunk structural randomization + seed bookkeeping); a good template for organizing MC campaigns, not a direct dependency.
-- `src/qpd/simulator/vna_simulator.py`, `resonator.py`, `noise.py`, `checks/check_readout_window.py` — full I/Q waveform chain (Probst notch S21, dispersive χ, lock-in window). Out of scope for this project (no G4CMP, count-level analysis), but available if a waveform-level sanity check of the 50 kHz bandwidth limit is ever wanted.
-
-**wimprates repo — pattern donor + validation oracle:**
-
-- `wimprates/elastic_nr.py` — `helm_form_factor_squared(erec, anucl)` (Lewin & Smith parameters c=1.23·A^{1/3}−0.60 fm, a=0.52 fm, s=0.9 fm), `ATOMIC_WEIGHT['Ge']=72.64`, `reduced_mass`, and the `rate_elastic` structure (kinematic v_min threshold + `quad` over flux weight). The CEvNS analog replaces the halo-velocity integral with the neutrino-energy integral; the code shape carries over one-to-one.
-- Uses `numericalunits` (global mutable unit state) — the reason to copy formulas rather than import.
+**macOS-local flags (no cluster).** Primary tools install via conda-forge with native Apple-Silicon (osx-arm64) or x86 (osx-64) builds — `openmc`, `xraylib`, `radioactivedecay`, `endftk`, `sandy`. **NJOY2016** needs a Fortran/C++ compile (gfortran) — avoidable in the recommended path. **SOURCES-4C** is legacy Fortran via RSICC (registration required, not pip-installable) — optional cross-check; use published tabulations as primary. **ACTIVIA** needs a C++ build + data files — optional cross-check only. **Geant4/G4CMP/MCNP/FLUKA are excluded** by the milestone constraint and are unnecessary given the thin-wafer single-scatter physics.
 
 ## Data Flow
 
 ```
-Reactor inputs (P_th, distance, fission fractions)
-  -> Huber-Mueller polynomials + low-E summation table  -> Φ(Eν) [ν / MeV / fission], fissions/s = P_th / Σ f_i e_i
-  -> CEvNS kernel: dσ/dT (Freedman SM, Helm FF)         -> analytic dR/dT_true  [counts / kg / day / keV]
+Neutron-NR channel:
+  Site neutron flux dPhi/dE_n              Ge(n,el) evaluated data (ENDF/B-VIII.0)
+   [Gordon-2004 cosmic]                     [openmc.data.IncidentNeutron.from_endf]
+   [(alpha,n) + SF radiogenic]                        |
+            |                               sigma_i(E_n) (MF=3, MT=2)
+            |                               dsigma_i/dOmega_cm (MF=4, MT=2)
+            |                                          |
+            |                              two-body kinematics + Jacobian
+            |                                          |
+            |                              dsigma_i/dE_R per isotope i
+            +----------------> thin-target single-scatter fold <-----+
+                               dR/dE_R = N_atoms INT dPhi/dE_n sum_i a_i dsigma_i/dE_R dE_n
+                                          |
+                               apply Ge NR quenching (physics input) -> dR/dE_dep
+                                          |
+                               rebin to shared_energy_grid()  (count-conserving)
+                                          |
+                               fold through R(E_rec|E_dep) + non-paralyzable censoring
+                                          |
+                               dR/dE_rec  (directly comparable to v1.0 spectra)
 
-Muon inputs (Guan modified-Gaisser flux, crystal box geometry)
-  -> rejection-sample (E_mu, cosθ, φ, entry point)      -> chord length L
-  -> <dE/dx>(E_mu) * L + Moyal straggling               -> MC sample of E_dep -> dR/dE_dep
-
-Readout-chain inputs (design: Ta→Al or Al→Hf; 1 sensor/mm², ε≈0.5; 50 kHz BW)
-  -> E_dep -> expected_n_qp(E_dep) map (from theory dimension)
-  -> QuasiparticleBurstModel.sample (EMG: tau, mu, sigma)
-  -> Bernoulli thinning (ε) -> pile-up/bandwidth censoring (25 kHz)
-  -> counted events N_det -> E_rec estimator
-  -> response matrix R(E_rec | E_true) on (n_true x n_rec) grid
-
-Fold: dR/dE_rec = R @ dR/dE_true   (separately for CEvNS and muons, per design)
-  -> final reconstructed-energy spectra + figures
+Radiogenic channel:
+  Surface exposure + cooldown             Decay data (ENSDF/DDEP + radioactivedecay)
+   [Saldanha-2020 / CDMSlite yields]        [gamma lines, betas, EC/IC, X-rays]
+            |                                          |
+   Bateman activities A_iso(t)  --------->  per-decay in-band deposit spectra
+   (U/Th chains, 40K, 3H, 68Ge/68Ga,                  |
+    65Zn, 60Co, 57Co)                       photon self-shielding (xraylib / XCOM)
+            |                                          |
+            +-------------------> dR/dE_dep (lines + betas + continua) ------+
+                                          |
+                               rebin to shared_energy_grid()  (count-conserving)
+                                          |
+                               fold through R(E_rec|E_dep) + non-paralyzable censoring
+                                          |
+                               dR/dE_rec
 ```
 
 ## Computation Order and Dependencies
 
 | Step | Depends On | Produces | Can Parallelize? |
-| --- | --- | --- | --- |
-| 1. Reactor Φ(Eν) table (incl. low-E extension) | Huber/Mueller coefficients; summation table or one-off CONFLUX run | frozen CSV Φ(Eν) | n/a (one-off) |
-| 2. Analytic CEvNS dR/dT | Step 1; Helm FF; Ge mass/isotopes | dR/dT_true on log grid | yes (per T point) |
-| 3. Muon E_dep MC | Guan sampler; box geometry; dE/dx table | dR/dE_dep histogram + event list | yes (embarrassingly) |
-| 4. E→n_qp map + EMG parameters per design | theory dimension (not this file) | `expected_n_qp(E)`, (tau, mu, sigma) | n/a |
-| 5. Response matrix per design | Steps 4; qpd burst model; thinning + censoring code | R(E_rec\|E_true), 2 designs | yes (per E_true column) |
-| 6. Folding + spectra | Steps 2, 3, 5 | dR/dE_rec figures | trivial |
+| ---- | ---------- | -------- | ---------------- |
+| 1. Acquire Ge ENDF files (5 isotopes) | NNDC / OpenMC data release | local ENDF-6 files | Yes (independent downloads) |
+| 2. Parse xs + angular dist with openmc.data | Step 1 | sigma_i(E_n), dsigma_i/dOmega_cm | Yes (per isotope) |
+| 3. Build recoil kernels dsigma_i/dE_R | Step 2 + kinematics | per-isotope recoil kernels | Yes (per isotope) |
+| 4. Assemble neutron flux (cosmic + radiogenic) | Gordon-2004 + Watt/(alpha,n) tables | dPhi/dE_n CSV (provenance header) | No (single assembly) |
+| 5. Thin-target fold -> dR/dE_R -> dR/dE_dep | Steps 3, 4 + quenching | neutron dR/dE_dep on shared grid | No |
+| 6. Radiogenic activities + line/beta/continuum builder | decay data + Saldanha yields | radiogenic dR/dE_dep on shared grid | Partially (per isotope) |
+| 7. Fold both through R + censoring | Steps 5, 6 + v1.0 R matrices | dR/dE_rec spectra | Yes (per design/variant) |
+| 8. Closure + validation tests | Steps 5-7 | passing count-conservation + benchmark checks | Yes |
 
 ## Resource Estimates
 
 | Computation | Time (estimate) | Memory | Storage | Hardware |
-| --- | --- | --- | --- | --- |
-| CEvNS dR/dT, 200 T points, quad epsrel 1e-6 | seconds-1 min; vectorized trapezoid <1 s | <100 MB | KB (CSV) | laptop |
-| Muon MC, 10⁶ accepted muons (vectorized numpy) | ~1-10 s | <1 GB | ~50 MB if event list saved | laptop |
-| Response matrix: 200 E_true columns × 10⁴ bursts | ~10-100 s per design (dominated by per-burst EMG draws; ⟨N_qp⟩ can reach 10⁴-10⁶ for MeV muon deposits — see pitfall below) | <2 GB if chunked per column | MB | laptop |
-| Full pipeline, both designs | minutes | <2 GB | <100 MB | laptop |
+| ----------- | --------------- | ------ | ------- | -------- |
+| ENDF download (5 Ge isotopes) | seconds-minutes (network) | negligible | ~50-200 MB raw ENDF | local |
+| openmc.data parse + kernel build (per isotope) | < 10 s each | < 200 MB | few MB per kernel | local CPU |
+| Thin-target single-scatter fold (full flux) | seconds (vectorized numpy) | < 500 MB | few MB CSV | local CPU |
+| Radiogenic activity + line/beta/continuum build | seconds | < 200 MB | few MB CSV | local CPU |
+| Fold through R + censoring (per design/variant) | reuses v1.0 timing (seconds-minutes) | as v1.0 | as v1.0 npz | local CPU |
+| OpenMC HDF5 data library (only if transport ever used) | one-time download | — | ~5-10 GB | local disk |
 
-Scale sanity numbers (background knowledge, order-of-magnitude; verify in the theory dimension): 1 kg Ge (ρ=5.32 g/cm³) is a ~5.7 cm cube, top-face area ~33 cm²; sea-level muon rate through it ~0.5/s (rule-of-thumb 1 μ/cm²/min); mean chord ~3.8 cm at ⟨dE/dx⟩~7 MeV/cm gives ~25-30 MeV typical muon deposits — 4-7 orders of magnitude above CEvNS recoils (T_max ≈ 2Eν²/M_Ge ≈ 1.9 keV at Eν=8 MeV). The two populations stress completely different parts of the readout chain.
-
-**Nothing here needs more than a laptop.** The only computation that could blow up is naively sampling every individual quasiparticle tunneling event for MeV-scale muon deposits if `expected_n_qp` reaches ≫10⁶ per burst; if so, switch that regime to a Gaussian/analytic approximation of the counting statistics (valid at large N) instead of explicit event lists — the saturated-readout limit does not need per-event times anyway.
+**Bottom line:** the entire v1.1 background computation is **seconds-to-minutes on a single macOS workstation** because it is an analytic thin-target fold, not a transport MC. The multi-GB OpenMC HDF5 library is **avoidable** — `openmc.data` reads raw ENDF-6 text directly and needs only the handful of Ge evaluations, not the full processed library. There is **no MC-sampling convergence budget** for the wafer response; the response-matrix fold reuses v1.0's already-validated MC.
 
 ## Integration with Existing Code
 
-- **Input formats:** qpd `QuasiparticleBurstModel` takes plain numpy arrays (seconds, dimensionless counts) and a `np.random.Generator` seeded upstream — adopt the same convention (explicit `rng` threading, absolute times in seconds) throughout the new code.
-- **Interface points:** (a) `expected_n_qp` array argument of `QuasiparticleBurstModel` = energy-deposit hook; (b) `BurstTruth.event_times` = input to the fresh thinning + censoring layer; (c) `materials.yaml` schema = template for the project's own material/design config (add Ta; keep units and the eV conventions documented in that file).
-- **Import vs. copy:** the qpd repo is a proper installable package (`pip install -e /Users/lanqingyuan/Documents/GitHub/qpd`); importing `qpd.simulator.quasiparticle_bursts` directly is safe (module depends only on numpy). Note the heavier `qpd` package `__init__` pulls transmon theory (qutip) — import the submodule path, not the top-level package, to avoid the qutip dependency at runtime; verify this at implementation time.
-- **wimprates:** validation only; call `wimprates.helm_form_factor_squared` in a test, never in the pipeline.
+- **Input formats:** raw ENDF-6 text (Ge isotopes) for the neutron channel; tabulated CSV yields/parameters (Watt, (alpha,n), Saldanha production rates) with provenance headers matching the v1.0 convention (`data/flux/reactor_flux_v1.0.csv`, `data/gamma_lines.csv`).
+- **Output formats:** `dR/dE_dep` CSV on the exact `shared_energy_grid()` bin edges, with a provenance header block (source library + version, ENDF MAT/MT, parameter sets, uncertainty band) mirroring `data/gamma_lines.csv` and `data/ge_xcom_mu.csv`. This is what the downstream fold expects.
+- **Interface points:**
+  - `src/qpd_potential/response.py` / `response_matrix.py` and the `.npz` `R(E_rec|E_dep)` matrices — v1.1 spectra fold through these unchanged.
+  - `shared_energy_grid()` — v1.1 MUST bin onto the identical ~584-bin log grid (assert bin edges match before folding).
+  - Fold/censoring utilities (`src/flux/assemble_spectrum.py`, `deposited_spectra.py`) — reuse the count-conserving rebin and non-paralyzable ~25 kHz / 40 us censoring; do not re-implement.
+  - Test pattern `tests/test_deposited_spectra_closure.py`, `test_fold.py`, `test_response_chain.py` — extend with neutron- and radiogenic-spectrum closure tests.
+- **Display floor:** honor the project rule — never plot Ge spectra/energy axes below 10 eV (grid-floor/binding-artifact territory).
 
 ## Validation Strategy
 
 | Result | Validation Method | Benchmark | Source |
-| --- | --- | --- | --- |
-| Helm FF² (Ge) | Compare fresh keV-unit implementation vs `wimprates.helm_form_factor_squared(erec, 72.64)` over 0.01-10 keV | agreement to ≲1e-10 relative | local wimprates v0.5.0 |
-| SM CEvNS rate | Run bradkav/CEvNS with its CHOOZ flux for Ge; match with same flux input | agreement to a few % (flux-table differences) | github.com/bradkav/CEvNS (arXiv:1805.01798) |
-| Reactor-Ge rate scale | Compare predicted counts/kg/day at a CONUS+-like configuration against published CONUS+ prediction/observation | order-of-magnitude + shape | CONUS+ CEvNS detection (2025); exact citation to be pinned in PRIOR-WORK |
-| Muon sampler | Integrated vertical intensity and angular distribution vs PDG values; total rate vs 1 μ/cm²/min rule | I_v ≈ 70 m⁻²s⁻¹sr⁻¹ (PDG, background knowledge — verify) | Guan arXiv:1509.06176; PDG cosmic-ray review |
-| EMG sampler | Sample moments: mean = mu + tau, var = sigma² + tau² | analytic | closed form; qpd model already unit-consistent |
-| Thinning + censoring | Constant-rate limit vs non-paralyzable dead-time formula m = n/(1+nτ_d); ε-thinning recovers binomial statistics | analytic | standard |
-| Response folding | Fold a delta-function spectrum; recover the single-column response | exact | internal consistency |
+| ------ | ----------------- | --------- | ------ |
+| Ge(n,el) cross section extracted | Compare openmc.data-parsed sigma(E_n) to NNDC/Sigma plots + ENDFtk/sandy spot check | ENDF/B-VIII.0 pointwise xs | NNDC; njoy/ENDFtk (OSTI 2448319) |
+| Recoil kinematics | Max recoil E_R,max = E_n * 4A/(A+1)^2; check endpoint per isotope | Analytic two-body limit | Standard kinematics |
+| Thin-target assumption | Confirm Sigma*t << 1 and multiple-scatter fraction < 0.1% | Sigma ~ 0.18 cm^-1, t = 0.2 cm | this file (n_Ge, sigma_tot) |
+| 238U SF neutron spectrum | Mean energy and shape vs Watt fit | mean ~ 2.0 MeV; a,b sets (documented spread) | Verbeke UCRL-AR-228518; SOURCES-4C |
+| Cosmic neutron flux normalization | Integral flux > 10 MeV | Gordon-2004 ~3.5e-3 cm^-2 s^-1; EXPACS ~3.3e-3 | Gordon 2004; Sato PARMA/EXPACS |
+| Cosmogenic Ge production rates | Compare adopted yields to measured | 3H 82+-21, 65Zn 106+-13, 68Ge >=71 nuclei/kg/day (sea level) | CDMSlite (arXiv:1806.07043); EDELWEISS-III (arXiv:1607.04560); Saldanha 2020 |
+| Photon attenuation mu/rho(Ge) | xraylib vs frozen XCOM points | `data/ge_xcom_mu.csv` (NIST XCOM) | NIST XCOM; xraylib |
+| Decay-chain activities | radioactivedecay vs hand Bateman for a 3-member chain | analytic secular equilibrium | radioactivedecay (arXiv:2203.09761) |
+| Shared-grid fold | Count conservation to machine precision | v1.0 closure test | `tests/test_deposited_spectra_closure.py` |
 
-## Known Numerical Pitfalls (checklist for implementation)
+## Open Data / Version Caveats
 
-1. **Low-energy flux cutoff:** Huber tables cover roughly 2-8 MeV (background knowledge — verify exact range against arXiv:1106.0687 when transcribing); naively extrapolating the exponential-polynomial below its fit range produces unphysical spectra. Use a summation-model table below ~2 MeV; the sub-IBD region contributes substantially to low-threshold Ge CEvNS (arXiv:2302.10460).
-2. **Rate-integral stability:** anchor the Eν grid at Eν,min(T) exactly; log-spacing; watch the T→T_max edge where the integration window shrinks to zero (integrand → 0, but a coarse grid gives negative or noisy rates).
-3. **Units bookkeeping:** Φ in ν/MeV/fission × fissions/s (P_th / ⟨e_fission⟩ with ⟨e⟩≈200 MeV weighted by fission fractions) × 1/(4πL²); cross section in cm²; a factor-of-4π or per-fission/per-second slip is the classic error here. State conventions in CONVENTIONS.md before coding.
-4. **Steep spectra + histogram binning:** use log-spaced reconstructed-energy bins (spectra span eV-scale CEvNS recoils to tens-of-MeV muon deposits); never subtract histograms with unmatched bin edges.
-5. **Saturation regime:** during a muon burst the instantaneous tunneling rate (N_qp × EMG pdf peak) exceeds 25 kHz by orders of magnitude; reconstructed energy compresses nonlinearly. This is the physics headline, not a bug — but it means the E_rec estimator must be defined and characterized in the saturated regime, and the ⟨N_qp⟩≫10⁶ event lists should be replaced by analytic counting statistics (see Resource Estimates).
-6. **EMG pre-onset events:** Gaussian lower tail lets events precede burst onset (documented in `quasiparticle_bursts.py`); the censoring window must key off actual event times (`BurstTruth.t_start`), not `t_arrival`.
-7. **RNG discipline:** one `np.random.default_rng(seed)` per run, threaded explicitly (qpd convention); never mix with legacy `np.random.*` global state.
-8. **Materials data provenance:** `materials.yaml` values are sourced from Serniak et al. PRA 2019 / arXiv:2405.17192 per its header; the missing Ta entry must be added with a citation, not from memory.
-
-## Data Gaps / Open Items for Phase Research
-
-- **Sub-2 MeV reactor spectrum table:** pick a specific published summation dataset (e.g., from the arXiv:2302.10460 supplementary material or a one-off CONFLUX run) — decision deferred to phase research; freeze it as a versioned CSV either way.
-- **Tantalum superconductor parameters** for the Ta→Al design (Δ, DOS, T_c with citation).
-- **E_dep → expected_n_qp conversion** (phonon-to-QP efficiency per design) is a theory-dimension input; the computational hook (`expected_n_qp` array) is ready.
-- **Exact censoring convention** for the 25 kHz limit (merge vs. drop; paralyzable vs. non-paralyzable) — must be fixed in CONVENTIONS.md before the response matrix is built.
+- **ENDF/B-VIII.0 (2018)** is the well-benchmarked default anchor; **ENDF/B-VIII.1 (2024, arXiv:2511.03564)** exists and should be run as a sensitivity check, not the baseline, until its Ge evaluations are confirmed changed. JEFF-3.3 is a viable alternative library for the same isotopes (cross-check).
+- **238U SF Watt parameters carry real spread across sources** (e.g. a=0.7124 MeV, b=5.6405 MeV^-1 Los Alamos model vs a=0.6483 MeV, b=6.811 MeV^-1 SOURCES-4A file). Pin ONE set with a cited source in the CSV header and carry the alternate as an uncertainty variant. LOW confidence on a single "correct" pair.
+- **Exact patch versions** (openmc 0.15.x, radioactivedecay 0.6.x, xraylib 4.1.x) are MEDIUM confidence — verify with `pip show` / `conda list` at implementation time; the APIs cited (`IncidentNeutron.from_endf`, `AngleDistribution.from_endf`) are stable across recent releases.
+- **radioactivedecay default is ICRP-107**, which is decay-constant/branching-oriented; for precise gamma/beta line energies and intensities prefer curated **ENSDF/DDEP** values (as v1.0 already does in `data/gamma_lines.csv`) and use radioactivedecay for chain activities/timing.
 
 ## Sources
 
-- Local qpd repo (read 2026-07-20): `/Users/lanqingyuan/Documents/GitHub/qpd/src/qpd/simulator/{quasiparticle_bursts.py,parity.py,vna_simulator.py,noise.py,resonator.py}`, `/Users/lanqingyuan/Documents/GitHub/qpd/src/qpd/theory/materials.yaml`, `pyproject.toml`, `checks/check_readout_window.py`, `src/qpd/mlebench/generate.py`
-- Local wimprates v0.5.0 (read 2026-07-20): `/Users/lanqingyuan/Documents/GitHub/wimprates/wimprates/{elastic_nr.py,halo.py,utils.py}`, `README.md` — Helm FF, rate-integral pattern, Ge atomic weight
-- bradkav/CEvNS — https://github.com/bradkav/CEvNS (MIT, v1.0 2018, arXiv:1805.01798) — SM CEvNS xsec + CHOOZ reactor flux, validation benchmark
-- Ikaroshu/pyCEvNS — https://github.com/Ikaroshu/pyCEvNS — alternative CEvNS package (not selected)
-- CONFLUX — https://github.com/CNFLUX/conflux , https://conflux.readthedocs.io , arXiv:2503.18966 (Comput. Phys. Commun., MIT license) — summation/conversion reactor flux framework
-- P. Huber, Phys. Rev. C 84, 024617 (2011), arXiv:1106.0687 — converted 235U/239Pu/241Pu spectra
-- T. Mueller et al., arXiv:1101.2663 — improved reactor spectra incl. 238U (summation)
-- Reactor flux below IBD threshold with CEvNS — arXiv:2302.10460 (Phys. Rev. D 108, 033002)
-- M. Guan et al., arXiv:1509.06176 — modified Gaisser sea-level muon flux (valid to low E, all zenith angles)
-- EcoMug — Pagano et al., NIM A 1014, 165732 (2021) (sciencedirect S0168900221007178) — efficient cosmic muon generator, reference implementation
-- Lewis & Shedler, Nav. Res. Logist. Q. 26, 403 (1979) — inhomogeneous Poisson thinning (background knowledge; standard reference)
+- ENDFtk (njoy) — robust C++/Python ENDF-6 reader: [OSTI 2448319](https://www.osti.gov/biblio/2448319), [github.com/njoy/ENDFtk](https://github.com/njoy/ENDFtk)
+- sandy (Fiorito) — ENDF-6 to pandas, covariance sampling: [PyPI](https://pypi.org/project/sandy/), [docs](https://luca-fiorito-11.github.io/sandy-docs/introduction.html)
+- openmc.data — Python ENDF File 3/4 parser: [IncidentNeutron API](https://docs.openmc.org/en/stable/pythonapi/generated/openmc.data.IncidentNeutron.html), [angle_distribution module](https://docs.openmc.org/en/latest/_modules/openmc/data/angle_distribution.html), [data config](https://docs.openmc.org/en/stable/usersguide/data.html), [OpenMC cross-section data](https://openmc.org/data/)
+- ENDF/B-VIII.0 — Brown et al., Nucl. Data Sheets 148 (2018): [ScienceDirect](https://www.sciencedirect.com/science/article/pii/S0090375218300206); ENDF/B-VIII.1: [arXiv:2511.03564](https://arxiv.org/pdf/2511.03564)
+- SOURCES-4C — (alpha,n)/SF/delayed neutron source code: [OECD-NEA CCC-0661](https://www.oecd-nea.org/tools/abstract/detail/ccc-0661), [OSTI 976142](https://www.osti.gov/biblio/976142)
+- 238U SF Watt spectrum — Verbeke et al. UCRL-AR-228518: [LLNL tech report](https://mcnp.lanl.gov/pdf_files/TechReport_2007_LLNL_UCRL-AR-228518_VerbekeHagmannEtAl.pdf); parameter table: [ResearchGate](https://www.researchgate.net/figure/The-Watt-spectrum-parameters-for-238-U-and-232-Th-12_tbl2_282181830)
+- Gordon 2004 — ground-level cosmic-ray neutron spectrum/analytic fit (IEEE TNS 51, 3427): [ResearchGate](https://www.researchgate.net/publication/3139171_Measurement_of_the_flux_and_energy_spectrum_of_cosmic-ray_induced_neutrons_on_the_ground); PARMA/EXPACS extension (Sato): [PMC4973932](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4973932/)
+- Cosmogenic Ge activation — CDMSlite tritium/isotope rates: [arXiv:1806.07043](https://arxiv.org/pdf/1806.07043); EDELWEISS-III: [arXiv:1607.04560](https://arxiv.org/pdf/1607.04560); ACTIVIA: [ResearchGate](https://www.researchgate.net/publication/1766248_ACTIVIA_Calculation_of_Isotope_Production_Cross-sections_and_Yields)
+- radioactivedecay — decay-chain Python package: [arXiv:2203.09761](https://arxiv.org/pdf/2203.09761), [docs](https://radioactivedecay.github.io/), [github](https://github.com/radioactivedecay/radioactivedecay)
+- NIST XCOM / xraylib — photon attenuation: [XCOM database](https://www.nist.gov/pml/xcom-photon-cross-sections-database), [NIST XrayMassCoef Ge (Z=32)](https://physics.nist.gov/PhysRefData/XrayMassCoef/ElemTab/z32.html)
+- OpenMC install (macOS/conda) + ENDF/B-VIII.0 HDF5: [OpenMC data](https://openmc.org/data/), [Zenodo 8410375](https://zenodo.org/records/8410375)
+</content>
