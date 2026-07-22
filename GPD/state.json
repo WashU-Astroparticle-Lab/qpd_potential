@@ -1260,17 +1260,17 @@
   "continuation": {
     "schema_version": 1,
     "handoff": {
-      "resume_file": null,
-      "stopped_at": null,
+      "resume_file": "GPD/ROADMAP.md",
+      "stopped_at": "Milestone v2.0 fully scoped; Phase 8 (Veto-Envelope Geometry Gate, P-VETO) ready to plan -- GATING STOP-CONDITION, schedule nothing else until it closes",
       "last_result_id": null,
-      "recorded_at": null,
-      "recorded_by": null
+      "recorded_at": "2026-07-22T21:17:33.628326+00:00",
+      "recorded_by": "state_record_session"
     },
     "bounded_segment": null,
     "machine": {
-      "recorded_at": null,
-      "hostname": null,
-      "platform": null
+      "recorded_at": "2026-07-22T21:17:33.628326+00:00",
+      "hostname": "mac.wusm-wifi.wucon.wustl.edu",
+      "platform": "Darwin 25.3.0 arm64"
     }
   },
   "contract_alignment": {

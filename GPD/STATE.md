@@ -174,9 +174,9 @@ None
 
 ## Session Continuity
 
-**Last session:** none
-**Stopped at:** none
-**Resume file:** none
+**Last session:** 2026-07-22T21:17:33.628326+00:00
+**Stopped at:** Milestone v2.0 fully scoped; Phase 8 (Veto-Envelope Geometry Gate, P-VETO) ready to plan -- GATING STOP-CONDITION, schedule nothing else until it closes
+**Resume file:** GPD/ROADMAP.md
 **Last result ID:** none
-**Hostname:** none
-**Platform:** none
+**Hostname:** mac.wusm-wifi.wucon.wustl.edu
+**Platform:** Darwin 25.3.0 arm64
