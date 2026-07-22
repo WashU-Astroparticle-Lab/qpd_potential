@@ -530,8 +530,8 @@
     "total_phases": 12,
     "current_plan": null,
     "total_plans_in_phase": null,
-    "status": "Ready to plan",
-    "last_activity": "2026-07-21",
+    "status": "Phase complete \u2014 ready for verification",
+    "last_activity": "2026-07-22",
     "last_activity_desc": null,
     "progress_percent": 100,
     "paused_at": null
@@ -902,6 +902,31 @@
       "phase": "0",
       "summary": "v1.1 roadmap finalized: 6 phases (7-12), 11/11 objectives mapped",
       "rationale": "Critical path 7->8->9->10->12, Phase 11 parallel; three gating inputs handled via representative cited defaults + explicit band (fixed in Phase 7)"
+    },
+    {
+      "phase": "07-01",
+      "summary": "Ambient fast-neutron flux LOCKED: PARMA/Sato-2015 shape (coefficients from official PARMA v4.10 source, compiled unmodified) + Gordon-2004 integral anchor k=1.096 -> Phi(10MeV-10GeV)=3.55e-3 cm^-2 s^-1, broad 1.32e-2; band [default/5, default] downward for building shielding",
+      "rationale": "Gordon-2004 differential coefficients paywalled/unsourceable; USER DECISION 2026-07-22. PARMA native integral 3.24e-3 agrees with Gordon ~9% untuned (independent cross-check)"
+    },
+    {
+      "phase": "07-01",
+      "summary": "Radiopurity budget + activation scenario LOCKED (t_exp=1yr, t_cool=0). FINDING: 68Ge/65Zn NOT saturated at 1yr (A=18.2/11.0 dec/kg/day, 61%/65% of R; full sat ~3yr); 3H non-saturating 4.05 dec/kg/day",
+      "rationale": "Plan verify text had quoted ~30/~17 saturation values; as-deployed activity is the correct deliverable"
+    },
+    {
+      "phase": "07-02",
+      "summary": "n-Ge elastic FROZEN thermal->fast, 23155-pt resonance-resolved union grid, zero NaN. Sub-MeV sigma_el filled from NJOY-2016.68 Lib80x ACE (HTTP-range extraction of 5 members, 11.8MB of a 7.05GB zip); ACE binaries gitignored, reproducible via committed fetcher+sha256",
+      "rationale": "MF3 MT2 is exactly zero across resolved+URR (sub-MeV sigma_el lives in File-2); openmc/NJOY unbuildable on osx-arm64. USER DECISION 2026-07-22: pre-reconstructed ACE"
+    },
+    {
+      "phase": "07-02",
+      "summary": "LOCKED for CALC-06/08: sigma_tot(1-2MeV)=3.729 b, Sigma=0.1646 cm^-1, lambda=6.076 cm, P_int(2mm)=3.24%, endpoint natural 0.0536 (as-computed, NOT force-fit to 0.0538); 0.1-1 MeV band now 100% of nodes in 3-7 b (median 5.08 b)",
+      "rationale": "sigma_tot drifted +2.4% (3.643->3.729 b) moving from MF3 MT1 background to ACE MT=1 pointwise; recorded, not silently absorbed"
+    },
+    {
+      "phase": "07-02",
+      "summary": "RESIDUAL UNCERTAINTY: ACE baseline is 293.6 K vs a mK cryogenic target. Band integrals insensitive (2.5e-4%) but resonance LINE SHAPES differ materially (Ge-73 peak 9253.7 b at 0.1 K vs 8533.0 b at 293.6 K). Any downstream use resolving line shapes must switch to the .805nc (0.1 K) files",
+      "rationale": "Doppler broadening is convolution with a normalized kernel so the integral is conserved; only line shape changes"
     }
   ],
   "approximations": [],
@@ -952,10 +977,10 @@
     }
   },
   "contract_alignment": {
-    "confirmed_at": "2026-07-20T21:56:24.017799+00:00",
+    "confirmed_at": "2026-07-22T13:45:57.131273+00:00",
     "confirmed_contract_hash": "sha256:8aba34ccb645a2a564e70e462a5ddde82f0b00727295397da3ead966e235e364",
-    "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
+    "confirmed_context_hash": "sha256:618a743b0d29768e03d1c80a76d3a9ace89c7f5f22f252c3d06f3746d39c9b8b"
   },
   "_version": 1,
-  "_synced_at": "2026-07-22T03:20:04.127544+00:00"
+  "_synced_at": "2026-07-22T17:54:59.056041+00:00"
 }

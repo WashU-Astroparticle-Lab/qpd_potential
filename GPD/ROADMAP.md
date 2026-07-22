@@ -83,8 +83,8 @@ Milestone audit: PASS with open questions ([`milestones/v1.0-MILESTONE-AUDIT.md`
 5. Every fixed input carries a keV_nr axis tag; no keVee/Lindhard quenching is introduced anywhere in the locked inputs.
 
 **Plans:** 2 plans
-- [ ] 07-01-PLAN.md — Scenario input-lock: fix ambient neutron flux, housing radiopurity budget, and Ge exposure/cool-down scenario as cited defaults + bands; consolidated scenario/assumptions note (D1)
-- [ ] 07-02-PLAN.md — ENDF/B-VIII.0 n-Ge elastic acquisition & validation (5 isotopes, union grid, σ_el/λ/endpoint sanity checks) → frozen provenance-headed artifact (D2)
+- [x] 07-01-PLAN.md — Scenario input-lock: fix ambient neutron flux, housing radiopurity budget, and Ge exposure/cool-down scenario as cited defaults + bands; consolidated scenario/assumptions note (D1)
+- [x] 07-02-PLAN.md — ENDF/B-VIII.0 n-Ge elastic acquisition & validation (5 isotopes, union grid, σ_el/λ/endpoint sanity checks) → frozen provenance-headed artifact (D2)
 
 ### Phase 8: Neutron Source Terms (P-NSRC)
 
@@ -221,7 +221,7 @@ Milestone audit: PASS with open questions ([`milestones/v1.0-MILESTONE-AUDIT.md`
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 | ----- | --------- | -------------- | ------ | --------- |
-| 7. Scenario & Nuclear-Data Lock | v1.1 | 0/2 | Not started | - |
+| 7. Scenario & Nuclear-Data Lock | v1.1 | 2/2 | Complete | 2026-07-22 |
 | 8. Neutron Source Terms | v1.1 | 0/TBD | Not started | - |
 | 9. Neutron Transport & Recoil Fold | v1.1 | 0/TBD | Not started | - |
 | 10. Detector Radioactivity Budget | v1.1 | 0/TBD | Not started | - |

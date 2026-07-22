@@ -16,8 +16,8 @@ See: GPD/PROJECT.md
 **Total Phases:** 12
 **Current Plan:** none
 **Total Plans in Phase:** none
-**Status:** Ready to plan
-**Last Activity:** 2026-07-21
+**Status:** Phase complete — ready for verification
+**Last Activity:** 2026-07-22
 
 **Progress:** [██████████] 100%
 
@@ -40,9 +40,6 @@ None yet.
 
 | Label | Duration | Tasks | Files |
 | ----- | -------- | ----- | ----- |
-| -     | -        | -     | -     |
-
-## Accumulated Context
 | Phase 01 P01-01 | 900s | 3 tasks | 8 files |
 | Phase 01 P01-02 | 330s | 3 tasks | 4 files |
 | Phase 02 P02-01 | 5400s | 3 tasks | 13 files |
@@ -57,8 +54,9 @@ None yet.
 | Phase 06 P06-01 | 1500s | 3 tasks | 5 files |
 | Phase 06 P06-02 | 360s | 3 tasks | 5 files |
 
-### Decisions
+## Accumulated Context
 
+### Decisions
 
 - [Phase 01-conventions-energy-scale-foundation]: Design->parameter mapping locked in code: Ta->Al uses Table II Aluminum column, Al->Hf uses Hafnium column; absorber supplies only Delta_abs.
 - [Phase 01-conventions-energy-scale-foundation]: Hf tau_qp = 400 us adopted (caption/lit) over the 1 ms table cell, flagged MEDIUM.
@@ -115,6 +113,11 @@ None yet.
 - [Phase 06]: Stage-1 milestone CLOSED by Plan 06-02.
 - [Phase 0]: Started milestone v1.1: Neutron & Radiogenic Backgrounds — New milestone cycle — neutron NR (muon-induced/cosmogenic/radiogenic) + Ge-bulk & housing radioactivity in reconstructed energy
 - [Phase 0]: v1.1 roadmap finalized: 6 phases (7-12), 11/11 objectives mapped — Critical path 7->8->9->10->12, Phase 11 parallel; three gating inputs handled via representative cited defaults + explicit band (fixed in Phase 7)
+- [Phase 07-01]: Ambient fast-neutron flux LOCKED: PARMA/Sato-2015 shape (coefficients from official PARMA v4.10 source, compiled unmodified) + Gordon-2004 integral anchor k=1.096 -> Phi(10MeV-10GeV)=3.55e-3 cm^-2 s^-1, broad 1.32e-2; band [default/5, default] downward for building shielding — Gordon-2004 differential coefficients paywalled/unsourceable; USER DECISION 2026-07-22. PARMA native integral 3.24e-3 agrees with Gordon ~9% untuned (independent cross-check)
+- [Phase 07-01]: Radiopurity budget + activation scenario LOCKED (t_exp=1yr, t_cool=0). FINDING: 68Ge/65Zn NOT saturated at 1yr (A=18.2/11.0 dec/kg/day, 61%/65% of R; full sat ~3yr); 3H non-saturating 4.05 dec/kg/day — Plan verify text had quoted ~30/~17 saturation values; as-deployed activity is the correct deliverable
+- [Phase 07-02]: n-Ge elastic FROZEN thermal->fast, 23155-pt resonance-resolved union grid, zero NaN. Sub-MeV sigma_el filled from NJOY-2016.68 Lib80x ACE (HTTP-range extraction of 5 members, 11.8MB of a 7.05GB zip); ACE binaries gitignored, reproducible via committed fetcher+sha256 — MF3 MT2 is exactly zero across resolved+URR (sub-MeV sigma_el lives in File-2); openmc/NJOY unbuildable on osx-arm64. USER DECISION 2026-07-22: pre-reconstructed ACE
+- [Phase 07-02]: LOCKED for CALC-06/08: sigma_tot(1-2MeV)=3.729 b, Sigma=0.1646 cm^-1, lambda=6.076 cm, P_int(2mm)=3.24%, endpoint natural 0.0536 (as-computed, NOT force-fit to 0.0538); 0.1-1 MeV band now 100% of nodes in 3-7 b (median 5.08 b) — sigma_tot drifted +2.4% (3.643->3.729 b) moving from MF3 MT1 background to ACE MT=1 pointwise; recorded, not silently absorbed
+- [Phase 07-02]: RESIDUAL UNCERTAINTY: ACE baseline is 293.6 K vs a mK cryogenic target. Band integrals insensitive (2.5e-4%) but resonance LINE SHAPES differ materially (Ge-73 peak 9253.7 b at 0.1 K vs 8533.0 b at 293.6 K). Any downstream use resolving line shapes must switch to the .805nc (0.1 K) files — Doppler broadening is convolution with a normalized kernel so the integral is conserved; only line shape changes
 
 ### Active Approximations
 
