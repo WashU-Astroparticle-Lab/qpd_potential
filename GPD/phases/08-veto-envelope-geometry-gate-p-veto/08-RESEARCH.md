@@ -54,15 +54,37 @@ The phase is geometric and combinatorial, not field-theoretic. Four small formal
 
 ### F1. Orientation-invariant fit lemma (the core of Success Criterion 1)
 
-For a rectangular plate of edges $a \times a \times t$ with $t \ll a$, let $B(R)$ be the axis-aligned bounding box of the plate under rotation $R \in SO(3)$, with sorted side lengths $b_1(R) \ge b_2(R) \ge b_3(R)$.
+> ## ⚠ RETRACTED AND CORRECTED — planning round 2, 2026-07-22
+>
+> **The lemma as originally written below is FALSE.** It claimed $\min_{R \in SO(3)} b_2(R) = a$, i.e. that no orientation reduces the requirement that the cavity have two orthogonal free dimensions of at least $a$. That is the opposite of the truth: reorientation **does** relax the bounding-box requirement.
+>
+> **What was wrong.** The lemma appears to have been reasoned from the axis-aligned orientation alone. Tilting the plate by 45° about an in-plane axis leaves the $x$ extent at $a$ but compresses both remaining extents to $(a\cos\theta + t\sin\theta)$, giving a bounding box of $10.160 \times 7.326 \times 7.326$ cm — the second-largest side is 7.33 cm, not 10.16 cm.
+>
+> **True results** (verified analytically and by $2\times10^5$ uniform SO(3) samples, $a = 10.16$ cm, $t = 0.20$ cm):
+>
+> | Quantity | Analytic minimum | Attained at | Sampled ($2\times10^5$) |
+> | --- | --- | --- | --- |
+> | $\min b_2$ | $(a+t)/\sqrt{2} = 7.3256$ cm | 45° tilt about an in-plane axis | 7.4210 |
+> | $\min b_1$ | $a/(3\sqrt{2}/4) = 9.5789$ cm | Prince-Rupert orientation | 9.7185 |
+> | $\min$ projected footprint diameter | $\sqrt{a^2+t^2} = 10.1620$ cm | edge-on | 10.2039 |
+>
+> The wafer therefore fits inside a **9.58 cm cube**. Monte-Carlo sampling approaches each minimum from above without reaching it, so any test must use one-sided lower bounds plus an exact check at the attaining orientation — never an equality against a sampled value.
+>
+> **What replaces the lemma.** The orientation-invariant quantity is the *projection floor*: $\min_{R} D_{\text{proj}}(R) = \sqrt{a^2+t^2} = 10.162$ cm, rising to $\sqrt{2}\,a = 14.368$ cm when the wafer face is parallel to the projection (cap) plane. The 14.368 cm figure is the coverage requirement **under a face-parallel mounting premise**, which must be stated wherever it is used. Note also that $\sqrt{2a^2+t^2} = 14.370$ cm is the enclosing-*sphere* diameter, not the minimum enclosing cylinder; the true minimum enclosing cylinder (axis normal to the face) has the face-diagonal diameter 14.368 cm.
+>
+> **The no-fit direction is unchanged.** Exploiting the tilt would require a cavity accommodating a $10.160 \times 7.326 \times 7.326$ cm box against a 5.0 cm tight cavity estimate and a 16.7 cm loose bound, and the cap still could not cover the tilted footprint. Reorientation helps and still does not suffice.
+>
+> Corrected by `gpd-planner` during Phase 8 planning round 2. See `08-03-PLAN.md` (`claim-orientation-invariance`, `test-orientation-invariance`) for the binding replacement. **Do not use the original text below as a source.**
 
-$$\min_{R \in SO(3)} b_2(R) \;=\; a$$
+~~For a rectangular plate of edges $a \times a \times t$ with $t \ll a$, let $B(R)$ be the axis-aligned bounding box of the plate under rotation $R \in SO(3)$, with sorted side lengths $b_1(R) \ge b_2(R) \ge b_3(R)$.~~
 
-i.e. **no orientation reduces the requirement that the cavity have two orthogonal free dimensions of at least $a$.** The 2 mm thickness buys clearance in one axis only. Equivalently, the minimum enclosing cylinder of the wafer has diameter
+~~$$\min_{R \in SO(3)} b_2(R) \;=\; a$$~~
+
+~~i.e. **no orientation reduces the requirement that the cavity have two orthogonal free dimensions of at least $a$.** The 2 mm thickness buys clearance in one axis only.~~ Equivalently, the minimum enclosing cylinder of the wafer has diameter
 
 $$D_{\min} = \sqrt{2a^2 + t^2} = \sqrt{2(10.16)^2 + (0.20)^2} = 14.370\ \text{cm}$$
 
-which is the relevant number against a cylindrical COV. This lemma is what forecloses "could we just stand it on edge / tilt it?" — it must be stated explicitly, because "reorientation" is the first thing a referee will ask.
+~~which is the relevant number against a cylindrical COV. This lemma is what forecloses "could we just stand it on edge / tilt it?"~~ — see the correction above: this quantity is the enclosing-sphere diameter, and it does **not** foreclose reorientation.
 
 ### F2. Clearance / shortfall definition
 
@@ -316,9 +338,13 @@ The published crystal footprint of a 3×3 array of (5 mm)³ cubes is **2.25 cm²
 Its ~5× is a *passive material* attenuation (L1-flavoured) but is quoted for a nearly-4π liner "in the direct vicinity" of a ~cm object. Its value is geometry-coupled to the very payload size under dispute. The binary L1/L2 split in Success Criterion 2 does not have a slot for this.
 **Avoid:** introduce an explicit **L1\*** category — "passive but payload-geometry-coupled" — for the B₄C liner and the internal shielding, defaulting its transferable credit to 1.0 alongside L2 while documenting *why* it is not L2. Do not silently promote it to L1 to make the budget look better.
 
-### Pitfall 7: "Could we reorient it?" **[severity: low — but it will be asked]**
-Handled by lemma F1: every orientation of the plate requires two orthogonal cavity dimensions ≥ 10.16 cm.
-**Avoid:** state the lemma; do not hand-wave "it's too big in every direction".
+### Pitfall 7: "Could we reorient it?" **[severity: RAISED to medium — the original answer was wrong]**
+
+> **⚠ CORRECTED — planning round 2, 2026-07-22.** The original text said this was "handled by lemma F1: every orientation of the plate requires two orthogonal cavity dimensions ≥ 10.16 cm." **Lemma F1 is false (see the retraction at §F1), so this pitfall was NOT discharged.** Reorientation genuinely relaxes the bounding-box requirement: a 45° in-plane tilt gives a 10.160 × 7.326 × 7.326 cm box, and the wafer fits inside a 9.579 cm cube.
+>
+> **The correct answer** is not that reorientation is impossible but that it is insufficient: the tilted box still exceeds the ~5.0 cm tight cavity estimate, and the cap still cannot cover the tilted footprint (the orientation-invariant projection floor is √(a²+t²) = 10.162 cm against a 10.0 cm published cap). Reorientation helps and does not rescue the fit.
+>
+> **Avoid:** asserting that no orientation reduces the requirement — that claim is false and a referee checking it will find the 45° counterexample immediately. State the true minima and then show that the tilt still does not suffice.
 
 ### Pitfall 8: Trusting an LLM page-summarizer for a quote or a citation **[severity: high — demonstrated failure this session]**
 Two concrete failures occurred during this research pass, both on sources that were in fact correct and accessible:
