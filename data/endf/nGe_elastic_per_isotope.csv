@@ -9,8 +9,8 @@
 # abundances_IUPAC = 70Ge=0.2057, 72Ge=0.2745, 73Ge=0.0775, 74Ge=0.3650, 76Ge=0.0773
 # N_Ge             = 4.4136e+22 atoms/cm^3 (rho=5.323 g/cm^3, M=72.63 g/mol)
 # recoil_axis      = keV_nr (unified phonon scale, NO Lindhard/quenching)  [CONVENTIONS.md sec.B]
-# git_sha          = 78f7728
-# generated_utc    = 2026-07-22T14:22:00Z
+# git_sha          = ce4ae7c
+# generated_utc    = 2026-07-22T14:24:08Z
 # columns: E_eV, then sigma_el_b_<A> and a1_<A> per isotope
 E_eV,sigma_el_b_70,sigma_el_b_72,sigma_el_b_73,sigma_el_b_74,sigma_el_b_76,a1_70,a1_72,a1_73,a1_74,a1_76
 1.000000e-05,nan,nan,nan,nan,nan,6.373120e-05,5.759200e-05,6.034560e-05,5.063290e-05,4.224750e-05
