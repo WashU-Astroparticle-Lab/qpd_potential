@@ -952,6 +952,11 @@
       "phase": "0",
       "summary": "v2.0 methods survey: invert NUCLEUS deposit spectra for post-shield fluence; CPU-cost claim VERIFIED (scout flag was wrong)",
       "rationale": "Methods scout proposes inverting NUCLEUS's published CaWO4/Al2O3 neutron deposit spectra (their Figs 8-11) through the flat-box kernel to recover the post-shield fluence in situ, rather than propagating through the shield -- two published targets over-determine it, giving a built-in closure test. ORCHESTRATOR CORRECTION: the scout flagged the 'tens-to-hundreds of millions of CPU-hours' figure as unverifiable; it IS in the paper, p.21: 'throughout this work required tens, even hundreds, millions of hours of computing time', plus the statement that variance-reduction techniques will be required. The scout's grep missed it across a line break. Full Geant4 transport stays OUT OF SCOPE. The scout's independent point stands: a 1-D spherical-shell shield-only MC is a far cheaper fallback than NUCLEUS's full building+4pi+sub-keV chain."
+    },
+    {
+      "phase": "0",
+      "summary": "RESOLVED (orchestrator, pre-roadmap): anchor on NUCLEUS Table 5 at 100% duty, NOT the Sect.2 prose; Ge/CaWO4 signal ratio 2.31 same-pipeline",
+      "rationale": "Pitfalls scout flagged a blocking 1.27x ambiguity between Table 5 CaWO4 CEvNS (218.2 mcpd -> 356.5 d^-1kg^-1keV^-1 at their stated 6.8 g / 90 eV RoI) and Sect.2 prose (about 280). Rendered-PDF read confirms the CEvNS row has exactly ONE value per column (218.2/60.7/8.4/-), killing the 'two sub-columns lost in text extraction' hypothesis. Arbitrated with our own pipeline: an independent CaWO4 fold (Ca+W+O natural isotopes, VNS flux 2.1e12, Helm FF, per-isotope) gives 407.7 -> 1.14x the table value and 1.46x the prose value. Table 5 at 100% duty is therefore the correct anchor; prose 280 is the 80%-duty value (356.5*0.8=285). Their prose is internally inconsistent: the Al2O3 prose 20 matches its table entry at 100% (20.7), not 80%. Anchoring on prose would flatter our Ge S/B by 27%. SIGNAL-SIDE CLOSURE TEST PASSED at 14%. CORRECTION to an earlier orchestrator claim: compound N^2/A for CaWO4 is 44.2 (not 65.8 = pure W); naive ratio 1.95 vs folded 2.31, so the naive scaling must not be used as the benchmark. Ge 176.8 vs CaWO4 407.7 d^-1kg^-1keV^-1, both same-pipeline."
     }
   ],
   "approximations": [],
@@ -1007,5 +1012,5 @@
     "confirmed_context_hash": "sha256:618a743b0d29768e03d1c80a76d3a9ace89c7f5f22f252c3d06f3746d39c9b8b"
   },
   "_version": 1,
-  "_synced_at": "2026-07-22T19:52:10.557884+00:00"
+  "_synced_at": "2026-07-22T19:55:54.319807+00:00"
 }
