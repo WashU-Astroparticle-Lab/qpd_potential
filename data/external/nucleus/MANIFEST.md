@@ -30,7 +30,20 @@ Working directory for every command below: `data/external/nucleus/`.
 | 8 | `2401.09837v1.html` | `curl -sS -L -o 2401.09837v1.html "https://arxiv.org/html/2401.09837v1"` | 267552 | `44d06fc063264fa6a44fc47ecbcd0cb00af35afc8f777f9119f7a46080362ddc` | **real source text** |
 | 9 | `2401.09837v1.txt` | `python3 html_to_text.py 2401.09837v1.html 2401.09837v1.txt` | 47677 | `cfb347a8c5b9b65ae9f94abf93cf22c5106ce58fd5d2c787e58f64e993d06df7` | **real source text** |
 | 10 | `html_to_text.py` | (written in-plan; the converter itself, frozen with the cache) | 4828 | `bad70df607c6dd494b19c7f7bcac38e43303120c4b4121efeb97645be14fd8c3` | n/a — tool |
-| 11 | *(Goupy 2024 thesis)* | see §4 | — | — | **FAILED — anti-bot challenge; NOT saved** |
+| 11 | `epjc_86_29.html` | `curl -sS -L -A "<browser UA>" -o epjc_86_29.html "https://link.springer.com/article/10.1140/epjc/s10052-025-15168-9"` | 725650 | `989842e65bfae44adf22c1e759defeb8ed0beba9e486033ac64813e89724ff19` | **real source text** (published open-access EPJC 86, 29 (2026); version of record) |
+| 12 | `epjc_86_29.txt` | `python3 html_to_text.py epjc_86_29.html epjc_86_29.txt` | 116076 | `b60641eba11a15885edd1c23a99b5f71991c24ce672bf0cdf3179f0c40592793` | **real source text** |
+| 13 | *(Goupy 2024 thesis)* | see §4 | — | — | **FAILED — anti-bot challenge; NOT saved** |
+
+**Artifacts 11–12 were not anticipated by the plan.** 08-RESEARCH.md and Plan 08-01 both allowed for
+the journal version being unretrievable. It was retrieved (2026-07-22 UTC, HTTP 200, `text/html`).
+Validation: contains §5.2.1 and §5.2.2 in full (open access), not a paywall stub; discriminating
+strings `sizable additional reduction` (1 hit), `99.8` (1 hit), `2.5 cm thick HPGe` (1 hit),
+`raising the COV threshold` (1 hit). Used for the four-statement cross-version spot-check in
+`08-01-SOURCE-EVIDENCE.md` §E.2 — all four agree with arXiv v1 word-for-word. Note the converter
+reports `0` math nodes for this file: Springer serves math as MathJax `\( \)` inline text rather
+than LaTeXML `<math alttext=...>`, so the alttext path is inapplicable and the text passes through
+directly. The Unicode-space and whitespace-collapse fixes still apply and are what make its
+sentences greppable.
 
 HTTP status and content-type observed at retrieval (from `curl -w`):
 
