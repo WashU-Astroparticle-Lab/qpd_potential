@@ -525,13 +525,13 @@
     }
   },
   "position": {
-    "current_phase": null,
-    "current_phase_name": null,
-    "total_phases": 6,
+    "current_phase": "7",
+    "current_phase_name": "Scenario & Nuclear-Data Lock",
+    "total_phases": 12,
     "current_plan": null,
     "total_plans_in_phase": null,
-    "status": "Milestone complete",
-    "last_activity": "2026-07-22",
+    "status": "Ready to plan",
+    "last_activity": "2026-07-21",
     "last_activity_desc": null,
     "progress_percent": 100,
     "paused_at": null
@@ -892,6 +892,16 @@
       "phase": "06",
       "summary": "Stage-1 milestone CLOSED by Plan 06-02.",
       "rationale": null
+    },
+    {
+      "phase": "0",
+      "summary": "Started milestone v1.1: Neutron & Radiogenic Backgrounds",
+      "rationale": "New milestone cycle \u2014 neutron NR (muon-induced/cosmogenic/radiogenic) + Ge-bulk & housing radioactivity in reconstructed energy"
+    },
+    {
+      "phase": "0",
+      "summary": "v1.1 roadmap finalized: 6 phases (7-12), 11/11 objectives mapped",
+      "rationale": "Critical path 7->8->9->10->12, Phase 11 parallel; three gating inputs handled via representative cited defaults + explicit band (fixed in Phase 7)"
     }
   ],
   "approximations": [],
@@ -947,5 +957,5 @@
     "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
   },
   "_version": 1,
-  "_synced_at": "2026-07-22T02:26:16.390605+00:00"
+  "_synced_at": "2026-07-22T03:20:04.127544+00:00"
 }

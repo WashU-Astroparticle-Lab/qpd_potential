@@ -10,8 +10,8 @@
   },
   "model_profile": "numerical",
   "workflow": {
-    "research": true,
     "plan_checker": true,
     "verifier": true
-  }
+  },
+  "research": true
 }
