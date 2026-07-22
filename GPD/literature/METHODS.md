@@ -1,43 +1,503 @@
-# Methods Research — v1.1 Neutron-NR and Radiogenic In-Band Backgrounds
+# Methods Research — v2.0 NUCLEUS-VNS Background Transfer and the 100 meV Extension
 
-**Domain:** Neutron-induced Ge nuclear-recoil and detector-material radiogenic background spectra
-for a thin (2 mm, ~110 g) natural-Ge wafer at surface, folded to reconstructed energy through the
-existing v1.0 QPD response chain.
-**Researched:** 2026-07-21
-**Confidence:** MEDIUM-HIGH (source-grounded parametrizations; surface-flux normalization and
-detector radiopurity budget carry the largest residual uncertainty)
+**Domain:** Rare-event cryogenic-detector background modelling — transferring a published, measured,
+shielded background environment (NUCLEUS at the Chooz Very-Near-Site) to a different target material
+(natural Ge), and extending an analytic recoil/response pipeline two decades below its present
+10.14 eV grid floor to 100 meV.
+**Researched:** 2026-07-22
+**Confidence:** MEDIUM-HIGH overall. HIGH for the flux/response separation, the flat-box inversion,
+the digitization/lethargy conventions, and the lattice-scale kinematics. MEDIUM for the semi-analytic
+shield-propagation accuracy figures and for what NUCLEUS actually publishes per layer (verified only
+from the arXiv/EPJC full text via WebFetch, not from a locally-read PDF). LOW for the LEE amplitude
+itself — that is irreducibly a scenario input, not a computable quantity.
 
-> **Scope note.** This file is the v1.1 (subsequent-milestone) methods survey. The v1.0 methods
-> (Freedman CEvNS + Helm; Gaisser–Guan muon flux × ray-box chord × Landau–Vavilov; Klein–Nishina
-> Compton; the MC response chain producing `R(E_rec | E_dep)`) are archived at
-> `GPD/milestones/v1.0/literature/METHODS.md` and are **reused, not re-researched**. Everything below
-> is the NEW background physics. Every new channel must land on the **unified phonon `E_dep` scale
-> with NO ionization quenching** (CONVENTIONS Section B) and be folded through the existing
-> `R(E_rec | E_dep)` matrix on the shared log grid (`0.01 keV → 200 MeV`, ~80 bins/decade;
-> `muon_deposit.shared_energy_grid`).
+> **Scope note.** v1.0 methods (Freedman CEvNS + Helm; Huber–Mueller flux; Gaisser–Guan × ray-box
+> chord × Landau–Vavilov MPV; Klein–Nishina Compton; MC `R(E_rec|E_dep)` with non-paralyzable 25 kHz
+> censoring) and the v1.1 isotropic-CM flat-box neutron fold over ENDF/B-VIII.0 elastic data are
+> **reused, not re-researched**. The previous v1.1 content of this file is superseded here and should
+> be archived by the orchestrator to `GPD/milestones/v1.1/literature/METHODS.md` (it is recoverable
+> from git in any case). Everything below is the NEW v2.0 methodology for four tasks:
+> (1) background transfer across target materials, (2) figure digitization as forward-model input,
+> (3) the 100 meV extension, (4) LEE parameterization.
+
+> **Convention conflict to resolve before any plotting.** The user auto-memory records "never display
+> QPD spectra/energy axes below 10 eV (grid-floor/binding-artifact territory)". The v2.0 milestone
+> explicitly retracts that floor (`STATE.md`, 2026-07-22). Methods below are written for the retracted
+> floor, but Section 3 identifies *physics* reasons the 10 eV guidance was partly right. This must be
+> reconciled in CONVENTIONS, not silently.
 
 ---
 
-## Governing kinematics and the shared folding operator
+## 0. The one structural decision everything else depends on
 
-All five channels reduce to the same two-step analytic pipeline, which is the central methodological
-recommendation:
+**Separate the target-independent incident fluence from the target-dependent response, and never
+transfer anything that mixes the two.**
 
-1. **Source → `dR/dE_dep` on the shared grid** (channel-specific; below).
-2. **Fold** `dR/dE_rec = ∫ R(E_rec | E_dep) · dR/dE_dep dE_dep` reusing the v1.0 response matrix.
+For a thin, low-mass target the background rate factorizes exactly:
 
-**Neutron elastic recoil kinematics (HIGH confidence, textbook).** For a neutron of energy `E_n`
-elastically scattering off a Ge nucleus of mass number `A`, the recoil kinetic energy is
-`T_r = [2A/(1+A)²]·(1 − cosθ_cm)·E_n`, with maximum `T_max = 4A/(1+A)² · E_n`. For Ge (`A≈72.6`),
-`4A/(1+A)² ≈ 0.0538`, so `T_max ≈ 0.054·E_n` — a 1 MeV neutron produces up to ~54 keV_nr; the
-tens-of-eV-to-keV CEvNS ROI is populated by the forward-scatter (small-`θ_cm`) part of neutrons from
-tens of keV up to a few MeV. `T_r ≡ E_nr` is deposited **in full as phonons** (no Lindhard/quenching,
-CONVENTIONS B); the same few-% Frenkel-defect NR-only correction as CEvNS applies and nothing more.
+```
+dR/dT  =  Σ_i N_i ∫ dE  φ(E)  (dσ_i/dT)(E, T)          [counts / keV / kg / day]
+          ^^^^^^^^^^^^^  ^^^^  ^^^^^^^^^^^^^^^^
+          target-dependent   |  target-dependent kernel
+                     target-INdependent fluence at the detector position
+```
 
-**Recoil-spectrum fold (HIGH confidence).** `dR/dT_r = N_Ge ∫ φ(E_n) · (dσ_el/dT_r)(E_n) dE_n`,
-with `N_Ge` the target-atom number. Under the s-wave (isotropic-CM) approximation valid at low
-`E_n`, `dσ_el/dT_r = σ_el(E_n)/T_max(E_n)` is a **flat box in `T_r`** from 0 to `T_max` — the fold is
-a single 1-D quadrature over the incident spectrum. This box form is the workhorse for the ROI.
+`φ(E)` (fluence spectrum at the detector position, after all shielding) is target-independent to the
+extent that the target does not perturb the field. **Everything NUCLEUS publishes as a deposit
+spectrum (their Figs. 8–11) or as a residual rate (their Table 5) is on the wrong side of this line
+and must NOT be rescaled to Ge.** Only `φ(E)` transfers.
+
+Quantitative justification of the non-perturbation assumption (HIGH confidence, and it is *stronger*
+for NUCLEUS than for us): NUCLEUS targets are 6.8 g CaWO₄ / 4.5 g Al₂O₃; our wafer is ~110 g of Ge,
+2 mm thick. Elastic mean free path in Ge is `λ = 1/(Nσ_el) ≈ 5–6 cm` for fast neutrons
+(`N ≈ 4.4×10²² cm⁻³`, `σ_el ≈ 3–4 b`), so the 2 mm wafer has interaction probability `t/λ ≈ 3–4%` and
+multiple-scatter `~0.1%` — the wafer is optically thin and does not deplete or reshape the field it
+sits in. **This is the assumption that makes the whole milestone possible; it must be re-verified for
+the 16× larger mass and, separately, for thermal neutrons where Ge's capture cross-section is large
+(Section 1.5).**
+
+**Failure condition for this whole approach:** if the Ge wafer's 16× mass / 4″×4″ footprint forces a
+change in the inner shield or the veto envelope (already flagged as a gating open question in
+PROJECT.md), then `φ(E)` at the detector position is *no longer the NUCLEUS `φ(E)`* and nothing
+transfers. **Resolve the geometry-fit question before building on this.**
+
+---
+
+## 1. Task 1 — Transferring a published shielded background to a different target
+
+### 1.1 Recommended primary method: invert NUCLEUS's own deposit spectra for `φ_post-shield(E_n)`
+
+**Do not propagate their Fig. 4 incident spectrum through the shield yourself as the primary route.**
+Their Figs. 8–11 are component-resolved *post-shield* deposit spectra on two targets — that is
+already an in-situ measurement of `φ_post(E_n)` convolved with a kernel you can write down exactly.
+Invert it.
+
+**What it computes.** `φ_post(E_n)` at the detector position inside the full NUCLEUS shield, from the
+published neutron-component deposit spectrum on CaWO₄ and/or Al₂O₃.
+
+**Method (analytic, exact under s-wave).** For a single-element target with
+`f ≡ T_max/E_n = 4A/(1+A)²` and the isotropic-CM flat box `dσ/dT = σ_el(E_n)/(f E_n)`:
+
+```
+G(T) ≡ dR/dT = N ∫_{T/f}^{∞} φ(E) σ_el(E) / (f E) dE
+⇒  φ(E) σ_el(E) = −(f² E / N) · G'(f E)          [exact inversion, one derivative]
+```
+
+For a multi-element target (`CaWO₄`: f_W = 0.0215, f_Ca = 0.0950, f_O = 0.2215; `Al₂O₃`: f_Al = 0.1378,
+f_O = 0.2215) the same differentiation gives a Volterra-type system that is solved by **marching
+downward in `T` from the highest `T`**, because at a given `T` the heaviest element samples the
+highest `E_n` and is unwound first. Having *two* published targets over-determines the system and
+gives the consistency test that makes the Ge transfer credible.
+
+**Cost.** Seconds. One numerical derivative of a digitized curve plus a downward march. Trivially
+laptop-scale.
+
+**Accuracy / regime of validity.**
+- Exact where the isotropic-CM (s-wave) approximation holds, i.e. `E_n ≲ 0.5–1 MeV` for these
+  nuclei. Above that the File-4 Legendre `a₁` forward-peaking breaks the flat box and the inversion
+  degrades — apply the same `a₁` correction already scoped in v1.1, or restrict the inversion to
+  `E_n < 1 MeV` and take the high-`E_n` tail from the Fig. 4 + attenuation route (Section 1.2).
+- Requires their published curve to be the *pure single-scatter elastic nuclear-recoil component*.
+  Their spectra are component-resolved, which is what makes this possible, but any inelastic
+  `(n,n'γ)`, capture, or multiple-scatter admixture contaminates the inversion. Check by verifying
+  the recovered `φ` is non-negative everywhere — negativity is the diagnostic that the kernel is
+  wrong.
+- **Numerically ill-conditioned in the worst way: it differentiates digitized data.** Do not use
+  finite differences. Use a smoothing/penalized spline or Tikhonov/total-variation regularized
+  differentiation (Chartrand, *ISRN Appl. Math.* 2011, doi:10.5402/2011/164564), with the
+  regularization strength set by the digitization error budget from Section 2.
+- Expected fidelity: integral quantities and decade-scale spectral shape to tens of percent; fine
+  structure (resonance dips, the Bragg/thermal edge) unrecoverable. That is adequate, because the
+  Ge fold is itself an integral over a smooth kernel.
+
+**What would make it inapplicable.** If NUCLEUS's Figs. 8–11 are plotted after their veto cuts
+(COV/IV coincidence rejection), the recovered `φ` is not a fluence but a veto-survival-weighted
+fluence and is only transferable to Ge if the same veto acceptance applies — which is exactly the
+open geometry question. **Check the figure captions for whether they are pre- or post-veto.**
+
+### 1.2 Recommended cross-check method: semi-analytic propagation of their Fig. 4 through the shield
+
+**What it computes.** An independent estimate of `φ_post(E_n)` from the published incident VNS
+spectrum (their Fig. 4, obtained by Geant4-transporting the Gordon sea-level spectrum through the VNS
+building — *verified from the paper text*).
+
+**Method A — removal cross-section / Albert–Welton kernel (fast-flux integral only).**
+`Φ_fast(x) = Φ_fast(0) · exp(−Σ_R x)` with `Σ_R` the macroscopic removal cross-section, using the
+empirical rule `Σ_R ≈ (2/3) Σ_T` for fission-energy neutrons and tabulated `Σ_R` for Pb / HDPE / B₄C.
+Validity: the Albert–Welton construction *assumes a hydrogenous slab follows the removal material*,
+so a first collision with H is equivalent to removal from the fast group. The NUCLEUS stack
+(Pb outside 20 cm borated HDPE) satisfies this for the outer layers.
+
+- **Cost:** microseconds. Pure closed form.
+- **Accuracy:** conventional shielding-handbook figure is ~10–20% on the *integral fast flux above a
+  few MeV* through hydrogenous shields (MEDIUM confidence — this is the standard folklore figure from
+  the removal-cross-section literature; treat it as an order-of-magnitude-plus statement, not a
+  quoted uncertainty). Cross-checks well against NUCLEUS's own statement that "the first 20-cm thick
+  borated HDPE layer reduces by more than one order of magnitude the residual event rate" and B₄C
+  gives a further "factor ~5" (verified from the paper text).
+- **Hard limitation, and it is the decisive one for this milestone:** the removal method produces
+  **no spectrum**. It attenuates the fast group and says nothing about the moderated epithermal and
+  thermal populations that the borated HDPE *creates*. Section 3.4 shows that the sub-eV recoil floor
+  is dominated by neutrons within a factor of a few of `E_n = T/0.0536`, i.e. by eV-scale neutrons.
+  **Removal cross-sections cannot produce the part of the spectrum that dominates the new physics of
+  this milestone.** Use them as a sanity bound on the fast integral, never as the sub-keV source.
+
+**Method B — 1-D multigroup transport (this is what actually gives a spectrum).** Model the shield as
+a 1-D spherical shell stack (B₄C / PE / Pb / borated HDPE / Pb / scintillator) with an isotropic
+external source drawn from the digitized Fig. 4, and run either (i) OpenMC in a 1-D-equivalent
+spherical geometry with a cell flux tally and MAGIC or FW-CADIS weight windows, or (ii) a hand-rolled
+discrete-ordinates (S_N) solver on a coupled n-γ multigroup library.
+
+- **Cost:** OpenMC with weight windows on a 1-D spherical shell, `10⁷–10⁸` histories, tallying *flux
+  in a shell* (not energy deposits in a gram-scale crystal): **minutes to a few hours multithreaded
+  on a laptop.** This is a completely different problem from the NUCLEUS Geant4 chain, which
+  simulates the full building geometry with a 4π tangent-plane source and scores deposits in gram-scale
+  crystals down to sub-keV — that is what is expensive, not shield attenuation per se.
+- **This is the honest answer to "does it secretly need Monte Carlo?"** — a *spectral* propagation
+  through 30+ cm of moderating shield genuinely requires transport. It does **not** require the
+  NUCLEUS-scale simulation. A reduced 1-D shield model is laptop-feasible and is the correct fallback
+  if the Section 1.1 inversion fails.
+- **Accuracy / limitations:** 1-D geometry loses shield penetrations, the cryostat neck, and streaming
+  paths, which in real setups are the dominant term for the last order of magnitude. Expect the 1-D
+  result to be an *underestimate* of the residual. Treat it as a lower bound and say so.
+
+### 1.3 Gammas: point-kernel with buildup factors (no MC needed)
+
+The measured VNS gamma ambience (5.03 cm⁻² s⁻¹; ⁴⁰K 59.6, ²³²Th 3.28, ²³⁸U 5.65 Bq/kg) is already the
+target-independent input. Propagate through the Pb/PE stack with the standard point-kernel
+`Φ = Φ₀ B(μx, E) e^{−μx}` using NIST XCOM `μ(E)` and ANS-6.4.3 / Berger-form buildup factors, then
+fold with the existing Klein–Nishina machinery on Ge. Accuracy: 10–30% for slab geometries at a few
+mean free paths — well documented and standard. Cross-check against NUCLEUS's stated "factor ~50
+reduction" for gammas from the passive materials. **Do not use bare `e^{−μx}` without a buildup
+factor**; it under-predicts by factors of several at 3–5 mfp of Pb.
+
+### 1.4 Muons: adopt directly, re-fold the chord/`dE/dx`
+
+Adopt the published overburden (2.92 m.w.e.) and muon attenuation factor (1.41) as scalars applied to
+the existing Gaisser–Guan flux. The target dependence is entirely in `ρ dE/dx × chord` and is already
+implemented. **No new method is needed here** — this is the one channel that transfers cleanly,
+because the incident flux is a scalar-attenuated version of what v1.0 already uses.
+
+### 1.5 The channel that does NOT transfer: Ge-specific thermal-neutron capture (HIGH priority)
+
+**This is the single most important target-dependence finding of this survey.** Behind 20 cm of
+borated HDPE + 4 cm B₄C the fast flux is suppressed but the surviving field is *thermalized*. Ge has
+a large thermal capture cross-section (natural `σ_th ≈ 2.2 b`, with ⁷⁰Ge ≈ 3.0 b and ⁷³Ge ≈ 15 b) and
+produces in-band signatures that CaWO₄ and Al₂O₃ simply do not have:
+
+| Channel | In-band signature | Why it cannot be transferred |
+| ------- | ----------------- | ---------------------------- |
+| Prompt `(n,γ)` recoil | Nuclear recoil from the ~8 MeV de-excitation cascade; single-γ limit `E_γ²/2Mc² = 473 eV` at 8 MeV, tens of eV for a typical multi-γ cascade | Directly in the 10–100 eV RoI, on the phonon scale, indistinguishable from CEvNS |
+| ⁷⁰Ge(n,γ)⁷¹Ge → EC (T½ = 11.4 d) | **M-shell line at 158.7 ± 1.4 eV**, L-shell 1298.5 eV, K-shell 10368.3 eV (measured by CONUS+, arXiv:2604.25748) | Delayed, accumulates with exposure, Ge-only |
+| ⁷⁴Ge(n,γ)⁷⁵Ge → β⁻ (T½ = 82.8 min) | β continuum, in-bulk full-energy deposit | Ge-only |
+
+**Method:** thermal-capture rate `R = N_Ge ∫ φ_th(E) σ_(n,γ)(E) dE` using ENDF/B-VIII.0 MF=3/MT=102
+for the five Ge isotopes; prompt-cascade recoil from the EGAF/PGAA capture-γ line list with recoil
+`Σ_j E_j²/2Mc²` (isotropic-cascade limit) as a bounding estimate; delayed lines from the activation
+inventory `A(t) = R(1 − e^{−λt})`. Cost: trivial. **The blocking input is `φ_th` inside the shield**,
+which the Section 1.1 inversion does *not* give you (CaWO₄/Al₂O₃ have small thermal cross-sections
+and their deposit spectra are blind to the thermal population). This is a genuine gap that requires
+either a NUCLEUS-published thermal flux number or the Section 1.2 Method B transport run.
+Confidence that this channel matters: HIGH. Confidence in its magnitude: LOW until `φ_th` is fixed.
+
+### 1.6 Material radioactivity: recompute geometry, do not scale
+
+NUCLEUS Table 3 screening results are target-independent *activities* and transfer. Their *rates* do
+not: our 110 g / 4″×4″×2 mm wafer has a completely different solid angle to the holder, a different
+surface-to-mass ratio, and different self-shielding than a 6.8 g crystal. Recompute with the v1.1
+solid-angle × `e^{−μx}` machinery. Ge-bulk cosmogenic activation (³H, ⁶⁸Ge, ⁶⁵Zn) is Ge-only and
+carries over from the v1.1 method, re-scaled to the new exposure scenario.
+
+### 1.7 The validation that licenses the whole transfer
+
+**Target-swap closure test.** Feed the recovered `φ_post(E_n)` back through *our own* pipeline with
+CaWO₄ and Al₂O₃ kernels and reproduce NUCLEUS's published Figs. 8–11 and their Table 5 in-band value
+(~250 dru in 10–100 eV on CaWO₄, verified from the abstract). Only after that closure test passes is
+swapping in the Ge kernel defensible. **State the achieved closure percentage in the paper.** This is
+the standard forward-model validation pattern and it is what distinguishes a defensible transfer from
+a rescaling. Target: agreement within a factor ~1.5 on the in-band integral; if worse than a factor
+2, the transfer premise is broken and must be reported as such.
+
+---
+
+## 2. Task 2 — Digitizing published spectra as forward-model inputs
+
+### 2.1 Lethargy vs per-energy: the convention that silently costs a decade
+
+NUCLEUS Fig. 4 is plotted as `E × dΦ/dE` on a log-E axis (**verified from the paper text**). The
+identity is:
+
+```
+E · dΦ/dE  =  dΦ/d(ln E)  =  dΦ/du    (u = lethargy = ln(E_ref/E), du = −dE/E)
+```
+
+so `E dΦ/dE` **is** the per-unit-lethargy fluence up to the sign convention on `u`. The ISO/Bonner
+convention is that spectral bins are flat in fluence per unit lethargy, which is why every neutron
+spectrometry paper plots this quantity: on a log-E axis, **equal areas under the curve are equal
+neutron numbers**. That is the property that makes the plot readable and the property you must
+preserve.
+
+**Mandatory conversion and its trap.** To use it as `φ(E)` in the fold:
+`dΦ/dE = (E dΦ/dE) / E`. Two failure modes, both silent:
+1. **Forgetting the `1/E`.** Produces a spectrum too hard by exactly one power of `E` — the fold
+   result is then wrong by orders of magnitude at the low-`E` end that dominates the sub-eV recoil
+   floor. Detection: a `1/E`-flat epithermal region must appear *flat* in `E dΦ/dE` and as a `1/E`
+   power law in `dΦ/dE`. Check this explicitly; a well-moderated field always shows it.
+2. **Ambiguity between `E dΦ/dE` and `dΦ/dlethargy` with a nonstandard `E_ref` or a per-decade
+   (`log₁₀`) rather than per-`ln` normalization.** A `log₁₀` convention differs by `ln 10 = 2.303`.
+   Detection: integrate the digitized curve and compare against any integral flux quoted in the text.
+   **This is a required acceptance test, not optional** — it is the only way to catch a 2.3× error.
+
+### 2.2 Log-axis digitization and error propagation
+
+Use WebPlotDigitizer (automeris.io, v4/v5) with axis calibration explicitly set to *log* on both axes
+and calibration points placed as far apart as possible. Reported digitization error under good
+practice is <1% of axis span (MEDIUM confidence — from applied-literature usage, not a metrology
+study), but on a **log** axis a fixed pixel error is a fixed *fractional* error in the value:
+
+```
+Δ(log₁₀ y) = (pixel error / pixels per decade)
+⇒ σ_y / y = ln(10) · Δ(log₁₀ y)
+```
+
+For a figure with ~150 px/decade and ~2 px placement error, `σ_y/y ≈ 3%`. **Propagate this as a
+correlated, not independent, error** — a mis-set calibration point biases the whole curve coherently.
+The practical recipe: digitize each curve twice (independently), take the spread as the placement
+error, and separately propagate a global multiplicative calibration uncertainty. Project precedent:
+NUCLEUS 2019 Fig. 1 Ge curve was reproduced to 5% — take **5% correlated + ~3% point-to-point** as
+the working budget for the Fig. 4 digitization and record it in CONVENTIONS.
+
+**Cross-decade caution:** Fig. 4 spans ~10 decades of energy. Placement error in `x` on a log axis is
+also fractional, so a 2 px `x` error at 150 px/decade is a 3% energy error — which matters near a
+threshold (`E_min(T)`) where the integrand is steep.
+
+### 2.3 Re-binning onto the shared grid while conserving the integral
+
+**Never interpolate a differential spectrum directly.** Interpolate its **cumulative** and
+differentiate — that is the only scheme that conserves the integral by construction.
+
+**Recommended algorithm (integral-conserving / "flux-conserving" resampling):**
+1. Build `C(E) = ∫_{E₀}^{E} φ(E') dE'` on the digitized nodes using trapezoid-in-`log E` (equivalently
+   `∫ (E φ) d ln E`), which is the natural quadrature for a log-spaced digitization.
+2. Monotone-interpolate `C` (PCHIP — monotonicity-preserving; **not** a natural cubic spline, which
+   overshoots and can produce negative `φ`).
+3. `φ_new(bin) = [C(E_hi) − C(E_lo)] / (E_hi − E_lo)` per target bin.
+
+**Cost:** milliseconds. **Reference implementations:** `SpectRes` (Carnall, arXiv:1705.05165) and
+`specutils.FluxConservingResampler` implement exactly this for astronomical spectra; the algorithm is
+identical here. Either use them or implement the three steps above (≈20 lines) so the log-E
+quadrature is under your control.
+
+**Acceptance tests (make these unit tests):**
+- `∫ φ_new dE == ∫ φ_orig dE` to `<0.1%` over the overlap region.
+- Re-binning a pure `1/E` spectrum onto the shared 80-bin/decade grid returns `1/E` to machine
+  precision.
+- Round-trip: rebin to a coarse grid and back; integral preserved, shape degraded only by resolution.
+- `φ_new ≥ 0` everywhere (catches spline overshoot).
+
+**Extrapolation policy (must be explicit).** The digitized Fig. 4 has a lowest plotted energy `E_low`.
+Below it, `φ` is **unknown, not zero**. Because the flat-box fold at recoil `T` samples `φ` from
+`E = T/0.0536` upward, any `T < 0.0536 · E_low` is *not computed* — it is truncated. Carry a
+`valid_below` flag on the flux table and refuse (or explicitly band) the fold below that recoil energy.
+The v1.1 pattern of an explicit placeholder band (already used for the sub-1.8 MeV reactor flux) is the
+right precedent.
+
+---
+
+## 3. Task 3 — Extending the pipeline to 100 meV
+
+### 3.1 What the numerics actually cost (short answer: nothing)
+
+Extending `shared_energy_grid()` from 10.14 eV to 0.1 eV at 80 bins/decade adds ~160 bins to ~585 —
+a 27% increase. All 1-D quadratures scale linearly. **Numerics are not the obstacle.** The obstacles
+are three physics-validity gates (3.2, 3.3, 3.5) and one quadrature pathology (3.4).
+
+### 3.2 Gate 1 — the free-nuclear-recoil (impulse) approximation breaks near 100 meV
+
+This is the decisive finding for the 100 meV target. Using the harmonic-crystal framework of
+**Campbell-Deem, Knapen, Lin & Villarama, PRD 106, 036019 (2022), arXiv:2205.02250** (which explicitly
+provides numerical results for Ge):
+
+- **Impulse-approximation criterion:** `q ≫ √(2 m_d ω̄_d)`, equivalently `E_r ≫ ω̄`, where `ω̄` is the
+  typical phonon energy. For Ge, `ω̄ ≈ 20–37 meV` (Debye `k_Bθ_D ≈ 32 meV` at `θ_D = 374 K`; zone-centre
+  optical phonon ≈ 37 meV).
+- **At `T = 100 meV`:** `q = √(2M_Ge T) = 116 keV` versus `q_crit = √(2M_Ge ω̄) = 52–71 keV`.
+  Ratio 1.6–2.2, i.e. `E_r/ω̄ ≈ 2.7–5`. The paper's own phrasing is that the free nuclear recoil
+  description breaks down "when the recoil energy is comparable to a few times the typical phonon
+  energy." **We are sitting exactly on that boundary at the 100 meV floor.**
+- **At `T = 1 eV`:** `E_r/ω̄ ≈ 27–50` — impulse approximation solid.
+- **At `T = 10 eV`:** solid, and this is where the current floor sits.
+
+**Verdict:** the CEvNS/neutron recoil rate computed with free-nucleus kinematics is reliable above
+~1 eV, carries O(1) corrections between ~100 meV and ~1 eV, and is not defensible below ~30 meV.
+**Report 100 meV–1 eV as a band with an explicit "free-nucleus kinematics, O(1) multiphonon
+correction not applied" caveat, or compute the correction (3.3).**
+
+### 3.3 What is NOT a problem: Bragg coherence and the nuclear form factor
+
+Two things that intuitively sound like they should matter at 100 meV, and do not:
+
+- **Bragg / lattice coherence.** The incoherent–coherent transition is at `q ≈ q_BZ = 2π/a`; for Ge
+  (`a = 5.658 Å`) that is `q_BZ ≈ 2.19 keV`, corresponding to a recoil energy of **35 μeV** — 3.5
+  decades below the 100 meV floor. At 100 meV, `q/q_BZ ≈ 53`. **The incoherent approximation is
+  valid throughout the entire extended range; no Bragg/Debye–Scherrer treatment is needed for the
+  recoil kernel.** (Campbell-Deem et al. state the incoherent approximation is *most* justified at
+  large `q`.)
+- **Debye–Waller.** `2W(q) = q²⟨u²⟩`; with `⟨u²⟩ ≈ 0.0025 Å²` for Ge at mK (from `B ≈ 0.2 Å²`),
+  `2W ≈ 8.7` at `T = 100 meV` and `≈ 87` at 1 eV. `e^{−2W} ≈ 2×10⁻⁴` at 100 meV: the *zero-phonon
+  (coherent elastic)* channel is essentially extinct, which is precisely the statement that all the
+  strength has moved into the multiphonon continuum — i.e. Debye–Waller **suppresses the wrong
+  channel to worry about**, and its role is bookkeeping inside the multiphonon expansion, not a
+  correction factor to apply to the free-recoil rate. Do not multiply the CEvNS rate by `e^{−2W}`;
+  that is a classic and severe error.
+- **Nuclear form factor.** Helm `F(q) → 1` to better than `10⁻⁶` for `q ≲ 1 MeV`. Set `F = 1` below
+  ~1 keV recoil and skip the Bessel evaluation entirely (avoids the `j₁(x)/x` `0/0` cancellation at
+  small `x`, which is a real floating-point trap — use the series `j₁(x)/x → 1/3 − x²/30` for
+  `x < 10⁻³`).
+
+**Recommended tool if the multiphonon correction is to be computed:** `DarkELF`
+(Knapen, Kozaczuk & Lin, PRD 105, 015014 (2022), arXiv:2104.12786; github.com/tongylin/DarkELF), which
+ships precomputed Ge phonon DOS and implements the single-phonon→multiphonon→nuclear-recoil
+interpolation from arXiv:2205.02250. **Caveat with teeth:** DarkELF computes *dark matter* rates. The
+lattice/dynamic-structure-factor part is what you want; the coupling structure (`f_d` per atom) must
+be replaced by the CEvNS weak charge `Q_W`. Since Ge is monatomic, the substitution is a clean
+rescaling of a single per-atom coupling — this is the one target where the transfer is unambiguous.
+Stated accuracy of the underlying method: single-phonon analytic vs DFT agree "within an O(1)
+factor"; the incoherent two-phonon result is "within a factor of ~5" of the long-wavelength result
+and can underestimate by up to an order of magnitude when anharmonicity matters. **So the correction
+itself is only order-of-magnitude.** That is an honest reason to *band* rather than *correct*.
+
+### 3.4 The quadrature pathology: `E_min(T)` marching into the flux floor
+
+Both folds have a `T`-dependent lower limit:
+
+| Channel | `E_min(T)` | At `T = 100 meV` | At `T = 10 eV` |
+| ------- | ---------- | ---------------- | -------------- |
+| CEvNS | `√(M T/2)` | **58.2 keV** | 582 keV |
+| Neutron elastic (Ge) | `T / 0.0536` | **1.87 eV** | 187 eV |
+
+**Neutron channel — this is the dangerous one.** For an epithermal `1/E` flux and slowly varying
+`σ_el`, the integrand of the flat-box fold goes as `φ σ /(f E) ∝ 1/E²`, so
+`dR/dT ∝ ∫_{T/f}^∞ dE/E² = f/T`. **The sub-eV neutron recoil spectrum rises as `1/T` and is dominated
+entirely by neutrons within a factor of a few of `E_min(T)`.** Consequences:
+- The 100 meV bin is controlled by `φ(E_n ≈ 2–10 eV)` — the epithermal region that the shield
+  *creates* by moderation, that the removal-cross-section method cannot predict, and that the
+  Section 1.1 inversion recovers only if NUCLEUS's deposit spectra extend low enough.
+- **Adaptive quadrature (`scipy.integrate.quad`) will silently under-resolve this.** The integrand is
+  a near-singular endpoint spike. Fix: substitute `u = ln E` (making the `1/E²` integrand a decaying
+  exponential in `u`), use fixed-order Gauss–Legendre on log-spaced panels with the first panel
+  anchored exactly at `E_min(T)`, and pass `points=[E_min]` if `quad` is used at all. Validate with a
+  monoenergetic `δ`-function flux — the fold must return an exact flat box of height `σ/(f E₀)` and
+  width `f E₀`, integrating to `N σ`.
+- **Truncation must be explicit.** If the digitized `φ` floors at `E_low`, then `dR/dT` is truncated
+  for `T < 0.0536 E_low`. With `E_low` anywhere above ~2 eV the entire sub-100 meV region is a
+  fabrication. Enforce a hard `valid_below` guard.
+
+**CEvNS channel — benign, and quantifiably so.** `dσ/dT ∝ (G_F² Q_W² M/4π)(1 − MT/2E²) → const` as
+`T → 0`, so `dR/dT` **plateaus** at low `T` rather than diverging. Lowering `T` from 10 eV to 100 meV
+only widens the integration range from `E ≥ 582 keV` to `E ≥ 58 keV`. The frozen flux table floors at
+100 keV, so the *missing* contribution is bounded by the antineutrino number flux in 58–100 keV as a
+fraction of the total: **bound it by an integral-number-flux argument rather than modelling an
+unmeasured spectrum.** Recommended: carry the 58–100 keV band as an explicit additive uncertainty on
+`dR/dT(T < 0.29 eV)`, computed as `ΔΦ(58–100 keV) × (G_F²Q_W²M/4π) × N_Ge`, with `ΔΦ` bounded above by
+a beta-summation estimate and below by zero. This is a *bounded, quotable* uncertainty, not a
+placeholder — a genuine improvement over extending the placeholder band downward.
+
+### 3.5 Gate 3 — the response chain below the per-sensor saturation onsets
+
+The v1.0 `E_rec ≈ 0.5 · E_dep` mapping rests on a lumped ~50% deposited-to-signal efficiency derived
+for a fully developed phonon cascade. At `E_dep = 100 meV` the deposit is only ~3 Ge optical-phonon
+quanta (`ħω_LO ≈ 37 meV`). The pair-breaking budget is fine (`100 meV ≫ 2Δ_Al ≈ 0.34 meV`), but the
+statistical basis of a lumped collection efficiency across ~10,300 sensors is not — a few-quantum
+deposit reaches one or a few sensors, not the array. **Recommendation: below ~1 eV deposit, do not
+report `dR/dE_rec`; report a detection/trigger probability curve instead**, and state that the
+energy-reconstruction interpretation of the response matrix does not extend there. This is the
+partly-correct core of the original 10 eV display floor guidance, and it should be preserved as a
+*labelled regime boundary* rather than as a hard plotting ban.
+
+### 3.6 The sub-eV neutron kernel: free-atom elastic fails below ~5 eV
+
+The ENDF free-atom elastic representation is conventionally valid above the ~5 eV thermal cutoff;
+below it, chemical binding and lattice dynamics require the thermal scattering law `S(α,β)`. Since
+`E_min(100 meV) = 1.87 eV`, **the very bottom of the extended range uses the neutron kernel in a
+regime where the ENDF free-atom `σ_el` is not the right object.** Options:
+
+- **Germanium appears not to be present in the ENDF/B-VIII.0 / VIII.1 TSL sublibrary** (published
+  material lists cover water, Be, BeO, CaH₂, plastics, graphite, HF, oils, ZrH/YH/LiH/LiD, FLiBe, SiC,
+  SiO₂, ZrC, and fuels — no Ge). **MEDIUM confidence: verify directly against the IAEA TSL database
+  before relying on this.**
+- **Recommended: NCrystal** (Cai & Kittelmann, *Comput. Phys. Commun.* 246, 106851 (2020),
+  arXiv:1901.08890; github.com/mctools/ncrystal), which ships a validated `Ge_sg227.ncmat` crystal
+  definition and computes coherent-elastic (Bragg), incoherent-elastic and inelastic (phonon)
+  cross-sections from unit-cell parameters. C++/C/Python bindings, pip/conda installable, runs in
+  seconds on a laptop. Use it to generate `σ(E_n)` for Ge from 10⁻⁵ eV to ~5 eV and splice onto the
+  ENDF free-atom curve above 5 eV, with the splice discontinuity reported.
+- **Fallback:** carry the 100 meV–1 eV recoil band with an explicit "free-atom kernel, binding
+  correction not applied" flag. Given that the sub-eV floor is anyway gated by `φ_th` (Section 1.5),
+  a band is defensible for a first estimate.
+
+---
+
+## 4. Task 4 — Carrying the low-energy excess as a parameterized input
+
+### 4.1 The framing that published work actually uses
+
+NUCLEUS explicitly discusses the LEE in the introduction of arXiv:2509.03559 and explicitly **excludes
+it from the particle-background budget**, on the stated grounds that it "seems not tied to
+particle-induced backgrounds but rather to fundamental aspects in the design of their respective
+detection setups" (verified from the paper text). That is the published precedent and it is a
+*scoping* decision, not a physics result. The defensible options, in order of increasing claim
+strength:
+
+| Method | What it delivers | When to use | Cost |
+| ------ | ---------------- | ----------- | ---- |
+| **Explicit exclusion + named gap** (NUCLEUS's own choice) | A particle-background budget with a stated, quantified regime of validity ("valid above X eV, LEE-free assumption") | When the goal is a particle-background prediction and the LEE is device-specific | zero |
+| **Parameterized nuisance component with a scan band** | S/B as a *function* of an assumed LEE amplitude and index, rather than a single number | **Recommended here** — this is a sensitivity study, and the LEE is the dominant sub-100 eV term | trivial |
+| **Yellin optimum-interval / maximum-gap** | A conservative exclusion limit valid with *no* background model at all | When converting to a DM/new-physics limit in a later milestone | trivial |
+| **Profile-likelihood with the LEE as a free-shape nuisance** | Statistically correct signal extraction | Only when real data exist | n/a |
+
+### 4.2 Recommended: two-parameter power-law nuisance component with an explicit scan
+
+**Parameterization.** `dR/dE_LEE = A · (E / E₀)^{−α}` with `E₀ = 100 eV` a fixed pivot. Published
+descriptions consistently use a power law; a reported spectral index for silicon and germanium
+excess rates is `α = 3.43` (MEDIUM confidence — from the semiconductor excess-rate literature; the
+CRESST/NUCLEUS cryogenic LEE is a different device class and its index differs). CRESST-III also
+reports the LEE *amplitude* decaying with time after cooldown, itself described by a power law — so
+`A` is not even a constant, and any single number must be tagged with an assumed time-since-cooldown.
+
+**How to carry it defensibly:**
+1. **Do not fit it, do not predict it, do not omit it.** Declare `(A, α)` as *scenario inputs* with
+   the same provenance-tagging discipline the project already applies to `φ(E_n)` normalizations.
+2. **Anchor `A` to a published measurement on a comparable device**, tagged with target material,
+   sensor type, absorber mass, and time since cooldown. Ge-absorber phonon detectors, sapphire, and
+   CaWO₄ all show LEE with different amplitudes — the anchor must be named and its
+   non-transferability stated.
+3. **Report S/B as a 2-D contour over `(A, α)`**, not a single number, plus the two limiting cases
+   `A = 0` ("LEE-free, comparable to the NUCLEUS budget") and `A = A_published` ("LEE at the observed
+   level"). This is the honest structure: it makes the reader's own assumption the input.
+4. **Compute and report the break-even LEE amplitude** — the `A` at which S/B = 1 in the 10–100 eV
+   RoI. This is a genuine, falsifiable, computable result that does not require knowing `A`, and it
+   is the most useful single number the milestone can produce about the LEE.
+5. **Never fold the LEE through `R(E_rec|E_dep)`.** The LEE is measured *in reconstructed energy* on
+   the devices that report it; treating it as a deposit spectrum and folding it double-counts the
+   response. Add it directly on the `E_rec` axis, and say so.
+
+**What would make this inapplicable.** If the LEE mechanism is sensor-substrate-interface-specific
+(several candidate mechanisms — stress relaxation, interfacial thermal contraction, aluminum
+relaxation, spontaneous phonon bursts in bulk Si — point that way), then a QPD-on-Ge device has no
+published analogue at all and even the anchored `A` is a placeholder. **Say that explicitly rather
+than borrowing a CRESST number and implying it applies.** The break-even calculation (item 4) is the
+result that survives this objection.
+
+### 4.3 Community reference for the phenomenology
+
+The EXCESS workshop series is the standing community forum for LEE descriptions across experiments
+and is the correct citation for "no first-principles model exists." The current review-level entry
+point verified in this survey is **"Low-Energy Backgrounds in Solid-State Phonon and Charge
+Detectors," arXiv:2503.08859**, plus **NUCLEUS's own Al₂O₃ LEE characterization, arXiv:2603.07687**
+(target-matched to NUCLEUS's own detectors — the closest thing to a site-matched anchor).
+**Verification note:** both were surfaced by WebSearch with titles and arXiv IDs but their full texts
+were not read in this survey. **Read them before quoting any number from them.**
 
 ---
 
@@ -45,34 +505,42 @@ a single 1-D quadrature over the incident spectrum. This box form is the workhor
 
 ### Analytical Methods
 
-| Method | Purpose | Why Recommended |
-| ------ | ------- | --------------- |
-| Isotropic-CM (s-wave) flat-box recoil kernel `dσ/dT_r = σ_el/T_max` | Fold any incident neutron spectrum → `dR/dT_r` in the ROI | Exact for `E_n ≲ 0.5–1 MeV` where n-Ge elastic scattering is s-wave dominated; reduces every neutron channel (cosmogenic, muon-induced, radiogenic) to one 1-D integral. This is the ROI-dominant regime. |
-| Thin-target single-scatter approximation | Justify skipping full neutron transport in the 2 mm wafer | Fast-neutron elastic mean free path in Ge is `λ = 1/(N σ_el) ≈ 5–6 cm` (`N≈4.4×10²²/cm³`, `σ_el≈3–4 b`) ≫ 0.2 cm wafer → interaction probability `t/λ ≈ 3–4%`, multiple-scatter `~0.1%`. Single-scatter fold is accurate to ≪1%. |
-| Legendre-coefficient angular fold `dσ/dT_r ∝ Σ aℓ(E_n) Pℓ(cosθ)` | Forward-peaking correction for `E_n ≳ 1 MeV` | Above ~1 MeV the CM angular distribution becomes forward-peaked; the `a₁` (and higher) Legendre coefficients from ENDF/B-VIII.0 File-4 skew the recoil box toward low `T_r`. Needed only for the high-`E_n` tail of the ambient/muon-induced spectra. |
-| Watt fission-neutron spectrum `N(E)=C·exp(−E/a)·sinh√(bE)` | ²³⁸U spontaneous-fission source term | Standard closed form; Los Alamos parameters for ²³⁸U SF `a=0.7124 MeV, b=5.6405 MeV⁻¹` (mean ≈2 MeV). Feeds directly into the flat-box fold. |
-| Solid-angle × exponential-attenuation transport `exp(−μx)` | Housing/stack gamma & neutron sources reaching the wafer | For sources OUTSIDE the Ge (QPD stack, wirebonds, housing), the wafer subtends a small solid angle; gamma attenuation uses `μ(E)` from NIST XCOM, neutron non-interaction over the standoff is ~1. Analytic, no MC transport needed. |
-| Klein–Nishina Compton continuum (REUSE v1.0 `compton_deposit.py`) | U/Th/⁴⁰K + intrinsic gamma → electron-recoil deposit | The v1.0 external-ambient-gamma machinery already produces the ER Compton continuum on the phonon scale; extend its input line list, do not rewrite. |
-| Full-absorption β/EC deposit for intrinsic isotopes | ³H, ⁶⁸Ge/⁶⁸Ga, ⁶⁵Zn born INSIDE the Ge | A β/Auger/X-ray emitted in the bulk deposits its FULL energy (range ≪ mm). ³H β-continuum (endpoint **18.6 keV**) and the ⁶⁸Ga/⁷¹Ge K-shell EC lines (~10.4 keV) land directly in the ROI on the phonon scale — model as a bulk full-energy deposit, not a Compton continuum. |
+| Method | Purpose | Why Recommended | Cost / Scaling |
+| ------ | ------- | --------------- | -------------- |
+| Flux/response factorization `dR/dT = Σ_i N_i ∫ φ dσ_i/dT` | Separates what transfers (`φ`) from what does not (kernel) | The only formulation in which a published background can be legitimately moved to a new target; everything else is rescaling | O(N_bins) |
+| Analytic inversion of the flat-box fold, `φσ = −(f²E/N) G'(fE)` | Recover `φ_post-shield(E_n)` from NUCLEUS's published deposit spectra | Closed form, exact under s-wave; over-determined by their two published targets → built-in consistency test | seconds |
+| Albert–Welton removal cross-section, `Φ = Φ₀ e^{−Σ_R x}`, `Σ_R ≈ ⅔Σ_T` | Fast-group integral attenuation through the Pb/borated-HDPE stack | Closed form; validates against NUCLEUS's own ">1 order of magnitude" and "factor ~5" statements | microseconds |
+| Point-kernel + buildup, `Φ = Φ₀ B(μx,E)e^{−μx}` | Gamma attenuation through the shield | Standard, 10–30% accurate at a few mfp; no MC needed | microseconds |
+| Isotropic-CM flat-box recoil kernel (REUSE v1.1) | Ge recoil spectrum from any `φ(E_n)` | Exact for `E_n ≲ 0.5–1 MeV`; already implemented and validated | O(N_bins) per `T` |
+| Impulse-approximation validity criterion `q ≫ √(2Mω̄)` / `E_r ≫ ω̄` | Decide where free-nucleus kinematics may be used | Quantitative, target-specific gate; places the boundary at `E_r ≈ 30 meV` for Ge | closed form |
+| Integral-conserving (cumulative-then-differentiate) re-binning | Move digitized `φ` onto the shared grid | Only scheme that conserves `∫φ dE` by construction | O(N log N) |
+| Thermal-capture activation `A(t) = N∫φ_th σ_(n,γ)(1−e^{−λt})` | Ge-only ⁷¹Ge/⁷⁵Ge in-band lines | Ge-specific channel absent from CaWO₄/Al₂O₃ — cannot be transferred, must be computed | trivial |
+| Break-even LEE amplitude (solve S/B = 1 for `A`) | The LEE result that survives not knowing `A` | Converts an unknown into a falsifiable statement | trivial |
 
-### Numerical (Monte-Carlo) Methods
+### Numerical Methods
 
-| Method | Purpose | When to Use |
-| ------ | ------- | ----------- |
-| 1-D importance-sampled quadrature (scipy) | Evaluate the `∫ φ(E_n) dσ/dT_r dE_n` folds | Default for all neutron recoil spectra — deterministic, fast (<1 s), reproducible; no MC noise. |
-| Thin-wafer single-scatter MC (bespoke numpy, mirrors `muon_deposit._mc_batch`) | Cross-check the analytic fold; propagate angular (Legendre) distributions and the entry-point/chord geometry | Use when the `a₁` forward-peaking correction or the wafer-edge geometry matters, or to verify the single-scatter fraction. Same batched-accumulator pattern already in the repo. |
-| Decay-chain line sampler | Build the U/Th/⁴⁰K gamma line+continuum source before Compton folding | Sample emission lines with ENSDF branching ratios, then push through the reused Klein–Nishina machinery. |
+| Method | Purpose | When to Use | Cost |
+| ------ | ------- | ----------- | ---- |
+| Tikhonov / total-variation regularized differentiation | Differentiate a digitized deposit spectrum without amplifying digitization noise | Required by the Section 1.1 inversion; naive finite differences will fail | seconds |
+| Log-substituted fixed-order Gauss–Legendre on panels anchored at `E_min(T)` | Evaluate `∫_{E_min(T)}^∞ φ dσ/dT dE` near the endpoint spike | Mandatory below ~10 eV recoil where the neutron integrand is `∝1/E²` | ms per `T` |
+| PCHIP monotone interpolation of the cumulative | Re-binning without overshoot / negative flux | Every digitized-input rebin | ms |
+| 1-D spherical OpenMC with MAGIC or FW-CADIS weight windows | Spectral neutron propagation through the shield stack | **Only if the Section 1.1 inversion fails or `φ_th` is needed.** 10⁷–10⁸ histories, flux tally in a shell | minutes–hours, laptop-feasible |
+| Extended `shared_energy_grid()` (0.1 eV → 200 MeV, 80/decade, ~745 bins) | Common axis for all v2.0 channels | Everywhere; response matrix must be regenerated on it | linear in bins |
+| Bespoke thin-wafer single-scatter MC (REUSE v1.1 `_mc_batch` pattern) | Cross-check the analytic fold, `a₁` forward-peaking, edge geometry | Verification only | minutes |
 
 ### Computational Tools
 
-| Tool/Library | Version | Purpose | Notes |
-| ------------ | ------- | ------- | ----- |
-| numpy / scipy | existing repo pins | All folds, quadrature, MC accumulators | Reuse the v1.0 stack; no new heavy dependency. |
-| ENDF/B-VIII.0 (n,elastic) for ⁷⁰,⁷²,⁷³,⁷⁴,⁷⁶Ge | 2018 release | `σ_el(E_n)` and File-4 Legendre coefficients | Get pointwise data from IAEA/NNDC. Parse with `endf-parserpy`/`openmc.data` OR export a pre-tabulated `σ_el(E_n)`, `a₁(E_n)` CSV (recommended — avoids adding OpenMC as a runtime dep). JEFF-3.3 is an equivalent cross-check library. |
-| NIST XCOM | web/DB | Gamma mass-attenuation `μ(E)` in Ge and housing | For self-shielding/attenuation and the photoelectric/Compton/pair partition in the 2 mm wafer. |
-| ENSDF / `radioactivedecay` (py) | current | U/Th/⁴⁰K/⁶⁸Ge/⁶⁵Zn/³H line energies, intensities, half-lives | Table-driven decay lines; lighter than a Geant4 RDM run and sufficient for a rough estimate. |
-| Gordon et al. (2004) analytic sea-level spectrum | fixed parametrization | Ambient cosmogenic fast-neutron flux `φ(E_n)` | Static reference spectrum (= JEDEC JESD89 basis). Use EXPACS/PARMA (Sato) or CRY only if altitude/geomagnetic/solar-cycle scaling to a specific site is required. |
-| SOURCES-4C **or** NeuCBOT **or** published (α,n) yield tables | 4C (legacy) / current | `(α,n)` neutron yield & spectrum per U/Th ppb per material | Prefer published per-material yield tables + the emitted-neutron spectrum as analytic inputs; run SOURCES-4C/NeuCBOT only if a specific stack material is missing from tables. |
+| Tool / Library | Version | Purpose | Notes |
+| -------------- | ------- | ------- | ----- |
+| WebPlotDigitizer | v4/v5 (automeris.io) | Digitize NUCLEUS Figs. 4, 8–11 | Set **both** axes to log explicitly; place calibration points far apart; digitize twice for a placement-error estimate |
+| numpy / scipy | existing repo pins | All folds, quadrature, PCHIP, regularized differentiation | `scipy.interpolate.PchipInterpolator`, `scipy.integrate.fixed_quad` |
+| NCrystal (`ncrystal`) | current (≥3.x) | Ge sub-5 eV neutron cross-sections incl. Bragg/incoherent/inelastic | `Ge_sg227.ncmat` is in the shipped data library; pip/conda; seconds to evaluate |
+| DarkELF | current | Ge phonon DOS + multiphonon `S(q,ω)`, single-phonon→nuclear-recoil interpolation | github.com/tongylin/DarkELF; **DM couplings must be replaced by `Q_W`** |
+| OpenMC | ≥0.14 | 1-D shield transport fallback + weight-window generation | Conda; needs an HDF5 cross-section library (ENDF/B-VIII.0 pre-generated set) |
+| ENDF/B-VIII.0 MF=3 MT=2/102, MF=4 | 2018 | Ge elastic + capture cross-sections, Legendre `a₁` | Already acquired in Phase 7 for elastic; **capture (MT=102) is new for v2.0** |
+| EGAF / PGAA capture-γ line lists | current | Prompt `(n,γ)` cascade energies for the recoil estimate | IAEA database |
+| NIST XCOM | web/DB | `μ(E)` for Pb/PE/Ge, point-kernel gamma attenuation | Already used in v1.1 |
+| `SpectRes` / `specutils` | current | Reference integral-conserving resampler | Optional — the 20-line implementation is preferable for log-E control |
 
 ## Software Stack
 
@@ -80,149 +548,207 @@ a single 1-D quadrature over the incident spectrum. This box form is the workhor
 
 | Technology | Version | Purpose | Why Recommended |
 | ---------- | ------- | ------- | --------------- |
-| Python + numpy/scipy | existing | Analytic folds, 1-D quadrature, bespoke single-scatter MC, response folding | The entire v1.0 forward model/response pipeline is numpy/scipy; every new channel plugs into the same shared grid and `R(E_rec|E_dep)` matrix. |
-| Static nuclear-data CSVs (ENDF-derived `σ_el`, `a₁`; decay-line tables; Gordon spectrum; Watt/(α,n) spectra) | committed to `data/` | Reproducible inputs without heavy runtime libraries | Keeps the calculation self-contained and reviewable; matches the existing `data/` + `src/flux` table pattern. |
+| Python + numpy/scipy | existing | Every fold, inversion, rebin, and response convolution | The entire v1.0/v1.1 pipeline is numpy/scipy; all v2.0 channels plug into `shared_energy_grid()` and `R(E_rec\|E_dep)` |
+| Committed static data tables (`data/`) — digitized Fig. 4, recovered `φ_post`, Ge `σ_el`/`σ_(n,γ)`, NCrystal-generated sub-5 eV kernel | in-repo CSV | Reproducibility without heavy runtime deps | Matches the existing `data/` + `src/flux/build_flux_table.py` pattern; digitized inputs **must** be committed with their provenance and error budget |
+| NCrystal | ≥3.x | Sub-5 eV Ge neutron kernel | Only laptop-scale route to bound-atom Ge cross-sections; Ge is in the shipped data library |
 
 ### Supporting Libraries
 
 | Library | Version | Purpose | When to Use |
 | ------- | ------- | ------- | ----------- |
-| `endf-parserpy` or `openmc.data` | current | One-off ENDF → CSV extraction of `σ_el(E_n)`, `a₁(E_n)` | Build-time only; do not make it a runtime dependency. |
-| `radioactivedecay` | current | Decay-chain line/branching tables for the gamma+beta source | Build the U/Th/⁴⁰K line list and intrinsic-isotope spectra. |
-| `pandas` | existing | Tabulated flux/yield/line I/O | Same role as in `src/flux/build_flux_table.py`. |
+| `openmc` | ≥0.14 | 1-D shield transport fallback | **Only** if Section 1.1 fails; keep out of the runtime critical path |
+| `darkelf` | current | Multiphonon `S(q,ω)` for Ge | Only if the 100 meV–1 eV band is to be corrected rather than banded |
+| `pandas` | existing | Table I/O for digitized/derived spectra | Same role as v1.0/v1.1 |
+| `radioactivedecay` | current | ⁷¹Ge/⁷⁵Ge decay data, EC line intensities | Ge activation inventory |
 
 ### Symbolic Computation
 
 | Tool | Version | Purpose | Notes |
 | ---- | ------- | ------- | ----- |
-| (none required) | — | Kinematics closed-form; no symbolic algebra needed | The recoil kinematics and Watt/Klein–Nishina forms are elementary; keep everything numeric as in v1.0. |
+| (none required) | — | The flat-box inversion and the DW/impulse criteria are elementary closed forms | Keep everything numeric, as in v1.0/v1.1 |
 
 ## Installation
 
 ```bash
 # Reuse the existing environment
-uv sync   # or the repo's existing pip/uv workflow
+uv sync
 
-# Build-time only, for ENDF -> CSV extraction and decay tables (not runtime deps):
-pip install endf-parserpy radioactivedecay   # openmc optional, heavier
+# New v2.0 runtime dependency (sub-5 eV Ge neutron kernel)
+pip install ncrystal
 
-# External static data (download once, commit to data/):
-#   - ENDF/B-VIII.0 (n,elastic) File-3/File-4 for Ge isotopes  (IAEA/NNDC)
-#   - Gordon 2004 sea-level neutron spectrum parametrization
-#   - NIST XCOM Ge attenuation table
+# Optional / conditional (NOT runtime critical path)
+pip install darkelf              # only if the multiphonon correction is computed
+conda install -c conda-forge openmc   # only if the 1-D shield transport fallback is needed
+
+# Static data to acquire and commit to data/ (one-off):
+#   - digitized NUCLEUS Fig. 4 (E dPhi/dE, log-E) + error budget
+#   - digitized NUCLEUS Figs. 8-11 neutron-component deposit spectra (CaWO4, Al2O3)
+#   - ENDF/B-VIII.0 MT=102 (n,gamma) for 70,72,73,74,76-Ge
+#   - EGAF prompt capture-gamma line lists for Ge
+#   - NCrystal-generated sigma(E_n) for Ge, 1e-5 eV to 5 eV
 ```
 
 ## Alternatives Considered
 
 | Recommended | Alternative | When to Use Alternative |
 | ----------- | ----------- | ----------------------- |
-| Analytic single-scatter flat-box fold | Full Geant4/FLUKA/MCNP neutron transport | Only as a **light, single-material cross-check** of the single-scatter fraction and the high-`E_n` inelastic tail. Out of scope as the primary method (too heavy for a rough estimate; explicit HARD CONSTRAINT). Flag the ~3–4% interaction-probability and multiple-scatter numbers as the things a light MCNP/Geant4 run would confirm. |
-| Gordon 2004 static sea-level spectrum | EXPACS/PARMA (Sato) or CRY generator | When a specific altitude, geomagnetic cutoff, or solar-cycle epoch must be matched, or when a full time-correlated shower (muon+neutron together) is wanted. |
-| Published (α,n) yield tables | SOURCES-4C / NeuCBOT direct run | When the stack material (specific ceramic, epoxy, Ta/Al/Hf films) is absent from published tables and its light-element (α,n) yield must be computed from stopping power + cross sections. |
-| `radioactivedecay`/ENSDF line list + reused Klein–Nishina | Geant4 Radioactive Decay Module full-chain sim | When coincidence-summing or true-vs-observed cascade correlations in the small crystal become load-bearing — not expected at rough-estimate stage. |
+| Invert NUCLEUS's deposit spectra for `φ_post` (1.1) | Propagate Fig. 4 through the shield yourself (1.2) | If their figures are post-veto, cover too narrow a `T` range, or the recovered `φ` goes negative (kernel mismatch). Then the 1-D OpenMC route is required, not optional. |
+| Removal cross-sections as a *fast-flux sanity bound* | Removal cross-sections as the primary shield model | Never. They produce no spectrum and are blind to the moderated epithermal population that dominates the sub-eV floor. |
+| 1-D spherical OpenMC | Full 3-D Geant4/MCNP with the real geometry | Only if shield penetrations/streaming become load-bearing. Explicitly out of scope: this is the NUCLEUS-scale calculation the milestone is designed to avoid. |
+| Band the 100 meV–1 eV recoil region | Compute the multiphonon correction with DarkELF | If a reviewer demands a number rather than a band. Note the underlying method is itself only O(1)/factor-few accurate, so the correction does not remove the band — it recentres it. |
+| NCrystal for sub-5 eV Ge | ENDF TSL `S(α,β)` via NJOY/THERMR | If a Ge TSL evaluation turns out to exist (verify against the IAEA TSL database). NCrystal is preferable regardless for laptop-scale use. |
+| Power-law LEE nuisance with a 2-D scan | Single "best-guess" LEE amplitude | Never for this milestone — there is no QPD-on-Ge LEE measurement to anchor a single number to. |
+| Break-even LEE amplitude | Omitting the LEE (NUCLEUS's choice) | Omission is acceptable *only* if the resulting budget is explicitly labelled "particle backgrounds, LEE-free" and the RoI conclusion is stated as conditional. |
 
 ## What NOT to Use
 
 | Avoid | Why | Use Instead |
 | ----- | --- | ----------- |
-| Lindhard / ionization quenching on neutron recoils | Neutron NR is on the SAME unified phonon scale as CEvNS; applying quenching would suppress it ~5–7× and is physically wrong for a fieldless phonon calorimeter (CONVENTIONS B, forbidden proxy) | Deposit full `T_r` as phonons; only the few-% Frenkel-defect NR correction applies. |
-| keVee↔keVnr conversion for any neutron/gamma channel | Mixing scales is forbidden here; ER and NR deposits share one axis | Keep everything on `E_dep`, fold through the single `R(E_rec|E_dep)`. |
-| G4CMP phonon-transport simulation | Explicitly OUT OF SCOPE | The response is already captured by the v1.0 `R(E_rec|E_dep)` matrix. |
-| Full Geant4/FLUKA shower simulation as the primary engine | Too heavy for a rough-estimate milestone | Parametrized flux/yield + analytic single-scatter fold; light MC only as cross-check. |
-| Adding muon-induced atmospheric neutrons on top of the Gordon ambient flux | **Double-counting**: the Gordon sea-level spectrum ALREADY contains neutrons produced by atmospheric muon/hadron cascades | Restrict the muon-induced channel to neutrons produced IN the wafer + immediate housing by the same through-going muons v1.0 already models (see below). |
-
-## Double-Counting Hazard — muon-induced neutrons vs the v1.0 muon channel and the ambient flux
-
-This is the central methodological trap for v1.1 and must be resolved at the method level:
-
-1. **vs the v1.0 direct-ionization muon channel.** `muon_deposit.py` already deposits each muon's
-   direct ionization (Landau–Vavilov MPV per chord). Muon-induced neutrons are **secondaries**: the
-   neutron elastically scatters off Ge and produces a distinct nuclear recoil. Adding this recoil is
-   **not** double-counting deposited energy. The requirement is normalization discipline — the
-   neutron-production rate MUST be driven by the SAME Gaisser–Guan muon flux/intensity already
-   integrated in `run_muon_mc` (do not introduce a second, independent muon population).
-2. **vs the ambient cosmogenic flux (channel 3).** The Gordon sea-level spectrum is dominated by
-   atmospheric muon/hadron-cascade neutrons. Therefore the muon-induced channel must be **restricted
-   to LOCAL production** — neutrons spalled in the 110 g wafer and its immediate housing by the
-   through-going muons — otherwise the atmospheric component is counted twice.
-3. **Magnitude sanity.** In-wafer production is tiny: Wang (2001) yield
-   `N_n ≈ 4.14×10⁻⁶ E_μ^0.74 n/(μ·g·cm⁻²)`; a vertical muon traverses only `ρℓ ≈ 0.11 g/cm²`, so
-   in-wafer muon-induced neutrons are ~10⁻⁶ per muon — negligible vs the ambient elastic-recoil rate.
-   The muon-induced term is dominated by production in surrounding material and is **subdominant at
-   surface**; treat it as a bounded correction, not a flagship channel, and state the assumed housing
-   mass/composition.
+| Rescaling NUCLEUS's Table 5 residual rates or Figs. 8–11 deposit spectra to Ge by `N²/A`, mass, or `T_max` ratio | These are `φ ⊗ kernel` products; rescaling them applies the CaWO₄/Al₂O₃ kernel to Ge and silently transfers `T_max/E_n = 0.0215` (W) as if it were 0.0536 (Ge) — a ~2.5× shape error in exactly the RoI | Extract `φ_post`, re-fold with the Ge kernel |
+| Bare `e^{−μx}` for gammas through 5 cm Pb | Under-predicts by factors of several at 3–5 mfp | Point-kernel with ANS-6.4.3 buildup factors |
+| Using `E dΦ/dE` directly as `φ(E)` in the fold | Off by one power of `E`; catastrophic at the low-`E` end that dominates the sub-eV floor | Divide by `E`; verify a `1/E` region appears flat in the lethargy plot |
+| Linear or cubic-spline interpolation of a differential spectrum onto a new grid | Does not conserve `∫φ dE`; splines overshoot and can produce negative flux | PCHIP on the cumulative, then differentiate |
+| `scipy.integrate.quad` on the neutron fold below ~10 eV recoil without `points=[E_min]` or a log substitution | Integrand is a near-singular endpoint spike (`∝1/E²`); adaptive refinement misses it and returns a silently wrong, too-small answer | Log-substituted fixed-order Gauss–Legendre with the first panel anchored at `E_min(T)` |
+| Multiplying the CEvNS rate by the Debye–Waller factor `e^{−2W}` | `e^{−2W} ≈ 2×10⁻⁴` at 100 meV; this suppresses the *zero-phonon* channel, not the total rate. Applying it would wipe out a real signal by 4 orders of magnitude | Use the free-nucleus rate above ~1 eV; band or multiphonon-correct below |
+| Bragg / Debye–Scherrer treatment of the CEvNS recoil kernel | `q/q_BZ ≈ 53` at 100 meV — the incoherent approximation is valid throughout | Incoherent (single-atom) kernel everywhere in the extended range |
+| ENDF free-atom `σ_el` for Ge below ~5 eV | Chemical binding / lattice dynamics dominate; the free-atom form is not the right object there | NCrystal `Ge_sg227.ncmat`, spliced at 5 eV |
+| Folding the LEE through `R(E_rec\|E_dep)` | LEE is measured *in reconstructed energy*; folding it double-counts the response | Add on the `E_rec` axis directly |
+| Reporting `dR/dE_rec` below ~1 eV deposit | The lumped 50% collection efficiency is not defensible for a ~3-phonon-quantum deposit reaching one sensor rather than the array | Report a trigger/detection probability curve and label the regime boundary |
+| Full Geant4/MCNP 3-D shield simulation | The explicit scoping constraint of this project; NUCLEUS's own chain is the thing being avoided | 1.1 inversion; 1-D OpenMC only if forced |
 
 ## Method Selection by Problem Type
 
-**Ambient cosmogenic fast-neutron NR (highest-priority NR background):**
-- Use the Gordon-2004 sea-level `φ(E_n)` × isotropic-CM flat-box fold (+ `a₁` correction above 1 MeV).
-- Because it lands directly in the CEvNS ROI, is undiscriminable on the phonon scale, and the surface
-  flux is orders of magnitude above any shielded reference — this is the dominant new NR term.
+**If the goal is the residual neutron NR spectrum on Ge behind the NUCLEUS shield:**
+- Use the Section 1.1 analytic inversion of their CaWO₄/Al₂O₃ deposit spectra to get `φ_post(E_n)`,
+  cross-checked against removal-cross-section attenuation of their Fig. 4 for the fast integral, then
+  re-fold with the Ge flat-box kernel.
+- Because this is the only route that separates the target-independent fluence from the kernel, and it
+  comes with a built-in two-target consistency test.
 
-**Muon-induced local neutrons:**
-- Use Wang-2001 / Mei–Hime-2006 yield+spectrum parametrizations, normalized to the v1.0 muon flux,
-  restricted to wafer+housing production, folded through the same flat-box kernel.
-- Because it must not double-count the atmospheric component and is a bounded subdominant correction.
+**If the goal is the thermal-capture / activation contribution on Ge:**
+- Use ENDF MT=102 + EGAF cascade lines + `A(t)` inventory, gated on `φ_th` inside the shield.
+- Because Ge's thermal channels (⁷¹Ge M-shell 158.7 eV, prompt-cascade recoil up to ~473 eV) are
+  absent from CaWO₄/Al₂O₃ and therefore *cannot* be inferred from anything NUCLEUS publishes. If
+  `φ_th` cannot be obtained, this channel is **blocked** and must be reported as an unquantified gap,
+  not as zero.
 
-**Radiogenic (α,n) + SF neutrons from U/Th in the stack/housing:**
-- Use published (α,n) yield tables + Watt SF spectrum per assumed U/Th ppb, × solid-angle, × flat-box.
-- Because a full SOURCES-4C run is only needed for materials absent from tables; the estimate is
-  gated by the (unknown) radiopurity budget, not by the transport.
+**If the goal is spectra between 1 eV and 10 eV:**
+- Use the existing free-nucleus kernels with the log-substituted quadrature fix and the extended grid.
+- Because both the impulse approximation (`E_r/ω̄ ≈ 27–270`) and the free-atom neutron kernel
+  (`E_n ≥ 19 eV`) are solidly valid there. **This band is a clean, defensible win.**
 
-**Radiogenic gamma/β ER (dominant ER background by analogy to RELICS):**
-- Reuse the v1.0 Klein–Nishina Compton continuum for U/Th/⁴⁰K + housing gammas (with XCOM
-  attenuation/self-shielding); add bulk full-energy deposits for intrinsic ³H, ⁶⁸Ge/⁶⁸Ga, ⁶⁵Zn.
-- Because the thin 2 mm wafer lets most MeV gammas escape (Compton-continuum-dominated, few full-energy
-  peaks — favorable for the existing single-Compton machinery), while the in-bulk ³H β-continuum
-  (endpoint 18.6 keV) is the crucial in-ROI ER term.
+**If the goal is spectra between 100 meV and 1 eV:**
+- Use the same kernels but report a band with two named caveats (multiphonon O(1); bound-atom neutron
+  kernel), and either splice NCrystal below 5 eV or flag the omission.
+- Because this is a genuine transition regime, not a numerical difficulty.
 
-**Cosmogenic activation inventory (source term for the intrinsic-isotope deposits):**
-- Use measured sea-level production rates (CDMSlite/EDELWEISS-III) × assumed surface-exposure and
-  cooldown times to set the ³H/⁶⁸Ge/⁶⁵Zn activities, then feed the bulk-deposit model.
-- Because unshielded surface operation makes this worse than for underground experiments and it is
-  fixed by an exposure scenario, not a transport calculation.
+**If the goal is S/B in the 10–100 eV RoI including the LEE:**
+- Report a 2-D `(A, α)` contour plus the break-even amplitude, with `A = 0` shown as the
+  "LEE-free / NUCLEUS-comparable" limit.
+- Because no QPD-on-Ge LEE measurement exists and a single number would be an overclaim.
 
 ## Validation Strategy by Method
 
 | Method | Validation Approach | Key Benchmarks |
 | ------ | ------------------- | -------------- |
-| Flat-box recoil kernel | Check `T_max = 4A/(1+A)²·E_n ≈ 0.054 E_n` for Ge; verify the box integrates to `σ_el·N_Ge`; recover a flat `dR/dT_r` for a mono-energetic sub-MeV neutron | Textbook n-A elastic kinematics; ENDF `σ_el(E_n)` ≈ few barn thermal→MeV |
-| Single-scatter approximation | Compute `t/λ` and compare a bespoke single-scatter MC to the analytic fold; verify multiple-scatter ≪ single | `λ≈5–6 cm` in Ge → `~3–4%` interaction probability in 2 mm |
-| Ambient CRN fold | Integral flux check against Gordon: `>1 MeV` sea-level flux `≈1.3×10⁻² n·cm⁻²·s⁻¹` (NYC reference); compare ROI recoil rate to RELICS post-shield residual scaled to unshielded surface | Gordon 2004 (IEEE TNS 51, 3427); RELICS Sec. V (PRD 110, 072011) |
-| Muon-induced yield | Reproduce Wang-2001 `N_n` normalization; flag that the ~4 GeV mean SURFACE muon energy is at the soft edge of the parametrization's validity | Wang hep-ex/0101049; Mei–Hime PRD 73, 053004 |
-| (α,n) + SF | Mean SF neutron energy ≈2 MeV (Watt `a,b` above); benchmark (α,n) yield against published Ge/material tables (~20–50% spread) | SOURCES4 arXiv:2211.02080; Westerdale–Meyers arXiv:1702.02465 |
-| Gamma/β ER | Reproduce dominant line energies (1460 keV ⁴⁰K; 2615 keV ²⁰⁸Tl; 609/1120/1764 keV ²¹⁴Bi); ³H endpoint 18.6 keV; ⁶⁸Ga EC K-line ~10.4 keV; production rates ³H ≈74–82, ⁶⁵Zn ≈17, ⁶⁸Ge ≈30 atoms/kg/day sea level | ENSDF; CDMSlite tritium/cosmogenic (Astropart. Phys. 2018), EDELWEISS-III (arXiv:1607.04560) |
+| Flux/response separation + inversion | **Target-swap closure:** feed recovered `φ_post` back through CaWO₄ and Al₂O₃ kernels and reproduce NUCLEUS Figs. 8–11 and Table 5 | ~250 dru in 10–100 eV on CaWO₄ (their stated in-band value); agreement target factor ≲1.5, break condition factor >2 |
+| Analytic flat-box inversion | Recovered `φ` non-negative everywhere; the two targets must yield a consistent `φ` | Non-negativity is the kernel-mismatch diagnostic |
+| Removal cross-section attenuation | Compare against NUCLEUS's stated ">1 order of magnitude" (20 cm borated HDPE) and "factor ~5" (B₄C) | Their own published layer factors |
+| Gamma point-kernel + buildup | Compare against NUCLEUS's stated "factor ~50" passive gamma reduction | Their own published factor |
+| Fig. 4 digitization | Integrate the digitized `E dΦ/dE` in lethargy and compare to any integral flux quoted in their text; verify a flat epithermal plateau (= `1/E` in `dΦ/dE`) | Catches the missing-`1/E` and `ln10` convention errors — **the only tests that catch a 2.3× error** |
+| Integral-conserving rebin | `∫φ dE` preserved to <0.1%; `1/E` input returns `1/E` to machine precision; round-trip test; `φ ≥ 0` | Unit tests |
+| Neutron fold quadrature | Monoenergetic `δ`-flux must return an exact flat box, height `σ/(fE₀)`, width `fE₀`, integral `Nσ`; `dR/dT ∝ 1/T` for a `1/E` flux | Analytic limiting cases |
+| Extended grid + response | `T_max/E_n = 0.0536` (natural Ge) preserved; `E_min(100 meV) = 58.2 keV` (CEvNS) and `1.87 eV` (neutron); count conservation across the regenerated `R(E_rec\|E_dep)` | Recomputed above; project quotes 58.7 keV — reconcile the ~1% difference (isotopic-mass convention) |
+| Impulse-approximation gate | Recompute `q(T)` vs `√(2Mω̄)` and `2W = q²⟨u²⟩` on the actual grid; verify `q/q_BZ ≫ 1` throughout | `q_BZ ↔ T = 35 μeV`; `E_r = ω̄ ↔ T ≈ 30 meV`; `2W(100 meV) ≈ 8.7` |
+| Ge activation lines | Reproduce ⁷¹Ge M/L/K at 158.7 / 1298.5 / 10368.3 eV | CONUS+ measurement, arXiv:2604.25748 |
+| LEE parameterization | Verify that `A = 0` reproduces the LEE-free budget exactly, and that the break-even `A` is independent of the assumed `α` to within the stated band | Internal consistency |
 
 ## Version Compatibility
 
 | Component | Compatible With | Notes |
 | --------- | --------------- | ----- |
-| New neutron/radiogenic channels | v1.0 `muon_deposit.shared_energy_grid` (0.01 keV→200 MeV, 80/decade) | All channels MUST use this grid so they co-add on `E_dep`. |
-| New channels | v1.0 `response_matrix.R(E_rec\|E_dep)`, non-paralyzable censoring (CONVENTIONS F) | Fold every channel through the SAME response matrix per QPD design. |
-| ENDF/B-VIII.0 | JEFF-3.3 | Use JEFF as an independent `σ_el` cross-check; discrepancies below ~1 MeV are small. |
+| Extended `shared_energy_grid()` (0.1 eV → 200 MeV) | All v1.0/v1.1 channels | **`R(E_rec\|E_dep)` must be regenerated** on the extended grid; every archived v1.x spectrum must be re-gridded or explicitly tagged as valid only above 10.14 eV |
+| NCrystal Ge kernel | ENDF/B-VIII.0 free-atom `σ_el` | Splice at 5 eV; report the discontinuity magnitude as a systematic |
+| DarkELF Ge | CEvNS coupling | DM coupling `f_d` → `Q_W`; valid because Ge is monatomic. **Do not use DarkELF for CaWO₄/Al₂O₃ closure tests** — multi-atom coupling assignment is ambiguous there |
+| OpenMC 1-D shield model | Digitized Fig. 4 as source | Source must be converted to `dΦ/dE` first (Section 2.1) |
+| VNS scenario (2×4.25 GW_th, 72/102 m, 2.1×10¹² ν̄/cm²/s, 80% duty) | v1.0 3 GW_th / 25 m results | Mutually exclusive scenarios — never co-plot without labelling; signal ratio ≈ 1/3.6 |
 
 ## Sources
 
-- Neutron elastic kinematics & thin-target single-scatter: standard reactor/detector physics; "Features
-  of Fast Neutrons in Dark Matter Searches" (arXiv:1009.3791); ZEPLIN-III (arXiv:2007.01683).
-- ENDF/B-VIII.0: Brown et al., *Nucl. Data Sheets* 148, 1 (2018), doi:10.1016/j.nds.2018.02.001
-  (OSTI 1427384). Ge cross sections & File-4 angular data via IAEA/NNDC.
-- Ambient cosmogenic neutron flux: Gordon et al., *IEEE Trans. Nucl. Sci.* 51, 3427 (2004),
-  2004ITNS...51.3427G (+ Correction); basis of JEDEC JESD89. Site scaling: Sato PARMA/EXPACS.
-- Muon-induced neutrons: Wang et al., "Predicting Neutron Production from Cosmic-ray Muons,"
-  arXiv:hep-ex/0101049 (`N_n≈4.14×10⁻⁶E_μ^0.74`); Mei & Hime, *Phys. Rev. D* 73, 053004 (2006),
-  doi:10.1103/PhysRevD.73.053004.
-- Radiogenic (α,n) + SF: SOURCES4 (arXiv:2211.02080; Wilson et al. code); Westerdale & Meyers
-  (NeuCBOT), arXiv:1702.02465, *NIM A* 875, 57 (2017); Mei, Yin, Elliott (α,n) evaluation. ²³⁸U SF
-  Watt parameters `a=0.7124 MeV, b=5.6405 MeV⁻¹` (Los Alamos model).
-- Gamma/β decay-chain modeling & self-absorption: ENSDF; `radioactivedecay` py package; NIST XCOM
-  (Ge attenuation); Geant4 RDM validation refs (as heavier alternative).
-- Ge cosmogenic activation rates: CDMSlite tritium/cosmogenic production (*Astropart. Phys.* 2018);
-  EDELWEISS-III, arXiv:1607.04560; review arXiv:1708.07449.
-- Background anchor / channel inventory: RELICS reactor-CEvNS study, Cai et al., *Phys. Rev. D* 110,
-  072011 (2024) (same 3 GW, 25 m configuration).
+**Verified in this survey (fetched or search-confirmed with title + identifier):**
+
+- NUCLEUS Collab. (H. Abele et al.), "Particle background characterization and prediction for the
+  NUCLEUS reactor CEνNS experiment," *Eur. Phys. J. C* 86, 29 (2026),
+  doi:10.1140/epjc/s10052-025-15168-9, arXiv:2509.03559. **Full text fetched.** Confirms: Fig. 4 is
+  `E×dΦ_n/dE` on log-E, obtained by Geant4-transporting the Gordon sea-level spectrum through the VNS
+  building; shield layers (20 cm 5%-borated HDPE, 5 cm low-activity Pb, 5 cm plastic-scintillator muon
+  veto; internal 4 cm B₄C + cold muon veto); per-layer factors (">one order of magnitude" for the
+  borated HDPE, "factor ~5" for B₄C, "factor ~50" gamma reduction from passive materials, "factor 5"
+  from the COV); Geant4 10.7.3; tangent-plane source sampling; residual "strongly dominated by cosmic
+  ray-induced neutrons"; ~250 d⁻¹kg⁻¹keV⁻¹ in 10–100 eV on CaWO₄ with S/B ≥ 1; LEE explicitly
+  discussed and explicitly excluded from the particle-background budget.
+  **Not verified:** the "tens to hundreds of millions of CPU-hours" figure supplied in the milestone
+  context does not appear in the text fetched; no CPU cost is stated there. Treat that number as
+  project lore until located in the paper.
+- R. Campbell-Deem, S. Knapen, T. Lin, E. Villarama, "Dark matter direct detection from the single
+  phonon to the nuclear recoil regime," *Phys. Rev. D* 106, 036019 (2022), arXiv:2205.02250.
+  **Full text fetched (ar5iv).** Impulse criterion `q ≫ √(2m_d ω̄_d)`; Debye–Waller
+  `W_d(q) = q²/(4m_d)∫dω D_d(ω)/ω`; incoherent/coherent transition at `q_BZ ≈ 2π/a ≈ 2 keV`; Ge, Si,
+  diamond in Appendix D; stated accuracies (single-phonon analytic vs DFT within O(1); two-phonon
+  incoherent within ~factor 5, up to an order of magnitude low with anharmonicity).
+- S. Knapen, J. Kozaczuk, T. Lin, "DarkELF: A python package for dark matter scattering in dielectric
+  targets," *Phys. Rev. D* 105, 015014 (2022), arXiv:2104.12786. Ge among the shipped materials;
+  github.com/tongylin/DarkELF.
+- X.-X. Cai, T. Kittelmann, "NCrystal: A library for thermal neutron transport," *Comput. Phys.
+  Commun.* 246, 106851 (2020), arXiv:1901.08890; github.com/mctools/ncrystal. Coherent-elastic
+  (Bragg) + incoherent + inelastic from unit-cell parameters; C++/C/Python; `Ge_sg227.ncmat` in the
+  shipped data library.
+- CONUS+ Collab., "Sub-keV energy calibration of CONUS+ via ⁷¹Ge M-shell neutron activation,"
+  arXiv:2604.25748. ⁷¹Ge M/L/K X-ray lines resolved at 158.7 ± 1.4 / 1298.5 / 10368.3 eVee.
+- S. Yellin, "Finding an upper limit in the presence of an unknown background," *Phys. Rev. D* 66,
+  032005 (2002), arXiv:physics/0203002. Maximum-gap / optimum-interval; parameter-independent,
+  conservative classical limits with no background model.
+- M. Reginatto, P. Goldhagen, "MAXED, a computer code for maximum entropy deconvolution of multisphere
+  neutron spectrometer data" / UMG 3.3 package (MAXED + GRAVEL), PTB / NEA Data Bank NEA-1665.
+  Standard regularized few-channel and multichannel neutron unfolding.
+- A. C. Carnall, "SpectRes: A fast spectral resampling tool in Python," arXiv:1705.05165.
+  Integral-conserving resampling; `specutils.FluxConservingResampler` is the equivalent.
+- R. Chartrand, "Numerical differentiation of noisy, nonsmooth data," *ISRN Applied Mathematics* 2011,
+  164564, doi:10.5402/2011/164564. Total-variation regularized differentiation.
+- Ricochet Collab., "Fast neutron background characterization of the future Ricochet experiment at the
+  ILL research nuclear reactor," arXiv:2208.01760, *Eur. Phys. J. C* (2023). Peer example of the same
+  problem (³He counters + Geant4; 44 ± 3 → 9 ± 2 events/day/kg NR in 50 eV–1 keV depending on muon
+  veto). Useful as an independent order-of-magnitude anchor for a shielded reactor-site Ge/Zn NR rate.
+- EURADOS, "Results of the international comparison exercise on neutron spectra unfolding in Bonner
+  spheres spectrometry," arXiv:2201.01241. ISO convention that spectral bins are flat in fluence per
+  unit lethargy.
+- OpenMC documentation, "Variance Reduction" (docs.openmc.org): MAGIC and FW-CADIS weight-window
+  generation. Relevant OpenMC shielding-benchmark and weight-window-mesh literature exists
+  (e.g. FNS/SINBAD interpretations; weight-window mesh development in *Fusion Eng. Des.*).
+- Albert–Welton kernel / removal cross-section method: standard shielding literature
+  (J. K. Shultis & R. E. Faw, *Radiation Shielding*, ANS 2000; *Radiation Shielding and Radiological
+  Protection*). `Σ_R ≈ (2/3)Σ_T` at 6–8 MeV; validity requires a following hydrogenous slab.
+
+**Surfaced but NOT read — verify before quoting any number:**
+
+- "Low-Energy Backgrounds in Solid-State Phonon and Charge Detectors," arXiv:2503.08859 (review-level
+  LEE entry point).
+- "Characterization of the Low Energy Excess using a NUCLEUS Al₂O₃ detector," arXiv:2603.07687
+  (closest target- and site-matched LEE anchor).
+- CRESST-III, "Latest observations on the low energy excess in CRESST-III," arXiv:2207.09375
+  (power-law time decay of the LEE amplitude).
+- "Revisiting the dark matter interpretation of excess rates in semiconductors," *Phys. Rev. D* 105,
+  123002 (2022) — reported spectral index `α = 3.43` for Si and Ge excess rates. **Confirm the index
+  and its applicability to a phonon-only cryogenic device before adopting it.**
+- IAEA Nuclear Data Library / Thermal Scattering Law database — **must be checked directly to confirm
+  that no Ge TSL evaluation exists** in ENDF/B-VIII.0 or VIII.1.
+
+**Reused from v1.0/v1.1 (not re-researched):** Freedman/Helm CEvNS, Huber–Mueller flux, Gaisser–Guan
+muon flux, Klein–Nishina Compton, Landau–Vavilov, ENDF/B-VIII.0 n-Ge elastic (Phase 7),
+`R(E_rec|E_dep)` MC response chain, Gordon 2004 sea-level neutron spectrum.
 
 ---
 
-_Methods research for: v1.1 neutron-NR and radiogenic in-band backgrounds, thin-Ge QPD forward model_
-_Researched: 2026-07-21_
+_Methods research for: v2.0 NUCLEUS-VNS background transfer, figure digitization as forward-model
+input, the 100 meV extension, and LEE parameterization_
+_Researched: 2026-07-22_
