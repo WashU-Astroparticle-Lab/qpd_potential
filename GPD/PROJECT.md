@@ -82,14 +82,15 @@ What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton dif
 
 ### Answered
 
-(None yet — investigate to answer)
+- [x] What does the reactor CEvNS spectrum look like in reconstructed energy for the two trapping designs? — **v1.0:** reconstructs to tens of eV (peak ~42 eV, ~85% of counts below 100 eV); linear E_rec≈0.5·E_dep mapping since all reactor recoils lie below the saturation onset. Absolute rate anchored to Billard within 2.4%.
+- [x] What does the sea-level muon spectrum look like in reconstructed energy? — **v1.0:** the 1.5–197 MeV muon deposits all saturate the 25 kHz readout and pile up at a single ~18.8/15.0 keV reconstructed feature — an *instrumental artifact of the bandwidth ceiling*, not a physical line. Integral rate 1.366 Hz (within ~20% of PDG).
+- [x] What does the environmental-gamma Compton spectrum look like in reconstructed energy? — **v1.0:** Klein–Nishina electron-recoil continuum reconstructing to a sub-keV–few-keV region; edges at 1243/1541/2382 keV; single-scatter rate 0.267 Hz (site-flux band ×2).
+- [x] What is the E_rec(E_dep) response, effective threshold, and saturation onset for each design? — **v1.0:** MC response matrix R(E_rec|E_dep) with non-paralyzable censoring; per-sensor onset 1.27/0.77 eV, crossover band ~53/32 eV (default), whole-array plateau ~18.6/11.3 keV. Saturated-regime shape validated by limiting cases only (no literature anchor).
 
-### Active
+### Active (next milestone)
 
-- [ ] What does the reactor CEvNS spectrum look like in reconstructed energy for the two trapping designs?
-- [ ] What does the sea-level muon spectrum look like in reconstructed energy, given thin-wafer chord geometry and where bandwidth saturation dominates?
-- [ ] What does the environmental-gamma Compton spectrum look like in reconstructed energy in this thin wafer?
-- [ ] What is the E_rec(E_dep) response, effective threshold, and saturation onset for each design?
+- [ ] Nuclear-recoil and RELICS-class backgrounds (cosmic-ray & muon-induced neutrons, detector-material radioactivity, cosmogenic Ge activation) — undiscriminable on the phonon scale, so they land in the flagship CEvNS band.
+- [ ] Manuscript revision per the round-1 peer review (completeness scope caveat, ε vs η_ce, citations, venue) and a quantitative sensitivity/payoff.
 
 ### Out of Scope
 
@@ -177,9 +178,11 @@ Mirror of the contract-critical anchors above: Ramanathan et al. (2026) [must-re
 | 4″×4″×2 mm single-sided wafer (drop 1 kg framing) | Matches actual QPD wafer form factor; rates quoted per-detector and per-kg | — Confirmed by user |
 | Add environmental-gamma Compton channel | User wants to see Compton from detector radiation in this geometry | — Confirmed by user (radiogenic bkg) |
 | Sensor density 1/mm² on one face | User-specified | — Confirmed by user |
+| Adopt non-paralyzable dead-time censoring project-wide (CONVENTIONS §F) | Monotone, saturates cleanly at 1/τ_d; paralyzable retained only as a sensitivity | — Good (v1.0; user-verified in Phase 5) |
+| Frame stage-1 as a feasibility forward model (no sensitivity/discovery claim) | Saturated-regime response has no literature anchor; keeps claims honest | — Good (v1.0; upheld by peer review) |
 
 Full log: `GPD/DECISIONS.md`
 
 ---
 
-_Last updated: 2026-07-20 after geometry revision and Compton-channel addition_
+_Last updated: 2026-07-22 after v1.0 milestone (reconstructed-energy spectra)_

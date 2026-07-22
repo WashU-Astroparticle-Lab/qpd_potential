@@ -525,13 +525,13 @@
     }
   },
   "position": {
-    "current_phase": "1",
-    "current_phase_name": "Conventions & Energy-Scale Foundation",
+    "current_phase": null,
+    "current_phase_name": null,
     "total_phases": 6,
-    "current_plan": "01-02",
-    "total_plans_in_phase": 2,
-    "status": "Phase 1 complete (verified passed 15/15, HIGH)",
-    "last_activity": "Phase 1 executed and verified \u2014 qpd_potential package (params, cevns, energy_scale), 26/26 tests, CONVENTIONS.md + ASSUMPTIONS.md",
+    "current_plan": null,
+    "total_plans_in_phase": null,
+    "status": "Milestone complete",
+    "last_activity": "2026-07-22",
     "last_activity_desc": null,
     "progress_percent": 100,
     "paused_at": null
@@ -947,5 +947,5 @@
     "confirmed_context_hash": "sha256:8eec398bda468c63fd5714317825bc7eea06ba35c74f9f618d18257c4ff2183a"
   },
   "_version": 1,
-  "_synced_at": "2026-07-21T21:23:14.046830+00:00"
+  "_synced_at": "2026-07-22T02:26:16.390605+00:00"
 }

@@ -11,13 +11,13 @@ See: GPD/PROJECT.md
 
 ## Current Position
 
-**Current Phase:** 1
-**Current Phase Name:** Conventions & Energy-Scale Foundation
+**Current Phase:** none
+**Current Phase Name:** none
 **Total Phases:** 6
-**Current Plan:** 01-02
-**Total Plans in Phase:** 2
-**Status:** Phase 1 complete (verified passed 15/15, HIGH)
-**Last Activity:** Phase 1 executed and verified — qpd_potential package (params, cevns, energy_scale), 26/26 tests, CONVENTIONS.md + ASSUMPTIONS.md
+**Current Plan:** none
+**Total Plans in Phase:** none
+**Status:** Milestone complete
+**Last Activity:** 2026-07-22
 
 **Progress:** [██████████] 100%
 
