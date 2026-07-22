@@ -86,6 +86,12 @@ HBARC2 = Param(
     "(hbar c)^2 unit conversion; CONVENTIONS Section A.2 (dropping this is the #1 CEvNS bug)",
     "HIGH",
 )
+MEV_TO_J = Param(
+    1.602176634e-13,
+    "J/MeV",
+    "CODATA 2018 elementary charge (exact); same value as flux.normalization.MEV_TO_J",
+    "HIGH",
+)
 # CEvNS closed-form prefactor is /(4*pi), NOT /(8*pi). The /8pi form is a
 # factor-of-2 error (CONVENTIONS Section C, forbidden proxy fp-prefactor).
 CEVNS_PREFACTOR_DENOM = Param(
@@ -192,6 +198,47 @@ CONUS_DISTANCE_M = Param(
     "m",
     "CONUS+ detector standoff; Nature 643, 1229 (2025), arXiv:2501.05206",
     "HIGH",
+)
+
+# NUCLEUS Fig.-1 reproduction geometry (VALD-02). Angloher et al. (NUCLEUS
+# Collab.), Eur. Phys. J. C 79, 1018 (2019), arXiv:1905.10258. Their Fig. 1 Ge
+# curve is at the Chooz Very-Near-Site: TWO cores, 4.25 GW_th each, at 72 m and
+# 102 m. NOTE their emission normalization is their own (6 nubar/fission at
+# 200 MeV/fission -> ~8e20 nubar/s per core, quoted in their Sect. 2), which is
+# 4.7% SOFTER than our Phase-2 normalization (6.477 nubar/fission at an
+# effective <E_f> = 205.815 MeV -> 1.964e20 nubar/s/GW_th). Reproducing their
+# figure means adopting THEIR numbers, not rescaling ours (forbidden proxy
+# fp-nucleus-emission). Their prose also quotes "about 3e12 nubar/cm^2/s" at the
+# VNS, which is ~1.6x above what their own 8e20/core and 72/102 m give; Fig. 1
+# follows the geometric sum (1.83e12), NOT the 3e12 prose figure -- see
+# cevns.nucleus_flux_normalization (forbidden proxy fp-nucleus-3e12).
+NUCLEUS_CORE_POWER_GW = Param(
+    4.25,
+    "GW_th",
+    "Chooz-B per-core thermal power; NUCLEUS EPJC 79, 1018 (2019) Sect. 2",
+    "HIGH",
+)
+NUCLEUS_CORE_DISTANCES_M = (72.0, 102.0)  # VNS baselines to B-1 and B-2
+NUCLEUS_NU_PER_FISSION = Param(
+    6.0,
+    "nubar/fission",
+    "NUCLEUS EPJC 79, 1018 (2019) Sect. 2 ('six nubar per fission')",
+    "HIGH",
+)
+NUCLEUS_MEV_PER_FISSION = Param(
+    200.0,
+    "MeV/fission",
+    "NUCLEUS EPJC 79, 1018 (2019) Sect. 2 ('average energy release of 200 MeV')",
+    "HIGH",
+)
+NUCLEUS_QUOTED_SITE_FLUX = Param(
+    3.0e12,
+    "nubar/cm^2/s",
+    "Flux quoted in NUCLEUS EPJC 79, 1018 (2019) Sect. 2 prose and Conclusion",
+    "HIGH",
+    note="PROSE value only. Inconsistent with their own 8e20 nubar/s per core at "
+    "72/102 m (which gives 1.83e12) and with their Fig. 1 normalization. "
+    "Recorded so the discrepancy is explicit; do NOT fold with it.",
 )
 
 # Helm form-factor parameters (Lewin & Smith, Astropart. Phys. 6, 87 (1996),
