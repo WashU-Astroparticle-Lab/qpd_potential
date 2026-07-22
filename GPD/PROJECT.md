@@ -8,6 +8,16 @@ A study of the particle-physics potential of a Quantum Parity Detector (QPD) bas
 
 What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton differential rate spectra in reconstructed energy for a 4″×4″×2 mm single-sided Ge wafer read out by QPDs with Ta→Al and Al→Hf trapping designs, given the stated efficiency and bandwidth assumptions?
 
+## Current Milestone: v1.1 Neutron & Radiogenic Backgrounds
+
+**Goal:** Compute the in-band (CEvNS-band) background spectra in reconstructed energy from neutron-induced nuclear recoils and detector-material radioactivity for the ~110 g QPD Ge wafer, using the v1.0 forward-model/response chain and benchmarked against how similar Ge/cryogenic CEvNS experiments quote these backgrounds.
+
+**Target results:**
+
+- Neutron-recoil dR/dE_rec on the unified phonon scale (both trapping designs) from three fast-neutron sources: muon-induced (in-situ, correlated with the v1.0 muon flux), cosmogenic sea-level ambient, and radiogenic (α,n)/spontaneous-fission.
+- Detector-material radiogenic dR/dE_rec from Ge-crystal bulk contamination (intrinsic U/Th/⁴⁰K + cosmogenic activation products) and housing/nearby-component radioactivity.
+- Combined in-band background budget compared against the v1.0 reactor-CEvNS signal in the flagship reconstructed-energy band, with peer-experiment (CONUS/NUCLEUS/RICOCHET/ν-cleus) normalization cross-checks.
+
 ## Scoping Contract Summary
 
 ### Contract Coverage
@@ -87,9 +97,14 @@ What are the reactor-CEvNS, cosmic-ray-muon, and environmental-gamma Compton dif
 - [x] What does the environmental-gamma Compton spectrum look like in reconstructed energy? — **v1.0:** Klein–Nishina electron-recoil continuum reconstructing to a sub-keV–few-keV region; edges at 1243/1541/2382 keV; single-scatter rate 0.267 Hz (site-flux band ×2).
 - [x] What is the E_rec(E_dep) response, effective threshold, and saturation onset for each design? — **v1.0:** MC response matrix R(E_rec|E_dep) with non-paralyzable censoring; per-sensor onset 1.27/0.77 eV, crossover band ~53/32 eV (default), whole-array plateau ~18.6/11.3 keV. Saturated-regime shape validated by limiting cases only (no literature anchor).
 
-### Active (next milestone)
+### Active (v1.1 — this milestone)
 
-- [ ] Nuclear-recoil and RELICS-class backgrounds (cosmic-ray & muon-induced neutrons, detector-material radioactivity, cosmogenic Ge activation) — undiscriminable on the phonon scale, so they land in the flagship CEvNS band.
+- [ ] Neutron-induced nuclear-recoil background in E_rec: muon-induced (in-situ), cosmogenic sea-level ambient, and radiogenic (α,n)/spontaneous-fission fast neutrons on Ge, both designs — undiscriminable on the phonon scale, so they land in the flagship CEvNS band.
+- [ ] Detector-material radiogenic background in E_rec: Ge-crystal bulk (intrinsic U/Th/⁴⁰K + cosmogenic activation) and housing/nearby components.
+- [ ] Combined in-band background budget vs. the reactor-CEvNS signal, cross-checked against peer Ge/cryogenic CEvNS experiments.
+
+### Deferred (future milestones)
+
 - [ ] Manuscript revision per the round-1 peer review (completeness scope caveat, ε vs η_ce, citations, venue) and a quantitative sensitivity/payoff.
 
 ### Out of Scope
@@ -185,4 +200,4 @@ Full log: `GPD/DECISIONS.md`
 
 ---
 
-_Last updated: 2026-07-22 after v1.0 milestone (reconstructed-energy spectra)_
+_Last updated: 2026-07-21 — started milestone v1.1 (neutron & radiogenic backgrounds)_

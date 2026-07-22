@@ -16,8 +16,8 @@ See: GPD/PROJECT.md
 **Total Phases:** 6
 **Current Plan:** none
 **Total Plans in Phase:** none
-**Status:** Milestone complete
-**Last Activity:** 2026-07-22
+**Status:** Planning
+**Last Activity:** 2026-07-21
 
 **Progress:** [██████████] 100%
 
@@ -113,6 +113,7 @@ None yet.
 - [Phase 06]: Mapping panel reuses Phase-5 E_rec_median_non_paralyzable vs E_dep_centers (both designs) with the 0.5*E_dep calibration line + onset/plateau markers; not recomputed.
 - [Phase 06]: ASSUMPTIONS.md finalized: censoring OPEN switch retired to RESOLVED non-paralyzable (CONVENTIONS F closed, USER 2026-07-21); Phase-4 gamma-background note + Phase-6 fold addendum added; four caveats + compact stage-1 results (Billard 2.4%, CEvNS ~68/kg/day >50 eV_nr dep, muon 1.37 Hz, pileup 3.3e-5); no live OPEN switch (fp-note-stale).
 - [Phase 06]: Stage-1 milestone CLOSED by Plan 06-02.
+- [Phase 0]: Started milestone v1.1: Neutron & Radiogenic Backgrounds — New milestone cycle — neutron NR (muon-induced/cosmogenic/radiogenic) + Ge-bulk & housing radioactivity in reconstructed energy
 
 ### Active Approximations
 
