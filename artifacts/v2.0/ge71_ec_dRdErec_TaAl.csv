@@ -41,10 +41,10 @@
 # ================================== TRIGGER ==================================
 # CONVENTIONS Section I: P_trig is an ANALYSIS efficiency MULTIPLIED on top of eps ~ 0.5,
 # evaluated on the DEPOSIT centres BEFORE R acts. E50 = 0.5 eV exactly, k = 4.0.
-# P_trig at the line's deposit bin = 0.999999999907 -- essentially 1, as
+# P_trig at the line's deposit bin = 0.999999998506 -- essentially 1, as
 # expected 2.5 decades above E50.
 #
-# git_sha = fc42696
+# git_sha = 7301ff9
 # reproduce = PYTHONPATH=src /opt/anaconda3/bin/python3 -c "from qpd_potential import capture_channel as c; c.write_ge71_ec_erec_csv('Ta->Al')"
 # columns: E_rec_keV, dRdErec_bound, dRdErec_trigger_weighted, P_trig_effective, regime, accuracy_label
 E_rec_keV,dRdErec_bound,dRdErec_trigger_weighted,P_trig_effective,regime,accuracy_label
@@ -144,7 +144,7 @@ E_rec_keV,dRdErec_bound,dRdErec_trigger_weighted,P_trig_effective,regime,accurac
 4.731512590e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 5.308844442e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 5.956621435e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
-6.683439176e-02,1.699212e+04,1.699212e+04,1.000000000,dRdErec,order_of_magnitude
+6.683439176e-02,1.699212e+04,1.699212e+04,0.999999999,dRdErec,order_of_magnitude
 7.498942093e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 8.413951416e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 9.440608763e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude

@@ -203,8 +203,9 @@ def test_trigger_is_evaluated_on_the_deposit_axis(folded):
     r = folded[DESIGNS[0]]
     assert np.allclose(r["P_trig_on_Edep"], tg.P_trig(r["E_dep_centers_eV"]))
     assert r["P_trig_on_Edep"].shape == r["E_dep_centers_eV"].shape
-    # E50 = 0.5 eV EXACTLY, on the DEPOSIT axis
-    assert abs(float(tg.P_trig(np.array([0.5]))[0]) - 0.5) < 1e-12
+    # P(E50) = 1/2 EXACTLY, on the DEPOSIT axis (E50 = 1.0 eV since 2026-07-23)
+    _e50 = params.TRIGGER_E50.value
+    assert abs(float(tg.P_trig(np.array([_e50]))[0]) - 0.5) < 1e-12
 
 
 def test_the_rate_is_never_multiplied_by_exp_minus_2W():

@@ -37,6 +37,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART = os.path.join(ROOT, "artifacts", "v2.0")
 
 ROI_LO, ROI_HI = 10.0e-3, 100.0e-3   # keV; the 10-100 eV reconstructed RoI
+# Bandwidth saturation is NOT added by this script: it is already inside the response
+# matrices as R_non_paralyzable (25 kHz non-paralyzable censoring, CONVENTIONS Sect. F).
+# These are the per-design onsets carried in the npz, drawn so the effect is visible.
+SAT_ONSET_EDEP_eV = {"TaAl": 52.90739510057845, "AlHf": 32.12999702464278}
 FLOOR = 0.0999350e-3                 # Phase-10 grid floor, 99.935 meV
 SUBEV = 1.0e-3                       # below 1 eV, P_trig is the reported observable
 CAPTURE_BOUND = 4399.78              # counts/kg/day, Phase 14, in-RoI, rigorous
@@ -125,6 +129,13 @@ def panel(ax, design, title):
     ax.axvspan(ROI_LO * 1e3, ROI_HI * 1e3, color="0.85", alpha=0.4, zorder=0)
     ax.axvline(FLOOR * 1e3, color="0.35", ls=":", lw=1.1, zorder=1)
     ax.axvline(SUBEV * 1e3, color="0.55", ls="-.", lw=1.0, zorder=1)
+    # saturation onset, mapped deposit -> reconstructed with the measured ~0.5 slope
+    sat_rec = SAT_ONSET_EDEP_eV[design] * 0.5
+    ax.axvline(sat_rec, color="#e377c2", ls="--", lw=1.6, zorder=2)
+    ax.annotate(f"bandwidth saturation onset\n{SAT_ONSET_EDEP_eV[design]:.1f} eV dep "
+                f"($\\approx${sat_rec:.0f} eV rec)",
+                xy=(sat_rec, 4e5), fontsize=7.4, color="#e377c2",
+                ha="right", rotation=90, va="top")
     ax.set_xlabel("Reconstructed energy  $E_{\\rm rec}$   [eV]")
     ax.set_title(title, fontsize=11.5)
     ax.grid(True, which="major", alpha=0.28)
@@ -170,18 +181,19 @@ axes[1].text(0.985, 0.02,
 
 fig.suptitle(f"QPD Ge wafer — 3 GW$_{{\\rm th}}$ at 25 m — trigger-weighted spectra with an ASSUMED "
              f"{N_SUPPRESSION:.0f}× neutron suppression   (veto credit still 1.0)", fontsize=12.5, y=0.986)
-fig.text(0.5, 0.030,
+fig.text(0.5, 0.050,
          f"The {N_SUPPRESSION:.0f}\u00d7 suppression is an ASSUMED placeholder \u2014 not derived, and deliberately NOT "
          "transferred from NUCLEUS,",
          ha="center", fontsize=8.4, style="italic")
-fig.text(0.5, 0.014,
+fig.text(0.5, 0.032,
          "whose ~5 and ~50 are event-rate reductions in CaWO$_4$ that embed a target response which is not Ge's.",
          ha="center", fontsize=8.4, style="italic")
-fig.text(0.5, -0.002,
-         "Faint dotted = untriggered; the gap below ~1 eV is the trigger-efficiency rolloff.",
+fig.text(0.5, 0.014,
+         "Faint dotted = untriggered; the gap is the trigger-efficiency rolloff at the NEW $E_{50}$ = 1.0 eV (deposit). "
+         "Saturation was always in $R$, not added here.",
          ha="center", fontsize=8.4, style="italic")
 
-fig.tight_layout(rect=[0, 0.052, 1, 0.955])
+fig.tight_layout(rect=[0, 0.075, 1, 0.955])
 fig.savefig(os.path.join(ART, "combined_spectrum_v2.0.png"), dpi=155)
 fig.savefig(os.path.join(ART, "combined_spectrum_v2.0.pdf"))
 print("wrote combined_spectrum_v2.0.png\n")

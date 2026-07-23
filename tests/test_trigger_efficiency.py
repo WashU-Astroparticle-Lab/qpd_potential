@@ -46,7 +46,8 @@ def test_e50_invariance_across_the_whole_scan_range(k):
 def test_e50_is_the_registered_parameter_not_a_literal():
     """test-e50-parameter-coverage + fp-hardcoded-width: both E50 and k are
     registered params, and neither appears as a bare literal in the sigmoid."""
-    assert params.TRIGGER_E50.value == 0.5
+    # E50 changed 0.5 -> 1.0 eV by user decision 2026-07-23 (CONVENTIONS Section I).
+    assert params.TRIGGER_E50.value == 1.0
     assert params.TRIGGER_E50.units == "eV"
     assert params.TRIGGER_SHARPNESS.units == ""          # dimensionless
     assert params.TRIGGER_SHARPNESS.confidence == "LOW"  # fixed by no artifact
@@ -118,8 +119,10 @@ def test_linear_energy_logistic_fails_the_zero_limit():
     chosen, not a stylistic preference."""
     p0 = float(trigger.linear_energy_logistic_rejected(0.0, width_eV=0.1))
     assert p0 > 0.0
-    assert p0 == pytest.approx(1.0 / (1.0 + np.exp(0.5 / 0.1)), rel=1e-12)
-    assert p0 == pytest.approx(6.692850924e-03, rel=1e-6)
+    e50 = params.TRIGGER_E50.value
+    assert p0 == pytest.approx(1.0 / (1.0 + np.exp(e50 / 0.1)), rel=1e-12)
+    # magnitude quoted at the CURRENT E50; it was 6.692850924e-03 at E50 = 0.5 eV
+    assert 0.0 < p0 < 1.0e-2
     # ... and it is nonzero at NEGATIVE energy too
     assert float(trigger.linear_energy_logistic_rejected(-1.0, width_eV=0.1)) > 0.0
     # the adopted form passes exactly where the rejected one fails
@@ -130,7 +133,8 @@ def test_linear_energy_logistic_50_percent_point_is_width_dependent_in_practice(
     """Both forms put the 50% point at E50 analytically, but only the Hill form
     keeps P(0) = 0 while doing so. Recorded so the comparison is on the record."""
     for w in (0.05, 0.1, 0.3):
-        p = float(trigger.linear_energy_logistic_rejected(0.5, width_eV=w))
+        p = float(trigger.linear_energy_logistic_rejected(
+            params.TRIGGER_E50.value, width_eV=w))
         assert p == pytest.approx(0.5, abs=1e-12)
         assert float(trigger.linear_energy_logistic_rejected(0.0, width_eV=w)) > 0.0
 
@@ -247,7 +251,16 @@ def test_p_trig_high_energy_limit_is_one_not_eps():
 def test_regime_constant_is_importable_and_unique():
     """test-regime-constant: exactly one definition, no competing literal."""
     assert trigger.SUBEV_REGIME_BOUNDARY_eV == 1.0
-    assert trigger.SUBEV_REGIME_BOUNDARY_eV > params.TRIGGER_E50.value
+    # They are DISTINCT constants that, since the 2026-07-23 E50 change, happen to
+    # coincide numerically at 1.0 eV. Before that change the boundary sat strictly
+    # above E50, which is what made "report dR/dE above the boundary" safe: the
+    # trigger was near-unity there. It no longer is -- P_trig(boundary) = 1/2 exactly.
+    # Asserting they are separately DEFINED guards the thing that still matters;
+    # asserting an ordering that no longer holds would just be false.
+    # See the PR note: the boundary may need to move to ~3.2 eV (where P_trig >= 0.99
+    # at k = 4) to recover its original meaning. That is a separate user decision.
+    assert trigger.SUBEV_REGIME_BOUNDARY_eV == pytest.approx(
+        params.TRIGGER_E50.value), "coincidence is expected post-2026-07-23; see PR"
     assert "trigger probability" in trigger.REGIME_STATEMENT
     assert "dR/dE_rec" in trigger.REGIME_STATEMENT
     out = subprocess.run(

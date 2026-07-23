@@ -498,16 +498,23 @@ R_SPOT_RANGE = (1.0, 5.0)
 # --------------------------------------------------------------------------- #
 
 TRIGGER_E50 = Param(
-    0.5,
+    1.0,
     "eV",
-    "Sub-eV trigger-probability 50% point; USER DECISION 2026-07-22 "
-    "(GPD/STATE.md Accumulated Context); CONVENTIONS Section I",
+    "Sub-eV trigger-probability 50% point; USER DECISION 2026-07-23 "
+    "(supersedes the 0.5 eV decision of 2026-07-22); CONVENTIONS Section I",
     "MEDIUM",
     note="The ONLY property of the trigger curve fixed by a project decision. "
     "Exact by construction for the adopted Hill form: P(E50) = 1/(1 + 1^k) = 1/2 "
     "for EVERY sharpness k > 0, so the 50% point never depends on the width. "
     "MEDIUM rather than HIGH because it is a chosen analysis threshold, not a "
-    "measured device property -- no trigger threshold has been measured for this device.",
+    "measured device property -- no trigger threshold has been measured for this device. "
+    "CHANGED 2026-07-23 from 0.5 eV to 1.0 eV by user decision. This SUPERSEDES ROADMAP "
+    "Phase 10 Success Criterion 4, which asserts the 50% point is 'exactly at 0.5 eV'. "
+    "NOTE the axis: E50 is defined on the DEPOSIT axis, and the deposit->reconstructed "
+    "slope is ~0.5, so the curve's half-point lands near ~0.5 eV RECONSTRUCTED, not 1.0 eV. "
+    "The regime boundary (trigger.SUBEV_REGIME_BOUNDARY_eV = 1.0 eV) is a SEPARATE constant "
+    "that happens to coincide numerically with the new E50; they are not the same quantity "
+    "and must not be collapsed.",
 )
 TRIGGER_SHARPNESS = Param(
     4.0,

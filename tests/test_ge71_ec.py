@@ -30,7 +30,7 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # TOLERANCES AND CONSTANTS -- declared BEFORE any check runs                    #
 # --------------------------------------------------------------------------- #
 HALF_LIFE_LIMIT_TOL = 1.0e-9        # A(t1/2) = 0.5 A_sat
-TRIGGER_E50_TOL = 1.0e-12           # P(0.5 eV) = 1/2 exactly
+TRIGGER_E50_TOL = 1.0e-12           # P(E50) = 1/2 exactly, whatever E50 is
 COUNTS_CLOSURE_TOL = 1.0e-3         # retained+leaked residual
 FOLD_RESIDUAL_TOL = 1.0e-12         # R's columns sum to 1
 GA_EDGE_REL_TOL = 0.01              # line energy vs Ga binding energy
@@ -271,9 +271,14 @@ def test_counts_budget_ec():
 
 def test_trigger_composition_ec():
     """test-trigger-composition-ec. P_trig == 1 reproduces the untriggered
-    spectrum BIT-IDENTICALLY, P(0.5 eV) = 1/2 on the DEPOSIT axis, and the
-    k-sensitivity over [1, 12] is reported."""
-    assert float(np.asarray(trigger.P_trig(np.array([0.5])))[0]) == pytest.approx(
+    spectrum BIT-IDENTICALLY, P(E50) = 1/2 on the DEPOSIT axis, and the
+    k-sensitivity over [1, 12] is reported.
+
+    Asserted against params.TRIGGER_E50 rather than a literal, so the identity
+    is tested as an identity. E50 moved 0.5 -> 1.0 eV on 2026-07-23 and a
+    hardcoded 0.5 would have silently become a test of the wrong energy."""
+    e50 = params.TRIGGER_E50.value
+    assert float(np.asarray(trigger.P_trig(np.array([e50])))[0]) == pytest.approx(
         0.5, abs=TRIGGER_E50_TOL)
     for d in DESIGNS:
         r = cc.fold_monochromatic_line(d, cc.GE71_M_LINE_eV, 1000.0)

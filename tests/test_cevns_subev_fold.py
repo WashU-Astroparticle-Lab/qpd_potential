@@ -360,11 +360,12 @@ def test_e50_structural():
     A units-and-wiring check. It is NOT corroboration of any physics.
     """
     e50 = params.TRIGGER_E50.value
-    assert e50 == 0.5
+    assert e50 == 1.0   # CONVENTIONS Section I, user decision 2026-07-23 (was 0.5)
     for k in cs.K_SCAN:
         assert float(trigger.P_trig(e50, sharpness=k)) == pytest.approx(0.5, abs=1e-12)
-    assert float(trigger.P_trig(1.0, sharpness=4.0)) == pytest.approx(16.0 / 17.0, rel=1e-14)
-    assert float(trigger.P_trig(0.25, sharpness=4.0)) == pytest.approx(1.0 / 17.0, rel=1e-14)
+    # identities in E50 at k = 4, not fixed energies
+    assert float(trigger.P_trig(2 * e50, sharpness=4.0)) == pytest.approx(16.0 / 17.0, rel=1e-14)
+    assert float(trigger.P_trig(e50 / 2, sharpness=4.0)) == pytest.approx(1.0 / 17.0, rel=1e-14)
     assert float(trigger.P_trig(0.0, sharpness=4.0)) == 0.0
 
 

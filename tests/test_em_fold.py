@@ -207,12 +207,15 @@ def test_ptrig_identity_one():
 
 def test_ptrig_test_values():
     """test-ptrig-test-values. The CONVENTIONS Section I hand-checkable values."""
-    assert float(trigger.P_trig(0.0)) == 0.0
-    assert float(trigger.P_trig(0.25)) == pytest.approx(1.0 / 17.0, rel=1e-14)
-    assert float(trigger.P_trig(0.5)) == pytest.approx(0.5, rel=1e-14)
-    assert float(trigger.P_trig(1.0)) == pytest.approx(16.0 / 17.0, rel=1e-14)
+    # Written as identities in E50, not literals: the ratios 1/17, 1/2, 16/17 hold
+    # at ANY E50 for k = 4. Hardcoding the energies made these silently test the
+    # wrong points when E50 moved 0.5 -> 1.0 eV on 2026-07-23.
     e50 = params.TRIGGER_E50.value
-    assert e50 == 0.5
+    assert float(trigger.P_trig(0.0)) == 0.0
+    assert float(trigger.P_trig(e50 / 2)) == pytest.approx(1.0 / 17.0, rel=1e-14)
+    assert float(trigger.P_trig(e50)) == pytest.approx(0.5, rel=1e-14)
+    assert float(trigger.P_trig(2 * e50)) == pytest.approx(16.0 / 17.0, rel=1e-14)
+    assert e50 == 1.0   # CONVENTIONS Section I, user decision 2026-07-23
     for k in (1.0, 4.0, 12.0):
         assert float(trigger.P_trig(e50, sharpness=k)) == pytest.approx(0.5, rel=1e-14)
 
