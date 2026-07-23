@@ -1,0 +1,79 @@
+# QPD Phase-16 plan 16-02 -- LEAVE-ONE-OUT and the INELASTIC SENSITIVITY.
+# These are the plan's NON-IDENTITY disconfirming checks: neither is an algebraic
+# identity of the assembly and each can come out the wrong way.
+#
+# MONOTONICITY: removing any background channel from a layer it is actually in
+#   must STRICTLY INCREASE S/B_particle.  A removal that does not is an arithmetic
+#   or sign error, not a discovery.  Only in-layer removals are emitted, so the
+#   assertion cannot pass vacuously on no-op rows.
+#
+#   ONE MEASURED EXCEPTION, separated rather than swept up.  The 71Ge EC M line
+#   contributes EXACTLY ZERO in the sub-eV band -- it is a monochromatic line whose
+#   reconstructed image sits at 65.0 / 63.0 eV, i.e. 100% inside the RoI and 0%
+#   below 1 eV.  Removing a zero cannot raise a ratio, so demanding a strict
+#   increase there would be demanding the wrong thing.  Those rows carry
+#   monotonicity_check = EXACT_NO_OP_REQUIRED and are checked for an EXACT no-op
+#   instead, which is a real check on the placement of that line and not a waiver.
+#
+# THE INELASTIC EXCLUSION IS JUSTIFIED BY MEASUREMENT, not by assertion:
+#   including the <= 2666.833 counts/kg/day bound moves the RoI
+#   estimates_plus_bounds S/B_particle by -21.049% (ratio 0.789506),
+#   while the nuclear recoils that bound describes sit at 2.271606e+05 eV,
+#   3.356 DECADES above the 100 eV RoI top.
+#
+#   READ THESE TWO NUMBERS TOGETHER, AND DO NOT CONFUSE THEM.  The ~3 decades is
+#   how far the bound is from the physics it stands for IN THE BAND; it is NOT the
+#   size of the move in S/B_particle, and it could not be: the denominator is
+#   already ~1e4 counts/kg/day, so a 2.67e3 addition can only ever move the ratio
+#   by a factor of order one.  A 3-decade move was never arithmetically available
+#   and its absence is not evidence against the exclusion.
+#   The honest consequence, stated rather than hidden: at the assembled
+#   order_of_magnitude label a 21% move is INSIDE the band, so the exclusion is
+#   not load-bearing for the headline at the precision it is quoted to.  It is
+#   made because summing a bound that is ~3 decades loose in the band would let a
+#   nearly information-free quantity into the denominator, not because it would
+#   change the answer.
+#   The part of the inelastic channel that DOES land near the band is the separate
+#   gamma-emission recoil, 2.576622 eV (74Ge 596 keV) and 5.185 eV (72Ge 834 keV).
+#
+design,band,operation,channel,denominator_layer,contribution_in_band_counts_kg_day,zero_contribution_in_band,sb_particle_baseline,sb_particle_after,ratio_after_over_baseline,strictly_increases,monotonicity_check,monotonicity_passed,rank_by_effect,axis,observable
+Ta->Al,RoI_10_100eV,REMOVE,neutron_elastic,estimates_only,5430.286483438004,False,0.013326283870952416,1.7481253460236927,131.17875642992408,True,STRICT_INCREASE_REQUIRED,True,1,RECONSTRUCTED,S/B_particle
+Ta->Al,RoI_10_100eV,REMOVE,compton_gamma,estimates_only,34.24843632139745,False,0.013326283870952416,0.0134102164177581,1.006298270967245,True,STRICT_INCREASE_REQUIRED,True,2,RECONSTRUCTED,S/B_particle
+Ta->Al,RoI_10_100eV,REMOVE,muon_ionization,estimates_only,7.465639249459274,False,0.013326283870952416,0.01334449021959458,1.0013661984705164,True,STRICT_INCREASE_REQUIRED,True,3,RECONSTRUCTED,S/B_particle
+Ta->Al,RoI_10_100eV,REMOVE,neutron_elastic,estimates_plus_bounds,5430.286483438004,False,0.00729024982632321,0.015948485716424106,2.1876459787205427,True,STRICT_INCREASE_REQUIRED,True,1,RECONSTRUCTED,S/B_particle
+Ta->Al,RoI_10_100eV,REMOVE,compton_gamma,estimates_plus_bounds,34.24843632139745,False,0.00729024982632321,0.007315297069538945,1.003435718090935,True,STRICT_INCREASE_REQUIRED,True,4,RECONSTRUCTED,S/B_particle
+Ta->Al,RoI_10_100eV,REMOVE,muon_ionization,estimates_plus_bounds,7.465639249459274,False,0.00729024982632321,0.007295695114831258,1.0007469275591059,True,STRICT_INCREASE_REQUIRED,True,5,RECONSTRUCTED,S/B_particle
+Ta->Al,RoI_10_100eV,REMOVE,prompt_ngamma_capture,estimates_plus_bounds,4399.777,False,0.00729024982632321,0.013015129821825067,1.7852789865761243,True,STRICT_INCREASE_REQUIRED,True,2,RECONSTRUCTED,S/B_particle
+Ta->Al,RoI_10_100eV,REMOVE,ge71_ec_M_line,estimates_plus_bounds,130.81968094606134,False,0.00729024982632321,0.0073868593934043,1.013251887024812,True,STRICT_INCREASE_REQUIRED,True,3,RECONSTRUCTED,S/B_particle
+Ta->Al,RoI_10_100eV,ADD_EXCLUDED_BOUND,ge_discrete_inelastic,estimates_only,2666.833,False,0.013326283870952416,0.008959690877404142,0.6723322843912826,False,NOT_APPLICABLE_ADDITION,True,,RECONSTRUCTED,S/B_particle
+Ta->Al,RoI_10_100eV,ADD_EXCLUDED_BOUND,ge_discrete_inelastic,estimates_plus_bounds,2666.833,False,0.00729024982632321,0.005755699460058895,0.7895064774428648,False,NOT_APPLICABLE_ADDITION,True,,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,REMOVE,neutron_elastic,estimates_only,2851.997628529365,False,0.0010453085835987338,103.2054979720026,98732.08695626711,True,STRICT_INCREASE_REQUIRED,True,1,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,REMOVE,compton_gamma,estimates_only,0.011992984999808151,False,0.0010453085835987338,0.001045312979218064,1.000004205092543,True,STRICT_INCREASE_REQUIRED,True,3,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,REMOVE,muon_ionization,estimates_only,0.016893536119853537,False,0.0010453085835987338,0.00104531477535846,1.0000059233797784,True,STRICT_INCREASE_REQUIRED,True,2,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,REMOVE,neutron_elastic,estimates_plus_bounds,2851.997628529365,False,0.0004111043260681478,0.0006775862103295416,1.6482098760916948,True,STRICT_INCREASE_REQUIRED,True,2,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,REMOVE,compton_gamma,estimates_plus_bounds,0.011992984999808151,False,0.0004111043260681478,0.0004111050059509052,1.0000016537961638,True,STRICT_INCREASE_REQUIRED,True,4,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,REMOVE,muon_ionization,estimates_plus_bounds,0.016893536119853537,False,0.0004111043260681478,0.0004111052837639742,1.000002329568836,True,STRICT_INCREASE_REQUIRED,True,3,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,REMOVE,prompt_ngamma_capture,estimates_plus_bounds,4399.777,False,0.0004111043260681478,0.0010453085835987338,2.5426844655131537,True,STRICT_INCREASE_REQUIRED,True,1,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,REMOVE,ge71_ec_M_line,estimates_plus_bounds,0.0,True,0.0004111043260681478,0.0004111043260681478,1.0,False,EXACT_NO_OP_REQUIRED,True,5,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,ADD_EXCLUDED_BOUND,ge_discrete_inelastic,estimates_only,2666.833,False,0.0010453085835987338,0.0005401927316148006,0.5167782414596208,False,NOT_APPLICABLE_ADDITION,True,,RECONSTRUCTED,S/B_particle
+Ta->Al,subeV_le_1eV,ADD_EXCLUDED_BOUND,ge_discrete_inelastic,estimates_plus_bounds,2666.833,False,0.0004111043260681478,0.00030057032459146233,0.7311290724331553,False,NOT_APPLICABLE_ADDITION,True,,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,REMOVE,neutron_elastic,estimates_only,5485.151332560836,False,0.013229798371702016,1.6782046453658963,126.85035691515192,True,STRICT_INCREASE_REQUIRED,True,1,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,REMOVE,compton_gamma,estimates_only,35.86162974108279,False,0.013229798371702016,0.013316172480243815,1.0065287547183297,True,STRICT_INCREASE_REQUIRED,True,2,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,REMOVE,muon_ionization,estimates_only,7.723080441812561,False,0.013229798371702016,0.013248304902614238,1.001398852075615,True,STRICT_INCREASE_REQUIRED,True,3,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,REMOVE,neutron_elastic,estimates_plus_bounds,5485.151332560836,False,0.007271263949878612,0.01599063471608014,2.199154758554335,True,STRICT_INCREASE_REQUIRED,True,1,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,REMOVE,compton_gamma,estimates_plus_bounds,35.86162974108279,False,0.007271263949878612,0.007297278827772848,1.0035777655815492,True,STRICT_INCREASE_REQUIRED,True,4,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,REMOVE,muon_ionization,estimates_plus_bounds,7.723080441812561,False,0.007271263949878612,0.007276850772150909,1.0007683426582787,True,STRICT_INCREASE_REQUIRED,True,5,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,REMOVE,prompt_ngamma_capture,estimates_plus_bounds,4399.777,False,0.007271263949878612,0.012923993895651045,1.7774067871469306,True,STRICT_INCREASE_REQUIRED,True,2,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,REMOVE,ge71_ec_M_line,estimates_plus_bounds,130.8196399987698,False,0.007271263949878612,0.00736707126041585,1.0131761563323303,True,STRICT_INCREASE_REQUIRED,True,3,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,ADD_EXCLUDED_BOUND,ge_discrete_inelastic,estimates_only,2666.833,False,0.013229798371702016,0.008924830321650725,0.6746006304026948,False,NOT_APPLICABLE_ADDITION,True,,RECONSTRUCTED,S/B_particle
+Al->Hf,RoI_10_100eV,ADD_EXCLUDED_BOUND,ge_discrete_inelastic,estimates_plus_bounds,2666.833,False,0.007271263949878612,0.005747533461319721,0.7904448938916144,False,NOT_APPLICABLE_ADDITION,True,,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,REMOVE,neutron_elastic,estimates_only,2856.894856849907,False,0.0010456851757711812,103.45031433124618,98930.65018823922,True,STRICT_INCREASE_REQUIRED,True,1,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,REMOVE,compton_gamma,estimates_only,0.011985270905415374,False,0.0010456851757711812,0.001045689562613062,1.0000041951841554,True,STRICT_INCREASE_REQUIRED,True,3,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,REMOVE,muon_ionization,estimates_only,0.016892773759798,False,0.0010456851757711812,0.0010456913588650218,1.0000059129592576,True,STRICT_INCREASE_REQUIRED,True,2,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,REMOVE,neutron_elastic,estimates_plus_bounds,2856.894856849907,False,0.0004116805841975365,0.0006789942285398625,1.649322932883473,True,STRICT_INCREASE_REQUIRED,True,2,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,REMOVE,compton_gamma,estimates_plus_bounds,0.011985270905415374,False,0.0004116805841975365,0.0004116812641362108,1.0000016516170556,True,STRICT_INCREASE_REQUIRED,True,4,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,REMOVE,muon_ionization,estimates_plus_bounds,0.016892773759798,False,0.0004116805841975365,0.00041168154254533305,1.000002327891655,True,STRICT_INCREASE_REQUIRED,True,3,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,REMOVE,prompt_ngamma_capture,estimates_plus_bounds,4399.777,False,0.0004116805841975365,0.0010456851757711812,2.540040059964136,True,STRICT_INCREASE_REQUIRED,True,1,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,REMOVE,ge71_ec_M_line,estimates_plus_bounds,0.0,True,0.0004116805841975365,0.0004116805841975365,1.0,False,EXACT_NO_OP_REQUIRED,True,5,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,ADD_EXCLUDED_BOUND,ge_discrete_inelastic,estimates_only,2666.833,False,0.0010456851757711812,0.000540835330241079,0.5172066533717655,False,NOT_APPLICABLE_ADDITION,True,,RECONSTRUCTED,S/B_particle
+Al->Hf,subeV_le_1eV,ADD_EXCLUDED_BOUND,ge_discrete_inelastic,estimates_plus_bounds,2666.833,False,0.0004116805841975365,0.0003010462681638507,0.7312617590422962,False,NOT_APPLICABLE_ADDITION,True,,RECONSTRUCTED,S/B_particle
