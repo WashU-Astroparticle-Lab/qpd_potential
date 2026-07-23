@@ -170,7 +170,10 @@ def panel(ax, design, title):
         Er, yr = unsaturated(ch["key"], design); yr = yr / f
         mr = yr > 0
         if mr.any():
-            ax.loglog(Er[mr] * 1e3, yr[mr], color=ch["c"], lw=1.1, ls=":", alpha=0.75,
+            # Er is already in eV (unsaturated() returns E*C with E in eV); the axis is
+            # eV, so plot Er directly. Multiplying by 1e3 -- as the solid curves do, whose
+            # column is in keV -- shifted the dotted 1000x to the right. Fixed 2026-07-23.
+            ax.loglog(Er[mr], yr[mr], color=ch["c"], lw=1.1, ls=":", alpha=0.75,
                       zorder=ch["z"] - 1)
         m = y > 0
         if m.any():
@@ -252,8 +255,9 @@ axes[1].text(0.985, 0.02,
              transform=axes[1].transAxes, ha="right", va="bottom", fontsize=8,
              bbox=dict(fc="white", ec="0.7", alpha=0.92))
 
-fig.suptitle(f"QPD Ge wafer — 3 GW$_{{\\rm th}}$ at 25 m — trigger-weighted spectra with an ASSUMED "
-             f"{N_SUPPRESSION:.0f}× neutron suppression   (veto credit still 1.0)", fontsize=12.5, y=0.986)
+fig.suptitle(f"QPD Ge wafer, 3 GW$_{{\\rm th}}$ at 25 m — surface backgrounds computed UNSHIELDED, then an "
+             f"ASSUMED {N_SUPPRESSION:.0f}× neutron suppression applied   (veto credit still 1.0)",
+             fontsize=12.0, y=0.986)
 fig.text(0.5, 0.050,
          f"The {N_SUPPRESSION:.0f}\u00d7 suppression is an ASSUMED placeholder \u2014 not derived, and deliberately NOT "
          "transferred from NUCLEUS,",
