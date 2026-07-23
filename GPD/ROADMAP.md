@@ -408,6 +408,22 @@ Plans:
 
 ### Phase 14: Ge-Only Thermal-Capture Channels (P-GEONLY)
 
+**Status:** COMPLETE 2026-07-23. sigma_(n,gamma)(0.0253 eV) = **2.211522 b** natural, **14.7009 b** for 73-Ge -- reproducing the roadmap's independently stated ~2.2 b / ~15 b with nothing fitted; 73-Ge is 7.75% of the atoms carrying **51.52%** of natural thermal capture. **Folded capture rate 4399.78 counts/kg/day.**
+
+**The trap was real and is now ASSERTED, not described:** `MF=3 MT=102` returns exactly 0.0 at 0.0253/1/100/1000 eV for all five isotopes (`np.array_equal` against zeros). The test PASSES ON THE ZERO, so the one-line route to the forbidden "capture is zero" result is proved rather than hypothesised.
+
+**Thermal-dominance verdict: SURVIVES at 76.49%** against a 60% threshold declared in code BEFORE the number was computed -- but **23.51% (1034.24 counts/kg/day) is NOT thermal**, itself ~8.7x the entire CEvNS total. A Phase-16 budget taking the phase title literally would understate the channel by 1.31x. **Phase 16 must fold the FULL capture band, not the thermal component alone.**
+
+**Rigorous in-RoI bound: <= 4399.78 counts/kg/day = 37.1x the CEvNS total**, proved cascade-free by execution (nine multiplicity/partition/angular settings, exact float equality). Single-gamma ceilings 415.77/338.30/**754.11**/302.87/257.07 eV -- the maximum belongs to 73-Ge, which also dominates the rate, and **exceeds** the roadmap's illustrative 473 eV.
+
+**SC3 CONFIRMED BY MEASUREMENT:** the M line's reconstructed image lands at **E_rec 65.049 eV (Ta->Al) / 62.964 eV (Al->Hf)**, in-RoI fraction 1.000000 both designs. Mapping slope 0.4099/0.3967 -- **not** the ~0.5 the 1 eV image suggests, so the pre-registered ~75 eV estimate was 12-16% high. On the deposit axis the clause is false; above slope ~0.63 it would have been REFUTED.
+
+**71-Ge activation: SATURATION (t -> inf)** assumed and named, A_sat = 1054.1472 counts/kg/day, with t = 1 d / 11.43 d / 30 d tabulated beside it. M-line bound **130.82 at saturation** (1.79x the CEvNS rate inside the RoI) vs **7.70 at t = 1 d**. **Inelastic bound 2666.83 counts/kg/day**, recoils separated: 227 keV nuclear (~3 decades above the RoI, so that bound is very loose) vs 2.577 eV / 5.185 eV gamma-emission recoils.
+
+> **Findings against expectation:** (1) **EGAF WAS retrievable** (planning expected failure) and is frozen -- but a completeness check shows the observed cascade carries only **60-71% of Q_cap**, so the sharpening gap survives as a number. A naive whole-file parse inflated intensities ~3x (three datasets per .ens); the completeness check caught it, not inspection. (2) **The Phase-15 IA criterion comes out the OTHER way here:** 2W_e = **250.02** at 158.7 eV SATISFIES the condition Phase 15 measured failing at 0.1574 on the grid floor. **Inheriting Phase 15's sentence would have been wrong**; the exclusion was re-argued on the nuclear kernel's identity (5.9616x understatement) and on the deposit not being a recoil. (3) Thin-target formula fails at the 102.59 eV resonance -- P_capture(2 mm) = 73.6%; epithermal band overstated by <=11.00% (`penalizes_SB`). (4) **Live bug caught by cross-check:** the 71-Ge production rate initially omitted the 70-Ge abundance factor (4.86x too large). No dimensional check in the plan would have caught it. (5) P_K = 0.8759 +/- 0.0043 DERIVED from K-vacancy conservation, not recalled, making the M/L bounds 8.06x tighter.
+
+**SC verdicts:** SC1 CONFIRMED, SC2 PARTIALLY CONFIRMED (both of its own illustrative figures superseded on Ge), SC3 CONFIRMED, SC4 CONFIRMED on branch (a), SC5 CONFIRMED.
+
 > **Kept and reduced 2026-07-22.** The physics reason this phase exists is unchanged by the re-scope: prompt (n,γ) cascade recoils and the ⁷¹Ge EC lines land directly in the CEvNS RoI, and CaWO₄/Al₂O₃ are structurally blind to them, so no published budget contains them. What changes is that the channel is driven from the **rough surface neutron estimate** and is **bounded rather than quantified**, per the lowered accuracy expectation.
 
 **Goal:** The two backgrounds that are structurally invisible in any CaWO₄/Al₂O₃ budget — prompt (n,γ) cascade recoils and the ⁷¹Ge electron-capture lines — are carried into the RoI as **bounds with stated provenance** rather than as omissions, so that a channel landing on top of the signal is a number with an error bar rather than a blank.
@@ -434,8 +450,8 @@ Plans:
 **Plans:** 2 plans, 2 waves
 
 Plans:
-- [ ] 14-01-PLAN.md -- Capture and discrete-inelastic cross sections frozen from the ALREADY-LOCAL ENDF/ACE with the MF=3-MT=102-is-zero trap recorded; capture rate folded and BAND-DECOMPOSED by incident energy; rigorous cascade-independent in-RoI bound; SC5 inelastic bound (SC1, SC2, SC5)
-- [ ] 14-02-PLAN.md -- 71Ge EC line inventory with the activation scenario explicit; M line folded through the extended response chain with NO IA broadening and its reconstructed placement MEASURED; phase closeout (SC3, SC4)
+- [x] 14-01-PLAN.md -- Capture and discrete-inelastic cross sections frozen from the ALREADY-LOCAL ENDF/ACE with the MF=3-MT=102-is-zero trap recorded; capture rate folded and BAND-DECOMPOSED by incident energy; rigorous cascade-independent in-RoI bound; SC5 inelastic bound (SC1, SC2, SC5)
+- [x] 14-02-PLAN.md -- 71Ge EC line inventory with the activation scenario explicit; M line folded through the extended response chain with NO IA broadening and its reconstructed placement MEASURED; phase closeout (SC3, SC4)
 
 > **Planning findings (2026-07-23), three MEASURED against committed data before planning proceeded.**
 > (a) **SC1's "new acquisition" is mostly already discharged** -- `data/endf/raw/n_*.dat` and `data/endf/ace/32*.{800,805}nc` are committed from Phase 7 and carry MT=102.
