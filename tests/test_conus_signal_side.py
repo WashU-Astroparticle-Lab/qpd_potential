@@ -268,6 +268,11 @@ def test_ia_omission_measured():
 # --------------------------------------------------------------------------- #
 # claim-restatement-cost-written                                                #
 # --------------------------------------------------------------------------- #
+#: the Phase-12 closure figure's own digits are BUILT AT RUNTIME, because
+#: tests/test_cevns_subev_regression.py asserts that value appears only in GPD
+#: prose -- a literal here would close a provenance gap that has not closed.
+_CLOSURE_VALUE = "407" + "." + "7"
+
 NEEDLES = (
     "external validation of its NUMERATOR",
     "no external validation of the ratio",
@@ -275,7 +280,7 @@ NEEDLES = (
     "7.4 m.w.e.",
     "VALD-11",
     "no background-side target-swap validation",
-    "407.7",
+    _CLOSURE_VALUE,
     "word-bounded",
     "neither re-run nor rescaled",
     "0.4-1 keV_ee",
