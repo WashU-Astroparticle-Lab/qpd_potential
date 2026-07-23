@@ -245,6 +245,19 @@ Plans:
 
 ### Phase 11: Phonon-Scale Conventions and IA Quantum Broadening (P-CONV)
 
+**Status:** COMPLETE 2026-07-22. **Locked (CONVENTIONS.md Section J):** <u_x^2> = 1.6096194483e-3 A^2 (T->0, measured VDOS), **omega_bar = 17.8597 meV** -- INSIDE the survey's 12-21 meV band, so the band survived -- B = 0.1270905 A^2, 2W(100 meV) = 5.5992, `2W = q^2<u_x^2>` locked and `q^2<u^2>/3` rejected. NCrystal vs DarkELF agree to -1.92% on <u_x^2> (never averaged; the sign is explained by DarkELF's digitization lacking support below 2.396 meV while <u_x^2> weights by 1/omega). An unplanned stronger check: the quadrature reproduces NCrystal's own internal MSD at 293.6 K to 1.97e-5.
+
+**sigma_E widths (locked omega_bar):** 42.261% / 18.900% / 13.364% / 4.226% / 1.336% at 0.1 / 0.5 / 1 / 10 / 100 eV -- all four ROADMAP bands hit, **but this is weak evidence and is labelled so**, since the bands were built from the same 12-21 meV range omega_bar sits inside. Quadrature with the counting floor at 0.5 eV: 24.769% (Ta->Al) / 23.682% (Al->Hf), inside 22-26%. Sub-bin crossing at 20.94 eV, so "negligible above ~100 eV" is conservative by ~5x.
+
+> **Three findings that cut AGAINST the plan:**
+> (1) **The moment-mismatch check FIRED.** Real Ge gives <omega><1/omega> = **1.354758** against the Debye 9/8, so the correction is **x1.163941**, not x1.0607 -- and every moment-corrected width lands **ABOVE** its ROADMAP band, with the 0.5 eV quadrature rising to 27.19%/26.20%, above 22-26%. Confirmed independently by the exact cumulants (kappa_2 = E_R<omega>), so it did not block 11-04.
+> (2) **The v1.0 deviation does NOT fall as sqrt(omega_bar/E_R)** (naive fit -0.31, failing the <-0.5 criterion). Two verified reasons: sqrt(omega_bar/E_R) is the fractional WIDTH, not the fractional change in the SPECTRUM (Fokker-Planck gives slope -1; measured -0.94, steeper than asked); and the deviation CHANGES SIGN at 233.9 eV near the 3.2 keV kinematic endpoint, so a global fit measures the sign change. Max deviation 0.052%.
+> (3) **e^(-2W) at 1 eV misses the survey magnitude by 5 decades** (4.82e-25 vs ~1e-20). Traced and tested: the survey used the Debye omega_bar ~ 21.5 meV. Recorded as a miss, not absorbed by widening a tolerance.
+>
+> **Three SC clauses are SUPERSEDED as evidence rather than passed:** the SC2 q-route and the SC3 `sigma_E/E_R = 1/sqrt(2W)` relation are algebraic identities, not corroboration; and SC4's sqrt(omega_bar/E_R) regression trend is simply the wrong functional form.
+>
+> **Leakage at 100 meV is 48.98% below the grid floor** plus 0.87% at unphysical T < 0. Conservation residual is 2.220e-16 on retained+leaked, while retained-only misses by 4.333e-4 -- as it must. **The 100 meV bin is the least reliable number in the milestone** (49% true width, skewness 0.590, ~49% of its kernel off-axis, symmetric kernel against an asymmetric lineshape). `BROADENING_DEFAULT = False`; Phase 12 must turn it on deliberately.
+
 **Goal:** The effective phonon energy ω̄ and the Debye–Waller convention are pinned from the real Ge vibrational density of states — closing a 2–3× ambiguity that propagates linearly into everything sub-eV — and the recoil spectrum stops being a delta function: impulse-approximation quantum broadening, the largest new physics input of this milestone, is applied before the response chain.
 **Depends on:** Phase 10 (extended grid and regenerated response matrices).
 **Requirements:** CALC-14, CALC-15.
@@ -265,10 +278,10 @@ Plans:
 **Plans:** 4 plans, 3 waves
 
 Plans:
-- [ ] 11-01-PLAN.md -- CALC-14: freeze the measured Ge VDOS, derive <u_x^2> / omega_bar / 2W / B against an analytic Debye oracle, lock ONE omega_bar and 2W = q^2<u_x^2> into CONVENTIONS.md Section J (SC1, SC2)
-- [ ] 11-02-PLAN.md -- CALC-15: re-derive sigma_E = sqrt(E_R*omega_bar) in-phase, width table across 0.1-100 eV, quadrature with the Phase-10 counting floor at 0.5 eV (SC3)
-- [ ] 11-03-PLAN.md -- bounded impulse-limit justification: sum rules, O(1/2W) residual, and the numerical case for never multiplying the rate by e^(-2W) (SC5)
-- [ ] 11-04-PLAN.md -- TDD: Gaussian convolution applied before the response chain, conservation <=1e-3 with leakage accounted, <1% v1.0 regression above 10 eV (SC4)
+- [x] 11-01-PLAN.md -- CALC-14: freeze the measured Ge VDOS, derive <u_x^2> / omega_bar / 2W / B against an analytic Debye oracle, lock ONE omega_bar and 2W = q^2<u_x^2> into CONVENTIONS.md Section J (SC1, SC2)
+- [x] 11-02-PLAN.md -- CALC-15: re-derive sigma_E = sqrt(E_R*omega_bar) in-phase, width table across 0.1-100 eV, quadrature with the Phase-10 counting floor at 0.5 eV (SC3)
+- [x] 11-03-PLAN.md -- bounded impulse-limit justification: sum rules, O(1/2W) residual, and the numerical case for never multiplying the rate by e^(-2W) (SC5)
+- [x] 11-04-PLAN.md -- TDD: Gaussian convolution applied before the response chain, conservation <=1e-3 with leakage accounted, <1% v1.0 regression above 10 eV (SC4)
 
 > **Planning findings (2026-07-22).** (a) SC2's "independent momentum-transfer route" q(100 meV) = 116 keV/c = 58.9 A^-1 is **algebraically identical** to 2W = E_R/omega_bar once omega_bar = hbar/(2 m_N <u_x^2>); it is a units check, not corroboration. Likewise 2W in [4.76, 8.33] <=> omega_bar in [12.0, 21.0] meV exactly, so SC2's third clause is not independent of SC1. SC3's sigma_E/E_R = 1/sqrt(2W) is an identity by construction for the same reason. The decisive content is the numerical values and the counting-floor quadrature.
 > (b) SC2's ~1.5x tolerance on <u_x^2> maps to omega_bar in [14.3, 32.2] meV, **wider** than the survey's 12-21 meV band, so a VDOS-derived omega_bar outside the survey band is a LIVE outcome; plans require it be reported as a supersession, not tuned away.
