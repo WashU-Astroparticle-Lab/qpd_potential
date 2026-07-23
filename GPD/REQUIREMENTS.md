@@ -5,7 +5,9 @@
 
 > **Milestone scope note.** v2.0 replaces v1.1's premise. Instead of projecting backgrounds from *surface, unshielded* ambient fluxes at a generic 3 GW_th / 25 m site, the detector is assumed to sit at the Chooz VNS behind the NUCLEUS shielding, and that experiment's **measured environment and shielding attenuation are adopted as input** while the **target response is re-folded for Ge**. Scaling their CaWO₄/Al₂O₃ residuals by a mass argument is forbidden (it discards the target dependence their own paper emphasizes); full Geant4 transport is out of scope (their p. 21 reports "tens, even hundreds, millions of hours of computing time" and states variance reduction will be required).
 >
-> Locked scenario change (CONVENTIONS §D): 2 × 4.25 GW_th at 72 m and 102 m, ∫Φ = 2.1×10¹² ν̄/cm²/s, 80% duty, overburden 2.92 m.w.e. — replacing 3 GW_th / 25 m / 7.5×10¹². Signal drops ~3.6×.
+> ~~Locked scenario change (CONVENTIONS §D): 2 × 4.25 GW_th at 72 m and 102 m, ∫Φ = 2.1×10¹² ν̄/cm²/s, 80% duty, overburden 2.92 m.w.e. — replacing 3 GW_th / 25 m / 7.5×10¹². Signal drops ~3.6×.~~
+>
+> **CORRECTED 2026-07-22 — this lock was never applied.** `CONVENTIONS.md` §D still reads **3 GW_th / 25 m**, and there is **no VNS flux table** in `data/flux/` (only `reactor_flux_v1.0.csv` at 3 GW_th / 25 m, ∫Φ = 7.5×10¹², and `reactor_flux_billard_variant.csv`). Under the 2026-07-22 re-scope this is the right answer rather than a gap to close: **the paper's 3 GW_th / 25 m surface scenario is the milestone's primary normalization**, used unmodified, and §D stands as written. The NUCLEUS VNS siting is an **optional secondary line only** — a labelled scalar rescale of the primary result by 2.1×10¹² / 7.5×10¹² ≈ **0.28** — not a separate pipeline run and not a locked scenario. The overburden 2.92 m.w.e. is **not** applied anywhere: the configuration is an unshielded surface wafer.
 >
 > All spectra extend to **100 meV**, two decades below the v1.0 10.14 eV grid floor. The earlier "never display below 10 eV" rule is **retracted** (user, 2026-07-22). Below ~1 eV deposit the reported observable is a **trigger-probability curve**, not dR/dE_rec.
 >
@@ -27,7 +29,7 @@
 - [ ] **CALC-15**: Implement impulse-approximation quantum broadening — free-nucleus recoil convolved with a Gaussian of width σ_E = √(E_R·ω̄), applied **before** the response chain. Fractional width ≈ 35–46% at 100 meV, 15.5–20.5% at 0.5 eV, 11–15% at 1 eV, negligible above ~100 eV. This is the largest new physics input and is absent from the v1.0 model.
 - [ ] **CALC-16**: Implement the analysis trigger-probability curve: a sigmoid efficiency with its **50% point at 0.5 eV**, multiplied on top of *all* other efficiencies including the existing ε ≈ 0.5 deposited-to-signal collection efficiency (it does not replace it). Below ~1 eV deposit this curve, not dR/dE_rec, is the reported observable.
 - [ ] **CALC-17**: Evaluate and report the sub-100 keV flux truncation bound with the project's own Φ. Established: ≤ 0.81% at T = 100 meV, exactly zero above 0.29 eV, under a conservative flat continuation of Φ at its 100 keV value including the (1 − MT/2E²) factor. **Report the bound; do not extend the flux table.**
-- [ ] **CALC-25** *(the milestone's decisive signal deliverable)*: Produce the reactor-CEvNS differential rate dR/dE_rec at the VNS normalization (∫Φ = 2.1×10¹² ν̄/cm²/s, two Chooz-B cores at 72 m and 102 m, 80% duty declared exactly once), both trapping designs, from **100 meV** upward — with the CALC-15 impulse-approximation broadening applied *before* the response chain and the CALC-16 trigger curve applied on top of ε ≈ 0.5. Quantify the drop relative to the v1.0 3 GW_th / 25 m flagship (~3.6×). *(Added 2026-07-22 after the roadmapper correctly flagged that the headline signal output was implied by CALC-15/16/17 + VALD-10 but owned by no requirement ID.)*
+- [ ] **CALC-25** *(the milestone's decisive signal deliverable; **text needs re-wording after the 2026-07-22 re-scope** — the primary normalization is now the paper's ∫Φ = 7.5×10¹² ν̄/cm²/s at 3 GW_th / 25 m surface, taken unmodified from the frozen table, and the VNS enters only as an optional labelled scalar rescale ≈0.28 of the finished result, not as a derivation)*: Produce the reactor-CEvNS differential rate dR/dE_rec ~~at the VNS normalization (∫Φ = 2.1×10¹² ν̄/cm²/s, two Chooz-B cores at 72 m and 102 m, 80% duty declared exactly once)~~, both trapping designs, from **100 meV** upward — with the CALC-15 impulse-approximation broadening applied *before* the response chain and the CALC-16 trigger curve applied on top of ε ≈ 0.5. Quantify the drop relative to the v1.0 3 GW_th / 25 m flagship (~3.6×). *(Added 2026-07-22 after the roadmapper correctly flagged that the headline signal output was implied by CALC-15/16/17 + VALD-10 but owned by no requirement ID.)*
 
 **C. Ge target re-fold**
 
@@ -94,7 +96,7 @@ Deferred by explicit user scoping decision (2026-07-22). Tracked, not in the v2.
 | CALC-12 | CaWO₄- and Al₂O₃-derived φ_post agree within a factor ≲1.5 | Over-determination: two independent published targets must yield the same fluence |
 | CALC-14/15 | ω̄ fixed to a stated convention; σ_E re-derived in-phase | Ge broadening numbers are DERIVED in-survey, not literature-quoted — must be re-derived before use |
 | CALC-16 | Sigmoid 50% point exactly 0.5 eV; multiplies ε, does not replace it | Unit test on the composed efficiency chain |
-| CALC-25 | Duty cycle declared once; broadening before response; trigger on top of eps | Regression vs frozen v1.0 above 10 eV (<1%, VALD-10); ratio to flagship ~3.6x |
+| CALC-25 | Primary = frozen v1.0 flux used unmodified; broadening before response; trigger on top of eps; any VNS line is a labelled scalar rescale | Regression vs frozen v1.0 above 10 eV (<1%, VALD-10); VNS rescale factor 2.1/7.5 = 0.28 quoted as a label, not re-derived |
 | CALC-17 | Bound computed, not estimated | Flat-continuation integral with the (1 − MT/2E²) factor; established ≤0.81% |
 | CALC-18 | Target-swap closure factor ≲1.5; break condition >2 | Reproduce NUCLEUS's own CaWO₄/Al₂O₃ residuals with our pipeline before swapping in the Ge kernel |
 | CALC-22 | S/B reported with and without inherited veto credit | L2-off baseline mandatory alongside any L2-credited number |
@@ -131,7 +133,7 @@ Mapped by the roadmapper 2026-07-22. Every v2.0 primary requirement maps to **ex
 | CALC-14 *(must precede CALC-15; own early plan)* | Phase 11 — Phonon Conventions & IA Broadening (P-CONV) | Pending |
 | CALC-15 | Phase 11 — Phonon Conventions & IA Broadening (P-CONV) | Pending |
 | CALC-17 | Phase 12 — CEvNS at the VNS to 100 meV (P-SIG) | Pending |
-| CALC-25 | Phase 12 — CEvNS at the VNS to 100 meV (P-SIG) | Pending |
+| CALC-25 *(re-pointed; text needs re-wording)* | Phase 12 — CEvNS at the Paper's Surface Scenario (P-SIG) | Pending — primary normalization is the paper's 3 GW_th / 25 m surface scenario; VNS demoted to an optional scalar rescale |
 | VALD-10 | Phase 12 — CEvNS at the VNS to 100 meV (P-SIG) | Pending |
 | CALC-18 *(re-pointed; text needs re-wording)* | Phase 13 — Ge Neutron Fold from the Sea-Level Flux (P-TGT) | Pending — input changes from φ_post to the rough sea-level flux; channel labelled order-of-magnitude |
 | CALC-23 | Phase 14 — Ge-Only Capture Channels (P-GEONLY) | Pending — reduced to bounds |
@@ -148,8 +150,12 @@ Mapped by the roadmapper 2026-07-22. Every v2.0 primary requirement maps to **ex
 
 **Coverage (revised 2026-07-22 re-scope):** **15/17** primary requirements mapped, no duplicates. **2 orphaned by design** — CALC-12 and VALD-11, both listed above with their reason. Neither requirement text has been deleted; disposition (formally retire, defer to a follow-up milestone, or leave as a recorded non-goal) is the orchestrator's call. 5/5 follow-up requirements remain explicitly unmapped by design.
 
+**Requirement texts needing re-wording after the re-scope (flagged, not edited):** CALC-11, CALC-18, CALC-19, CALC-20, CALC-25 — each named in its traceability row above with what specifically no longer matches.
+
 > **Soft spot in the traceability, stated rather than papered over.** Phase 9's re-pointed deliverable — the frozen sea-level surface environment set, and specifically the rough sea-level neutron flux, the one genuinely new input of the re-scope — is carried under **CALC-11** provisionally, but CALC-11's literal text is the NUCLEUS VNS digitization set. Either re-word CALC-11 or add a new ID and re-map Phase 9. Until then Phase 9's coverage is nominal, not clean.
 
 **Ordering constraints encoded in the roadmap dependency DAG (revised 2026-07-22):** VALD-09 (Phase 8) is **discharged**; ~~CALC-11 → CALC-12 → VALD-11 within Phase 9, and VALD-11 before Phase 13~~ — **removed with CALC-12 and VALD-11**; CALC-13 (Phase 10) still gates all sub-eV work; CALC-14 must still complete before CALC-15 inside Phase 11; CALC-25 (Phase 12) no longer depends on Phase 9; the restated VALD-12 must still pass before any headline claim in Phase 16.
 
-**Coverage note (open):** no CALC ID explicitly owns "produce the CEvNS dR/dE_rec at the VNS normalization," which is the milestone's decisive signal deliverable. It is implied jointly by CALC-15/16/17 + VALD-10 and consumed by CALC-22, and is carried as a Phase-12 deliverable rather than a new requirement ID. Similarly, Ge inelastic (⁷⁴Ge 596 keV, ⁷²Ge 834 keV) and the B₄C ¹⁰B(n,α)⁷Li 478 keV γ line are carried as adjacent-scope deliverables in Phase 14 without a dedicated ID.
+~~**Coverage note (open):** no CALC ID explicitly owns "produce the CEvNS dR/dE_rec at the VNS normalization"…~~ **Closed:** CALC-25 owns the decisive signal deliverable and is mapped to Phase 12. Under the 2026-07-22 re-scope that deliverable is at the **paper's 3 GW_th / 25 m surface normalization**, not the VNS; CALC-25's text still says otherwise and is on the re-wording list above.
+
+**Coverage note (open):** Ge inelastic (⁷⁴Ge 596 keV, ⁷²Ge 834 keV) and the B₄C ¹⁰B(n,α)⁷Li 478 keV γ line are carried as adjacent-scope deliverables in Phase 14 without a dedicated ID.
