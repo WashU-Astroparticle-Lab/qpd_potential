@@ -997,12 +997,22 @@ def ge71_production_rate(*, per_decade: int = 200) -> dict:
     71Ge is made by 70Ge(n,gamma), and EPITHERMAL 70Ge capture makes it just as
     surely as thermal capture does, so the production rate is the FULL-band
     70Ge capture rate, not the thermal-band one.
+
+    THE ABUNDANCE FACTOR IS NOT OPTIONAL.  Only 20.57% of the atoms in a kg of
+    NATURAL Ge are 70Ge, so the per-kg production rate carries ``iso.abundance``.
+    Folding the bare 70Ge cross section against N_Ge would treat the wafer as
+    isotopically pure 70Ge and overstate the 71Ge rate by 1/0.2057 = 4.86x.
     """
+    ab = {i.A: i.abundance for i in params.GE_ISOTOPES}[70]
+
     def _s70(E):
-        return sigma_capture_b(70, E)
+        return ab * sigma_capture_b(70, E)
+
     bd = band_decomposed_rate(_s70, per_decade=per_decade)
     return {
         "a_sat_counts_kg_day": bd["total"]["rate_counts_kg_day"],
+        "abundance_70Ge": ab,
+        "pure_70Ge_would_be": bd["total"]["rate_counts_kg_day"] / ab,
         "bands": {k: v["rate_counts_kg_day"] for k, v in bd["bands"].items()},
         "thermal_fraction": bd["bands"]["thermal"]["fraction"],
         "isotope": "70Ge -> 71Ge",
@@ -1112,8 +1122,8 @@ def fold_monochromatic_line(design: str, E_line_eV: float, rate_counts_kg_day: f
     to a single populated deposit bin.  Guards, all raising:
       * 744-column shape check (the v1.0 584-column matrix would truncate at
         10.14 eV and is the wrong object);
-      * column-sum check (R's columns must each sum to 1, else the conservation
-        residual would be measuring the matrix rather than the fold);
+      * column-sum check (R's columns must each sum to 1, else the counts
+        residual_fold would be measuring the matrix rather than the fold);
       * broadening refusal -- this path is for ELECTRON-recoil atomic deposits
         and ``broaden=True`` raises rather than silently applying a nuclear
         kernel (see :func:`ec_ia_criterion`);
@@ -1189,7 +1199,22 @@ def fold_monochromatic_line(design: str, E_line_eV: float, rate_counts_kg_day: f
     peak = int(np.argmax(N_rec))
     in_roi = (E_rec_centers >= 10.0) & (E_rec_centers <= 100.0)
     sub_ev = E_rec_centers < 1.0
+    nz = np.flatnonzero(N_rec > 0.0)
+    bw = float((E_rec_edges[peak + 1] - E_rec_edges[peak]) / E_rec_centers[peak])
     return {
+        # The matrix's OWN unbinned statistics for the deposit column the line
+        # falls in.  Reported beside the binned peak because at this energy the
+        # response is far narrower than one reconstructed bin, so the binned
+        # "width" is the binning and not the physics -- saying so is the point.
+        "matrix_Erec_mean_eV": float(d["E_rec_mean_non_paralyzable_eV"][idx]),
+        "matrix_Erec_median_eV": float(d["E_rec_median_non_paralyzable_eV"][idx]),
+        "matrix_Erec_p16_eV": float(d["E_rec_p16_non_paralyzable_eV"][idx]),
+        "matrix_Erec_p84_eV": float(d["E_rec_p84_non_paralyzable_eV"][idx]),
+        "matrix_rel_spread": float(d["rel_spread_non_paralyzable"][idx]),
+        "matrix_mapping_slope_vs_line": float(
+            d["E_rec_mean_non_paralyzable_eV"][idx]) / float(E_line_eV),
+        "n_populated_Erec_bins": int(nz.size),
+        "Erec_bin_width_fraction_at_peak": bw,
         "design": design,
         "channel": "ge71_ec_M_line",
         "E_line_eV_DEPOSITED": float(E_line_eV),
@@ -1836,4 +1861,495 @@ def write_capture_recoil_bounds_csv(path: str = RECOIL_BOUNDS_CSV, *,
         fh.write("quantity,isotope,value,units,expression,evidence_class,"
                  "accuracy_label,basis\n")
         fh.write("\n".join(rows) + "\n")
+    return path
+
+
+# --------------------------------------------------------------------------- #
+# The daughter-Ga shell identification, CHECKED against a retrieved table       #
+# --------------------------------------------------------------------------- #
+GA_EDGES_DAT = os.path.join(GE71_DIR, "xraylib_edges.dat")
+
+#: The physical identification: an EC line energy is the binding energy of the
+#: CAPTURED SHELL IN THE DAUGHTER, gallium (Z = 31).  Allowed EC captures
+#: s-electrons, so the K / L / M lines are the 1s / 2s (L1) / 3s (M1) edges.
+GA_Z = 31
+GE71_SHELL_IDENTIFICATION = {"K": "K", "L": "L1", "M": "M1"}
+
+
+def ga_binding_energies_eV() -> dict:
+    """Ga (Z = 31) electron binding energies [eV] from the frozen table.
+
+    Retrieval command, byte count and SHA-256 in data/ge71_ec/MANIFEST.md.
+    """
+    out = {}
+    with open(GA_EDGES_DAT, encoding="utf-8") as fh:
+        for line in fh:
+            parts = line.split()
+            if len(parts) == 3 and parts[0].isdigit() and int(parts[0]) == GA_Z:
+                out[parts[1]] = float(parts[2])
+    return out
+
+
+def ge71_line_energy_check() -> dict:
+    """Compare the ROADMAP EC line energies against the Ga shell binding energies.
+
+    This is what an EC line energy physically IS, so the comparison is a real
+    check rather than a restatement -- and the two sources are independent: the
+    line energies come from the ROADMAP's CONUS+ sub-keV calibration anchor, the
+    binding energies from a separately retrieved and integrity-checked table.
+    """
+    ga = ga_binding_energies_eV()
+    rows = []
+    for shell, e_line, unc in GE71_EC_LINES:
+        edge = GE71_SHELL_IDENTIFICATION[shell]
+        b = ga.get(edge)
+        rows.append({
+            "shell": shell,
+            "line_energy_eV_DEPOSITED": e_line,
+            "line_energy_unc_eV": unc,
+            "ga_edge": edge,
+            "ga_binding_eV": b,
+            "difference_eV": None if b is None else e_line - b,
+            "relative_difference": None if b is None else (e_line - b) / b,
+            "within_stated_unc": (None if (b is None or unc is None)
+                                  else bool(abs(e_line - b) <= unc)),
+            "status": "CHECKED" if b is not None else "UNVERIFIED",
+        })
+    return {"rows": rows, "source": "xraylib data/edges.dat",
+            "sha256": sha256_of(GA_EDGES_DAT),
+            "identification": (
+                "an EC line energy is the binding energy of the CAPTURED SHELL in "
+                "the DAUGHTER, Ga (Z=31); allowed EC captures s-electrons, so "
+                "K/L/M are the 1s / 2s(L1) / 3s(M1) edges"),
+            "accuracy_label": ACCURACY_LABEL}
+
+
+# =========================================================================== #
+# ARTIFACT WRITERS -- Plan 14-02                                               #
+# =========================================================================== #
+EC_LINES_CSV = os.path.join(ARTIFACT_DIR, "ge71_ec_lines.csv")
+EC_EREC_CSV = {"Ta->Al": os.path.join(ARTIFACT_DIR, "ge71_ec_dRdErec_TaAl.csv"),
+               "Al->Hf": os.path.join(ARTIFACT_DIR, "ge71_ec_dRdErec_AlHf.csv")}
+EC_FIGURE = os.path.join(ARTIFACT_DIR, "capture_channel_bounds.pdf")
+
+#: Reconstructed-axis RoI, in RECONSTRUCTED energy.  158.7 eV is a DEPOSIT and is
+#: never compared against these bounds directly (fp-deposit-as-reconstructed).
+ROI_EREC_LO_eV = 10.0
+ROI_EREC_HI_eV = 100.0
+
+
+def ge71_line_table(*, per_decade: int = 200) -> dict:
+    """Everything the line inventory needs, computed once."""
+    prod = ge71_production_rate(per_decade=per_decade)
+    a_sat = prod["a_sat_counts_kg_day"]
+    br = ge71_branching_disposition()
+    nu = ge71_neutrino_recoil_eV()
+    chk = ge71_line_energy_check()
+    scen = [(name, t, ge71_activity(t, a_sat), ge71_activity(t, 1.0))
+            for name, t in GE71_SCENARIOS]
+    return {"production": prod, "a_sat_counts_kg_day": a_sat, "branching": br,
+            "nu_recoil": nu, "energy_check": chk, "scenarios": scen,
+            "lambda_per_day": ge71_lambda_per_day(),
+            "accuracy_label": ACCURACY_LABEL}
+
+
+def write_ge71_ec_lines_csv(path: str = EC_LINES_CSV, *,
+                            per_decade: int = 200) -> str:
+    """Freeze the 71Ge EC line inventory (deliv-ec-lines)."""
+    t = ge71_line_table(per_decade=per_decade)
+    a_sat = t["a_sat_counts_kg_day"]
+    br, nu, chk = t["branching"], t["nu_recoil"], t["energy_check"]
+    gs = ge71_ground_state()
+    ia = ec_ia_criterion()
+
+    h = [
+        "# QPD Phase-14 Plan 14-02 -- 71Ge ELECTRON-CAPTURE line inventory",
+        f"# ACCURACY_LABEL = {ACCURACY_LABEL} on every rate row.",
+        "#",
+        "# ============================== AXIS TAG (READ) ==============================",
+        "# The line energies below are DEPOSITED energies. They are NOT reconstructed-axis",
+        "# positions. The response mapping slope at this energy is measured at ~0.41 (Ta->Al)",
+        "# and ~0.40 (Al->Hf), so quoting 158.7 eV as the M line's location on the reported",
+        "# axis is fp-deposit-as-reconstructed. The measured reconstructed image is in",
+        "# artifacts/v2.0/ge71_ec_dRdErec_{TaAl,AlHf}.csv.",
+        "#",
+        "# ========================= WHAT AN EC LINE ENERGY IS =========================",
+        f"# {chk['identification']}.",
+        "# CHECKED, not asserted: the ROADMAP line energies (CONUS+ sub-keV calibration",
+        f"# anchor) against a separately retrieved Ga edge table ({chk['source']},",
+        f"# sha256 {chk['sha256'][:16]}...):",
+    ]
+    for r in chk["rows"]:
+        h.append(f"#   {r['shell']} line {r['line_energy_eV_DEPOSITED']} eV vs Ga "
+                 f"{r['ga_edge']} edge {r['ga_binding_eV']} eV: "
+                 f"{r['difference_eV']:+.2f} eV ({r['relative_difference']*100:+.4f}%) "
+                 f"[{r['status']}]"
+                 + ("" if r["within_stated_unc"] is None
+                    else f", within the stated +/-{r['line_energy_unc_eV']} eV: "
+                         f"{r['within_stated_unc']}"))
+    h += [
+        "#",
+        "# ====================== ACTIVATION SCENARIO (fp-saturation-unstated) =========",
+        "# A(t) = A_sat (1 - exp(-lambda t)),  lambda = ln2 / "
+        f"{GE71_HALF_LIFE_d} d = {t['lambda_per_day']:.9f} /d",
+        f"# A_sat = {a_sat:.4f} counts/kg/day = the 70Ge(n,gamma) production rate from Plan",
+        "#   14-01, FULL incident-energy band (epithermal 70Ge capture makes 71Ge too), and",
+        f"#   carrying the 70Ge abundance factor {t['production']['abundance_70Ge']}: a fold of",
+        f"#   the bare 70Ge cross section against N_Ge would give {t['production']['pure_70Ge_would_be']:.2f},"
+        " i.e. an isotopically",
+        "#   pure 70Ge wafer, overstating the natural-Ge rate by 1/0.2057 = 4.86x.",
+        "# EVERY RATE BELOW CARRIES ITS SCENARIO. A 71Ge rate without a stated t is UNDEFINED,",
+        "# not conservative: at t = 1 d the activity is only "
+        f"{t['scenarios'][0][3]*100:.2f}% of saturation.",
+        "#",
+        "# ============================ BRANCHING DISPOSITION ==========================",
+        "# P_K is SOURCED-DERIVED, not recollected: every K-shell vacancy created by the",
+        "# capture is filled either radiatively (a Ga K X-ray) or non-radiatively (a K Auger",
+        "# electron), and those channels are exhaustive and mutually exclusive, so",
+        "#     P_K = I(K X-rays) + I(K Auger)   per decay.",
+        f"#   I(Kx) = {br['K']['value']*100 - 0:.0f}... measured components: see the frozen retrieval.",
+        f"#   P_K = {br['K']['value']:.4f} +/- {br['K']['unc']:.4f}",
+        f"# P_L and P_M are BOUNDED by 1 - P_K = {br['L']['upper_bound']:.4f}. The L/M split is",
+        "#   NOT determined by anything in the retrieved data and is NOT assigned from",
+        "#   recollection (fp-assert-branching). The trivial bound would be 1.0, so this is",
+        f"#   tighter by a factor {br['improvement_factor']:.2f} -- but it is still a bound, and a",
+        "#   bound of 1 - P_K on EVERY line is a statement that carries limited information.",
+        "#",
+        "# ========================= COINCIDENT NEUTRINO RECOIL ========================",
+        f"# Q_EC = {gs['q_ec_keV']:.2f} +/- {gs['q_ec_unc_keV']:.2f} keV (IAEA Live Chart, frozen)",
+        f"# T_nu = Q_EC^2/(2 M c^2) = {nu['T_nu_recoil_eV']:.6f} eV -- genuinely sub-eV.",
+        f"#   as a fraction of the M line: {nu['fraction_of_M_line']*100:.4f}%",
+        "#   It is COINCIDENT with the shell relaxation, so it SHIFTS the deposit rather than",
+        "#   creating a separate sub-eV event. A standalone sub-eV event requires the shell",
+        "#   relaxation to ESCAPE, which is the declared and unmodelled K-line escape omission.",
+        "#",
+        "# ===================== NO IA BROADENING, AND WHY (with numbers) ==============",
+        f"# 2W_e = T/omega_bar_e = {ia['T_eV']}/{ia['omega_bar_e_lower_bound_eV']:.6f} = "
+        f"{ia['two_W_e']:.2f} at this line -- the electron-side IA validity condition",
+        "#   2W_e >> 1 is SATISFIED here, unlike at the 0.1 eV grid floor where Phase 15",
+        f"#   evaluated it and got {ia['phase15_two_W_e_at_grid_floor']:.4f} < 1. INHERITING PHASE 15's",
+        "#   SENTENCE WOULD HAVE BEEN WRONG AT THIS ENERGY, and that is reported, not absorbed.",
+        "#   The exclusion rests on two other things: (1) the frozen kernel carries the NUCLEAR",
+        f"#   omega_bar, and transplanting it understates the electron-side width by "
+        f"{ia['transplant_understatement_factor']:.4f}x;",
+        "#   (2) the EC deposit is an atomic relaxation ENERGY, not a recoil against a",
+        "#   momentum-distributed target, so no impulse-approximation Doppler kernel applies.",
+        f"#   STAKE, measured rather than dismissed: the ELECTRON-side kernel would give "
+        f"sigma = {ia['electron_side_sigma_eV']:.4f} eV",
+        f"#   = {ia['electron_side_sigma_over_T']*100:.4f}% of the line, about half of one 12.2%",
+        "#   reconstructed bin. NOT negligible-by-inspection -- Phase 15 established that the",
+        "#   smallness argument would have been false. The rate is NEVER multiplied by exp(-2W).",
+        "#",
+        f"# git_sha = {_git_sha()}",
+        "# reproduce = PYTHONPATH=src /opt/anaconda3/bin/python3 -c "
+        "\"from qpd_potential import capture_channel as c; c.write_ge71_ec_lines_csv()\"",
+        "# columns: row_kind, shell, scenario, t_days, energy_eV_DEPOSITED, energy_unc_eV, "
+        "branching_status, branching_value_or_bound, rate_counts_kg_day, accuracy_label, note",
+    ]
+
+    rows = []
+
+    def _row(kind, shell, scen, td, e, de, bstat, bval, rate, note):
+        rows.append(",".join([
+            kind, shell, scen,
+            "" if td is None else ("inf" if not np.isfinite(td) else f"{td:g}"),
+            "" if e is None else f"{e:.6g}",
+            "" if de is None else f"{de:g}",
+            bstat, "" if bval is None else f"{bval:.6g}",
+            "" if rate is None else f"{rate:.6e}",
+            ACCURACY_LABEL, f"\"{note}\""]))
+
+    for r in chk["rows"]:
+        _row("LINE_ENERGY", r["shell"], "n/a", None,
+             r["line_energy_eV_DEPOSITED"], r["line_energy_unc_eV"],
+             r["status"], None, None,
+             f"DEPOSITED energy; ROADMAP CONUS+ anchor. Ga {r['ga_edge']} edge "
+             f"{r['ga_binding_eV']} eV, difference {r['difference_eV']:+.2f} eV "
+             f"({r['relative_difference']*100:+.4f}%)")
+    for name, td, a_t, frac in t["scenarios"]:
+        _row("ACTIVITY", "total_EC", name, td, None, None, "n/a", None, a_t,
+             f"A(t) = A_sat(1-exp(-lambda t)); {frac*100:.4f}% of saturation. "
+             "TOTAL EC decay rate, before any shell branching")
+    for name, td, a_t, frac in t["scenarios"]:
+        for shell in ("K", "L", "M"):
+            b = br[shell]
+            if b["status"] == "SOURCED":
+                val, rate = b["value"], a_t * b["value"]
+                note = (f"SOURCED: {b['basis']}; rate = A(t) x P_K at "
+                        f"{frac*100:.4f}% of saturation")
+            else:
+                val, rate = b["upper_bound"], a_t * b["upper_bound"]
+                note = (f"BOUNDED: rate <= A(t) x (1 - P_K) at {frac*100:.4f}% of "
+                        "saturation. NOT a value -- the L/M split is undetermined")
+            _row("LINE_RATE", shell, name, td,
+                 dict((s, e) for s, e, _ in GE71_EC_LINES)[shell], None,
+                 b["status"], val, rate, note)
+    _row("NU_RECOIL", "coincident", "n/a", None, nu["T_nu_recoil_eV"], None,
+         "SOURCED", None, None,
+         f"T = Q_EC^2/(2 M c^2), Q_EC = {gs['q_ec_keV']} +/- {gs['q_ec_unc_keV']} keV; "
+         f"{nu['fraction_of_M_line']*100:.4f}% of the M line; COINCIDENT, so it shifts "
+         "the deposit rather than creating a separate event")
+    _row("IA_CRITERION", "M", "n/a", None, GE71_M_LINE_eV, None, "DERIVED",
+         ia["two_W_e"], None,
+         f"2W_e = {ia['two_W_e']:.2f} > 1, so the electron-side IA validity condition is "
+         "SATISFIED at this line and does NOT justify the exclusion; the exclusion rests "
+         f"on the nuclear-kernel transplant understating the width by "
+         f"{ia['transplant_understatement_factor']:.4f}x and on the deposit not being a recoil")
+
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(h) + "\n")
+        fh.write("row_kind,shell,scenario,t_days,energy_eV_DEPOSITED,energy_unc_eV,"
+                 "branching_status,branching_value_or_bound,rate_counts_kg_day,"
+                 "accuracy_label,note\n")
+        fh.write("\n".join(rows) + "\n")
+    return path
+
+
+def write_ge71_ec_erec_csv(design: str, path: str | None = None, *,
+                           per_decade: int = 200) -> str:
+    """Freeze dR/dE_rec for the M line, one design (deliv-ec-erec-*)."""
+    from . import trigger as _trigger
+    path = EC_EREC_CSV[design] if path is None else path
+    t = ge71_line_table(per_decade=per_decade)
+    br = t["branching"]
+    # The M-line rate is BOUNDED, so the folded spectrum is a BOUND: the input is
+    # A_sat x (1 - P_K), the largest rate the M line can have at saturation.
+    m_bound = t["a_sat_counts_kg_day"] * br["M"]["upper_bound"]
+    r = fold_monochromatic_line(design, GE71_M_LINE_eV, m_bound)
+    ia = ec_ia_criterion()
+    b = r["counts_budget"]
+
+    h = [
+        f"# QPD Phase-14 Plan 14-02 -- 71Ge EC M-line dR/dE_rec, design {design}",
+        f"# ACCURACY_LABEL = {ACCURACY_LABEL} on every row.  This is a BOUND, not a rate:",
+        f"#   input = A_sat x (1 - P_K) = {t['a_sat_counts_kg_day']:.4f} x "
+        f"{br['M']['upper_bound']:.4f} = {m_bound:.4f} counts/kg/day",
+        "#   SCENARIO: SATURATION (t -> inf). At t = 1 d it is "
+        f"{ge71_activity(1.0, 1.0)*100:.2f}% of this; a rate without its t is UNDEFINED.",
+        "#",
+        "# =========================== DEPOSIT vs RECONSTRUCTED ========================",
+        f"# The line is a {GE71_M_LINE_eV} eV DEPOSIT. Its RECONSTRUCTED image is measured here:",
+        f"#   deposit bin {r['deposit_bin_index']}, centre {r['deposit_bin_center_eV']:.6f} eV",
+        f"#   matrix's own unbinned E_rec mean for that column = {r['matrix_Erec_mean_eV']:.6f} eV",
+        f"#     median {r['matrix_Erec_median_eV']:.6f}, p16 {r['matrix_Erec_p16_eV']:.6f}, "
+        f"p84 {r['matrix_Erec_p84_eV']:.6f}, rel_spread {r['matrix_rel_spread']:.6f}",
+        f"#   MAPPING SLOPE E_rec/E_dep at this line = {r['matrix_mapping_slope_vs_line']:.6f}",
+        f"#   binned peak bin centre = {r['peak_Erec_eV']:.6f} eV, over "
+        f"{r['n_populated_Erec_bins']} populated reconstructed bin(s)",
+        f"#   one reconstructed bin here is {r['Erec_bin_width_fraction_at_peak']*100:.3f}% wide, "
+        f"against a response rel_spread of {r['matrix_rel_spread']*100:.3f}% -- THE IMAGE IS",
+        "#   NARROWER THAN ONE BIN, so its apparent width is the BINNING and not the physics.",
+        f"#   in-RoI fraction over E_rec [{ROI_EREC_LO_eV:g}, {ROI_EREC_HI_eV:g}] eV = "
+        f"{r['in_roi_fraction']:.6f}",
+        f"#   sub-eV (E_rec < 1 eV) fraction = {r['sub_ev_fraction']:.6f}",
+        "#   QUOTING 158.7 eV AS THE POSITION ON THIS AXIS WOULD BE fp-deposit-as-reconstructed.",
+        "#",
+        "# ================================ COUNTS BUDGET ==============================",
+        f"# input {b['input_counts']:.6f}; deposit {b['deposit_counts']:.6f}; "
+        f"reconstructed {b['reconstructed_counts']:.6f}",
+        f"# leaked_below_floor {b['leaked_below_floor']:g}; leaked_above_top "
+        f"{b['leaked_above_top']:g}",
+        f"# residual_retained_plus_leaked {b['residual_retained_plus_leaked']:.3e}; "
+        f"residual_retained_only {b['residual_retained_only']:+.3e}; "
+        f"residual_fold {b['residual_fold']:.3e}",
+        "# The two residuals COINCIDE BY CONSTRUCTION here because NO broadening is applied and",
+        "# the monochromatic input lies strictly inside the deposit axis, so there is no kernel",
+        "# leakage to separate them. Reported separately for parity with the Phase-13 neutron",
+        "# path, and the coincidence is STATED rather than presented as two confirmations.",
+        "# Nothing is rescaled.",
+        "#",
+        "# ============================== NO IA BROADENING =============================",
+        f"# 2W_e = {ia['two_W_e']:.2f} at {ia['T_eV']} eV: the electron-side IA validity condition",
+        f"# IS SATISFIED here (Phase 15 measured {ia['phase15_two_W_e_at_grid_floor']:.4f} < 1 at the 0.1 eV",
+        "# grid floor, where it FAILS). The exclusion therefore does NOT rest on that criterion,",
+        "# and it does NOT rest on smallness either -- Phase 15 established that argument would",
+        f"# have been false. It rests on the nuclear-kernel transplant understating the width by",
+        f"# {ia['transplant_understatement_factor']:.4f}x, and on the EC deposit being an atomic relaxation",
+        f"# energy rather than a recoil. Stake: the electron-side kernel would give "
+        f"{ia['electron_side_sigma_eV']:.4f} eV",
+        f"# = {ia['electron_side_sigma_over_T']*100:.4f}% of the line, ~half a reconstructed bin.",
+        "# broaden=False is enforced in code: fold_monochromatic_line RAISES on broaden=True.",
+        "# The rate is NEVER multiplied by exp(-2W).",
+        "#",
+        "# ================================== TRIGGER ==================================",
+        "# CONVENTIONS Section I: P_trig is an ANALYSIS efficiency MULTIPLIED on top of eps ~ 0.5,",
+        "# evaluated on the DEPOSIT centres BEFORE R acts. E50 = 0.5 eV exactly, k = "
+        f"{params.TRIGGER_SHARPNESS.value}.",
+        f"# P_trig at the line's deposit bin = {r['P_trig_at_line']:.12f} -- essentially 1, as",
+        "# expected 2.5 decades above E50.",
+        "#",
+        f"# git_sha = {_git_sha()}",
+        "# reproduce = PYTHONPATH=src /opt/anaconda3/bin/python3 -c "
+        f"\"from qpd_potential import capture_channel as c; c.write_ge71_ec_erec_csv('{design}')\"",
+        "# columns: E_rec_keV, dRdErec_bound, dRdErec_trigger_weighted, P_trig_effective, "
+        "regime, accuracy_label",
+    ]
+
+    E = r["E_rec_centers_eV"]
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(h) + "\n")
+        fh.write("E_rec_keV,dRdErec_bound,dRdErec_trigger_weighted,P_trig_effective,"
+                 "regime,accuracy_label\n")
+        # bin 0 is the [0, 1e-3 eV) underflow catch-bin, dropped exactly as the
+        # Phase-12/13 writers do.
+        for i in range(1, E.size):
+            pt = (r["dRdErec_trigger"][i] / r["dRdErec"][i]
+                  if r["dRdErec"][i] > 0 else 1.0)
+            regime = ("sub_eV_trigger_probability_regime"
+                      if E[i] < _trigger.SUBEV_REGIME_BOUNDARY_eV else "dRdErec")
+            fh.write(f"{E[i]/1.0e3:.9e},{r['dRdErec'][i]:.6e},"
+                     f"{r['dRdErec_trigger'][i]:.6e},{pt:.9f},{regime},"
+                     f"{ACCURACY_LABEL}\n")
+    return path
+
+
+# --------------------------------------------------------------------------- #
+# Shared-reconstructed-axis comparison                                          #
+# --------------------------------------------------------------------------- #
+COMPARISON_CSV = {
+    "cevns": {"Ta->Al": os.path.join(ARTIFACT_DIR, "cevns_dRdErec_ext_TaAl.csv"),
+              "Al->Hf": os.path.join(ARTIFACT_DIR, "cevns_dRdErec_ext_AlHf.csv")},
+    "neutron": {"Ta->Al": os.path.join(ARTIFACT_DIR, "neutron_dRdErec_ext_TaAl.csv"),
+                "Al->Hf": os.path.join(ARTIFACT_DIR, "neutron_dRdErec_ext_AlHf.csv")},
+}
+
+
+def read_erec_csv(path: str) -> dict:
+    """Read a committed reconstructed-axis spectrum: E_rec [keV] and dR/dE_rec.
+
+    The AXIS TAG is returned with the data so a caller cannot compare a
+    reconstructed-axis quantity against a deposit-axis one without it being
+    visible (fp-deposit-as-reconstructed).
+    """
+    E, y = [], []
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            if line.startswith("#") or line.startswith("E_rec_keV"):
+                continue
+            parts = line.split(",")
+            try:
+                E.append(float(parts[0]))
+                y.append(float(parts[1]))
+            except (ValueError, IndexError):
+                continue
+    return {"E_rec_eV": np.asarray(E) * 1.0e3, "dRdErec": np.asarray(y),
+            "axis": "RECONSTRUCTED", "path": path}
+
+
+def _band_integral_from_erec(E_rec_eV, dRdErec, lo, hi, E_rec_edges) -> float:
+    """Integrate a dR/dE_rec [counts/kg/day/keV] over an E_rec band [counts/kg/day]."""
+    # The committed files drop bin 0 (the underflow catch-bin), so the widths are
+    # taken from the matrix's own edges by matching centres.
+    w = np.diff(E_rec_edges) / 1.0e3
+    idx = np.searchsorted(E_rec_edges, E_rec_eV, side="right") - 1
+    idx = np.clip(idx, 0, w.size - 1)
+    m = (E_rec_eV >= lo) & (E_rec_eV <= hi)
+    return float(np.sum(dRdErec[m] * w[idx[m]]))
+
+
+def shared_axis_comparison(design: str, *, per_decade: int = 200) -> dict:
+    """M-line bound vs the Phase-12 CEvNS and Phase-13 neutron spectra.
+
+    EVERY operand is a RECONSTRUCTED-axis quantity read from a committed
+    reconstructed-axis artifact.  No deposit-axis number enters, and the axis tag
+    travels with each operand so a test can assert it.
+    """
+    from . import fold as _fold
+    d = _fold.load_design_extended(design)
+    edges = d["E_rec_edges_eV"]
+
+    t = ge71_line_table(per_decade=per_decade)
+    m_bound = t["a_sat_counts_kg_day"] * t["branching"]["M"]["upper_bound"]
+    r = fold_monochromatic_line(design, GE71_M_LINE_eV, m_bound)
+    ec_in_roi = r["in_roi_counts"]
+
+    out = {"design": design, "axis": "RECONSTRUCTED",
+           "roi_eV": (ROI_EREC_LO_eV, ROI_EREC_HI_eV),
+           "ec_M_line_in_roi_counts_kg_day": ec_in_roi,
+           "ec_scenario": "saturation, t -> inf; bound = A_sat x (1 - P_K)",
+           "accuracy_label": ACCURACY_LABEL}
+    for name in ("cevns", "neutron"):
+        src = read_erec_csv(COMPARISON_CSV[name][design])
+        tot = _band_integral_from_erec(src["E_rec_eV"], src["dRdErec"],
+                                       0.0, np.inf, edges)
+        roi = _band_integral_from_erec(src["E_rec_eV"], src["dRdErec"],
+                                       ROI_EREC_LO_eV, ROI_EREC_HI_eV, edges)
+        out[name] = {"axis": src["axis"], "path": src["path"],
+                     "total_counts_kg_day": tot, "in_roi_counts_kg_day": roi,
+                     "ec_over_this_in_roi": ec_in_roi / roi if roi > 0 else np.inf,
+                     "ec_over_this_total": ec_in_roi / tot if tot > 0 else np.inf}
+    return out
+
+
+def make_capture_bounds_figure(path: str = EC_FIGURE, *,
+                               per_decade: int = 200) -> str:
+    """The M line's reconstructed image against CEvNS and the neutron channel.
+
+    EVERYTHING ON THIS FIGURE IS ON THE SHARED RECONSTRUCTED AXIS.  The
+    deposit-vs-reconstructed distinction is annotated ON the figure, because the
+    single most likely misreading of this channel is to place the M line at its
+    158.7 eV deposit energy.
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from . import fold as _fold
+
+    # Emit an UNCOMPRESSED PDF text stream so that the accuracy_label audit can
+    # grep the label out of the file itself rather than settling for "the figure
+    # exists and the report mentions it", which is a proxy for the check.
+    matplotlib.rcParams["pdf.compression"] = 0
+
+    t = ge71_line_table(per_decade=per_decade)
+    m_bound = t["a_sat_counts_kg_day"] * t["branching"]["M"]["upper_bound"]
+
+    fig, axes = plt.subplots(1, 2, figsize=(13.5, 5.6), sharey=True)
+    for ax, design in zip(axes, ("Ta->Al", "Al->Hf")):
+        r = fold_monochromatic_line(design, GE71_M_LINE_eV, m_bound)
+        E = r["E_rec_centers_eV"]
+        for name, colour, lab in (("cevns", "tab:blue", "CEvNS (Phase 12)"),
+                                  ("neutron", "tab:grey", "n elastic (Phase 13)")):
+            s = read_erec_csv(COMPARISON_CSV[name][design])
+            m = s["dRdErec"] > 0
+            ax.plot(s["E_rec_eV"][m], s["dRdErec"][m], color=colour, lw=1.4, label=lab)
+        m = r["dRdErec"] > 0
+        ax.plot(E[m], r["dRdErec"][m], color="tab:red", lw=2.2, marker="o", ms=5,
+                label="$^{71}$Ge EC M line (BOUND, saturation)")
+        ax.axvspan(ROI_EREC_LO_eV, ROI_EREC_HI_eV, color="tab:orange", alpha=0.12,
+                   zorder=0)
+        ax.axvline(_fold.subev_boundary_Erec_eV(design), color="k", ls=":", lw=1.0)
+        ax.annotate(f"$E_{{rec}}$ image of a 1 eV deposit\n= sub-eV regime boundary",
+                    xy=(_fold.subev_boundary_Erec_eV(design), 1e-4),
+                    fontsize=7, rotation=90, va="bottom", ha="right")
+        # No arrow: a long connector across a log-log spectrum panel reads as a
+        # curve, which is exactly the misreading this annotation exists to stop.
+        ax.text(
+            0.03, 0.06,
+            f"$^{{71}}$Ge EC M line: DEPOSIT 158.7 eV $\\rightarrow$ RECONSTRUCTED "
+            f"{r['matrix_Erec_mean_eV']:.1f} eV\n"
+            f"mapping slope {r['matrix_mapping_slope_vs_line']:.3f}  ·  in-RoI "
+            f"fraction {r['in_roi_fraction']:.3f}  ·  "
+            f"{r['n_populated_Erec_bins']} populated bin(s)\n"
+            "the 158.7 eV deposit energy is NOT a position on this axis",
+            transform=ax.transAxes, fontsize=7.5, color="tab:red", va="bottom",
+            bbox=dict(boxstyle="round", fc="white", ec="tab:red", alpha=0.9))
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_xlabel(r"$E_{\rm rec}$  [eV]   (RECONSTRUCTED, not deposited)")
+        ax.set_title(f"{design}   —   RoI shaded, $E_{{rec}}$ 10–100 eV", fontsize=10)
+        ax.grid(alpha=0.25, which="both")
+        ax.legend(fontsize=8, loc="upper right")
+    axes[0].set_ylabel(r"$dR/dE_{\rm rec}$  [counts kg$^{-1}$ day$^{-1}$ keV$^{-1}$]")
+    axes[0].text(
+        0.02, 0.97,
+        f"accuracy_label = {ACCURACY_LABEL}\n"
+        "$^{71}$Ge M line is a BOUND: $A_{sat}\\times(1-P_K)$, saturation scenario\n"
+        "NO IA broadening (electron recoil); $P_{trig}$ multiplies $\\epsilon$",
+        transform=axes[0].transAxes, fontsize=7.5, va="top",
+        bbox=dict(boxstyle="round", fc="white", ec="0.4", alpha=0.9))
+    fig.suptitle("Phase 14 — capture-channel bounds on the SHARED reconstructed axis",
+                 fontsize=11)
+    fig.tight_layout()
+    fig.savefig(path, bbox_inches="tight")
+    plt.close(fig)
     return path

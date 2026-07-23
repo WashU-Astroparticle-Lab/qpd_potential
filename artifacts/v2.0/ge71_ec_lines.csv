@@ -1,0 +1,89 @@
+# QPD Phase-14 Plan 14-02 -- 71Ge ELECTRON-CAPTURE line inventory
+# ACCURACY_LABEL = order_of_magnitude on every rate row.
+#
+# ============================== AXIS TAG (READ) ==============================
+# The line energies below are DEPOSITED energies. They are NOT reconstructed-axis
+# positions. The response mapping slope at this energy is measured at ~0.41 (Ta->Al)
+# and ~0.40 (Al->Hf), so quoting 158.7 eV as the M line's location on the reported
+# axis is fp-deposit-as-reconstructed. The measured reconstructed image is in
+# artifacts/v2.0/ge71_ec_dRdErec_{TaAl,AlHf}.csv.
+#
+# ========================= WHAT AN EC LINE ENERGY IS =========================
+# an EC line energy is the binding energy of the CAPTURED SHELL in the DAUGHTER, Ga (Z=31); allowed EC captures s-electrons, so K/L/M are the 1s / 2s(L1) / 3s(M1) edges.
+# CHECKED, not asserted: the ROADMAP line energies (CONUS+ sub-keV calibration
+# anchor) against a separately retrieved Ga edge table (xraylib data/edges.dat,
+# sha256 f0eaecfaf3cac3fa...):
+#   M line 158.7 eV vs Ga M1 edge 158.1 eV: +0.60 eV (+0.3795%) [CHECKED], within the stated +/-1.4 eV: True
+#   L line 1298.5 eV vs Ga L1 edge 1297.7 eV: +0.80 eV (+0.0616%) [CHECKED]
+#   K line 10368.3 eV vs Ga K edge 10367.1 eV: +1.20 eV (+0.0116%) [CHECKED]
+#
+# ====================== ACTIVATION SCENARIO (fp-saturation-unstated) =========
+# A(t) = A_sat (1 - exp(-lambda t)),  lambda = ln2 / 11.43 d = 0.060642798 /d
+# A_sat = 1054.1472 counts/kg/day = the 70Ge(n,gamma) production rate from Plan
+#   14-01, FULL incident-energy band (epithermal 70Ge capture makes 71Ge too), and
+#   carrying the 70Ge abundance factor 0.2057: a fold of
+#   the bare 70Ge cross section against N_Ge would give 5124.68, i.e. an isotopically
+#   pure 70Ge wafer, overstating the natural-Ge rate by 1/0.2057 = 4.86x.
+# EVERY RATE BELOW CARRIES ITS SCENARIO. A 71Ge rate without a stated t is UNDEFINED,
+# not conservative: at t = 1 d the activity is only 5.88% of saturation.
+#
+# ============================ BRANCHING DISPOSITION ==========================
+# P_K is SOURCED-DERIVED, not recollected: every K-shell vacancy created by the
+# capture is filled either radiatively (a Ga K X-ray) or non-radiatively (a K Auger
+# electron), and those channels are exhaustive and mutually exclusive, so
+#     P_K = I(K X-rays) + I(K Auger)   per decay.
+#   I(Kx) = 88... measured components: see the frozen retrieval.
+#   P_K = 0.8759 +/- 0.0043
+# P_L and P_M are BOUNDED by 1 - P_K = 0.1241. The L/M split is
+#   NOT determined by anything in the retrieved data and is NOT assigned from
+#   recollection (fp-assert-branching). The trivial bound would be 1.0, so this is
+#   tighter by a factor 8.06 -- but it is still a bound, and a
+#   bound of 1 - P_K on EVERY line is a statement that carries limited information.
+#
+# ========================= COINCIDENT NEUTRINO RECOIL ========================
+# Q_EC = 232.47 +/- 1.15 keV (IAEA Live Chart, frozen)
+# T_nu = Q_EC^2/(2 M c^2) = 0.408569 eV -- genuinely sub-eV.
+#   as a fraction of the M line: 0.2574%
+#   It is COINCIDENT with the shell relaxation, so it SHIFTS the deposit rather than
+#   creating a separate sub-eV event. A standalone sub-eV event requires the shell
+#   relaxation to ESCAPE, which is the declared and unmodelled K-line escape omission.
+#
+# ===================== NO IA BROADENING, AND WHY (with numbers) ==============
+# 2W_e = T/omega_bar_e = 158.7/0.634740 = 250.02 at this line -- the electron-side IA validity condition
+#   2W_e >> 1 is SATISFIED here, unlike at the 0.1 eV grid floor where Phase 15
+#   evaluated it and got 0.1574 < 1. INHERITING PHASE 15's
+#   SENTENCE WOULD HAVE BEEN WRONG AT THIS ENERGY, and that is reported, not absorbed.
+#   The exclusion rests on two other things: (1) the frozen kernel carries the NUCLEAR
+#   omega_bar, and transplanting it understates the electron-side width by 5.9616x;
+#   (2) the EC deposit is an atomic relaxation ENERGY, not a recoil against a
+#   momentum-distributed target, so no impulse-approximation Doppler kernel applies.
+#   STAKE, measured rather than dismissed: the ELECTRON-side kernel would give sigma = 10.0366 eV
+#   = 6.3243% of the line, about half of one 12.2%
+#   reconstructed bin. NOT negligible-by-inspection -- Phase 15 established that the
+#   smallness argument would have been false. The rate is NEVER multiplied by exp(-2W).
+#
+# git_sha = fc42696
+# reproduce = PYTHONPATH=src /opt/anaconda3/bin/python3 -c "from qpd_potential import capture_channel as c; c.write_ge71_ec_lines_csv()"
+# columns: row_kind, shell, scenario, t_days, energy_eV_DEPOSITED, energy_unc_eV, branching_status, branching_value_or_bound, rate_counts_kg_day, accuracy_label, note
+row_kind,shell,scenario,t_days,energy_eV_DEPOSITED,energy_unc_eV,branching_status,branching_value_or_bound,rate_counts_kg_day,accuracy_label,note
+LINE_ENERGY,M,n/a,,158.7,1.4,CHECKED,,,order_of_magnitude,"DEPOSITED energy; ROADMAP CONUS+ anchor. Ga M1 edge 158.1 eV, difference +0.60 eV (+0.3795%)"
+LINE_ENERGY,L,n/a,,1298.5,,CHECKED,,,order_of_magnitude,"DEPOSITED energy; ROADMAP CONUS+ anchor. Ga L1 edge 1297.7 eV, difference +0.80 eV (+0.0616%)"
+LINE_ENERGY,K,n/a,,10368.3,,CHECKED,,,order_of_magnitude,"DEPOSITED energy; ROADMAP CONUS+ anchor. Ga K edge 10367.1 eV, difference +1.20 eV (+0.0116%)"
+ACTIVITY,total_EC,t=1d,1,,,n/a,,6.202669e+01,order_of_magnitude,"A(t) = A_sat(1-exp(-lambda t)); 5.8841% of saturation. TOTAL EC decay rate, before any shell branching"
+ACTIVITY,total_EC,t=1_half_life_11.43d,11.43,,,n/a,,5.270736e+02,order_of_magnitude,"A(t) = A_sat(1-exp(-lambda t)); 50.0000% of saturation. TOTAL EC decay rate, before any shell branching"
+ACTIVITY,total_EC,t=30d,30,,,n/a,,8.832259e+02,order_of_magnitude,"A(t) = A_sat(1-exp(-lambda t)); 83.7858% of saturation. TOTAL EC decay rate, before any shell branching"
+ACTIVITY,total_EC,saturation,inf,,,n/a,,1.054147e+03,order_of_magnitude,"A(t) = A_sat(1-exp(-lambda t)); 100.0000% of saturation. TOTAL EC decay rate, before any shell branching"
+LINE_RATE,K,t=1d,1,10368.3,,SOURCED,0.8759,5.432918e+01,order_of_magnitude,"SOURCED: K-vacancy conservation: every K hole is filled by a K X-ray or a K Auger electron, so P_K = I(Kx) + I(K Auger). Intensities from the frozen IAEA Live Chart retrieval.; rate = A(t) x P_K at 5.8841% of saturation"
+LINE_RATE,L,t=1d,1,1298.5,,BOUNDED,0.1241,7.697512e+00,order_of_magnitude,"BOUNDED: rate <= A(t) x (1 - P_K) at 5.8841% of saturation. NOT a value -- the L/M split is undetermined"
+LINE_RATE,M,t=1d,1,158.7,,BOUNDED,0.1241,7.697512e+00,order_of_magnitude,"BOUNDED: rate <= A(t) x (1 - P_K) at 5.8841% of saturation. NOT a value -- the L/M split is undetermined"
+LINE_RATE,K,t=1_half_life_11.43d,11.43,10368.3,,SOURCED,0.8759,4.616638e+02,order_of_magnitude,"SOURCED: K-vacancy conservation: every K hole is filled by a K X-ray or a K Auger electron, so P_K = I(Kx) + I(K Auger). Intensities from the frozen IAEA Live Chart retrieval.; rate = A(t) x P_K at 50.0000% of saturation"
+LINE_RATE,L,t=1_half_life_11.43d,11.43,1298.5,,BOUNDED,0.1241,6.540983e+01,order_of_magnitude,"BOUNDED: rate <= A(t) x (1 - P_K) at 50.0000% of saturation. NOT a value -- the L/M split is undetermined"
+LINE_RATE,M,t=1_half_life_11.43d,11.43,158.7,,BOUNDED,0.1241,6.540983e+01,order_of_magnitude,"BOUNDED: rate <= A(t) x (1 - P_K) at 50.0000% of saturation. NOT a value -- the L/M split is undetermined"
+LINE_RATE,K,t=30d,30,10368.3,,SOURCED,0.8759,7.736175e+02,order_of_magnitude,"SOURCED: K-vacancy conservation: every K hole is filled by a K X-ray or a K Auger electron, so P_K = I(Kx) + I(K Auger). Intensities from the frozen IAEA Live Chart retrieval.; rate = A(t) x P_K at 83.7858% of saturation"
+LINE_RATE,L,t=30d,30,1298.5,,BOUNDED,0.1241,1.096083e+02,order_of_magnitude,"BOUNDED: rate <= A(t) x (1 - P_K) at 83.7858% of saturation. NOT a value -- the L/M split is undetermined"
+LINE_RATE,M,t=30d,30,158.7,,BOUNDED,0.1241,1.096083e+02,order_of_magnitude,"BOUNDED: rate <= A(t) x (1 - P_K) at 83.7858% of saturation. NOT a value -- the L/M split is undetermined"
+LINE_RATE,K,saturation,inf,10368.3,,SOURCED,0.8759,9.233275e+02,order_of_magnitude,"SOURCED: K-vacancy conservation: every K hole is filled by a K X-ray or a K Auger electron, so P_K = I(Kx) + I(K Auger). Intensities from the frozen IAEA Live Chart retrieval.; rate = A(t) x P_K at 100.0000% of saturation"
+LINE_RATE,L,saturation,inf,1298.5,,BOUNDED,0.1241,1.308197e+02,order_of_magnitude,"BOUNDED: rate <= A(t) x (1 - P_K) at 100.0000% of saturation. NOT a value -- the L/M split is undetermined"
+LINE_RATE,M,saturation,inf,158.7,,BOUNDED,0.1241,1.308197e+02,order_of_magnitude,"BOUNDED: rate <= A(t) x (1 - P_K) at 100.0000% of saturation. NOT a value -- the L/M split is undetermined"
+NU_RECOIL,coincident,n/a,,0.408569,,SOURCED,,,order_of_magnitude,"T = Q_EC^2/(2 M c^2), Q_EC = 232.47 +/- 1.15 keV; 0.2574% of the M line; COINCIDENT, so it shifts the deposit rather than creating a separate event"
+IA_CRITERION,M,n/a,,158.7,,DERIVED,250.024,,order_of_magnitude,"2W_e = 250.02 > 1, so the electron-side IA validity condition is SATISFIED at this line and does NOT justify the exclusion; the exclusion rests on the nuclear-kernel transplant understating the width by 5.9616x and on the deposit not being a recoil"
