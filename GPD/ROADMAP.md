@@ -262,7 +262,19 @@ Plans:
 4. The Gaussian convolution is applied to dR/dE_R **before** the response chain, conserves counts to ≤1e-3, and vanishes in the correct limit: the broadened spectrum reproduces the frozen v1.0 result above ~10 eV to **<1%**.
 5. The rate is never multiplied by e^(−2W); a bounded justification artifact demonstrates via the f-sum rule that S(q,ω) → δ(ω − q²/2M) is reached by ~100 meV and quantifies the residual O(1/2W) correction in the bottom bin, without becoming a milestone pillar.
 
-**Plans:** TBD (run `gpd:plan-phase 11` to break down)
+**Plans:** 4 plans, 3 waves
+
+Plans:
+- [ ] 11-01-PLAN.md -- CALC-14: freeze the measured Ge VDOS, derive <u_x^2> / omega_bar / 2W / B against an analytic Debye oracle, lock ONE omega_bar and 2W = q^2<u_x^2> into CONVENTIONS.md Section J (SC1, SC2)
+- [ ] 11-02-PLAN.md -- CALC-15: re-derive sigma_E = sqrt(E_R*omega_bar) in-phase, width table across 0.1-100 eV, quadrature with the Phase-10 counting floor at 0.5 eV (SC3)
+- [ ] 11-03-PLAN.md -- bounded impulse-limit justification: sum rules, O(1/2W) residual, and the numerical case for never multiplying the rate by e^(-2W) (SC5)
+- [ ] 11-04-PLAN.md -- TDD: Gaussian convolution applied before the response chain, conservation <=1e-3 with leakage accounted, <1% v1.0 regression above 10 eV (SC4)
+
+> **Planning findings (2026-07-22).** (a) SC2's "independent momentum-transfer route" q(100 meV) = 116 keV/c = 58.9 A^-1 is **algebraically identical** to 2W = E_R/omega_bar once omega_bar = hbar/(2 m_N <u_x^2>); it is a units check, not corroboration. Likewise 2W in [4.76, 8.33] <=> omega_bar in [12.0, 21.0] meV exactly, so SC2's third clause is not independent of SC1. SC3's sigma_E/E_R = 1/sqrt(2W) is an identity by construction for the same reason. The decisive content is the numerical values and the counting-floor quadrature.
+> (b) SC2's ~1.5x tolerance on <u_x^2> maps to omega_bar in [14.3, 32.2] meV, **wider** than the survey's 12-21 meV band, so a VDOS-derived omega_bar outside the survey band is a LIVE outcome; plans require it be reported as a supersession, not tuned away.
+> (c) sigma_E = q*sigma_p/m_N depends on <p_x^2>, governed by the VDOS **arithmetic** mean, while the locked omega_bar is its **harmonic** mean (9/8 apart for a Debye VDOS, more for a real spectrum) -- so the single-frequency form **understates** the width. Carried as a one-sided systematic, cross-checked from two directions; a disagreement blocks 11-04.
+> (d) With sigma_E/E_R ~ 35-46% at 100 meV, part of the Gaussian falls below the 0.0999350 eV floor and below E = 0, so SC4's <=1e-3 conservation is NOT automatic; leakage must be reported, never renormalized.
+> (e) **Tooling resolved 2026-07-22:** NCrystal 4.4.6 installed under /opt/anaconda3 and `Ge_sg227.ncmat` VDOS confirmed accessible with ceiling **37.78966 meV** (matches the 37.79 meV measured anchor). DarkELF's Ge pDoS is fetchable at `https://raw.githubusercontent.com/tongylin/DarkELF/main/data/Ge/Ge_pDoS.dat` (HTTP 200; note the path has NO `darkelf/` component and the branch is `main`). Both cross-check sources are therefore available and the Debye fallback stays a forbidden proxy.
 
 ### Phase 12: Reactor CEvNS down to 100 meV at the Paper's Surface Scenario (P-SIG)
 
