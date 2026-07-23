@@ -50,15 +50,64 @@ All from NUCLEUS **arXiv:2509.03559** (EPJC 2026), text read directly this run.
 | CaWO₄ intrinsic | ²¹⁰Pb **0.174 ± 0.006 mBq/kg** | Table 3 |
 | Total residual, CaWO₄, 10–100 eV | **~250 d⁻¹ kg⁻¹ keV⁻¹** | abstract |
 | Total rejection power | **10²–10³** | §5.3 / conclusions |
-| MV+COV muon rejection | **> 99.8 %** in the CEvNS RoI | §5.2.1 |
-| COV extra neutron rejection | **factor ~5**, at a **1 keV_ee** COV threshold | §5.2.1 |
-| COV threshold sensitivity | 1 → 10 keV_ee degrades neutron rejection **~20 %** | §5.2.1 |
+| MV+COV muon rejection | **> 99.8 %** of the **muon-INDUCED** backgrounds in the CEvNS RoI | §5.2.1 |
+| COV extra neutron rejection | **factor 5** **[F5-b]** — the COV anti-coincidence, at a **1 keV_ee** COV threshold | §5.2.1 |
+| COV threshold sensitivity | 1 → 10 keV_ee degrades neutron rejection **~20 %** (the sensitivity of **[F5-b]**, not an independent factor) | §5.2.1 |
 | Unshielded neutron rate in RoI | **10⁴–10⁵ d⁻¹ kg⁻¹ keV⁻¹** | §5.2.1 |
 | Reactor operating cycle | **100 %** and "more realistic **80 %**" both quoted | Table 5 caption |
 | S/B band, 1 keV_ee COV threshold, 10–100 eV | **[0.9 – 1.5] at 68 % CL** | §5.3 / Fig. 12 |
 | VNS **absolute neutron flux measurement** | **MISSING** — explicitly stated as a limiting unknown | conclusions |
 | Geant4 sub-keV physics-list reliability | "another **major question mark**" | conclusions |
 | LEE | "**overwhelming**"; "seems **not tied to particle-induced backgrounds** but rather to fundamental aspects in the design of their respective detection setups" | §1, conclusions |
+
+---
+
+> ### ⚠ PHASE-8 CORRECTION 1 — "factor 5" is THREE different statements. Never quote the bare number.
+>
+> **Issued:** Phase 8 (P-VETO), Plan 08-04, **2026-07-22**.
+> **Source:** verbatim quotes from `GPD/phases/08-veto-envelope-geometry-gate-p-veto/08-01-SOURCE-EVIDENCE.md`
+> §B.3/§B.4/§B.5, each reproduced from the frozen `data/external/nucleus/2509.03559v1.txt`
+> by a recorded `grep -o -F` command. Classified in `GPD/analysis/VETO-TAXONOMY.md`.
+>
+> **What was wrong here:** this file previously carried a bare "COV factor ~5" entry and repeated
+> the bare number in several checklist and table rows. **Section 5.2.1 of arXiv:2509.03559v1
+> contains three distinct statements involving a factor 5, describing three different physical
+> objects — and one of them is not a rejection factor at all.** Every occurrence of the number in
+> this file now carries one of the three labels below.
+>
+> **[F5-a] — PASSIVE attenuation by the 4 cm B₄C liner.** Tier **L1\***; transferable credit **1.0**.
+> > "It turns out to be a very effective complement to the external neutron shield, further
+> > suppressing the event rates in the \ceCaWO4 detectors by a factor \sim 5."
+> > — §5.2.1, evidence block §B.4
+>
+> Not an anti-coincidence veto. But its value is quoted for a nearly-4π liner in the direct
+> vicinity of a centimetre-scale payload, so it is **payload-geometry-coupled** and does not
+> freely transfer. See `GPD/analysis/VETO-TAXONOMY.md` §5 for why it is L1\* and not clean L1.
+>
+> **[F5-b] — the COV ANTI-COINCIDENCE neutron rejection.** Tier **L2**; transferable credit **1.0**.
+> > "While the impact of the MV is marginal, the COV brings a sizable additional reduction of the
+> > neutron-induced backgrounds of a factor 5."
+> > — §5.2.1, evidence block §B.5
+>
+> This is the genuine L2 statement, and the one this file's Pitfall 3 is about.
+>
+> **[F5-c] — a Geant4 MODELLING CONSERVATISM. NOT A REJECTION FACTOR.** No credit; nothing to
+> transfer.
+> > "For the case of atmospheric neutrons, a crude but conservative approximation scaled down all
+> > deposited energies in the COV and the MV volumes by a factor 5 and 2 respectively, to take
+> > into account their quenching to neutron-induced nuclear recoils [70, 71, 72]."
+> > — §5.2.1, evidence block §B.3
+>
+> This is a downscaling applied to **simulated deposited energies inside the COV and MV volumes**.
+> It **reduces** the credited veto response in their Monte Carlo. It is not a background-rejection
+> factor in any sense.
+>
+> **The concrete failure mode, observed in this project.** During the Phase-8 research pass an LLM
+> summarizer asked for "factor 5" in §5.2.1 returned **[F5-c]**, the modelling conservatism. Had
+> that been carried forward, a Monte Carlo caveat would have been silently converted into a
+> claimed veto factor. **The bare number must never be quoted without its sentence.**
+
+---
 
 **Table 5 (their units: milli-counts per day, mcpd), as extracted:**
 
@@ -204,13 +253,19 @@ NUCLEUS *shield*. They are properties of the shield **plus** a cm-scale cryogeni
 cryogenic outer veto (COV) of six 2.5 cm HPGe crystals, an inner veto (IV) TES-instrumented holder,
 and a 4 cm B₄C liner — all dimensioned for a **~1 cm** object. Specific non-transferable pieces:
 
-1. **COV factor-5 neutron rejection is anti-coincidence.** It works because a neutron that scatters
+1. **COV factor-5 neutron rejection is anti-coincidence** — this is **[F5-b]**, §5.2.1, *not* the
+   passive B₄C attenuation **[F5-a]** and *not* the Geant4 modelling conservatism **[F5-c]**; see the
+   Phase-8 correction above. It works because a neutron that scatters
    in a gram-scale target then reaches the surrounding HPGe and deposits ≥ **1 keV_ee** there.
    Its efficiency depends on (i) the veto's solid-angle coverage of the target and (ii) the veto
    threshold — NUCLEUS states raising 1 → 10 keV_ee costs **~20 %** of the neutron rejection, and
-   that O(10 keV_ee) is what was actually demonstrated in commissioning. A 4″×4″ wafer has ~11×
-   the footprint of the 3×3 array (≈103 cm² vs ≈9 cm² [COMPUTED]) and cannot be surrounded at the
-   same solid angle by the same COV. **Adopting "factor 5" is asserting a veto we have not designed.**
+   that O(10 keV_ee) is what was actually demonstrated in commissioning. A 4″×4″ wafer has a
+   **103.23 cm²** face against a **published 2.25 cm²** 3×3 crystal footprint — a ratio of
+   **45.9× on the crystal basis**, or **11.5× on the holder basis** if the ~9 cm² project
+   holder-scale estimate is used instead (see **Phase-8 correction 2** below; the ratio must never
+   be quoted without its basis) — and cannot be surrounded at the same solid angle by the same COV.
+   **Adopting "factor 5" [F5-b] is asserting a veto we have not designed.**
+
 2. **The multiplicity / "single cryogenic detector hit" cut vanishes entirely.** NUCLEUS notes this
    cut is "very marginal" *for them* precisely because their gram-scale detectors are small compared
    to the keV–MeV neutron mean free path. Our wafer is a **single monolithic detector**: there is no
@@ -229,21 +284,44 @@ and a 4 cm B₄C liner — all dimensioned for a **~1 cm** object. Specific non-
 own conclusions say the rejection "was found to significantly depend on the COV energy threshold" —
 i.e. even NUCLEUS treats these as configuration-dependent, not environmental.
 
+> ### ⚠ PHASE-8 CORRECTION 2 — the array footprint. "~9 cm²" is NOT a NUCLEUS number.
+>
+> **Issued:** Phase 8 (P-VETO), Plan 08-04, **2026-07-22**.
+> **Source:** `GPD/phases/08-veto-envelope-geometry-gate-p-veto/08-01-SOURCE-EVIDENCE.md`
+> §C.2/§C.3 (mass closures) and §C.6 (wafer closure).
+>
+> **What was wrong here:** this file carried a **~9 cm²** array footprint marked `[COMPUTED]` and
+> propagated an **~11×** wafer/array area ratio from it, with no basis label. The ROADMAP repeats
+> the ~9 cm² without even the `[COMPUTED]` marker.
+>
+> - **Published (crystal basis): 2.25 cm².** The NUCLEUS target array is a 3×3 array of (5 mm)³
+>   crystals, so 9 × (0.5 cm)² = **2.25 cm²**. Confirmed **two independent ways** by mass closure
+>   in Plan 08-01: from the published 6.8 g CaWO₄ array total the per-crystal edge closes at
+>   **4.996 mm** (−0.09%), and from the published 4.5 g Al₂O₃ array total at **5.008 mm** (+0.17%),
+>   both against the directly published (5 mm)³ cube.
+> - **~9 cm² is a PROJECT holder-scale estimate**, assuming a ~3 cm holder envelope. **It is not a
+>   NUCLEUS number and must not be attributed to NUCLEUS.**
+> - **Any area ratio must carry a basis label.** Wafer face 103.2256 cm² gives **≈45.9× (crystal
+>   basis)** or **≈11.5× (holder basis)** — a factor-four spread that must not be reported as a
+>   single number.
+
 **How to avoid:**
 - Split the adoption into two **separately citable** layers and never conflate them:
   **(L1) environmental**, which does transfer — the VNS ambient fields *outside* the setup: 2.92
   m w.e. overburden, Table 4 fluxes (muon 1.90e-2, neutron 1.34e-2 surface-normalized, γ 5.03 at
   VNS), radon, primordial activities; and the *passive* attenuation of the external shield (5 cm
   plastic MV, 5 cm Pb, 20 cm 5 %-borated HDPE), which is a bulk-material property.
-  **(L2) payload-coupled**, which does **not** transfer — COV factor 5, IV, multiplicity cut, and
-  the 4 cm B₄C liner's solid angle.
+  **(L2) payload-coupled**, which does **not** transfer — COV factor 5 **[F5-b]**, IV, multiplicity
+  cut; and the 4 cm B₄C liner **[F5-a]**, which Phase 8 classifies as its own tier **L1\*** (passive
+  but payload-geometry-coupled) rather than as L2. See `GPD/analysis/VETO-TAXONOMY.md`.
 - **Default to L2 = 1.0** (no rejection) and treat any credit as an explicit, argued, separately
   reported assumption with its own line in the systematic budget.
 - Report the S/B **twice**: with L2 = 1 (honest lower bound) and with an argued L2, and make the
   gap visible. If the headline needs L2, say so.
 
 **Warning signs:**
-- A "factor 5" or "> 99.8 %" appears in our code with no wafer geometry behind it.
+- A "factor 5" **[F5-a or F5-b]** or "> 99.8 %" appears in our code with no wafer geometry behind
+  it. (Enforced from Phase 8 onward by `tests/test_veto_credit.py`.)
 - The predicted background is insensitive to the wafer's size or to the veto threshold.
 - Our S/B improves when we change *nothing* about the wafer.
 
@@ -431,10 +509,48 @@ of the residual background, the S/B-vs-COV-threshold band, the moderated neutron
 4. **Reading a curve that is plotted after cuts you did not notice.** NUCLEUS's Fig. 8 panels show
    *successive* shielding/veto stages on the same axes. Digitizing the wrong trace silently imports
    an **L2** rejection (Pitfall 3). The unshielded trace is 10⁴–10⁵ and the final one ~10² — a
-   **10²–10³** error available from a single mis-click.
+   **10²–10³** error available from a single mis-click. **See Phase-8 correction 3 below: the
+   Fig. 8 caption itself tells you which panel is which, and Phase 9 must read it before
+   digitizing anything.**
 5. **Figure-vs-prose disagreement.** The user's recorded NUCLEUS-2019 case (prose ~3e12 vs figure
    ~1.8–2.1e12, a factor 1.6 that overshoots their own figure by ~50 % when folded)
    [USER-ASSERTED] and the Pitfall-2 CaWO₄ discrepancy [VERIFIED] are the same failure.
+
+> ### ⚠ PHASE-8 CORRECTION 3 (CROSS-PHASE HANDOFF TO **P-ENV** / Phase 9) — Fig. 8 carries a passive-only family AND an all-vetoes trace on the same axes.
+>
+> **Issued:** Phase 8 (P-VETO), Plan 08-04, **2026-07-22**.
+> **Source:** the Fig. 8 caption of arXiv:2509.03559v1, quoted verbatim below from the frozen
+> `data/external/nucleus/2509.03559v1.txt`. Newly quoted by Plan 08-04 (it is not in the Plan
+> 08-01 evidence block); its `grep` command is recorded in `GPD/analysis/VETO-TAXONOMY.md` §7 as
+> `Q-fig8` and was re-run in that pass.
+>
+> **Caption evidence — the panels are labelled, so trace selection is a decision, not a guess:**
+>
+> > "The left panels show the impact of sequentially adding passive shielding layers. The right
+> > panels show how using the different veto detectors complements the passive shields. The
+> > “all vetoes” selection criteria apply all possible anti-coincidence criteria for the rejection
+> > of background events."
+>
+> The same caption states the top panels are the atmospheric-neutron component and the bottom
+> panels the atmospheric-muon component, and that each histogram is the rate of events with
+> deposited energy between 0 and 1 keV **in the CaWO₄ array of target detectors**.
+>
+> **Instruction for Phase 9 (P-ENV, CALC-11/CALC-12).** If Phase 9 wants a **fluence** — an
+> incident field to fold through the wafer's own response — it must digitize a trace from the
+> **left (passive-only) family**. Reading a post-veto curve as pre-veto would import an **L2**
+> credit through the digitization: the same forbidden proxy `fp-veto-credit-transfer` arriving by
+> a different route, and one that no code review of the veto module would catch because no veto
+> factor would ever appear in the code. Record the **panel and trace label** on the digitized CSV's
+> provenance header, as this file's Pitfall 6 already requires, and state explicitly which cut
+> stage the trace corresponds to.
+>
+> **Consequence if a post-veto trace is used anyway:** the inverted object is not φ_post but a
+> **veto-survival-weighted** φ_post, and it transfers only under the condition that the wafer has
+> the same veto acceptance — which Phase 8 has determined it does not (every L1\* and L2 credit is
+> 1.0; `GPD/analysis/VETO-TAXONOMY.md`). ROADMAP Phase 9 Success Criterion 3 already requires this
+> pre-vs-post determination to be made and recorded; this correction supplies the caption evidence
+> that makes it decidable.
+
 
 **How to avoid:**
 - **Every digitized curve gets a closure test against a number printed in text or table.**
@@ -570,7 +686,7 @@ flux/uncertainty transcription owned by **P-ENV**.
 | Shortcut | Immediate Benefit | Long-term Cost | When Acceptable |
 | --- | --- | --- | --- |
 | Adopt "~250 d⁻¹kg⁻¹keV⁻¹" wholesale as our background | One number, done | Bakes in a CaWO₄ target, a 6.8 g mass, a COV, an IV, and a multiplicity cut we do not have (Pitfalls 1, 3, 4) | Never as a result; acceptable only as an order-of-magnitude sanity band |
-| Inherit the COV factor-5 neutron rejection | Preserves a good-looking S/B | Asserts a veto we have not designed for an 11×-larger payload | Never without a wafer-specific veto geometry; if used, report L2-off in parallel |
+| Inherit the COV factor-5 **[F5-b]** neutron rejection | Preserves a good-looking S/B | Asserts a veto we have not designed for a payload **45.9× larger in face area on the crystal basis** (11.5× on the holder basis — see Phase-8 correction 2) | Never without a wafer-specific veto geometry; if used, report L2-off in parallel |
 | Scale the neutron background by A or by σ alone | One-line target transfer | Ignores the `1/T_max` compression that pulls the opposite way; wrong by ~60 % on a *ratio* (Pitfall 4) | Never; the calibrated CaWO₄/Al₂O₃ two-band test is cheap |
 | Use fast-region σ_el for the sub-keV neutron fold | Smooth, fast | Misses the 669 b @ 102.6 eV ⁷³Ge resonance that feeds recoils up to 5.5 eV | Never below ~10 keV neutron energy |
 | Free-gas 293.6 K ACE below 1 eV | Data already frozen | Not a crystal: no Bragg cutoff (~1.9 meV), no bound-atom S(α,β), spurious 1/v rise to 20.6 b | Never for a sub-eV claim; acceptable above ~10 eV neutron energy |
@@ -633,7 +749,7 @@ flux/uncertainty transcription owned by **P-ENV**.
 
 - [ ] **Adopted background level:** often missing the mass/RoI provenance — verify the converted CaWO₄ total is **235 ± 25** d⁻¹kg⁻¹keV⁻¹ against the abstract's ~250, and that the Al₂O₃ CEνNS row closes at 20.7 vs prose "about 20".
 - [ ] **CEνNS anchor:** often taken from the extracted Table 5 — verify against the **rendered** table with duty-cycle labels; the 1.27 discrepancy must be closed, not averaged over.
-- [ ] **Veto credit:** often inherited implicitly — verify the code contains no factor 5, no > 99.8 %, and no multiplicity cut that is not derived from the wafer's own geometry.
+- [ ] **Veto credit:** often inherited implicitly — verify the code contains no factor 5 (**[F5-a]** or **[F5-b]**; **[F5-c]** is not a rejection factor and must never be used as one), no > 99.8 %, and no multiplicity cut that is not derived from the wafer's own geometry. Machine-checked by `tests/test_veto_credit.py` from Phase 8 onward.
 - [ ] **Neutron target scaling:** often A-scaled — verify the model reproduces **1.81** (10–100 eV) and **1.20** (0.1–1 keV) for CaWO₄/Al₂O₃ from one normalization.
 - [ ] **Neutron channel list:** often elastic-only — verify inelastic (⁷⁴Ge 596 keV, ⁷²Ge 834 keV), (n,γ) capture recoils on ⁷³Ge, and the B₄C 478 keV line are each present or explicitly bounded.
 - [ ] **Sub-eV cross sections:** often silently free-gas — verify the provenance chain names an `S(α,β)` evaluation for Ge, or records that none exists.
@@ -663,7 +779,7 @@ flux/uncertainty transcription owned by **P-ENV**.
 | --- | --- | --- |
 | 1. mcpd → dru conversion (9× / 11 % / 1.5×) | **P-ENV** | Converted CaWO₄ total = 235 vs abstract ~250; Al₂O₃ CEνNS = 20.7 vs prose "about 20" |
 | 2. CaWO₄ CEνNS 1.27 discrepancy / duty cycle | **P-ENV** (blocking) | Rendered Table 5 read; every CEνNS entry duty-cycle-labelled; exactly one duty-cycle application in the call graph |
-| 3. Payload-coupled veto credit (COV/IV/multiplicity) | **P-VETO** | No factor 5, > 99.8 %, or multiplicity cut without wafer geometry; L2-off baseline exists and is reported |
+| 3. Payload-coupled veto credit (COV/IV/multiplicity) | **P-VETO** | No factor 5 (**[F5-a]**/**[F5-b]**), > 99.8 %, or multiplicity cut without wafer geometry; L2-off baseline exists and is reported |
 | 4. Neutron NR target scaling + missing channels | **P-TGT** | CaWO₄/Al₂O₃ = 1.81 and 1.20 reproduced from one normalization; capture, inelastic, 478 keV present or bounded |
 | 5. Sub-eV extension (impulse approx., free-gas data, table floors) | **P-SUBEV** | Plateau test passes; all interpolators raise at their floors; validity floor computed and shaded per channel |
 | 6. Digitized-figure inputs | **P-ENV** | Every curve has panel/trace/cut/axis provenance and a passing closure test |
@@ -673,7 +789,7 @@ flux/uncertainty transcription owned by **P-ENV**.
 ## Sources
 
 **Primary (read directly this run, verbatim numbers):**
-- NUCLEUS Collaboration, *Particle background characterization and prediction for the NUCLEUS reactor CEνNS experiment*, **Eur. Phys. J. C** (2026), DOI **10.1140/epjc/s10052-025-15168-9**, **arXiv:2509.03559** — 2.1×10¹² cm⁻²s⁻¹, 2.92 m w.e., Tables 3/4/5, MV+COV > 99.8 %, COV factor 5 at 1 keV_ee, ~250 d⁻¹kg⁻¹keV⁻¹, S/B [0.9–1.5], unmeasured VNS neutron flux, Geant4 sub-keV caveat, LEE exclusion.
+- NUCLEUS Collaboration, *Particle background characterization and prediction for the NUCLEUS reactor CEνNS experiment*, **Eur. Phys. J. C** (2026), DOI **10.1140/epjc/s10052-025-15168-9**, **arXiv:2509.03559** — 2.1×10¹² cm⁻²s⁻¹, 2.92 m w.e., Tables 3/4/5, MV+COV > 99.8 % of the muon-**induced** backgrounds, COV factor 5 **[F5-b]** at 1 keV_ee, ~250 d⁻¹kg⁻¹keV⁻¹, S/B [0.9–1.5], unmeasured VNS neutron flux, Geant4 sub-keV caveat, LEE exclusion.
 - NUCLEUS Collaboration, *Exploring CEνNS with NUCLEUS at the Chooz Nuclear Power Plant*, **EPJ C 79, 1018 (2019)**, arXiv:**1905.10258** — two 4.25 GW_th cores; NUCLEUS-10g = 3×3 CaWO₄ + 3×3 Al₂O₃. *(Abstract only retrieved this run; the prose-vs-figure flux discrepancy noted in the milestone brief is **[USER-ASSERTED, not independently verified here]**.)*
 - NUCLEUS Collaboration, *Characterization of the Low Energy Excess using a NUCLEUS Al₂O₃ detector*, arXiv:**2603.07687** — LEE defined as Rate([100,300] eV) − Rate([1,3] keV); power law `k = 0.59 ± 0.06`; slower cooldown → up to 10× lower initial rate; commissioning [100,300] eV rate at the 10⁶ d⁻¹kg⁻¹keV⁻¹ scale.
 
