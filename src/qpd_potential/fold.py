@@ -1318,3 +1318,270 @@ def run_neutron_fold_extended(
         "leakage": leak,
         "counts_budget": budget,
     }
+
+
+# =========================================================================== #
+# Phase-15 plan 15-03: an ELECTRON-RECOIL extended fold path.                   #
+#                                                                             #
+# Appended, not inserted, for the same reason plan 13-03 appended: ``fold.py``  #
+# line numbers are keyed by the Phase-10 interpolator inventory and shifting     #
+# them is itself a defect.                                                     #
+#                                                                             #
+# WHY A CHANNEL-SPECIFIC PATH.  ``run_fold`` asserts the channel E_dep centres   #
+# match the loaded matrix to 1e-6 relative and the muon/Compton tables were      #
+# 584-bin, so it RAISES on them, exactly as it did for Phases 12 and 13.         #
+#                                                                             #
+# THE ONE STRUCTURAL DIFFERENCE FROM run_neutron_fold_extended.  These channels  #
+# are ALREADY on the deposit axis.  There is no recoil-to-deposit rebin, so the  #
+# recoil-table floor-coverage assertion is replaced by a DIRECT GRID-IDENTITY    #
+# assertion of the input's 744 bin centres against the matrix's own              #
+# ``E_dep_centers_eV``.                                                        #
+# =========================================================================== #
+
+EM_EXT_CSV = {
+    "muon": os.path.join(EXT_ARTIFACT_DIR, "muon_dRdEdep_ext.csv"),
+    "compton": os.path.join(EXT_ARTIFACT_DIR, "compton_dRdEdep_ext.csv"),
+}
+
+EM_EXT_RECON_FILE = {
+    "Ta->Al": "em_dRdErec_ext_TaAl.csv",
+    "Al->Hf": "em_dRdErec_ext_AlHf.csv",
+}
+
+#: Closed vocabulary for what a caller may do about non-finite deposit bins.
+#: There is no "fill with zero" member and there never will be: R is dense, so a
+#: zero-fill would convert an absence of measurement into a measured absence
+#: spread across every reconstructed bin (``fp-nan-to-num``).
+NO_SUPPORT_POLICIES = (
+    "raise",                      # the default; a non-finite input is an error
+    "exclude_and_record",         # drop the bin from the fold, record which and how many
+)
+
+
+class NonFiniteDepositError(ValueError):
+    """Raised when a deposit vector carries non-finite bins and no policy was given.
+
+    ``R`` is DENSE.  A single NaN deposit bin propagates to every reconstructed
+    bin with a non-zero column entry, and the result renders as plausible-looking
+    gaps rather than as an error.  There is no regime in which carrying a NaN
+    through ``R @ N_dep`` is safe, so the fold refuses unless the caller states a
+    policy and accepts having it written into the output header.
+    """
+
+
+def read_em_deposit_table(path: str) -> dict:
+    """Read a Plan 15-02 extended-axis deposit table, labels included.
+
+    Only the LEADING numeric tokens of each row are parsed, because the Phase-13
+    pattern places the adequacy flag and the accuracy label last precisely so that
+    a consumer cannot read a rate out of the file without meeting them.
+    """
+    rows, labels = [], []
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            if line.startswith("#") or line.startswith("E_dep_keV"):
+                continue
+            vals, rest = [], []
+            for tok in line.strip().split(","):
+                try:
+                    vals.append(float(tok))
+                except ValueError:
+                    rest.append(tok)
+            if len(vals) >= 2:
+                rows.append(vals[:5])
+                labels.append(rest)
+    arr = np.asarray(rows, dtype=float)
+    return {
+        "E_dep_keV": arr[:, 0],
+        "dRdEdep": arr[:, 1],
+        "mc_err": arr[:, 2],
+        "mc_entries": arr[:, 3].astype(np.int64),
+        "rel_mc_err": arr[:, 4],
+        "labels": labels,
+        "broadened_provenance": read_broadened_provenance(path),
+        "path": path,
+    }
+
+
+def run_em_fold_extended(
+    channel: str, design: str, *, path: Optional[str] = None,
+    broaden: bool = False, sharpness: Optional[float] = None,
+    p_trig_override: Optional[np.ndarray] = None,
+    no_support_policy: str = "raise",
+) -> dict:
+    """Fold ONE electron-recoil channel through the extended response matrices.
+
+    Modelled structurally on :func:`run_neutron_fold_extended` so the two extended
+    paths cannot drift apart silently.  Five guards, ALL of which RAISE -- none
+    warns, clamps, or falls back:
+
+    1. **744-column shape check.**  The v1.0 584-column matrix would truncate at
+       10.14 eV and silently discard the entire sub-eV region this milestone
+       exists to reach.
+    2. **Applicability guard.**  The Plan 15-01 verdict is read from
+       :mod:`em_recoil` AT FOLD TIME rather than hard-coded, so a later change to
+       the verdict cannot leave a stale branch here.  A broadening request that
+       contradicts it raises ``em_recoil.ElectronRecoilBroadeningError`` carrying
+       the verdict and its reason.
+    3. **Double-broadening guard.**  ``read_broadened_provenance`` +
+       ``DoubleBroadeningError``.  A table that declares NOTHING raises too:
+       undeclared is *unknown*, not unbroadened.
+    4. **Non-finite-input guard.**  ``NonFiniteDepositError`` unless the caller
+       passes an explicit ``no_support_policy``; the policy and the number of bins
+       it excluded are returned for the output header.  ``np.nan_to_num`` appears
+       nowhere in this path.
+    5. **Grid identity.**  The input's 744 centres must match the matrix's own
+       ``E_dep_centers_eV`` to 1e-6 relative.  This REPLACES the recoil-table
+       floor-coverage assertion of the neutron path, because these channels are
+       already on the deposit axis and there is no rebin step to cover.
+
+    Pipeline order (Phase-12 lock): any broadening on the native axis upstream of
+    the deposit rebin -- not applicable here, see guard 2 -- then
+    ``R(E_rec|E_dep)``, then the trigger curve as an analysis efficiency on the
+    DEPOSIT axis, MULTIPLYING eps rather than replacing it.  The rate is NEVER
+    multiplied by ``exp(-2W)``.
+    """
+    from . import em_recoil as _er, trigger as _trigger
+
+    if channel not in _er.ELECTRON_RECOIL_CHANNELS:
+        raise KeyError(f"{channel!r} is not an electron-recoil channel; expected "
+                       f"one of {_er.ELECTRON_RECOIL_CHANNELS}")
+    if no_support_policy not in NO_SUPPORT_POLICIES:
+        raise ValueError(f"no_support_policy {no_support_policy!r} outside "
+                         f"{NO_SUPPORT_POLICIES}")
+    path = EM_EXT_CSV[channel] if path is None else path
+
+    # --- GUARD 2: the Plan 15-01 applicability verdict, read at fold time ----- #
+    verdict = _er.assert_nuclear_kernel_use(channel, broaden)
+
+    src = read_em_deposit_table(path)
+
+    # --- GUARD 3: double broadening; undeclared is UNKNOWN, not unbroadened --- #
+    if broaden and src["broadened_provenance"] is not False:
+        raise DoubleBroadeningError(
+            f"{os.path.basename(path)} declares {BROADENED_PROVENANCE_KEY} = "
+            f"{src['broadened_provenance']!r} and broaden=True was requested. "
+            "Applying a kernel to an already-broadened (or unlabelled) table "
+            "would widen every sub-eV feature and change the leakage budget while "
+            "looking entirely normal (fp-double-broaden).")
+
+    d = load_design_extended(design)
+    R = d["R_non_paralyzable"]
+    E_dep_edges = d["E_dep_edges_eV"]
+    E_dep_centers = d["E_dep_centers_eV"]
+    E_rec_edges = d["E_rec_edges_eV"]
+    E_rec_centers = d["E_rec_centers_eV"]
+    dE_rec_keV = np.diff(E_rec_edges) / 1.0e3
+
+    # --- GUARD 1: 744 columns ------------------------------------------------ #
+    if R.shape[1] != E_dep_centers.size or E_dep_centers.size != 744:
+        raise ValueError(
+            f"{design}: expected the 744-column EXTENDED response matrix, got "
+            f"{R.shape}. The v1.0 584-column matrix would truncate at 10.14 eV "
+            "and silently discard the entire sub-eV region this milestone exists "
+            "to reach.")
+    # R's columns sum to 1, so the conservation residual is a real check on the
+    # fold rather than a measurement of the matrix.  Asserted BEFORE folding.
+    colsum = R.sum(axis=0)
+    if not np.allclose(colsum, 1.0, atol=1e-9):
+        raise ValueError(
+            f"{design}: response-matrix columns do not sum to 1 "
+            f"(min {colsum.min()!r}, max {colsum.max()!r}); the counts-conservation "
+            "residual would then be measuring the matrix, not the fold.")
+
+    # --- GUARD 5: grid identity (replaces the neutron floor-coverage check) --- #
+    dep_eV = src["E_dep_keV"] * 1.0e3
+    if dep_eV.size != E_dep_centers.size:
+        raise ValueError(
+            f"{os.path.basename(path)} has {dep_eV.size} bins but the extended "
+            f"matrix has {E_dep_centers.size}. These channels are ALREADY on the "
+            "deposit axis; there is no rebin step that could reconcile them.")
+    rel = np.abs(dep_eV - E_dep_centers) / E_dep_centers
+    if rel.max() > 1.0e-6:
+        raise ValueError(
+            f"{os.path.basename(path)} deposit centres differ from the matrix's "
+            f"own E_dep_centers_eV by up to {rel.max():.3e} relative. These "
+            "channels are already on the deposit axis, so a mismatch is a "
+            "re-grid error, not something a rebin should paper over.")
+
+    # --- GUARD 4: non-finite input ------------------------------------------- #
+    dRdEdep = np.asarray(src["dRdEdep"], float)
+    bad = ~np.isfinite(dRdEdep)
+    n_bad = int(bad.sum())
+    if n_bad and no_support_policy == "raise":
+        idx = np.flatnonzero(bad)
+        raise NonFiniteDepositError(
+            f"{os.path.basename(path)} carries {n_bad} non-finite deposit bins "
+            f"(first at index {int(idx[0])}, centre {dep_eV[idx[0]]:.6g} eV). R is "
+            "DENSE: one NaN propagates to every reconstructed bin with a non-zero "
+            "column entry and renders as plausible-looking gaps. Pass an explicit "
+            f"no_support_policy from {NO_SUPPORT_POLICIES} and accept having it "
+            "written into the output header. np.nan_to_num is forbidden here: it "
+            "would convert an absence of measurement into a measured absence, "
+            "undoing exactly what Plan 15-02 wrote NaN to prevent.")
+    excluded = np.flatnonzero(bad)
+    N_dep = dep_counts_from_dRdEdep(np.where(bad, 0.0, dRdEdep), E_dep_edges)
+
+    # --- the trigger, on the DEPOSIT axis (CONVENTIONS Section I) ------------- #
+    if p_trig_override is None:
+        P = np.asarray(_trigger.P_trig(E_dep_centers, sharpness=sharpness), float)
+    else:
+        P = np.asarray(p_trig_override, float)
+        if P.shape != E_dep_centers.shape:
+            raise ValueError("p_trig_override must live on the deposit centres")
+
+    # --- fold ---------------------------------------------------------------- #
+    N_rec = fold_counts(N_dep, R)
+    N_rec_trig = fold_counts(N_dep * P, R)
+    dRdErec = N_rec / dE_rec_keV
+    dRdErec_trig = N_rec_trig / dE_rec_keV
+
+    deposit_counts = float(N_dep.sum())
+    rec_counts = float(N_rec.sum())
+    budget = {
+        "input_counts": deposit_counts,
+        "excluded_no_support_bins": n_bad,
+        "no_support_policy": no_support_policy,
+        "leaked_below_floor": 0.0,
+        "leaked_below_zero": 0.0,
+        "leaked_above_top": 0.0,
+        "deposit_counts": deposit_counts,
+        "reconstructed_counts": rec_counts,
+        # NO BROADENING IS APPLIED to an electron-recoil channel (Plan 15-01
+        # verdict does_not_apply), so there is no kernel leakage and these two
+        # residuals COINCIDE BY CONSTRUCTION.  They are reported separately for
+        # structural parity with the neutron path, and the coincidence is stated
+        # rather than presented as two independent confirmations.
+        "residual_retained_plus_leaked": 0.0,
+        "residual_retained_only": 0.0,
+        "residuals_coincide_because_no_broadening": True,
+        # R's columns sum to 1, so this is exact up to floating point.
+        "residual_fold": abs(rec_counts - deposit_counts) / deposit_counts,
+    }
+
+    return {
+        "channel": channel,
+        "design": design,
+        "deposit_table": path,
+        "broadening_applied": bool(broaden),
+        "broadening_verdict": verdict.verdict,
+        "broadening_reason": verdict.reason,
+        "no_support_policy": no_support_policy,
+        "excluded_bins": excluded,
+        "n_excluded_bins": n_bad,
+        "E_dep_centers_eV": E_dep_centers,
+        "E_dep_edges_eV": E_dep_edges,
+        "E_rec_centers_eV": E_rec_centers,
+        "E_rec_edges_eV": E_rec_edges,
+        "E_rec_median_of_Edep_eV": d["E_rec_median_non_paralyzable_eV"],
+        "P_trig_on_Edep": P,
+        "sharpness": (None if sharpness is None else float(sharpness)),
+        "N_dep": N_dep,
+        "N_rec": N_rec,
+        "N_rec_trigger": N_rec_trig,
+        "dRdEdep": dRdEdep,
+        "dRdErec": dRdErec,
+        "dRdErec_trigger": dRdErec_trig,
+        "mc_entries": src["mc_entries"],
+        "counts_budget": budget,
+    }
