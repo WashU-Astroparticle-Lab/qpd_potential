@@ -41,6 +41,23 @@ ROI_LO, ROI_HI = 10.0e-3, 100.0e-3   # keV; the 10-100 eV reconstructed RoI
 # matrices as R_non_paralyzable (25 kHz non-paralyzable censoring, CONVENTIONS Sect. F).
 # These are the per-design onsets carried in the npz, drawn so the effect is visible.
 SAT_ONSET_EDEP_eV = {"TaAl": 52.90739510057845, "AlHf": 32.12999702464278}
+
+
+def sat_marks(design):
+    """Saturation onset and whole-array plateau, mapped deposit -> RECONSTRUCTED
+    through the response matrix's OWN measured median, not an assumed slope.
+
+    An earlier version of this figure multiplied the deposit-axis onset by a
+    hand-picked 0.5. That is the cross-axis error this project has hit twice
+    (Phase 13 caught itself; Phase 14 wrote a forbidden proxy for it). The
+    measured mapping gives 23.4 eV rec for Ta->Al, not the 26.5 the 0.5 slope
+    produced.
+    """
+    z = np.load(os.path.join(ART, f"response_matrix_{design}_ext.npz"), allow_pickle=True)
+    Ed, med = z["E_dep_centers_eV"], z["E_rec_median_non_paralyzable_eV"]
+    to_rec = lambda e: float(np.interp(e, Ed, med))
+    return (float(z["saturation_onset_Edep_eV"]), to_rec(float(z["saturation_onset_Edep_eV"])),
+            float(z["whole_array_plateau_Edep_eV"]), to_rec(float(z["whole_array_plateau_Edep_eV"])))
 FLOOR = 0.0999350e-3                 # Phase-10 grid floor, 99.935 meV
 SUBEV = 1.0e-3                       # below 1 eV, P_trig is the reported observable
 CAPTURE_BOUND = 4399.78              # counts/kg/day, Phase 14, in-RoI, rigorous
@@ -129,18 +146,24 @@ def panel(ax, design, title):
     ax.axvspan(ROI_LO * 1e3, ROI_HI * 1e3, color="0.85", alpha=0.4, zorder=0)
     ax.axvline(FLOOR * 1e3, color="0.35", ls=":", lw=1.1, zorder=1)
     ax.axvline(SUBEV * 1e3, color="0.55", ls="-.", lw=1.0, zorder=1)
-    # saturation onset, mapped deposit -> reconstructed with the measured ~0.5 slope
-    sat_rec = SAT_ONSET_EDEP_eV[design] * 0.5
-    ax.axvline(sat_rec, color="#e377c2", ls="--", lw=1.6, zorder=2)
-    ax.annotate(f"bandwidth saturation onset\n{SAT_ONSET_EDEP_eV[design]:.1f} eV dep "
-                f"($\\approx${sat_rec:.0f} eV rec)",
-                xy=(sat_rec, 4e5), fontsize=7.4, color="#e377c2",
+    on_dep, on_rec, pl_dep, pl_rec = sat_marks(design)
+    ax.axvline(on_rec, color="#e377c2", ls="--", lw=1.6, zorder=2)
+    ax.annotate(f"saturation onset  {on_dep:.0f} eV dep = {on_rec:.0f} eV rec",
+                xy=(on_rec, 2e6), fontsize=7.2, color="#e377c2",
                 ha="right", rotation=90, va="top")
+    # the saturated band: above the whole-array plateau the readout is bandwidth-limited
+    ax.axvspan(pl_rec, 1.2e5, color="#e377c2", alpha=0.13, zorder=0)
+    ax.annotate(f"bandwidth-saturated\n(plateau {pl_dep/1e3:.1f} keV dep = {pl_rec/1e3:.1f} keV rec)",
+                xy=(pl_rec * 1.35, 2e6), fontsize=7.2, color="#c2559b",
+                ha="left", rotation=90, va="top")
     ax.set_xlabel("Reconstructed energy  $E_{\\rm rec}$   [eV]")
     ax.set_title(title, fontsize=11.5)
     ax.grid(True, which="major", alpha=0.28)
     ax.grid(True, which="minor", alpha=0.09)
-    ax.set_xlim(0.09, 3.0e3)
+    # Full data range. The previous 3 keV limit cut off 100% of the muon channel's
+    # counts and hid its pile-up peak at ~18.8 keV -- which IS the saturation
+    # signature, i.e. the figure omitted exactly the effect it claimed to mark.
+    ax.set_xlim(0.09, 1.2e5)
     ax.set_ylim(1e-2, 3e6)
 
 
