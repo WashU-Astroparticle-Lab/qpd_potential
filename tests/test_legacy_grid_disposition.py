@@ -205,7 +205,14 @@ def test_frozen_headers_were_not_rewritten():
     provenance headers carry recorded git SHAs and are not edited by this plan."""
     out = subprocess.run(["git", "status", "--porcelain", "data/", "artifacts/stage1/"],
                          cwd=_ROOT, capture_output=True, text=True).stdout
-    changed = [ln for ln in out.splitlines() if not ln.startswith("??")]
+    # Untracked ('??') and NEWLY ADDED ('A ') paths are not rewrites: a file that
+    # did not exist before cannot have had its frozen provenance header edited.
+    # The guard is about MODIFICATION ('M'), DELETION ('D') and RENAME ('R') of an
+    # already-frozen artifact, and those remain caught. Narrowed in Plan 14-01,
+    # which froze data/egaf/*.ens and data/ge71_ec/*.csv as NEW acquisitions and
+    # tripped the over-broad predicate rather than the behaviour it guards.
+    changed = [ln for ln in out.splitlines()
+               if not ln.startswith("??") and not ln.startswith("A ")]
     unexpected = [ln for ln in changed
                   if not any(c in ln for c in _SUITE_CHURN)]
     assert unexpected == [], f"frozen artifacts modified: {unexpected}"

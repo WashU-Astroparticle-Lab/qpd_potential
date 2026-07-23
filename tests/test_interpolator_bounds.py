@@ -367,10 +367,14 @@ def test_inventory_closure_grep_hits_equal_inventory_rows():
     # analytic one-phonon add-back in impulse_limit.structure_factor; 41 after plan
     # 13-01 registered the six sites in neutron_recoil.py (the frozen ENDF sigma_el
     # evaluation, the two ln-E maps of the smoothed-sigma control, the control's own
-    # node evaluation, the per-isotope cross-check fold and the a1 diagnostic).
+    # node evaluation, the per-isotope cross-check fold and the a1 diagnostic); 44
+    # after plan 14-01 registered the three sites in capture_channel.py (the ACE
+    # MT=102 capture evaluation and the two thresholded MT=51..91 inelastic maps,
+    # both of which pass left=0.0 explicitly because an inelastic partial is exactly
+    # zero below its own level threshold).
     # Bumping this number is the ONLY sanctioned response to a new hit, and it must
     # come with an inventory row.
-    assert len(hits) == 41, f"grep hit count changed: {len(hits)}"
+    assert len(hits) == 44, f"grep hit count changed: {len(hits)}"
     rows = [ln for ln in text.splitlines()
             if ln.startswith("| `src/") and ln.count("|") >= 6]
     assert len(rows) == len(hits), (

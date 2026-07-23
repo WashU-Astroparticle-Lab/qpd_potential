@@ -313,8 +313,13 @@ def test_no_frozen_artifact_was_modified_by_this_plan():
     """git-level check: nothing under data/ or artifacts/ changed."""
     out = subprocess.run(["git", "status", "--porcelain", "data/", "artifacts/"],
                          cwd=_ROOT, capture_output=True, text=True).stdout
+    # Untracked ('??') and NEWLY ADDED ('A ') paths are not modifications of a
+    # frozen artifact: a file that did not exist before cannot have been modified.
+    # MODIFY / DELETE / RENAME of an existing artifact remains caught. Narrowed in
+    # Plan 14-01, which froze new acquisitions under data/ and new products under
+    # artifacts/v2.0/ and tripped the over-broad predicate rather than the behaviour.
     changed = [ln for ln in out.splitlines()
-               if not ln.startswith("??")]          # untracked = other phases
+               if not ln.startswith("??") and not ln.startswith("A ")]
     unexpected = [ln for ln in changed if not any(c in ln for c in _SUITE_CHURN)]
     assert unexpected == [], f"frozen artifacts modified: {unexpected}"
     for path in _SUITE_CHURN:
