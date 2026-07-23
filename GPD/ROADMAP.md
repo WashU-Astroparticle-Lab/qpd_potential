@@ -291,6 +291,24 @@ Plans:
 
 ### Phase 12: Reactor CEvNS down to 100 meV at the Paper's Surface Scenario (P-SIG)
 
+**Status:** COMPLETE 2026-07-22. **CALC-17 truncation bound: 0.8027%** at the grid floor (roadmap <=0.81%), 0.8020% at exactly 100 meV, exactly **0.0 above 0.3067 eV**. Flux table NOT extended (byte-identical to HEAD). **Peak dR/dE_rec:** Ta->Al ~4.4e3 counts/kg/day/keV at E_rec ~ 0.30 eV; Al->Hf ~4.7e3 at ~0.19 eV; integrated 118.730 counts/kg/day both designs.
+
+**SC2: SUPERSEDED BY MEASUREMENT** -- dR/dT falls monotonically by 44.30% from 100 meV to 10 eV. The window was NOT narrowed; the artifact spans the full interval and a test asserts both endpoints. What passes separately: approach to the independently computed plateau 2372.3683 within 0.93% at the floor, monotone, neither rising nor collapsing.
+
+**Flat-continuation upper-bound check PASSED** (the phase's primary non-identity disconfirming check): d log Phi / d log E = +0.0635 ... +0.0763 across the five lowest knots, so Phi falls toward the floor and the constant continuation over-estimates the missing flux; the E^2 continuation gives 0.5804%, strictly smaller.
+
+**VNS rescale:** BOTH factors carried -- **0.280158** from the NUCLEUS-stated 2.1e12 and **0.244174** from the project's own geometric reconstruction (1.830269e12) of NUCLEUS's own site numbers. The ~15% gap is not closed by the project's arithmetic. No bare 0.28 anywhere.
+
+> **Findings against expectation:**
+> (1) **VALD-10 regression is PARTIAL, not PASS.** Ta->Al 0.7648% passes; **Al->Hf 3.7246% FAILS the <1% target** in one bin -- the last populated one at the kinematic endpoint, 7.9e-7 counts/kg/day/keV. Tolerance NOT widened. Turning the IA kernel off gives 3.7234%, so the cause is **Phase 10's response-matrix regeneration** (independent MC samplings, elements differing by up to 3.16e-2), not anything Phase 12 added.
+> (2) The 0.29 eV truncation residual is carried by **four** isotopes (70,72,73,74-Ge), not 70-Ge alone; 70-Ge carries 70.8% and sets the threshold.
+> (3) **k does NOT dominate** the width budget (5.67%/5.82% vs 24.77%/23.68% in quadrature) -- the opposite of the plan's framing.
+> (4) "Upper" is the **WIDTH**, not the rate: the upper-width column sits BELOW the central curve in the bottom decade and the two cross.
+> (5) One acceptance-test leg was **vacuous as written** (eps-perturbation against a frozen R) and was reformulated and labelled rather than glossed.
+> (6) **407.7 dru still has no reproducible artifact** -- a word-bounded search returns GPD prose only. A naive substring search matches a dozen numeric CSVs and would have falsely closed the gap.
+>
+> **Leakage reported, never renormalized:** 48.980311% of the 100 meV bin's kernel below the floor plus 0.869608% at unphysical T<0; spectrum-wide 0.043328%/0.000567% of input counts.
+
 > **Amended 2026-07-22, then corrected the same day.** Retitled twice. *"at the VNS Normalization"* was misleading once the backgrounds became surface-level; *"at Two Declared Normalizations"* was itself built on the false premise that a frozen VNS flux table existed. **Corrected position: the primary normalization is the paper's own 3 GW_th / 25 m surface scenario**, ∫Φ = 7.5×10¹² ν̄/cm²/s, taken as-is from the frozen `reactor_flux_v1.0.csv` and matching `CONVENTIONS.md` §D unchanged. This makes the whole reported configuration **one coherent physical situation** — an unshielded surface wafer 25 m from a 3 GW_th core, signal and backgrounds in the same place — and it follows the user's *"just take the approximation as was done in the paper"* literally. **The VNS siting is demoted to an optional secondary line: a labelled scalar rescale, not a derivation.** The Phase-9 dependency is removed.
 
 **Goal:** The reactor-CEvNS signal spectrum in reconstructed energy exists from 100 meV upward at the paper's own surface normalization, with quantum broadening and the trigger curve applied, and its low-energy behaviour is *proven* correct — flat where it must be flat, unchanged where it was already validated, and bounded where the input table runs out.
@@ -319,9 +337,9 @@ Plans:
 **Plans:** 3 plans, 3 waves
 
 Plans:
-- [ ] 12-01-PLAN.md -- CALC-17 truncation bound with its flat-continuation conservatism proof, plus the VALD-10 plateau gate on the unbroadened dR/dT (SC2, SC4)
-- [ ] 12-02-PLAN.md -- CALC-25: dR/dE_rec both designs from 100 meV, broadening ON before the response chain, trigger composed on top of eps, k-sensitivity discharged in data (SC1)
-- [ ] 12-03-PLAN.md -- VALD-10 regression on preserved v1.0 edge indices, SC3 adjudication, benchmark documentation, labelled VNS scalar rescale (SC1, SC3, SC5)
+- [x] 12-01-PLAN.md -- CALC-17 truncation bound with its flat-continuation conservatism proof, plus the VALD-10 plateau gate on the unbroadened dR/dT (SC2, SC4)
+- [x] 12-02-PLAN.md -- CALC-25: dR/dE_rec both designs from 100 meV, broadening ON before the response chain, trigger composed on top of eps, k-sensitivity discharged in data (SC1)
+- [x] 12-03-PLAN.md -- VALD-10 regression on preserved v1.0 edge indices, SC3 adjudication, benchmark documentation, labelled VNS scalar rescale (SC1, SC3, SC5)
 
 > **Planning findings (2026-07-22), MEASURED by running the project's own code against the frozen tables.**
 > (a) **SC2's flatness clause is FALSE as literally written.** Against the analytic flat-box plateau 2372.368 counts/kg/day/keV (computed independently from the frozen intPhi = 7.4958e12), dR/dT sits 0.93% below it at 0.0999 eV but **44.30% below at 10 eV**, falling monotonically because E_min(T) rises as sqrt(T) and cuts low-energy flux out of the integral -- physically correct. The plateau is APPROACHED below ~0.15 eV, not held to 10 eV. The decisive content that DOES hold: approach to the independently computed plateau within ~1% at the axis floor, no rise toward low T (extrapolation artifact), no collapse to zero (table floor). Plans require SC2 be reported SUPERSEDED BY MEASUREMENT, with `fp-narrow-the-window` blocking the obvious escape of shrinking the interval until the claim is true.
