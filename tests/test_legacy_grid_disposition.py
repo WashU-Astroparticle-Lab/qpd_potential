@@ -30,7 +30,7 @@ SHARED_GRID_PRODUCTS = ("data/muon_dRdEdep.csv", "data/compton_dRdEdep.csv",
 
 
 def _enumerate():
-    return subprocess.run(["bash", "-lc", _ENUM_CMD], cwd=_ROOT,
+    return subprocess.run(["bash", "-c", _ENUM_CMD], cwd=_ROOT,
                           capture_output=True, text=True).stdout.strip().splitlines()
 
 

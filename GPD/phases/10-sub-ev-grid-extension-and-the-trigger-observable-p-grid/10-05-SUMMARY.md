@@ -2,14 +2,14 @@
 phase: 10-sub-ev-grid-extension-and-the-trigger-observable-p-grid
 plan: 05
 status: complete
-one_liner: "29 archived artifacts registered with dispositions and guarded floors; the three shared-grid spectra carry onto the extended axis bit-for-bit (max difference 0.0) while the archived response matrices deliberately do NOT; the counting floor re-derived from the pipeline agrees with the roadmap to <3% and the 100 eV saturation check comes out sub-linear (ratios 0.842/0.818) as it should; the display rule is retracted everywhere except paper/HANDOFF.md, which scope forbids editing."
+one_liner: "30 archived artifacts registered with dispositions and guarded floors; the three shared-grid spectra carry onto the extended axis bit-for-bit (max difference 0.0) while the archived response matrices deliberately do NOT; the counting floor re-derived from the pipeline agrees with the roadmap to <3% and the 100 eV saturation check comes out sub-linear (ratios 0.842/0.818) as it should; the display rule is retracted everywhere except paper/HANDOFF.md, which scope forbids editing."
 plan_contract_ref: GPD/phases/10-sub-ev-grid-extension-and-the-trigger-observable-p-grid/10-05-PLAN.md#/contract
 
 contract_results:
   claims:
     claim-disposition:
       status: passed
-      summary: "29 tracked .csv/.npz artifacts enumerated by a recorded command, 29 register rows, closed disposition vocabulary, every row with a non-empty written reason, every bounded row with a numeric validity floor RE-READ from the frozen file at test time. The guard raises LegacyArtifactError below a recorded floor, reporting the value, the floor, the native axis, the units and the disposition; arrays are rejected wholesale and non-finite input is out of domain. The three shared-grid deposit spectra carry onto the extended axis by INDEX with max difference exactly 0.0, and the test also verifies they genuinely sit on those bins so the carry check is not a tautology."
+      summary: "30 tracked .csv/.npz artifacts enumerated by a recorded command, 30 register rows (the register itself is listed as a self-referential row rather than special-cased in the guard), closed disposition vocabulary, every row with a non-empty written reason, every bounded row with a numeric validity floor RE-READ from the frozen file at test time. The guard raises LegacyArtifactError below a recorded floor, reporting the value, the floor, the native axis, the units and the disposition; arrays are rejected wholesale and non-finite input is out of domain. The three shared-grid deposit spectra carry onto the extended axis by INDEX with max difference exactly 0.0, and the test also verifies they genuinely sit on those bins so the carry check is not a tautology."
       linked_ids: [deliv-register, deliv-register-code, deliv-register-tests, deliv-disposition-note, test-register-closure, test-guard-raises, test-carry-without-reinterp]
       evidence:
         - verifier: gpd-executor
@@ -33,7 +33,7 @@ contract_results:
     deliv-register:
       status: passed
       path: artifacts/v2.0/legacy_grid_disposition.csv
-      summary: "29 rows: path, native_axis, axis_units, validity_floor, disposition, reason. Header records the enumeration command and the closed disposition vocabulary. 3 carried, 18 bounded_native_axis, 2 bounded_superseded, 2 native_to_extended_axis, 6 not_a_spectrum (counts sum to 31 because 2 v2.0 matrices are native_to_extended; the tally by row is 29)."
+      summary: "30 rows: path, native_axis, axis_units, validity_floor, disposition, reason. Header records the enumeration command and the closed disposition vocabulary. Tally by row: 16 bounded_native_axis, 7 not_a_spectrum, 3 carried_onto_extended_axis_without_reinterpolation, 2 bounded_superseded, 2 native_to_extended_axis."
       linked_ids: [claim-disposition]
     deliv-register-code:
       status: passed
@@ -48,7 +48,7 @@ contract_results:
     deliv-disposition-note:
       status: passed
       path: GPD/phases/10-sub-ev-grid-extension-and-the-trigger-observable-p-grid/10-05-ARTIFACT-DISPOSITION.md
-      summary: "The wide-versus-narrow reading of 'archived v1.x spectrum' with the choice justified; the sidecar principle; the enumeration command; the closed vocabulary; why the carry is not a tautology; the response-matrix finding; the guard's raise behaviour with a sample message; the full 29-row table; the unresolved paper/HANDOFF.md occurrence; the before/after retraction table; and four stated weakest points."
+      summary: "The wide-versus-narrow reading of 'archived v1.x spectrum' with the choice justified; the sidecar principle; the enumeration command; the closed vocabulary; why the carry is not a tautology; the response-matrix finding; the guard's raise behaviour with a sample message; the full 30-row table; the unresolved paper/HANDOFF.md occurrence; the before/after retraction table; and four stated weakest points."
       linked_ids: [claim-disposition, claim-labelling]
     deliv-floor-note:
       status: passed
@@ -63,7 +63,7 @@ contract_results:
   acceptance_tests:
     test-register-closure:
       status: passed
-      summary: "29 enumerated artifacts == 29 register rows, set equality both ways. No empty disposition, no reason shorter than 40 characters, every bounded row carrying a positive numeric floor. Floors independently re-read from the frozen files and compared to 1e-12 relative."
+      summary: "30 enumerated artifacts == 30 register rows, set equality both ways. No empty disposition, no reason shorter than 40 characters, every bounded row carrying a positive numeric floor. Floors independently re-read from the frozen files and compared to 1e-12 relative."
       linked_ids: [claim-disposition, deliv-register, deliv-disposition-note]
     test-guard-raises:
       status: passed
@@ -172,7 +172,7 @@ files_modified:
 
 ## The disposition register
 
-**29 tracked `.csv`/`.npz` artifacts enumerated, 29 register rows.** Closed vocabulary,
+**30 tracked `.csv`/`.npz` artifacts enumerated, 30 register rows.** Closed vocabulary,
 every row with a written reason, every bounded row with a numeric floor **re-read from
 the frozen file** at test time.
 

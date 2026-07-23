@@ -51,7 +51,7 @@ enforces this with `git status --porcelain data/ artifacts/stage1/`.
 git ls-files | grep -E '\.(csv|npz)$'
 ```
 
-**29 tracked artifacts, 29 register rows.** Re-run by
+**30 tracked artifacts, 30 register rows** (29 at first generation; the register itself became tracked the moment it was committed and is listed as a self-referential row rather than special-cased in the closure test -- a special case in the guard is exactly how a real artifact would later slip through). Re-run by
 `test_register_closure`, which fails if a newly added tracked `.csv`/`.npz` has no
 disposition row --- that is the closure guard working, not a spurious failure.
 
@@ -169,6 +169,7 @@ a value here would be whatever an interpolation invented ...
 | `data/radiopurity_budget_v1.1.csv` | named budget/scenario quantities (registry table) | mixed, per row | — | `not_a_spectrum` | A budget/scenario registry of named scalar quantities, not a binned spectrum on any energy axis. No re-gridding operation applies and no energy validity floor exists. |
 | `data/surface_environment_v2.0.csv` | named environment quantities (registry table) | mixed, per row | — | `not_a_spectrum` | PHASE 9 ARTIFACT, enumerated for closure. A registry of named scalar environment quantities, not a binned spectrum: it has no single energy axis and no re-gridding operation applies. |
 | `data/wafer_self_veto.csv` | named acceptance quantities (registry table) | mixed, per row | — | `not_a_spectrum` | A registry of named scalar quantities (acceptances, rates, catalogued verdict strings), not a binned spectrum. The muon deposit spectrum it derives from IS registered separately as data/muon_dRdEdep.csv. |
+| `artifacts/v2.0/legacy_grid_disposition.csv` | this register itself (one row per tracked .csv/.npz artifact) | n/a -- rows are artifact paths, not energies | — | `not_a_spectrum` | SELF-REFERENTIAL ROW. The register became a tracked artifact the moment it was committed, so the enumeration returns it. It is listed rather than special-cased in the closure test, because a special case in the guard is exactly how a real artifact would later slip through. It is a register, not a spectrum: it has no energy axis and no validity floor. |
 
 ---
 
