@@ -545,7 +545,22 @@ Plans:
 - ~~The **declared hybrid-idealization annotation** (former SC3): the reported configuration pairing a VNS reactor normalization with a sea-level unshielded background environment, the VNS's own 2.92 m.w.e. overburden deliberately not applied, with a per-channel bias direction argued (muon background over-estimated, S/B_particle understated on that axis).~~ **Removed by the same-day correction of 2026-07-22**, together with the criteria that required it. With the paper's 3 GW_th / 25 m surface scenario as primary, there is **no hybrid**: signal and backgrounds sit at the same place in one coherent physical situation, so there is no unrealizable site to annotate and no per-channel bias direction to argue. Criteria renumbered 4→3 and 5→4.
 - ~~The **four-state duty-cycle statement for the two-core site** (genuine both-off periods are rare, so ON/OFF is not clean).~~ **Removed** with the VNS demotion: the primary scenario is a single 3 GW_th core, so the two-core duty-cycle structure does not arise. *(It would return if the VNS were ever promoted back to primary; it is not needed for a labelled scalar rescale.)*
 
-**Plans:** TBD (run `gpd:plan-phase 16` to break down)
+**Plans:** 3 plans, waves 1 -> 2 -> 3
+
+Plans:
+- [ ] 16-01-PLAN.md -- VALD-12 signal-side CONUS+ check; window PRE-REGISTERED, ratio-vs-window sensitivity curve, restatement cost written on the deliverable
+- [ ] 16-02-PLAN.md -- channel inventory completeness/no-double-count audit + S/B_particle assembly; veto credit 1.0 by construction, two denominator layers, order_of_magnitude band
+- [ ] 16-03-PLAN.md -- LEE (A, alpha) overlay band, SC4-as-written adjudication, crossover amplitudes, terminal figure and closeout
+
+> **Two issues flagged during planning 2026-07-23, both resolved by ORCHESTRATOR DECISION rather than by the planner.**
+>
+> **(a) SC4's decisive number is ILL-POSED, twice over.** "The LEE amplitude at which S/B_particle = 1" cannot be solved: the `_particle` subscript *defines* the LEE out of that denominator (SC3), so the ratio does not depend on A at all; and separately, with the neutron channel alone at 5430.29 against a ~72.9 in-RoI signal, S/B_particle is already far below 1 before any LEE is added, so adding background only lowers it. The criterion was written when the milestone expected S/B ~ 0.65-1.2 at the *shielded* VNS, where "S/B = 1" and "the LEE erases the signal" nearly coincided; the re-scope withdrew that expectation but carried the wording forward. **DECISION:** evaluate the criterion AS LITERALLY WRITTEN first, adjudicate it in the Phase-12/13/14 vocabulary, and only then report two quantities under their OWN names -- `lee_equals_B_particle` and `lee_equals_S` (the latter is what PITFALLS.md Pitfall 7 actually specifies). `fp-sc4-silent-substitution` forbids shipping a replacement under the criterion's name.
+>
+> **(b) The CONUS+ analysis window is a LIVE INTERNAL DISCREPANCY and VALD-12 is window-dominated.** This section and REQUIREMENTS.md state **0.4-1 keV_ee**; `GPD/literature/SUMMARY.md` states the limiting case at **160 eV_ee**. Planning reconnaissance on `cevns_dRdT_ext.csv` (support 0.101-3165.6 eV_nr) with the geometric rescale 1.7503 against 347/327 = 1.0612 counts/kg/day found the ratio moves **more than three decades** between them: a lower edge near 0.9 keV_nr lands within a few percent of unity, while near 2.1 keV_nr -- where a Lindhard-type factor sends 0.4 keV_ee -- it lands ~3 decades low, because our spectrum is at its **kinematic endpoint** there (dR/dT = 4.7e-3 at 2.0 keV, exactly 0.0 by 3.166 keV). **DECISION: pre-register 0.4-1 keV_ee**, because ROADMAP.md and REQUIREMENTS.md are the project's authoritative scoping documents and the literature survey is not. Carry 160 eV_ee as the declared alternate, emit the **full ratio-versus-window sensitivity curve including failures**, and ship VALD-12's verdict explicitly window-conditional. `fp-window-tuned-to-pass` forbids selecting the window after seeing which one passes.
+>
+> **Three assembly traps found in the inputs, with guards written:** the capture band's **23.51% non-thermal** fraction (a thermal-only reading understates the channel by 1.31x); **118.73 is a TOTAL, not in-RoI**, and the in-RoI signal must be computed rather than substituted; and the inputs quote **different sub-eV bands** (Phase 13 `< 1 eV`, Phase 15 `< 10 eV`), so mixing them would integrate numerator and denominator over different regions -- every channel is re-integrated on one locally-defined band.
+>
+> **Summing upper bounds makes S/B_particle a LOWER bound** (2 of 7 channels are bounds). Two denominator layers, never collapsed.
 
 ## Phase Dependencies
 
@@ -622,7 +637,7 @@ Plans:
 | 13. Ge Neutron Fold from the Sea-Level Flux (P-TGT) | v2.0 (re-scoped) | 0/TBD | Not started | - |
 | 14. Ge-Only Capture Channels (P-GEONLY) | v2.0 (reduced) | 0/TBD | Not started | - |
 | 15. v1.0 Muon & Gamma on the Extended Grid (P-EM) | v2.0 (re-scoped) | 0/4 | Planned | - |
-| 16. S/B Assembly, LEE, Signal-Side CONUS+ Check (P-SB) | v2.0 (amended) | 0/TBD | Not started | - |
+| 16. S/B Assembly, LEE, Signal-Side CONUS+ Check (P-SB) | v2.0 (amended) | 0/3 | Planned | - |
 
 ## Notes
 
