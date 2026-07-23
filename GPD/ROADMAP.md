@@ -431,7 +431,23 @@ Plans:
 - ~~The B₄C ¹⁰B(n,α)⁷Li 478 keV γ line, and the forbidden proxy against inheriting NUCLEUS's "harmless" verdict on it.~~ **Removed:** there is no B₄C liner in an unshielded configuration, so the line has no source in this pipeline. *(The underlying lesson — that "harmless" was an L2 statement, harmless only because their COV vetoed it — is retained in the Phase-8 taxonomy and remains correct.)*
 - ~~SC4's framing of φ_th as an in-shield quantity NUCLEUS does not publish and the deposit-spectrum inversion cannot recover.~~ **Removed:** there is no shield and no inversion. Replaced by the sea-level thermal component above, with the never-zero rule intact.
 
-**Plans:** TBD (run `gpd:plan-phase 14` to break down)
+**Plans:** 2 plans, 2 waves
+
+Plans:
+- [ ] 14-01-PLAN.md -- Capture and discrete-inelastic cross sections frozen from the ALREADY-LOCAL ENDF/ACE with the MF=3-MT=102-is-zero trap recorded; capture rate folded and BAND-DECOMPOSED by incident energy; rigorous cascade-independent in-RoI bound; SC5 inelastic bound (SC1, SC2, SC5)
+- [ ] 14-02-PLAN.md -- 71Ge EC line inventory with the activation scenario explicit; M line folded through the extended response chain with NO IA broadening and its reconstructed placement MEASURED; phase closeout (SC3, SC4)
+
+> **Planning findings (2026-07-23), three MEASURED against committed data before planning proceeded.**
+> (a) **SC1's "new acquisition" is mostly already discharged** -- `data/endf/raw/n_*.dat` and `data/endf/ace/32*.{800,805}nc` are committed from Phase 7 and carry MT=102.
+> (b) **MEASURED TRAP, one line of code from the forbidden result: `MF=3 MT=102` in the raw files is identically 0.0** at 0.0253 eV, 1 eV, 100 eV and 1 keV. In the resolved-resonance region the capture cross section lives in **File 2**; MF=3 carries only the background. Reading it there would manufacture exactly the "capture channel is zero" outcome the roadmap forbids, **out of a file that does contain the physics**. The pre-reconstructed Lib80x ACE set is the operative source, as for elastic in Phase 7.
+> (c) **MEASURED, and the channel is NOT a rounding correction.** Natural sigma_th falls out of the frozen ACE set at **2.21 b** unfitted (73-Ge **14.7 b**, carrying ~half the natural thermal capture from **7.75%** of the atoms), reproducing the roadmap's independently stated ~2.2 b / ~15 b. Folded capture rate **~4.4e3 counts/kg/day** -- same order as Phase 13's elastic in-RoI 5430/5485 and **~37x** Phase 12's CEvNS total of 118.73.
+> (d) **The phase's own "thermal" framing is UNDER TEST.** Band decomposition gives roughly thermal 3.4e3 / epithermal 8.6e2 / 1 keV-1 MeV 1.7e2 / 1-20 MeV 9 -- **~a quarter of the channel is not thermal.** Below 60% the report must state the framing is measurably too narrow.
+> (e) **The naive product is misleading in a way that would LOOK like corroboration.** Phi_th x sigma(0.0253 eV) ~ 4.4e3 appears to agree with the total, but it overstates the thermal BAND by ~30% while knowing nothing about the ~1e3 of epithermal and fast capture -- two errors nearly cancelling. `test-westcott-not-identity` makes **agreement the FAILURE condition**, and sqrt(pi)/2 = 0.8862 may not be substituted for the measured ratio.
+> (f) **The roadmap's "473 eV at 8 MeV" is an illustration, not the Ge answer.** Single-gamma ceilings from the ENDF QM field: 70-Ge 415.8, 72-Ge 338.3, **73-Ge 754.1**, 74-Ge 302.9, 76-Ge 257.1 eV -- and the isotope with the highest ceiling is the one dominating the capture rate.
+> (g) **SC3 is a CROSS-AXIS assertion and is testable.** 158.7 eV is a **deposit** energy; the RoI top is 100 eV **reconstructed**. Phase 13 measured the E_rec image of a 1 eV deposit at ~0.497 eV, so a comparable slope would put the M line near ~75 eV reconstructed -- inside the RoI, but for a reason the roadmap never derives. `fp-deposit-as-reconstructed` blocks deciding it from the deposit energy. Phase 13 caught itself making exactly this cross-axis error once.
+> (h) **SC5 inelastic expectation ~2.7e3 counts/kg/day**, but the accompanying nuclear recoils are tens to hundreds of keV -- far above the RoI -- so that rate bound is very loose. The part landing near the band is the gamma-emission recoil, E_gamma^2/(2Mc^2) ~ 2.6 eV for the 74-Ge 596 keV level.
+>
+> **SC4 discharges on branch (a):** Phi_th = 2.767075e-3 cm^-2 s^-1 was SOURCED by Phase 9, not gapped -- and it is **3.95x ABOVE** Biffl's stated Phi_th < 7e-4 n/cm^2/s requirement.
 
 ### Phase 15: v1.0 Muon and Gamma Channels on the Extended Grid (P-EM)
 
