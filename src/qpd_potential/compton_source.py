@@ -31,6 +31,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from . import wafer_geometry
+from . import interp_guard as ig
 
 # --------------------------------------------------------------------------- #
 # Data locations                                                              #
@@ -121,6 +122,39 @@ _XCOM_E, _XCOM_MOR = load_xcom()
 _LOG_E = np.log(_XCOM_E)
 _LOG_MOR = np.log(_XCOM_MOR)
 
+# Plan 10-01 declared evaluation domain, in keV (the units of mu_over_rho's OWN
+# abscissa; the frozen table's abscissa is MeV and is converted explicitly).
+#
+# THIS DOMAIN IS WIDER THAN THE TABLE ON BOTH SIDES, WITH TWO NAMED WITNESSES:
+#   below the 600 keV table floor : the Pb-214 241.997 keV line in
+#       data/gamma_lines.csv, the lowest-energy line the v1.0 Compton channel
+#       folds; the frozen mild slope extrapolation gives mu/rho = 0.11879 cm^2/g
+#       there, and tests/test_compton_source.py::
+#       test_xcom_extrapolation_monotone_and_reasonable already asserts ~0.107
+#       at 295 keV, i.e. an existing v1.0 anchor sits inside this extension.
+#   above the 2000 keV table ceiling : the Tl-208 2614.511 keV line, the highest
+#       line in the same table; mu/rho = 0.036065 cm^2/g there, and the same
+#       v1.0 test asserts 0.034 < mu/rho < 0.038 at 2614.5 keV.
+#
+# The declared bounds 200 / 3000 keV bracket those two witnesses with a small
+# margin and stop at 200 keV because BELOW ~200 keV photoabsorption in Ge
+# (Z = 32) turns up steeply and a log-log linear continuation of the
+# Compton-dominated 0.6-2.0 MeV interval would be badly wrong, not mildly so.
+# This is an EXTRAPOLATION made explicit -- the guard makes it visible, it does
+# not make it validated.
+XCOM_DOMAIN = ig.register_domain(ig.Domain(
+    quantity="Ge mu/rho (NIST XCOM)",
+    lo=200.0, hi=3000.0, units="keV",
+    table=GE_XCOM_CSV,
+    table_lo=float(_XCOM_E[0]) * 1.0e3, table_hi=float(_XCOM_E[-1]) * 1.0e3,
+    witness_lo="Pb-214 241.997 keV line (data/gamma_lines.csv); "
+               "tests/test_compton_source.py::test_xcom_extrapolation_monotone_and_reasonable "
+               "evaluates 295.0 keV",
+    witness_hi="Tl-208 2614.511 keV line (data/gamma_lines.csv); the same v1.0 test "
+               "asserts 0.034 < mu/rho(2614.5 keV) < 0.038",
+    note="Deliberate log-log slope extrapolation outside the four frozen NIST points.",
+))
+
 
 def mu_over_rho(e_kev):
     """NIST XCOM Ge mu/rho [cm^2/g] at photon energy e_kev [keV].
@@ -128,7 +162,13 @@ def mu_over_rho(e_kev):
     Log-log interpolation between the four frozen NIST points; log-log LINEAR
     extrapolation (mild) outside [0.6, 2.0] MeV using the nearest interval slope.
     Documented in data/ge_xcom_mu.csv -- not additional data.
+
+    Plan 10-01: raises ``InterpolationDomainError`` outside ``XCOM_DOMAIN``
+    (200-3000 keV). Previously the slope extrapolation ran to arbitrarily low
+    energy, so a call at, say, 10 keV would silently return a Compton-regime
+    mu/rho where Ge is in fact photoabsorption-dominated.
     """
+    ig.check_domain(e_kev, XCOM_DOMAIN)
     e_mev = np.atleast_1d(np.asarray(e_kev, dtype=float)) / 1.0e3
     lx = np.log(e_mev)
     # np.interp clamps at the ends; replace clamped regions with slope extrapolation.
@@ -173,6 +213,39 @@ _LOG_SF_S = np.log(_SF_S)
 # Low-x log-log slope (S ~ x^p, physically p ~ 2 -> S -> 0 as x -> 0).
 _SF_SLOPE_LO = (_LOG_SF_S[1] - _LOG_SF_S[0]) / (_LOG_SF_X[1] - _LOG_SF_X[0])
 
+# Plan 10-01 declared evaluation domain for S(x, Z=32), in the dimensionless
+# momentum-transfer variable x [Angstrom^-1].
+#
+# THIS DOMAIN IS UNBOUNDED ON BOTH SIDES, AND THAT IS AN HONEST OUTCOME RATHER
+# THAN A CONVENIENT ONE. Both extensions carry witnesses:
+#   below the 1.0e-3 table floor : EXACT FORWARD SCATTER gives x = 0 identically
+#       (momentum_transfer_x(E, cos=1) == 0; tests/test_compton_source.py::
+#       test_momentum_transfer_x asserts exactly that), and compton_deposit
+#       evaluates S at every angular grid point including the forward one. No
+#       positive floor could be declared without breaking the v1.0 Compton
+#       channel, so the declared floor is 0.
+#   above the 4.2646e4 table ceiling : tests/test_compton_source.py::
+#       test_incoherent_S_limits evaluates x = 1e6, and there S(x) = Z = 32
+#       EXACTLY by physics (electrons act free), so the "clamp" above the table
+#       is the exact asymptote, not a truncation artefact.
+#
+# CONSEQUENCE, STATED PLAINLY: the bounds guard on this site is VACUOUS for all
+# non-negative finite x. What it does catch is a NEGATIVE momentum transfer,
+# which the pre-guard code silently mapped to x = 1e-300 via np.maximum and
+# returned S = 0.0 for. That is the only silent failure this site actually had.
+SF_DOMAIN = ig.register_domain(ig.Domain(
+    quantity="Ge incoherent scattering function S(x, Z=32) (Hubbell 1975)",
+    lo=0.0, hi=float("inf"), units="dimensionless x [1/Angstrom]",
+    table=GE_SF_CSV,
+    table_lo=float(_SF_X[0]), table_hi=float(_SF_X[-1]),
+    witness_lo="exact forward scatter x = 0 (momentum_transfer_x(E, cos_theta=1)); "
+               "tests/test_compton_source.py::test_incoherent_S_limits evaluates 1e-5",
+    witness_hi="tests/test_compton_source.py::test_incoherent_S_limits evaluates x = 1e6, "
+               "where S = Z = 32 exactly (free-electron asymptote)",
+    note="Bounds guard is vacuous for all finite x >= 0 by construction; it catches "
+         "negative x, which was previously clamped to 1e-300 and returned S = 0.",
+))
+
 
 def incoherent_S(x_inv_ang):
     """Incoherent scattering function S(x, Z=32) at momentum transfer x [A^-1].
@@ -181,7 +254,12 @@ def incoherent_S(x_inv_ang):
     tabulated x_min, log-log LINEAR extrapolation with the first-interval slope
     (S ~ x^2 -> 0, forward/low-recoil binding suppression); above x_max, clamp to
     S = Z = 32 (large recoil -> electrons act free, edges/bulk unchanged).
+
+    Plan 10-01: raises ``InterpolationDomainError`` for negative or non-finite x
+    (see ``SF_DOMAIN``). A negative momentum transfer is unphysical and was
+    previously mapped silently to x = 1e-300, returning S = 0.0.
     """
+    ig.check_domain(x_inv_ang, SF_DOMAIN)
     x = np.atleast_1d(np.asarray(x_inv_ang, dtype=float))
     lx = np.log(np.maximum(x, 1e-300))
     ly = np.interp(lx, _LOG_SF_X, _LOG_SF_S)          # np.interp clamps at ends

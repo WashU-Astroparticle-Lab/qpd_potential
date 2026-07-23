@@ -86,6 +86,12 @@ HBARC2 = Param(
     "(hbar c)^2 unit conversion; CONVENTIONS Section A.2 (dropping this is the #1 CEvNS bug)",
     "HIGH",
 )
+MEV_TO_J = Param(
+    1.602176634e-13,
+    "J/MeV",
+    "CODATA 2018 elementary charge (exact); same value as flux.normalization.MEV_TO_J",
+    "HIGH",
+)
 # CEvNS closed-form prefactor is /(4*pi), NOT /(8*pi). The /8pi form is a
 # factor-of-2 error (CONVENTIONS Section C, forbidden proxy fp-prefactor).
 CEVNS_PREFACTOR_DENOM = Param(
@@ -192,6 +198,47 @@ CONUS_DISTANCE_M = Param(
     "m",
     "CONUS+ detector standoff; Nature 643, 1229 (2025), arXiv:2501.05206",
     "HIGH",
+)
+
+# NUCLEUS Fig.-1 reproduction geometry (VALD-02). Angloher et al. (NUCLEUS
+# Collab.), Eur. Phys. J. C 79, 1018 (2019), arXiv:1905.10258. Their Fig. 1 Ge
+# curve is at the Chooz Very-Near-Site: TWO cores, 4.25 GW_th each, at 72 m and
+# 102 m. NOTE their emission normalization is their own (6 nubar/fission at
+# 200 MeV/fission -> ~8e20 nubar/s per core, quoted in their Sect. 2), which is
+# 4.7% SOFTER than our Phase-2 normalization (6.477 nubar/fission at an
+# effective <E_f> = 205.815 MeV -> 1.964e20 nubar/s/GW_th). Reproducing their
+# figure means adopting THEIR numbers, not rescaling ours (forbidden proxy
+# fp-nucleus-emission). Their prose also quotes "about 3e12 nubar/cm^2/s" at the
+# VNS, which is ~1.6x above what their own 8e20/core and 72/102 m give; Fig. 1
+# follows the geometric sum (1.83e12), NOT the 3e12 prose figure -- see
+# cevns.nucleus_flux_normalization (forbidden proxy fp-nucleus-3e12).
+NUCLEUS_CORE_POWER_GW = Param(
+    4.25,
+    "GW_th",
+    "Chooz-B per-core thermal power; NUCLEUS EPJC 79, 1018 (2019) Sect. 2",
+    "HIGH",
+)
+NUCLEUS_CORE_DISTANCES_M = (72.0, 102.0)  # VNS baselines to B-1 and B-2
+NUCLEUS_NU_PER_FISSION = Param(
+    6.0,
+    "nubar/fission",
+    "NUCLEUS EPJC 79, 1018 (2019) Sect. 2 ('six nubar per fission')",
+    "HIGH",
+)
+NUCLEUS_MEV_PER_FISSION = Param(
+    200.0,
+    "MeV/fission",
+    "NUCLEUS EPJC 79, 1018 (2019) Sect. 2 ('average energy release of 200 MeV')",
+    "HIGH",
+)
+NUCLEUS_QUOTED_SITE_FLUX = Param(
+    3.0e12,
+    "nubar/cm^2/s",
+    "Flux quoted in NUCLEUS EPJC 79, 1018 (2019) Sect. 2 prose and Conclusion",
+    "HIGH",
+    note="PROSE value only. Inconsistent with their own 8e20 nubar/s per core at "
+    "72/102 m (which gives 1.83e12) and with their Fig. 1 normalization. "
+    "Recorded so the discrepancy is explicit; do NOT fold with it.",
 )
 
 # Helm form-factor parameters (Lewin & Smith, Astropart. Phys. 6, 87 (1996),
@@ -442,6 +489,123 @@ R_SPOT = Param(
     "(~wafer thickness 2 mm ~= 2 sensor pitches).",
 )
 R_SPOT_RANGE = (1.0, 5.0)
+
+
+# --------------------------------------------------------------------------- #
+# Sub-eV trigger-probability curve (CONVENTIONS Section I; Phase 10 / CALC-16) #
+# The 50% point is DECIDED; the sharpness is fixed by NO project artifact and   #
+# is EXPOSED as a scannable parameter, in the F_PROMPT / R_SPOT style.          #
+# --------------------------------------------------------------------------- #
+
+TRIGGER_E50 = Param(
+    1.0,
+    "eV",
+    "Sub-eV trigger-probability 50% point; USER DECISION 2026-07-23 "
+    "(supersedes the 0.5 eV decision of 2026-07-22); CONVENTIONS Section I",
+    "MEDIUM",
+    note="The ONLY property of the trigger curve fixed by a project decision. "
+    "Exact by construction for the adopted Hill form: P(E50) = 1/(1 + 1^k) = 1/2 "
+    "for EVERY sharpness k > 0, so the 50% point never depends on the width. "
+    "MEDIUM rather than HIGH because it is a chosen analysis threshold, not a "
+    "measured device property -- no trigger threshold has been measured for this device. "
+    "CHANGED 2026-07-23 from 0.5 eV to 1.0 eV by user decision. This SUPERSEDES ROADMAP "
+    "Phase 10 Success Criterion 4, which asserts the 50% point is 'exactly at 0.5 eV'. "
+    "NOTE the axis: E50 is defined on the DEPOSIT axis, and the deposit->reconstructed "
+    "slope is ~0.5, so the curve's half-point lands near ~0.5 eV RECONSTRUCTED, not 1.0 eV. "
+    "The regime boundary (trigger.SUBEV_REGIME_BOUNDARY_eV = 1.0 eV) is a SEPARATE constant "
+    "that happens to coincide numerically with the new E50; they are not the same quantity "
+    "and must not be collapsed.",
+)
+TRIGGER_SHARPNESS = Param(
+    4.0,
+    "",
+    "Hill sharpness k of the sub-eV trigger curve; fixed by NO project artifact",
+    "LOW",
+    note="EXPOSED PARAMETER, not a derived or measured value. Range 1-12. "
+    "A buried width would fabricate a device property (fp-hardcoded-width). "
+    "k = 4 gives a 10-90% rise spanning a factor of 81^(1/4) = 3.0 in deposited "
+    "energy, i.e. ~0.17-1.5 eV, which is a plausible-looking but ENTIRELY CHOSEN "
+    "turn-on width. Every downstream sub-eV result must be reported with its "
+    "sensitivity to k, because nothing constrains it.",
+)
+TRIGGER_SHARPNESS_RANGE = (1.0, 12.0)
+
+
+# --------------------------------------------------------------------------- #
+# Phonon energy scale and Debye-Waller convention (CONVENTIONS Section J;      #
+# Phase 11 / CALC-14, plan 11-01)                                              #
+# --------------------------------------------------------------------------- #
+# DERIVED, not decided: every scalar below is reproduced by
+#   /opt/anaconda3/bin/python3 -c "import sys; sys.path.insert(0,'src'); \
+#       from qpd_potential import phonon_scale as ps; print(ps.derive('ncrystal'))"
+# from the frozen measured Ge VDOS in data/external/ge_vdos/ at T -> 0.  They are
+# mirrored here so downstream plans import rather than restate literals, in the
+# discipline trigger.SUBEV_REGIME_BOUNDARY_eV established in Phase 10.
+#
+# 2W = q^2 <u_x^2> with the 1-D MSD.  q^2 <u^2>/3 is REJECTED (double-counted
+# isotropic projection).  The rate is NEVER multiplied by exp(-2W).
+
+U_X_SQ_ANGSTROM2 = Param(
+    1.6096194483e-3,
+    "angstrom^2",
+    "1-D mean-square displacement of Ge at T->0, from the measured VDOS "
+    "(NCrystal Ge_sg227.ncmat; Nelin & Nilsson, PRB 5, 3151 (1972)); "
+    "CONVENTIONS Section J",
+    "MEDIUM",
+    note="VDOS-derived, not Debye-model. Sits 1.203x above the Debye T->0 value "
+    "1.3380e-3 angstrom^2 at theta_D = 374 K, inside the ROADMAP SC2 factor-1.5 "
+    "window. Cross-checked against the DarkELF Ge_pDoS digitization: 1.5787e-3, "
+    "i.e. -1.92% -- reported, never averaged. MEDIUM because it rests on a single "
+    "1972 measurement propagated through two digitizations, and because the "
+    "natural-Ge mass averaging carries a 0.10% ambiguity (which cancels out of "
+    "omega_bar and 2W entirely).",
+)
+OMEGA_BAR_eV = Param(
+    1.7859677040e-2,
+    "eV",
+    "Effective phonon energy omega_bar = hbar^2/(2 m_N <u_x^2>) = 17.8597 meV; "
+    "CONVENTIONS Section J",
+    "MEDIUM",
+    note="Equal to the HARMONIC mean of the measured VDOS, and MASS-FREE: m_N "
+    "cancels between the definition and the MSD quadrature. Inside the survey's "
+    "12-21 meV band, so that band SURVIVES contact with the measured VDOS. Not to "
+    "be confused with the 37 meV zone-centre optical phonon, which is a different "
+    "quantity wearing the same symbol. The VDOS ARITHMETIC mean is 24.1955 meV; "
+    "the ratio <w><1/w> = 1.3548 is the moment mismatch that plan 11-02 must "
+    "carry into sigma_E.",
+)
+OMEGA_BAR_ARITHMETIC_eV = Param(
+    2.4195526e-2,
+    "eV",
+    "Arithmetic mean of the measured Ge VDOS, <w> = 24.1955 meV; CONVENTIONS Section J",
+    "MEDIUM",
+    note="NOT the locked omega_bar. Recorded because <u_x^2> is governed by the "
+    "HARMONIC mean while <p_x^2> -- which sets the impulse-approximation Gaussian "
+    "width -- is governed by the ARITHMETIC mean. They coincide only for a single "
+    "mode. sqrt(<w><1/w>) = 1.1639 is the factor by which a single-frequency "
+    "sigma_E = sqrt(E_R omega_bar) understates the true IA width for real Ge "
+    "(the Debye value of that factor is sqrt(9/8) = 1.0607).",
+)
+DEBYE_WALLER_B_ANGSTROM2 = Param(
+    0.1270904575,
+    "angstrom^2",
+    "Crystallographic B factor B = 8 pi^2 <u_x^2> at T->0; CONVENTIONS Section J",
+    "MEDIUM",
+    note="T->0 zero-point value. The same quadrature at 300 K gives B = 0.5580 "
+    "angstrom^2, which is the regime in which room-temperature diffraction B "
+    "factors are measured -- they are NOT the same quantity as this one.",
+)
+GE_THETA_D_K = Param(
+    374.0,
+    "K",
+    "Ge Debye temperature, used ONLY as input to the analytic oracle "
+    "<u^2>_3D = 9 hbar^2/(4 m_N k_B theta_D); CONVENTIONS Section J",
+    "LOW",
+    note="A COMPARISON BASELINE, never a source of omega_bar (forbidden proxy "
+    "fp-debye-substitute). NCrystal's own VDOS-fitted Debye temperature for the "
+    "same spectrum is 295.35 K; the two are different estimators and the "
+    "disagreement is expected, not an error.",
+)
 
 
 # --------------------------------------------------------------------------- #

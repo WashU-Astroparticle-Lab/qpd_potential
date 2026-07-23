@@ -1,0 +1,59 @@
+# Phase-15 Plan 15-04: ROADMAP Phase 15 SC4 re-scope audit.
+# repo_HEAD_at_execution = b8addf2; interpreter /opt/anaconda3/bin/python3
+#
+# THE TOKEN LIST IS IMPORTED, NEVER RE-TYPED, via
+#   surface_environment.shielded_token_guard() -> tests/test_env_v1_identity.py
+# which is the single definition site. Two divergent copies of a guard list is how
+# a guard silently stops guarding, and the digit-boundary matching that keeps the
+# germanium lattice constant 5.658 A from false-positiving on the 5.65 Bq/kg 238U
+# ambience lives there.
+#
+# SCOPE SCANNED: the full IMPORT CLOSURE of every module this phase touches
+#   (18 files, computed by walking module attributes as Plan 09-01 did),
+#   plus 7 artifact files and 6 documents this phase EMITS.
+#   NOT SCANNED, and the exclusion is stated rather than silent: the *-PLAN.md files
+#   and 15-CONTEXT.md (5 files). They are INPUTS authored upstream and they
+#   necessarily quote every retired quantity by name and value BECAUSE THEY COMMAND
+#   THIS AUDIT; scanning them would flag the instruction as the violation.
+#   LIMITATION, RECORDED HONESTLY: an attribute walk cannot see a DYNAMICALLY
+#   imported module. None is used in this closure, but the walk cannot prove that.
+#
+# RESULT: 35 token hits, of which 34 are explicit NOT-APPLIED
+#   declarations (the enumeration SC4 requires), 1 allowlist entry, and
+#   0 APPLIED quantities outside the allowlist.
+#
+# ALLOWLIST, with a written justification a future reader can audit rather than trust:
+#   src/qpd_potential/compton_source.py :: 'Linear attenuation coefficient
+#   mu = (mu/rho) * rho' -- the NIST XCOM photon mass-attenuation coefficient of the
+#   GERMANIUM TARGET WAFER (data/ge_xcom_mu.csv), used for mu*ell_bar and the
+#   double-scatter fraction. It is a property of the target, not a shield, an
+#   overburden, a buildup factor or any post-shield quantity, and it multiplies no
+#   normalization. This is the same single entry Plan 09-01 exempted, by name.
+#
+# WHICH OF THE TWO READINGS THIS ESTABLISHES. A clean token scan establishes that no
+# relocation quantity survived UNDER A RECOGNISED NAME OR VALUE. It does NOT establish
+# that none survived under a NEW name with a NEW value -- a token scan cannot see that.
+# The numeric-provenance enumeration below is the complement: every multiplicative
+# factor applied to each channel's normalization is listed INDIVIDUALLY and is exactly
+# 1.0, so an unnamed factor has nowhere to hide even if its token is unrecognised.
+# Together they are a STRONG CHECK, not a proof, and this audit says so.
+#
+# columns: quantity_name, retired_value, retired_units, token_searched, files_scanned[count], applied_hits[count], allowlist_hits[count], disposition, reason_it_no_longer_applies
+quantity_name,retired_value,retired_units,token_searched,files_scanned[count],applied_hits[count],allowlist_hits[count],disposition,reason_it_no_longer_applies
+NUCLEUS_overburden_depth,2.92,m.w.e.,overburden,31,0,0,removed by the 2026-07-22 re-scope,There is no overburden: the configuration is an UNSHIELDED SURFACE wafer at sea level. The Phase-8 veto-envelope geometry gate returned NO FIT and the 2026-07-22 re-scope cancelled the relocation.
+omnidirectional_attenuation_factor,1.41,dimensionless,1.41,31,0,0,removed by the 2026-07-22 re-scope,"An attenuation factor presupposes an attenuator. There is no shield in this configuration, so nothing attenuates the surface flux."
+NUCLEUS_Table2_total_gamma_ambience,5.03,cm^-2 s^-1,ambience,31,0,0,removed by the 2026-07-22 re-scope,"The gamma normalization of record is the LABChico measured survey carried in data/gamma_lines.csv, not the NUCLEUS Chooz VNS ambience. Adopting the latter would replace a v1.0 anchor the re-scope explicitly preserved."
+NUCLEUS_Table2_K40_activity,59.6,Bq/kg,ambience,31,0,0,removed by the 2026-07-22 re-scope,"Same: a VNS material-activity figure, superseded with the relocation."
+NUCLEUS_Table2_Th232_activity,3.28,Bq/kg,ambience,31,0,0,removed by the 2026-07-22 re-scope,"Same: a VNS material-activity figure, superseded with the relocation."
+NUCLEUS_Table2_U238_activity,5.65,Bq/kg,ambience,31,0,0,removed by the 2026-07-22 re-scope,"Same: a VNS material-activity figure, superseded with the relocation. NOTE the digit-boundary matching in the imported token list is what keeps the germanium lattice constant 5.658 angstrom from false-positiving on this value."
+passive_shielding_reduction_factor,~50,dimensionless,buildup,31,0,0,removed by the 2026-07-22 re-scope,A passive-reduction factor presupposes passive shielding. None exists in this configuration.
+shield_buildup_factor,n/a,dimensionless,buildup,31,0,0,removed by the 2026-07-22 re-scope,Buildup factors describe scattered photon accumulation INSIDE a shield. With no shield there is no buildup term to compute.
+MV_plus_COV_veto_rejection,99.8,percent,veto_credit,31,0,0,removed by the 2026-07-22 re-scope,"There is no muon veto and no cosmic-veto in an unshielded surface configuration, so there is no rejection to credit. surface_environment.veto_credit() returns exactly 1.0 BY CONSTRUCTION, which is stronger than a policy default and cannot be quietly relaxed (fp-reduced-credit)."
+COV_rejection_factor_at_1keVee,~5,dimensionless,veto_credit,31,0,0,removed by the 2026-07-22 re-scope,"Same: no cosmic veto exists here. Also note this figure is quoted on a keV_ee axis, which CONVENTIONS Section B forbids mixing with the unified phonon scale in any case."
+NUCLEUS_Table5_muon_residual,<14,mcpd,mcpd,31,0,0,removed by the 2026-07-22 re-scope,"A POST-VETO residual for a shielded, vetoed apparatus. Removed by the re-scope with its consequence stated rather than hidden: the muon channel now has NO external benchmark on the reconstructed axis at all, beyond the v1.0 PDG sanity check."
+veto_credit_sentinel,1.0,dimensionless,veto_credit,31,0,0,"exactly 1.0 BY CONSTRUCTION, not by policy default","There is no veto, no shield and no overburden in this configuration, so there is nothing for a rejection credit to be taken against. 1.0 here means 'the background is unchanged'. A 1.0 arrived at as a policy default is something a later phase could quietly relax; a 1.0 that follows from the ABSENCE OF THE APPARATUS cannot be relaxed without first changing the configuration (surface_environment.veto_credit)."
+normalization_factor::overburden_attenuation,1.0,dimensionless,(numeric enumeration),31,0,0,"exactly 1.0, asserted INDIVIDUALLY","no overburden in this configuration. Enumerated individually rather than as a product, because a product can be unity by cancellation between two wrong factors (fp-product-instead-of-factors)."
+normalization_factor::shield_attenuation,1.0,dimensionless,(numeric enumeration),31,0,0,"exactly 1.0, asserted INDIVIDUALLY","no shield in this configuration. Enumerated individually rather than as a product, because a product can be unity by cancellation between two wrong factors (fp-product-instead-of-factors)."
+normalization_factor::veto_credit,1.0,dimensionless,(numeric enumeration),31,0,0,"exactly 1.0, asserted INDIVIDUALLY","exactly 1.0 BY CONSTRUCTION -- surface_environment.veto_credit(). Enumerated individually rather than as a product, because a product can be unity by cancellation between two wrong factors (fp-product-instead-of-factors)."
+normalization_factor::buildup_factor,1.0,dimensionless,(numeric enumeration),31,0,0,"exactly 1.0, asserted INDIVIDUALLY","no shield, so no buildup. Enumerated individually rather than as a product, because a product can be unity by cancellation between two wrong factors (fp-product-instead-of-factors)."
+normalization_factor::ambience_rescale,1.0,dimensionless,(numeric enumeration),31,0,0,"exactly 1.0, asserted INDIVIDUALLY","the v1.0 sea-level normalization stands unchanged. Enumerated individually rather than as a product, because a product can be unity by cancellation between two wrong factors (fp-product-instead-of-factors)."

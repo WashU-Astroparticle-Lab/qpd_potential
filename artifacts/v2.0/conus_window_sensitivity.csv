@@ -1,0 +1,37 @@
+# QPD Phase-16 plan 16-01 -- RATIO versus ANALYSIS WINDOW, INCLUDING THE FAILURES.
+# axis = RECOIL on every row.  No reconstructed-axis object is touched anywhere.
+#
+# WHY THIS TABLE EXISTS.  Planning reconnaissance found the VALD-12 ratio moves by
+# MORE THAN THREE DECADES depending only on which nuclear-recoil window the keV_ee
+# analysis window maps to.  A gate whose answer is set by an unstated analysis
+# choice is not a gate, so the window was PRE-REGISTERED before any integral ran
+# and the FULL curve -- failures included -- is emitted (fp-window-tuned-to-pass).
+#   measured spread across candidates: min 5.523721e-05, max 1.764657e+00,
+#   i.e. 4.504 DECADES, plus 3 rows at exactly zero
+#   because the converted window lies above the kinematic endpoint.
+#
+# THE LIVE INTERNAL DISCREPANCY, FLAGGED FOR THE ORCHESTRATOR (no file edited):
+#   ROADMAP.md / REQUIREMENTS.md state the CONUS+ window as 0.4-1.0 keV_ee;
+#   GPD/literature/SUMMARY.md states the limiting case at 160 eV_ee.
+#   These are NOT the same window and they do NOT give the same verdict.  Both are
+#   carried here as named rows; ROADMAP/REQUIREMENTS is pre-registered because they
+#   are the project's authoritative scoping documents and the survey is not.
+#
+# QUENCHING: BRACKETED, NOT SOURCED.  No germanium ionization-quenching model is
+#   frozen locally.  Form: Lindhard-Robinson k-parameterized, germanium Z=32; k bracketed over [0.13, 0.2] with central 0.157.
+#   The factor converts THEIR WINDOW BOUNDARIES only.  Our dR/dT is never multiplied
+#   by it (CONVENTIONS Section B; fp-quenching-on-phonon-scale).
+#
+# PRE-DECLARED FACTOR = 2.0 (declared in source above the integrator).
+# PRE_REGISTERED row: preregistered_roadmap_requirements / bracket_central, ratio 5.278664e-04.
+#
+candidate,source,preregistered,axis,E_ee_lo_keVee,E_ee_hi_keVee,quenching_model,quenching_provenance,lindhard_k,bracket_position,quenching_bracket_lo,quenching_bracket_hi,E_nr_lo_keVnr,E_nr_hi_keVnr,Q_at_lo,Q_at_hi,support_edge_eV_nr,support_fraction,above_kinematic_endpoint,rate_ours_counts_kg_day,geometric_rescale_factor,rate_rescaled_counts_kg_day,conus_sm_rate_counts_kg_day,ratio,stated_factor,within_stated_factor,sigma_over_E_at_lo,sigma_over_E_at_hi
+preregistered_roadmap_requirements,ROADMAP.md Phase 16 anchor line + REQUIREMENTS.md VALD-12,False,RECOIL,0.4,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.13,bracket_low,0.13,0.2,2.4264507522873284,5.415858697616814,0.16484983246535467,0.18464292660368672,3031.6857665,0.20245982658815884,False,3.348828137138376e-05,1.7503325631870055,5.861562936950179e-05,1.0611620795107033,5.523720692745558e-05,2.0,False,0.002713007910018575,0.0018159468706055995
+preregistered_roadmap_requirements,ROADMAP.md Phase 16 anchor line + REQUIREMENTS.md VALD-12,True,RECOIL,0.4,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.157,bracket_central,0.13,0.2,2.1164886505078933,4.742511305611007,0.1889922726039717,0.21085874878503086,3031.6857665,0.3485107465518688,False,0.000320025911192179,1.7503325631870055,0.0005601517734232636,1.0611620795107033,0.0005278663686150063,2.0,False,0.0029048842282277682,0.001940584745472133
+preregistered_roadmap_requirements,ROADMAP.md Phase 16 anchor line + REQUIREMENTS.md VALD-12,False,RECOIL,0.4,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.2,bracket_high,0.13,0.2,1.7857234923283078,4.022830033754298,0.22399884512829124,0.2485812205858352,3031.6857665,0.5569525863428406,False,0.003250349781621265,1.7503325631870055,0.005689193064519473,1.0611620795107033,0.005361285683279158,2.0,False,0.0031624938858930062,0.002107031162055278
+alternate_literature_survey,GPD/literature/SUMMARY.md limiting case at 160 eV_ee / 7.4 m.w.e.,False,RECOIL,0.16,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.13,bracket_low,0.13,0.2,1.0846816608708272,5.415858697616814,0.14750871686310743,0.18464292660368672,3031.6857665,0.4495323301519804,False,0.24326517422249125,1.7503325631870055,0.42579495593098654,1.0611620795107033,0.4012534599119095,2.0,False,0.004057753414575531,0.0018159468706055995
+alternate_literature_survey,GPD/literature/SUMMARY.md limiting case at 160 eV_ee / 7.4 m.w.e.,False,RECOIL,0.16,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.157,bracket_central,0.13,0.2,0.9430458884192658,4.742511305611007,0.1696630057612489,0.21085874878503086,3031.6857665,0.5497194075329915,False,0.5052452115402407,1.7503325631870055,0.8843471461531903,1.0611620795107033,0.8333761290838423,2.0,True,0.004351814627637795,0.001940584745472133
+alternate_literature_survey,GPD/literature/SUMMARY.md limiting case at 160 eV_ee / 7.4 m.w.e.,False,RECOIL,0.16,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.2,bracket_high,0.13,0.2,0.7920532611356399,4.022830033754298,0.20200661729565156,0.2485812205858352,3031.6857665,0.6932179667582108,False,1.069846485350421,1.7503325631870055,1.8725871409200117,1.0611620795107033,1.7646570463424895,2.0,True,0.0047485346060937685,0.002107031162055278
+kinematic_probe_above_endpoint,kinematic probe declared in plan 16-01; NOT a CONUS+ window,False,RECOIL,1.0,2.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.13,bracket_low,0.13,0.2,5.415858697616814,9.91471927766382,0.18464292660368672,0.20172028516285478,3031.6857665,0.0,True,0.0,1.7503325631870055,0.0,1.0611620795107033,0.0,2.0,False,0.0018159468706055995,0.0013421361975271533
+kinematic_probe_above_endpoint,kinematic probe declared in plan 16-01; NOT a CONUS+ window,False,RECOIL,1.0,2.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.157,bracket_central,0.13,0.2,4.742511305611007,8.712763125368163,0.21085874878503086,0.22954830416274963,3031.6857665,0.0,True,0.0,1.7503325631870055,0.0,1.0611620795107033,0.0,2.0,False,0.001940584745472133,0.001431722490119226
+kinematic_probe_above_endpoint,kinematic probe declared in plan 16-01; NOT a CONUS+ window,False,RECOIL,1.0,2.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.2,bracket_high,0.13,0.2,4.022830033754298,7.425791277497783,0.2485812205858352,0.2693315668675683,3031.6857665,0.0,True,0.0,1.7503325631870055,0.0,1.0611620795107033,0.0,2.0,False,0.002107031162055278,0.0015508344207122717

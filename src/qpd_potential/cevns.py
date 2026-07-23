@@ -26,6 +26,7 @@ from scipy.interpolate import PchipInterpolator
 from scipy.special import spherical_jn
 
 from . import params
+from . import interp_guard as ig
 
 # Bare numeric values pulled once from the provenance-tagged registry.
 _G_F = params.G_F.value                              # GeV^-2
@@ -232,17 +233,57 @@ class ReactorFlux:
         if np.any(self.phi <= 0.0):
             raise ValueError("flux total column has non-positive entries; cannot log-interp")
         self._log_phi = PchipInterpolator(self.E, np.log(self.phi), extrapolate=False)
+        # Plan 10-01 bounds guard. The declared evaluation domain is exactly the
+        # tabulated E_nu span -- no extension, hence no witness needed. Recorded
+        # in MeV, the units of THIS abscissa (CONVENTIONS A.1).
+        self._domain = ig.Domain(
+            quantity=f"ReactorFlux Phi(E_nu) [{os.path.basename(csv_path)}]",
+            lo=self.E_min, hi=self.E_max, units="MeV",
+            table=csv_path, table_lo=self.E_min, table_hi=self.E_max,
+            note="PCHIP(log Phi) with extrapolate=False previously returned NaN "
+                 "outside the knots; NaN is not 'not extrapolating'.",
+        )
+        self._rel_domain = ig.Domain(
+            quantity=f"ReactorFlux rel_uncertainty(E_nu) [{os.path.basename(csv_path)}]",
+            lo=self.E_min, hi=self.E_max, units="MeV",
+            table=csv_path, table_lo=self.E_min, table_hi=self.E_max,
+            note="np.interp previously CLAMPED to the end values (0.25 below the "
+                 "floor, 0.05 above the ceiling for reactor_flux_v1.0.csv).",
+        )
+
+    def log_phi_guarded(self, E_nu_MeV):
+        """log Phi(E_nu) from the PCHIP, RAISING outside the tabulated span.
+
+        Plan 10-01: replaces the `extrapolate=False` NaN return with an
+        explicit ``InterpolationDomainError`` at the point of evaluation.
+        """
+        ig.check_domain(E_nu_MeV, self._domain)
+        return self._log_phi(E_nu_MeV)
 
     def flux(self, E_nu_MeV: float) -> float:
-        """Phi(E_nu) [nu cm^-2 s^-1 MeV^-1]; 0 outside the grid or below the cut."""
+        """Phi(E_nu) [nu cm^-2 s^-1 MeV^-1]; 0 outside the grid or below the cut.
+
+        THE ZERO OUTSIDE THE GRID IS A DECLARED TRUNCATION OF THE FLUX SUPPORT,
+        NOT A CLAMP OF THE INTERPOLATOR. It is applied BEFORE the interpolator
+        is reached, it is a v1.0 modelling choice (the CEvNS integrand is
+        negligible outside the tabulated 0.1-10 MeV window), and plan 10-01
+        deliberately leaves it alone -- changing it would move v1.0 physics.
+        What plan 10-01 changed is that the interpolator itself, reached via
+        ``log_phi_guarded``, now RAISES instead of returning NaN.
+        """
         if E_nu_MeV < self.E_min or E_nu_MeV > self.E_max:
             return 0.0
         if self.e_min_cut_MeV is not None and E_nu_MeV < self.e_min_cut_MeV:
             return 0.0
-        return self.scale * float(np.exp(self._log_phi(E_nu_MeV)))
+        return self.scale * float(np.exp(self.log_phi_guarded(E_nu_MeV)))
 
     def rel_uncertainty(self, E_nu_MeV: float) -> float:
-        """Fractional flux uncertainty at E_nu (linear interp of the split band)."""
+        """Fractional flux uncertainty at E_nu (linear interp of the split band).
+
+        Plan 10-01: raises outside the tabulated E_nu span instead of clamping
+        to the end values.
+        """
+        ig.check_domain(E_nu_MeV, self._rel_domain)
         return float(np.interp(E_nu_MeV, self.E, self.rel))
 
 
@@ -488,6 +529,217 @@ def conus_rescale_check(T_floor_eV=50.0, flux=None):
         "R_ours_at_conus": R_ours_at_conus,
         "R_billard_at_conus": R_billard_at_conus,
         "ratio": R_ours_at_conus / R_billard_at_conus,
+    }
+
+
+# =========================================================================== #
+# NUCLEUS (2019) Fig. 1 reproduction (VALD-02)                                 #
+# =========================================================================== #
+#
+# Angloher et al. (NUCLEUS Collab.), Eur. Phys. J. C 79, 1018 (2019),
+# arXiv:1905.10258. Their Fig. 1 germanium curve is the closest published
+# Ge dR/dE_R at a reactor on a pure nuclear-recoil axis, so it is a direct
+# shape+scale anchor for our fold with NO ionization-yield model in between
+# (unlike the CONUS+ check, which is on the ionization scale).
+#
+# Reproducing it means adopting THEIR assumptions wholesale:
+#   * geometry/power : two Chooz-B cores, 4.25 GW_th each, at 72 m and 102 m
+#   * emission       : 6 nubar/fission at 200 MeV/fission (their Sect. 2)
+#   * cross section  : their Eq. (1) == our locked CONVENTIONS Section C form
+#                      (G_F^2/(4 pi) Q_W^2 F^2 m_N (1 - E_R/E_R^max)), so the
+#                      cross section needs NO change at all
+#   * flux shape     : Tengblad Nucl. Phys. A 503, 136 (1989) as parameterized
+#                      in A. Guetlein, TU Muenchen Diss. (2013)
+#
+# The one input we CANNOT adopt is the flux shape: the Guetlein parameterization
+# of Tengblad was not machine-sourceable in-environment. We therefore substitute
+# the Phase-2 flagship shape, renormalized to their per-fission yield and their
+# geometry. That substitution is the declared gap of this anchor -- it is a
+# SHAPE substitution only; the absolute normalization is 100% theirs.
+#
+# Their prose quotes "about 3e12 nubar/(s cm^2)" at the VNS. That is NOT the
+# Fig. 1 normalization: their own 8e20 nubar/s per core over 72/102 m gives
+# 1.83e12. Folding at 3e12 overshoots Fig. 1 by ~1.6x (forbidden proxy
+# fp-nucleus-3e12); nucleus_flux_normalization() returns both so the gap is
+# explicit and the prose value is never silently used.
+
+_NUCLEUS_FIG1_CSV = os.path.join(
+    os.path.dirname(__file__), "..", "..", "data", "external",
+    "nucleus2019_fig1_ge.csv",
+)
+
+# Our Phase-2 flagship per-fission yield and effective <E_f> (flux CSV header),
+# needed to convert our stored Phi to NUCLEUS's per-fission normalization.
+_QPD_NU_PER_FISSION = 6.477      # nubar/fission, grand total of flux_v1.0
+_QPD_INT_FLUX = 7.5029e12        # nubar cm^-2 s^-1, int Phi dE of flux_v1.0
+
+
+def nucleus_flux_normalization():
+    """NUCLEUS's own site flux at the VNS, from their own stated numbers.
+
+    R_f = P_core / (200 MeV); N_nu = 6 R_f per core; Phi = N_nu * sum_j
+    1/(4 pi d_j^2) over the two cores at 72 m and 102 m. Both powers are THERMAL.
+
+    Returns dict with the per-core emission (should reproduce their quoted
+    ~8e20 nubar/s), the geometric site flux, their prose 3e12 figure, and the
+    ratio between the two (the fp-nucleus-3e12 gap, ~1.6).
+    """
+    P_core_W = params.NUCLEUS_CORE_POWER_GW.value * 1.0e9
+    e_f_J = params.NUCLEUS_MEV_PER_FISSION.value * params.MEV_TO_J.value
+    R_f = P_core_W / e_f_J                                   # fissions/s/core
+    N_nu_core = params.NUCLEUS_NU_PER_FISSION.value * R_f    # nubar/s/core
+
+    geom = sum(
+        1.0 / (4.0 * math.pi * (d * 100.0) ** 2)             # d in m -> cm
+        for d in params.NUCLEUS_CORE_DISTANCES_M
+    )
+    phi_site = N_nu_core * geom
+    phi_prose = params.NUCLEUS_QUOTED_SITE_FLUX.value
+    return {
+        "R_f_per_core": R_f,
+        "emission_per_core": N_nu_core,
+        "geometry_factor_cm2": geom,
+        "site_flux": phi_site,
+        "prose_flux": phi_prose,
+        "prose_over_geometric": phi_prose / phi_site,
+    }
+
+
+def nucleus_variant_flux(sub18: bool = True):
+    """ReactorFlux carrying our Phase-2 SHAPE at NUCLEUS's absolute normalization.
+
+    The scale is fixed entirely by NUCLEUS's numbers: our stored Phi (7.5029e12
+    at 3 GW_th / 25 m, carrying 6.477 nubar/fission) is multiplied by
+
+        scale = Phi_NUCLEUS_site / int Phi_stored
+
+    so that the folded flux integrates to their geometric site flux. Because our
+    shape carries 6.477 nubar/fission and theirs 6.0, this simultaneously adopts
+    their per-fission yield -- the shape is ours, every normalization factor is
+    theirs.
+
+    sub18=False zeroes the flux below 1.8 MeV, leaving the >= 1.8 MeV part
+    IDENTICAL. Comparing the two against Fig. 1 tests whether their
+    Tengblad/Guetlein flux model carries a sub-IBD-threshold component.
+    """
+    scale = nucleus_flux_normalization()["site_flux"] / _QPD_INT_FLUX
+    return ReactorFlux(
+        _DEFAULT_FLUX_CSV,
+        scale=scale,
+        e_min_cut_MeV=None if sub18 else 1.8,
+    )
+
+
+def load_nucleus_fig1():
+    """Digitized NUCLEUS Fig. 1 Ge curve -> (E_R [eV], dR/dE_R [cts/keV/kg/day]).
+
+    Produced by scripts/digitize_nucleus_fig1.py from the published PDF; see
+    that file and the CSV header for method and accuracy (~5% below ~700 eV).
+    """
+    E, R = [], []
+    with open(_NUCLEUS_FIG1_CSV) as fh:
+        for line in fh:
+            if line.startswith("#") or line.startswith("E_R"):
+                continue
+            line = line.strip()
+            if not line:
+                continue
+            a, b = line.split(",")
+            E.append(float(a))
+            R.append(float(b))
+    return np.asarray(E), np.asarray(R)
+
+
+def _interp_loglog(x, xs, ys, *, table: str = "<digitized curve>",
+                   quantity: str = "log-log tabulated curve", units: str = "eV"):
+    """Log-log interpolation of a positive tabulated curve.
+
+    Plan 10-01: guarded. The declared evaluation domain is exactly the tabulated
+    span of ``xs`` -- this is a DIGITIZED figure, so there is nothing outside it
+    to extrapolate from and no witness could justify an extension. Previously
+    ``np.interp`` clamped to the end values (for the NUCLEUS Fig.1 digitization:
+    494.7631 below the 1.020494 eV floor and 0.5185263 above the 1578.476 eV
+    ceiling), i.e. it returned a plausible finite rate where the figure has no
+    data.
+    """
+    xs = np.asarray(xs, dtype=float)
+    ys = np.asarray(ys, dtype=float)
+    dom = ig.Domain(
+        quantity=quantity, lo=float(xs.min()), hi=float(xs.max()), units=units,
+        table=table, table_lo=float(xs.min()), table_hi=float(xs.max()),
+    )
+    ig.check_domain(x, dom)
+    return 10.0 ** np.interp(np.log10(x), np.log10(xs), np.log10(ys))
+
+
+def sin2thetaw_rate_factor(sin2_theta_w: float, per_iso: dict) -> float:
+    """Exact multiplicative rate shift for a different sin^2 theta_W.
+
+    Q_W^2 factorizes out of each per-isotope fold, so at fixed T
+
+        dR/dT(s2) = Sum_i (dR/dT_i) * [Q_W,i(s2) / Q_W,i(0.2387)]^2
+
+    exactly -- no re-fold needed. Used only to quote the sin^2 theta_W
+    systematic of this anchor (the paper states no value); the LOCKED project
+    convention remains 0.2387 (CONVENTIONS Section C) and is not touched.
+    """
+    num = den = 0.0
+    one_minus_4s2 = 1.0 - 4.0 * sin2_theta_w
+    for iso in _GE_ISOTOPES:
+        r_i = per_iso[iso.name]
+        qw_locked = weak_charge(iso.Z, iso.N)
+        qw_alt = iso.N - one_minus_4s2 * iso.Z
+        num += r_i * (qw_alt / qw_locked) ** 2
+        den += r_i
+    return num / den if den > 0.0 else 1.0
+
+
+def reproduce_nucleus_fig1(
+    T_eV=(10.0, 20.0, 50.0, 100.0, 150.0, 200.0, 300.0, 500.0),
+    sub18: bool = True,
+):
+    """Fold under NUCLEUS's assumptions and compare to their digitized Fig. 1.
+
+    Returns dict with, per recoil energy, our folded dR/dT, the digitized Fig. 1
+    value, and the ratio; plus summary statistics (mean/spread of the ratio, and
+    the ratio's trend across the range, which is the shape test) and the
+    sin^2 theta_W systematic factor at 0.2312 (PDG on-shell at M_Z).
+
+    A ratio near 1 that is FLAT in T is the decisive result: flat means the
+    spectral shape agrees and only normalization conventions can differ.
+    """
+    flux = nucleus_variant_flux(sub18=sub18)
+    E_fig, R_fig = load_nucleus_fig1()
+
+    rows = []
+    for T in T_eV:
+        per_iso = differential_rate_per_isotope(T * 1e-3, flux, use_form_factor=True)
+        ours = sum(per_iso.values())
+        theirs = float(_interp_loglog(
+            T, E_fig, R_fig,
+            table=_NUCLEUS_FIG1_CSV,
+            quantity="NUCLEUS Fig.1 dR/dT(T)", units="eV"))
+        rows.append({
+            "T_eV": T,
+            "ours": ours,
+            "nucleus": theirs,
+            "ratio": ours / theirs,
+            "s2w_0p2312_factor": sin2thetaw_rate_factor(0.2312, per_iso),
+        })
+
+    ratios = np.array([r["ratio"] for r in rows])
+    logT = np.log10(np.array([r["T_eV"] for r in rows]))
+    # Slope of the ratio per decade of T: the shape (not scale) discriminant.
+    slope = float(np.polyfit(logT, ratios, 1)[0])
+    return {
+        "rows": rows,
+        "flux_norm": nucleus_flux_normalization(),
+        "mean_ratio": float(ratios.mean()),
+        "max_dev_from_mean": float(np.max(np.abs(ratios - ratios.mean()))),
+        "ratio_slope_per_decade": slope,
+        "s2w_0p2312_factor": float(
+            np.mean([r["s2w_0p2312_factor"] for r in rows])
+        ),
     }
 
 

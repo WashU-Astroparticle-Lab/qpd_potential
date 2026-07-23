@@ -1,0 +1,1428 @@
+Particle background characterization and prediction for the NUCLEUS reactor CE𝜈NS experiment
+1 Introduction
+2 The NUCLEUS shielding system
+3 Simulation framework
+4 Particle background environment at the VNS
+4.1 Attenuation of cosmic ray-induced muons
+4.2 Reduction of cosmic ray-induced fast neutrons
+4.2.1 Bonner sphere measurement
+4.2.2 Comparison to atmospheric neutron transport simulation
+4.3 Gamma-ray ambiance
+4.4 Airborne radon activity
+4.5 Material radiopurity
+5 Prediction of particle backgrounds in the NUCLEUS detectors
+5.1 Assumptions and methods
+5.2 Background reduction from the NUCLEUS shielding system
+5.2.1 Mitigation of cosmic ray-induced radiations
+5.2.2 Mitigation of environmental gamma rays
+5.2.3 Mitigation of material radioactivity
+5.3 Residual background rates and spectra at the VNS
+6 Conclusions
+[5]\fnmC.
+\surGoupy
+‡,
+1]\orgdivAtominstitut,
+\orgnameTechnische Universität Wien,
+\orgaddress\streetStadionallee 2,
+\cityWien,
+\postcodeA-1020,
+\countryAustria
+2]\orgnameMax-Planck-Institut für Physik,
+\orgaddress\streetBoltzmannstraße 8,
+\cityGarching,
+\postcodeD-85748,
+\countryGermany
+3]\orgnameInstitut für Hochenergiephysik der Österreichischen Akademie der Wissenschaften,
+\orgaddress\streetDominikanerbastei 16,
+\cityWien,
+\postcodeA-1010,
+\countryAustria
+4]\orgnameIstituto Nazionale di Fisica Nucleare – Sezione di Roma "Tor Vergata",
+\orgaddress\streetVia della Ricerca Scientifica 1,
+\cityRoma,
+\postcodeI-00133,
+\countryItaly
+5]\orgdivIRFU,
+\orgnameCEA, Université Paris-Saclay,
+\orgaddress\streetBâtiment 141,
+\cityGif-sur-Yvette,
+\postcodeF-91191,
+\countryFrance
+6]\orgnameIstituto Nazionale di Fisica Nucleare – Sezione di Roma,
+\orgaddress\streetPiazzale Aldo Moro 2,
+\cityRoma,
+\postcodeI-00185,
+\countryItaly
+7]\orgdivDipartimento di Fisica,
+\orgnameSapienza Università di Roma,
+\orgaddress\streetPiazzale Aldo Moro 5,
+\cityRoma,
+\postcodeI-00185,
+\countryItaly
+8]\orgdivPhysik-Department,
+\orgnameTechnische Universität München,
+\orgaddress\streetJames-Franck-Straße 1,
+\cityGarching,
+\postcodeD-85748,
+\countryGermany
+9]\orgdivDipartimento di Fisica,
+\orgnameUniversità di Roma "Tor Vergata",
+\orgaddress\streetVia della Ricerca Scientifica 1,
+\cityRoma,
+\postcodeI-00133,
+\countryItaly
+10]\orgnameIstituto Nazionale di Fisica Nucleare – Sezione di Ferrara,
+\orgaddress\streetVia Giuseppe Saragat 1c,
+\cityFerrara,
+\postcodeI-44122,
+\countryItaly
+†]Also at \orgdivLIBPhys-UC, Departamento de Fisica,
+\orgnameUniversidade de Coimbra,
+\orgaddress\streetRua Larga 3004-516,
+\cityCoimbra,
+\postcodeP-3004-516,
+\countryPortugal
+\mathsection ]Now at \orgnameMax-Planck-Institut für Physik,
+\orgaddress\streetBoltzmannstraße 8,
+\cityGarching,
+\postcodeD-85748,
+\countryGermany
+‡]Now at \orgnameMax-Planck-Institut für Kernphysik,
+\orgaddress\streetSaupfercheckweg 1,
+\cityHeidelberg,
+\postcodeD-69117,
+\countryGermany
+Particle background characterization and prediction for the NUCLEUS reactor CE \nu NS experiment
+\fnmH.
+\surAbele
+0000-0002-6832-9051
+\fnmG.
+\surAngloher
+\fnmB.
+\surArnold
+\fnmM.
+\surAtzori Corona
+0000-0001-5092-3602
+\fnmA.
+\surBento
+†,
+0000-0002-3817-6015
+\fnmE.
+\surBossio
+0000-0001-9304-1829
+\fnmF.
+\surBuchsteiner
+\fnmJ.
+\surBurkhart
+0000-0002-1989-7845
+\fnmF.
+\surCappella
+0000-0003-0900-6794
+\fnmM.
+\surCappelli
+0009-0002-6148-5964
+\fnmN.
+\surCasali
+0000-0003-3669-8247
+\fnmR.
+\surCerulli
+0000-0003-2051-3471
+\fnmA.
+\surCruciani
+0000-0003-2247-8067
+\fnmG.
+\surDel Castello
+0000-0001-7182-358X
+\fnmM.
+\surdel Gallo Roccagiovine
+\fnmS.
+\surDorer
+0009-0001-1670-5780
+\fnmA.
+\surErhart
+0000-0002-8721-177X
+\fnmM.
+\surFriedl
+0000-0002-7420-2559
+\fnmS.
+\surFichtinger
+\fnmV.M.
+\surGhete
+0000-0002-9595-6560
+\fnmM.
+\surGiammei
+0009-0006-9104-2055
+0000-0003-4954-5311
+chloe.goupy@mpi-hd.mpg
+\fnmD.
+\surHauff
+\fnmF.
+\surJeanneau
+0000-0002-6360-6136
+\fnmE.
+\surJericha
+\fnmM.
+\surKaznacheeva
+0000-0002-2712-1326
+\fnmH.
+\surKluck
+0000-0003-3061-3732
+\fnmA.
+\surLangenkämper
+\fnmT.
+\surLasserre
+‡,
+0000-0002-4975-2321
+\fnmD.
+\surLhuillier
+0000-0003-2324-0149
+\fnmM.
+\surMancuso
+0000-0001-9805-475X
+\fnmR.
+\surMartin
+\fnmB.
+\surMauri
+\fnmA.
+\surMazzolari
+\fnmL.
+\surMcCallin
+\fnmH.
+\surNeyrial
+\fnmC.
+\surNones
+\fnmL.
+\surOberauer
+\fnmT.
+\surOrtmann
+\mathsection ,
+\fnmL.
+\surPeters
+‡,
+0000-0002-1649-8582
+\fnmF.
+\surPetricca
+0000-0002-6355-2545
+\fnmW.
+\surPotzel
+\fnmF.
+\surPröbst
+\fnmF.
+\surPucci
+\fnmF.
+\surReindl
+0000-0003-0151-2174
+\fnmM.
+\surRomagnoni
+\fnmJ.
+\surRothe
+0000-0001-5748-7428
+\fnmN.
+\surSchermer
+0009-0004-4213-5154
+\fnmJ.
+\surSchieck
+0000-0002-1058-8093
+\fnmS.
+\surSchönert
+0000-0001-5276-2881
+\fnmC.
+\surSchwertner
+\fnmL.
+\surScola
+\fnmG.
+\surSoum-Sidikov
+0000-0003-1900-1794
+\fnmL.
+\surStodolsky
+\fnmR.
+\surStrauss
+0000-0002-5589-9952
+\fnmR.
+\surThalmeier
+0009-0003-4480-0990
+\fnmC.
+\surTomei
+\fnmM.
+\surVignati
+0000-0002-8945-1128
+\fnmM.
+\surVivier
+0000-0003-2199-0958
+\fnmA.
+\surWex
+0009-0003-5371-2466
+[
+[
+[
+[
+[
+[
+[
+[
+[
+[
+[
+[
+[
+Abstract
+NUCLEUS is a cryogenic detection experiment which aims to measure Coherent Elastic Neutrino–Nucleus Scattering (CE \nu NS) and to search for new physics at the Chooz nuclear power plant in France.
+This article reports on the prediction of particle-induced backgrounds, especially focusing on the sub-keV energy range, which is a poorly known region where most of the CE \nu NS signal from reactor antineutrinos is expected.
+Together with measurements of the environmental background radiations at the experimental site, extensive Monte Carlo simulations based on the Geant4 package were run both to optimize the experimental setup for background reduction and to estimate the residual rates arising from different contributions such as cosmic ray-induced radiations, environmental gammas and material radioactivity.
+The NUCLEUS experimental setup is predicted to achieve a total rejection power of more than two orders of magnitude, leaving a residual background component which is strongly dominated by cosmic ray-induced neutrons.
+In the CE \nu NS signal region of interest between 10 and 100 eV, a total particle background rate of \sim 250\text{\,}{\mathrm{d}}^{-1}\text{\,}{\mathrm{kg}}^{-1}\text{\,}{\mathrm{keV}}^{-1} is expected in the \ceCaWO4 target detectors.
+This corresponds to a signal-to-background ratio \gtrsim 1, and therefore meets the required specifications in terms of particle background rejection for the detection of reactor antineutrinos through CE \nu NS.
+keywords:
+Coherent Elastic Neutrino-Nucleus Scattering (CE \nu NS), neutrino-nucleus interactions, nuclear reactor, cosmic-ray induced background, gamma ray spectroscopy, material contamination measurement, low background, shielding strategy, sub-keV energies
+1 Introduction
+Coherent Elastic Neutrino-Nucleus Scattering (CE \nu NS) is a neutral current process predicted in 1974 [1, 2] soon after the first observation of weak neutral currents by the Gargamelle experiment [3].
+This process is effective at low momentum transfers, allowing neutrinos of any flavor with energies up to \mathrm{\sim} 50 MeV to coherently scatter over a target nucleus as a whole, giving rise to a significant enhancement to the cross-section [4].
+This coherent enhancement is proportional to the squared number of neutrons in the target nucleus, which favors heavy target nuclei for studying the process.
+It opens up the possibility of using smaller detector payloads for the long-range detection of neutrinos as well as for high-precision searches of physics beyond the Standard Model.
+However, the detection of CE \nu NS poses multiple challenges, as the experimental signature is a standalone nuclear recoil, with energies reaching up to \sim 100 keV in the most favorable scenarios.
+The process would then remain elusive for more than 40 years until the COHERENT collaboration observed it for the first time on Cs and I target nuclei, using the Spallation Neutron Source (SNS) facility (Oak Ridge, Tennessee) as a pulsed source of neutrinos with an average energy of \mathrm{\sim} 30 MeV [5, 6].
+Detection on Ar [7] and Ge [8] nuclei later followed at the SNS from the same collaboration and confirmed the Standard Model prediction of the CE \nu NS cross-section.
+Coherent elastic scattering of \mathrm{\sim} MeV reactor antineutrinos induces recoils hardly reaching the keV range for the lightest nuclei, requiring very low threshold detectors.
+Conventional detection techniques, only relying on the acquisition of ionization or scintillation signals, face severe challenges regarding this last point mostly because their production yield heavily quenches at low energies [9].
+Another key challenge is the unfavorable background conditions reactor sites usually offer.
+Those are often located at very shallow overburden ( \lesssim 20\text{\,}\mathrm{m}\text{\,}\mathrm{w.e.} ) and require sophisticated shielding strategies to achieve acceptable signal-to-background ratios.
+Moreover, as opposed to stopped-pion sources, nuclear reactors are steady neutrino sources with rather long operating cycles and no timing information leverage other than an ON–OFF measurement for characterizing and mitigating backgrounds.
+Despite these major experimental challenges, the detection of CE \nu NS through reactor antineutrinos has most recently been reported by the CONUS+ collaboration [10]. Earlier in 2022, the Dresden-II collaboration [11] claimed the measurement but was quickly challenged by the exclusion limits obtained by CONUS [12].
+Both experiments developed very similar experimental apparatuses using kg-scale p-type point contact high-purity Ge (HPGe) semiconductor detectors, deployed 10–20 m away from a commercial reactor core.
+They however showed incompatible results in the interpretation of their respective hints for a CE \nu NS signal, especially regarding ionization quenching factors at sub-keV recoil energies [13] and reactor-correlated backgrounds [14].
+Other reactor CE \nu NS experiments using NaI scintillation detectors such as NeON [15], dual-phase time projection chambers such as RED-100 [16], Si charged coupled devices such as CONNIE [17, 18] or HPGe semiconductor detectors such as TEXONO [19], its successor RECODE [20], and \nu GeN [21] are also on-going. They still miss a detection, although having acquired a significant amount of reactor-ON and reactor-OFF exposure time together with very efficient particle background rejection.
+Cryogenic detection experiments, such as RICOCHET [22], MINER [23] and NUCLEUS [24], are also underway.
+These typically read out phonon signals induced by particle interactions in \cal{O} (100 g) crystal absorbers using highly sensitive thermometers and already demonstrated \mathrm{\lesssim} 100 eV energy thresholds [25, 26].
+Reaching energy thresholds below the 100 eV range however led to the identification of another source of background, which is yet of unknown origin and commonly called the low energy excess (LEE).
+The LEE is a sharp rise of events observed below a few hundreds of eV in many low-threshold experiments, which seems not tied to particle-induced backgrounds but rather to fundamental aspects in the design of their respective detection setups (see e.g. [27, 28] for a detailed discussion and review).
+The origin and the mitigation of this low-energy background component is currently the subject of many investigations and R&D efforts, as it definitely limits sensitivity to the detection of CE \nu NS [29, 30, 31, 32].
+The NUCLEUS experiment aims at deploying a set of ultra-low threshold \ceCaWO4 cryogenic detectors at the Chooz nuclear power plant, which is operated by the “Électricité de France” (EdF) company.
+The experimental site dubbed the Very Near Site (VNS) is a basement room located in a tertiary building less than a 100 m away from the two 4.25 \mathrm{GW_{th}} production units and offers a very modest overburden against secondary cosmic-ray particles [24].
+This article comprehensively reports on the characterization of the particle background environment in the VNS and on a prediction of the residual rates of particle backgrounds at sub-keV energies for the measurement of CE \nu NS.
+It complements the background characterization work published by the CONUS/CONUS+ [33, 34, 35] and RICOCHET [36] CE \nu NS reactor experiments, whose respective experimental sites feature more favorable overburden conditions albeit being further exposed to reactor correlated background due to their much shorter baselines.
+Section 2 introduces the NUCLEUS experimental layout at the VNS, with a focus on the particle background shielding strategy.
+Section 3 briefly describes the main features of the NUCLEUS simulation tool based on the Geant4 software library, which was specifically developed for the interpretation of the different background measurements at the VNS (section 4) as well as the prediction of the background rates in the cryogenic detectors (section 5).
+Finally, section 6 summarizes the main results of this work and discusses future challenges for a measurement of CE \nu NS at a reactor facility.
+2 The NUCLEUS shielding system
+Figure 1 shows the main components of the NUCLEUS experiment at the Chooz nuclear power plant going from the inside of the setup f) to the inside a).
+The 10-g cryogenic detection setup (see figure 1 (f)) will be operated in a dry dilution cryostat (see figure 1 (e)).
+It will be exposed to a total antineutrino flux of \mathrm{2.1\times 10^{12}\,cm^{-2}\,s^{-1}} at the VNS location, assuming both reactors are running at nominal power.
+In the region of interest (RoI) between 10 and 100 eV, this flux gives an average CE \nu NS detection rate of about 280 and 20 \text{\,}{\mathrm{d}}^{-1}\text{\,}{\mathrm{kg}}^{-1}\text{\,}{\mathrm{keV}}^{-1} in the \ceCaWO4 (6.8 g) and \ceAl2O3 (4.5 g) target detectors, respectively.
+This very low rate imposes stringent requirements on the rejection of particle backgrounds, with the aim of achieving a \cal{O} (100) \text{\,}{\mathrm{d}}^{-1}\text{\,}{\mathrm{kg}}^{-1}\text{\,}{\mathrm{keV}}^{-1} background index in the CE \nu NS RoI [24].
+As discussed in section 4, the VNS gives a very modest overburden against secondary cosmic-ray particles.
+A sophisticated shielding strategy is then required to mitigate surface muons and neutrons originating from cosmic-ray air showers, with the additional constraint of designing a small footprint setup to fit the size of the experimental room.
+The various NUCLEUS shielding elements are illustrated in figure 1 (d) and figure 1 (e). They were designed and optimized using extensive Monte Carlo studies based on the Geant4 simulation toolkit (see section 3).
+An external shielding first combines a 5-cm thick plastic scintillator-based muon veto (MV) [37] in the outermost part, together with a 5-cm thick layer of low radioactivity Pb and a 20-cm thick layer of 5% boron-loaded high-density polyethylene (HDPE) in the innermost part.
+It ensures (i) an excellent rejection of muon-induced background events and (ii) minimal production of secondary particles from muons and neutrons crossing high-Z materials while providing (iii) some attenuation to ambient gamma rays and neutrons.
+The NUCLEUS external shielding is mechanically held in place with a steel structure, which stands on a rail system, allowing it to open for easy access to the cryostat.
+It is extended within the cryostat by a so-called internal shielding (see figure 1 (e)), which is housed below the still stage.
+This internal shielding follows the same layer arrangement as the external shielding, with the addition of a nearly \mathrm{4\pi} 4-cm thick boron carbide (\ceB4C) layer to further suppress neutrons reaching the target detectors. It also features a plastic scintillator-based cold muon veto, which was designed to operate at cryogenic temperatures [38].
+An essential piece of the NUCLEUS shielding system is the cryogenic outer veto (COV).
+The COV is an arrangement of two cylindrical and four rectangular 2.5 cm thick HPGe crystals mechanically held within a Cu support structure, operated at \mathcal{O} (mK) temperatures and read-out through the ionization channel.
+It hermetically covers the cryogenic target detectors, with the primary purpose of complementing the relatively modest attenuation of the NUCLEUS passive shielding to external gamma rays.
+It is also expected to further suppress muon-induced and neutron-induced backgrounds in the cryogenic target detectors (see section 5.2).
+For the former, an energy threshold as low as possible is highly desirable.
+The concept of such an HPGe cryogenic veto system was recently validated, especially showing that a \cal{O} (10 keV) threshold is within reach when operated in a dry dilution refrigerator [39].
+The last piece of the NUCLEUS shielding strategy is the target detector TES-instrumented holder, called inner veto (IV).
+The main purpose of the IV is to reject surface events and holder-related events.
+It also embeds a LED system for in-situ calibration and stability monitoring of the detectors [40].
+Figure 1: Simplified schematic view of NUCLEUS at the VNS, breaking down the main components of the experiment.
+3 Simulation framework
+All simulation studies were carried out with a dedicated software using release 10.7.3 of the Geant4 toolkit [41, 42, 43].
+The transport of the external background sources up to the different detection setups used throughout this work was initiated using custom-made primary event generators. These are detailed in the following corresponding sections.
+The generation of environmental gamma rays (as well as atmospheric muons and neutrons), however, shares one common point: distributing the starting positions of each primary particle along a plane tangent to a sphere (or upper-half sphere, respectively) encompassing the simulated geometry [44].
+For each Monte Carlo event, the position of the tangent plane on the sphere is randomly drawn according to the primary particle angular distribution law.
+This method, later denoted as the tangent plane method, shoots primary particles perpendicularly from this plane toward the simulated geometry.
+It ensures a correct illumination of the simulated setup if the size of the tangent plane is appropriately set.
+Particles and their interaction processes were defined using the shielding reference physics list [43], which is particularly recommended for neutron transport.
+The electromagnetic interactions were, however, considered via the Livermore physics constructor.
+Although none of the Geant4 electromagnetic physics constructors is guaranteed to be fully reliable down to the sub-keV energy regime, the set of electromagnetic models used by the Livermore constructor is considered to be one of the most precise and realistic as it relies on an extensive library of evaluated low-energy data.
+As such, atomic relaxation processes following ionization were always switched on.
+Finally, the scoring of various information of interest (energy deposition, position of interaction vertices, etc.) during particle tracking was achieved using custom-made C++ classes interfaced with the ROOT framework [45] for later analysis.
+As pictured in figure 1 (b) to (f), a detailed geometry of the experimental setup and of the VNS building at Chooz was implemented for the background prediction in the NUCLEUS \ceCaWO4 and \ceAl2O3 cryogenic detectors.
+Particular attention was paid to reproducing the detector geometry with the highest possible fidelity, as the distribution of energy depositions down to the lowest energies may severely be impacted by the details of all the materials in close vicinity to the target detectors.
+Additionally, specific particle production range cuts smaller than the Geant4 default ones were applied for the target detector, inner veto, passive holder material, and cryogenic outer veto so as not to bias energy deposition in the tracking of particles in these small volumes.
+Particle production range cuts are initially expressed in units of length, and are then converted into an energy threshold beyond which Geant4 creates and tracks new secondary particles. They are material- and particle-dependent, with an optimal value often resulting from a trade-off between computing time and the desired accuracy in the simulation of the energy deposition and stopping range of the tracked particles.
+As a reasonable compromise, the target detector, inner veto, passive holder material, and cryogenic outer veto volumes were associated a particle production range cut corresponding to one-tenth of their respective smallest geometrical dimension.
+Finally, time information in the particle tracking was managed using the Geant4 stacking mechanism.
+Particle tracks occurring on timescales larger than the NUCLEUS cryogenic detector time response, i.e. \mathrm{\sim 100\,\mu s} , were deferred and later processed in a next primary event.
+This stacking mechanism is especially useful for correctly accounting for decaying particles and nuclei.
+A typical example is the production of unstable nuclei from muon spallation in materials near the active detectors.
+4 Particle background environment at the VNS
+The design of the NUCLEUS shielding and the prediction of the particle backgrounds in the cryogenic detection setup required a thorough understanding of the background radiation environment at the VNS.
+This section reports on the full set of measurements performed to characterize the cosmic ray-induced muon and neutron radiations, the environmental radioactivity, airborne radon and the screening of radioactivity in the NUCLEUS detector and shielding materials.
+These measurements add up to preliminary background characterization campaigns organized at the very beginning of the NUCLEUS project and presented in [24].
+They were used as input data to predict and normalize the different components contributing to the NUCLEUS background modeling presented in section 5.
+4.1 Attenuation of cosmic ray-induced muons
+The attenuation of the surface muon flux at the VNS was determined in a previous measurement campaign using a so-called cosmic wheel apparatus, which was developed in the scope of the “Sciences à l’école” French outreach program [46].
+This device consists of three parallel plastic scintillator planes read out with photomultiplier tubes (PMTs) and operated in coincidence mode to detect muons.
+The panels are mounted on a rotating frame, allowing them to point at different zenith and azimuth angles.
+Measurements of the muon count rates above ground and in the VNS at various zenith and azimuth orientations gave an omnidirectional muon attenuation factor of 1.41\pm 0.02\text{\,} , corresponding to a mean overburden of 2.9\pm 0.1\text{\,}\mathrm{m}\text{\,}\mathrm{w.e.} [24].
+A Geant4 simulation of muon transport through the VNS building (see figure 1 (b)) was performed to check and corroborate these measurements.
+The starting positions of muons were distributed according to the previously described tangent plane method, using a 35-m radius sphere centered on the VNS position hence fully encompassing the concrete building together with a tangent plane of ( 30\times 30 ) m2 to fully illuminate the VNS.
+The muon initial energy and propagation direction were sampled from a modified Gaisser parametrization adjusted to a collection of experimental data measured at various zenith angles [47].
+The generation and tracking of \sim\,$2.2\text{\cdot}{10}^{8}$ atmospheric muons were performed, only scoring information of primary and secondary particles reaching a 1.4-m radius spherical ghost volume, centered on the position of the NUCLEUS experimental setup in the VNS and encompassing it (see figures 1 (b) and (c)).
+Figure 2 compares projections of the overburden as a function of both zenith and azimuth orientations, as obtained from the cosmic wheel measurements and the Geant4 simulation.
+The overburden map in the left panel of figure 2 was constructed by 2-D interpolating the set of collected measurements over a finer grid in the zenithal and azimuthal angle space.
+It includes then a smearing effect resulting from the cosmic wheel’s 70\text{\,}\mathrm{\SIUnitSymbolDegree} acceptance angle to muons.
+The Geant4-predicted overburden map is shown in the right panel of figure 2 and was built with a $1\text{\,}\mathrm{\SIUnitSymbolDegree}$\times$1\text{\,}\mathrm{\SIUnitSymbolDegree}$ bin size to keep and exhibit the details of the VNS shadowing to muons when viewed in the upward direction.
+It correctly reproduces many of the features observed from the cosmic wheel measured overburden map, such as (i) a peak attenuation toward 15-30 zenith and 180\text{\,}\mathrm{\SIUnitSymbolDegree} azimuth angles, respectively and (ii) the left-right asymmetry caused by the off-centered positioning of the VNS in the underground basement of the building (see figure 1 (b)).
+An omnidirectional overburden of 2.92\pm 0.01\text{\,}\mathrm{m}\text{\,}\mathrm{w.e.} was computed by averaging the overburden map over all directions.
+It perfectly matches the cosmic wheel result.
+This very good agreement validates a correct implementation of the VNS geometry and gives confidence in the description of cosmic ray-induced surface muons and their transport as currently implemented in the NUCLEUS simulation framework.
+Figure 2: Projections of the VNS overburden as a function of the zenith and azimuth angles in units of meters of water equivalent ( \mathrm{m}\text{\,}\mathrm{w.e.} ), as obtained from a measurement campaign using the cosmic wheel detector (left) and from a Geant4 simulation (right). See text for further details.
+Other features of the atmospheric muon component reaching the VNS were therefore estimated using this simulation.
+For instance, the atmospheric muon mean energy was found to be slightly shifted from 6.8 GeV above ground to 7.6 GeV in the VNS, further confirming the small overburden provided by the building.
+The secondary neutron and gamma total production yields at the position of the NUCLEUS setup were estimated to be 0.032\pm 0.001 and 1.3\pm 0.1 particle per primary muon, respectively.
+When normalized to typical surface muon fluxes (see table 5.1), the production of secondary neutrons is therefore expected to make a small or even negligible contribution to the measured neutron ambiance in the VNS (see section 4.2).
+The same conclusion applies to muon-induced gamma rays when compared to the measured gamma-ray ambiance (see section 4.3), even though their production yield is a factor 40 larger than that of neutrons.
+Muon-induced gamma rays mostly come from bremsstrahlung and can reach 10-100 MeV energies, which are far larger than those of the environmental gamma-ray ambiance.
+For completeness, all muon-induced secondary particles were therefore included in the NUCLEUS background prediction (see section 5).
+4.2 Reduction of cosmic ray-induced fast neutrons
+Neutrons reaching the experimental setup are a particularly dangerous source of background radiation for any CE \nu NS signal measurement as they are difficult to shield and able to elastically scatter off nuclei, thereby mimicking the CE \nu NS experimental signature.
+In this respect, the neutron environment in the VNS deserves to be carefully and thoroughly characterized.
+A Geant4 simulation of neutron transport through the NUCLEUS experimental setup identified fast neutrons with \mathrm{\geq} 10 MeV energies in the VNS room to be the dominant source of nuclear recoils in the 10-100 eV region of interest [48].
+At very shallow experimental sites, such neutrons mostly originate from cosmic ray-induced, very high-energy atmospheric cascades.
+A measurement strictly focusing on characterizing the flux reduction of these very high-energy neutrons in the VNS was therefore conducted using a set of Bonner spheres.
+4.2.1 Bonner sphere measurement
+The Bonner sphere neutron spectroscopy technique uses a set of polyethylene-based moderating spheres in combination with a thermal neutron detector to characterize a neutron ambiance over several orders of magnitude in energy [49].
+The thermal neutron detector used in the present work was a 10 mm diameter and 2 mm thick 6Li-enriched europium-doped lithium iodide (LiI(Eu)) scintillating crystal read out by a PMT and housed in a nickel-chromium alloy case.
+This probe, designed for high flux neutron measurements, was distributed by Berthold Technologies GmBH & Co under the part number LB6603I [50].
+The measurement of the fast neutron flux reduction at the VNS specifically used two spheres featuring very similar neutron response functions up to \mathrm{\sim} 10 MeV: (i) a 20.32-cm diameter sphere made of high-density polyethylene (hereafter labeled BS-PE) and (ii) a 22.86-cm diameter sphere additionally including a Pb shell converter on the inside, with an outer diameter of 10.16 cm and a thickness of 1.27 cm, to enhance the acceptance to \mathrm{\gtrsim} 10 MeV neutrons (hereafter labeled BS-w-Pb).
+Measuring the neutron capture rate difference between these two spheres combined with the LiI(Eu) probe gives access to the flux of > 10 MeV fast neutrons.
+All measurements were done by applying a 900 V bias voltage to the LiI(Eu) probe.
+The output signals were fed into an amplification chain combining a custom-made pre-amplifier and a Canberra 2012 spectroscopy amplifier.
+The amplified signals were then digitized and their pulse heights saved using an Amptek MCA 800D portable multichannel analyzer [51].
+A calibration of the LiI(Eu) probe was attempted using 133Ba and 60Co gamma sources and a 252Cf neutron source.
+A very poor resolution was observed, which is probably due to the small size of the crystal with respect to the mean free path of the 133Ba and 60Co emitted gamma rays, and most importantly, to a bad scintillation light collection efficiency.
+Although no full gamma absorption peaks could be observed, the end points of the gamma spectra and the standard deviation of the 252Cf-induced neutron capture peak could be used to roughly estimate a detector energy resolution of \mathrm{\sigma(E)\simeq 4\,\sqrt{E}} .
+Using only the gamma sources, a \mathrm{E=(8.5\pm 0.5)\times i_{MCA}-(24\pm 43)\,\leavevmode\nobreak\ keV_{ee}} linear calibration function was then estimated, where \mathrm{i_{MCA}} denotes the MCA channel index, and lead to a calibration of the data in electron equivalent energy (keV {}_{\text{ee}} ).
+With such an energy calibration, the position of the 6Li neutron capture peak was reconstructed at (\mathrm{2903\pm 6)\,keV_{ee}} , corresponding to a (\mathrm{60.7\pm 0.1)\,\%} quenching of the 4783 keV total energy released by the alpha and tritium particles.
+This measured quenching factor compares reasonably well with earlier measurement reported in the literature, reconstructing the neutron capture peak between 3 and 4 MeV {}_{\text{ee}} [52, 53, 54].
+The measurement campaign at the Chooz nuclear power plant accumulated a total of 159 days of data.
+Data collection was segmented into 2-week long runs alternating each sphere to smooth temperature effects on the signal amplification chain and possible seasonal flux variations.
+Each sphere accumulated a total of 52 days of data collection at the VNS.
+In contrast, the BS-w-Pb and BS-PE spheres collected 35 and 20 days of data, respectively, when relocated to the surface.
+In the VNS, a signal-to-background ratio largely below 1 was observed, (visible it the right panel of figure 3). To improve the sensitivity of the setup, both at surface and in the VNS, it was completed with a small muon veto made of a (\mathrm{30\times 26\times 3.5)\,\,cm^{3}} plastic scintillator panel coupled to a PMT.
+This muon veto was placed underneath the sphere, giving a modest 30% muon-induced background reduction in the thermal neutron capture peak region.
+Because of the unfavorable signal-to-background ratio observed at the VNS, the expected backgrounds in each Bonner sphere setup had to be carefully modeled to extract the neutron capture counting rate for each measurement.
+Atmospheric muons and ambient gamma rays are the main contributors to the expected backgrounds.
+They were modeled using the NUCLEUS Geant4 simulation framework, in the same fashion as the simulations respectively described in sections 4.1 and 4.3.
+These simulated background components were then linearly combined with a Gaussian model of the expected neutron capture signal to be fitted on the data [48].
+In this work, the shape of the atmospheric muon and ambient gamma-ray contributions were assumed to be sphere-dependent but measurement location-independent (i.e. the same at the surface and in the VNS).
+The fit procedure was performed over the 600-4500 \mathrm{keV_{ee}} energy range, leaving the neutron Gaussian normalization, peak position and standard deviation together with the normalization of the atmospheric muon and ambient gamma-ray components as free parameters.
+Figure 3 compares the BS-w-Pb sphere data to the best-fit model at the surface and VNS locations, showing a \mathrm{\pm} 10% agreement. A similar agreement was obtained with the BS-PE sphere.
+The neutron capture rates obtained from the best fit neutron signal model of the four Bonner sphere measurements are reported in table 1.
+As visible from the residuals in figure 3, the fit gives a worse agreement above 4 MeV {}_{\text{ee}} for surface measurements, without having a significant impact on the estimated number of counts in the neutron peaks.
+Figure 3: Best fit model of the BS-w-Pb sphere acquired data at the surface (left) and in the VNS (right) at the Chooz nuclear power plant. The bottom plots show the residuals of the fit and the \pm 10 % band.
+Table 1: Neutron capture rates in the BS-w-Pb and BS-PE sphere measurement campaigns, as extracted from a fit to the data also including Geant4-modeled backgrounds (see text for further details). Quoted uncertainties are obtained from the fit output, only considering statistical uncertainties of the data.
+Sphere
+Location
+Neutron capture rate [d-1]
+S/B
+\boldsymbol{\chi^{2}/n_{dof}}
+BS-w-Pb
+Surface
+143.4\pm 3.3
+1.34\pm 0.04
+246.9/105
+VNS
+7.9\pm 1.0
+0.15\pm 0.02
+163.3/106
+BS-PE
+Surface
+95.7\pm 3.6
+0.87\pm 0.04
+219.2/105
+VNS
+2.1\pm 0.9
+0.04\pm 0.02
+296.8/106
+The output of the fit was found to be quite sensitive to the chosen energy range.
+A systematic uncertainty was then estimated varying the lower and upper limits of the fit range.
+It was the only systematic uncertainty considered here, as other sources of systematic uncertainties were found to negligibly affect the final result.
+The difference between the extracted BS-w-Pb and BS-PE thermal neutron counting rates therefore gave a fast neutron rate above 10 MeV of (\mathrm{47.8\pm 5.0\,(stat.)\pm 3.3\,(syst.))\,d^{-1}} and (\mathrm{5.8\pm 1.4\,(stat.)\pm 1.3\,(syst.))\,d^{-1}} at the surface and in the VNS, respectively.
+The reduction of cosmic ray-induced fast neutrons by the VNS building was then estimated by performing a toy Monte Carlo simulation of the ratio of these two rate measurements, assuming they were normally distributed.
+The reduction factor, which was taken as the most probable value of the resulting distribution, was found to be \mathrm{\alpha=6.8^{+3.7}_{-1.9}} , with the quoted upper and lower values defining the 68% highest density credible interval.
+4.2.2 Comparison to atmospheric neutron transport simulation
+Similarly to the atmospheric muons, the measured reduction of the fast neutron flux was compared against a simulation of neutron transport through the VNS building up to the experimental area using the NUCLEUS Geant4-based simulation framework.
+The starting positions of neutrons were isotropically distributed using a 40\,\text{m}\times 40\,\text{m} plane tangential to a 35 m radius sphere centered on the VNS position.
+The energy of primary neutrons was sampled from a measurement of the cosmic ray-induced neutron flux and spectrum carried out on the ground [55], and hereafter denoted as Gordon spectrum.
+The transport of \mathrm{1.64\times 10^{9}} neutrons was performed, scoring information of primary and secondary particles reaching a 1.4 m radius spherical ghost volume positioned on the NUCLEUS setup (see figures 1 (b) and (c)).
+A total of \sim\,3.6\,\times\,10^{6} neutrons was collected in the spherical ghost volume. Considering all energies and directions, this corresponds to a 1.75 reduction factor from the building.
+The left panel of figure 4 compares the energy distribution of simulated neutrons reaching the NUCLEUS setup location at the VNS against the original Gordon spectrum measured on the ground.
+They are plotted in the \mathrm{E\times d\Phi_{n}/dE} representation, where \Phi_{n} is the neutron flux and E the neutron energy, and with a log scale x-axis to better illustrate their features.
+The original Gordon spectrum features two high-energy peaks typical for neutrons produced by the interaction of high-energy cosmic rays in the atmosphere.
+The highest energy peak, which is centered at \mathrm{\sim} 100 MeV and extends to GeV energies, corresponds to neutrons knocked on from atomic nuclei being collided by primary cosmic rays.
+The second peak, centered at \mathrm{\sim} 1 MeV, originates from neutron evaporation processes.
+It exhibits fine structures from nuclear resonances in the nitrogen and oxygen nuclei present in the atmosphere, but also from other nuclei in the material environment close to the neutron detection setup.
+The atmospheric neutron spectrum on the ground also features a plateau region spanning many orders of magnitude in energy between 1 eV and 10 keV.
+This plateau corresponds to fast neutrons being moderated by the atmosphere from their production point and by the surrounding materials up to the detector.
+It finally ends with a thermal neutron peak at the lowest energies.
+The magnitude of this peak strongly depends on the surrounding materials and their composition.
+As shown on the left panel of figure 4, the VNS building is predicted to bring a sizable attenuation to the knock-on and evaporation neutrons.
+Interestingly, the magnitude of the plateau region is enhanced with respect to the surface level spectrum.
+This most likely results from the moderation of high-energy neutrons through the building materials.
+Even a dip around \mathrm{\sim} 3 keV is visible and could originate from resonances in the (n, \mathrm{\gamma} ) cross-section of 30Si, which is present in the concrete and glass compositions used to model the VNS building geometry.
+The thermal neutron peak is heavily suppressed with respect to the magnitude of the plateau region.
+The suppression of the thermal neutron peak in the simulation is likely caused by the presence of air in the VNS room and the absence of other neutron moderating materials near the ghost spherical volume.
+Figure 4: Reduction of the cosmic ray-induced neutron flux at the VNS. The left panel compares the Gordon spectrum measured on ground [55] to the energy spectrum of neutrons reaching the NUCLEUS setup location as predicted by Geant4. The right panel displays the differential flux attenuation obtained from the ratio of these two spectra (pink solid line) and a cumulative attenuation obtained from integrating the spectra above a given energy (green dashed line). The blue square and the red triangle show the reduction factor of >10 MeV neutrons measured with the Bonner Sphere (BS) setup (see section 4.2.1) and the >10 MeV neutron cumulative attenuation as predicted by a Geant4 simulation of the Bonner Spheres setup, respectively. The gray areas on each panel indicate the >10 MeV energy range from which neutrons are most likely to induce a nuclear recoil in the CE \nu NS RoI. See text for further details.
+As shown by the right panel of figure 4, neutrons above 10 MeV are predicted to be attenuated by a factor of approximately 5 by the VNS building.
+This cumulative attenuation factor cannot, however, be directly compared to the BS setup measured attenuation because the response functions of the BS-PE and BS-w-Pb spheres slightly differ for neutron energies below 10 MeV (see e.g. [48]).
+A Geant4 simulation, which models the neutron response function of the two Bonner spheres to compute their expected thermal neutron capture rates, both at surface and in the VNS, predicted a total attenuation factor of 7.2\,\pm\,0.7 .
+This predicted value agrees well with the previously reported BS measurement and validates the Geant4 transport of atmospheric neutrons as implemented in the NUCLEUS simulation framework.
+The predicted differential flux attenuation (see right panel of figure 4) was therefore directly used to account for for the effect of the VNS overburden on the cosmic ray-induced neutrons in the simulation of the NUCLEUS particle backgrounds (see section 5).
+The attenuation of cosmic ray-induced neutrons in the VNS is sensitive to the details of the implemented building geometry (e.g. material and composition).
+For the same density, changes in the composition of the concrete material used to erect the VNS building [56] have been found to significantly influence the attenuation of low energy neutrons while having a modest impact of \sim 10% on the attenuation of neutrons above 10 MeV.
+The neutron attenuation length in concrete is \sim 80 cm above 10 MeV and is comparable to the mean neutron path length, making a detailed implementation of the building geometry a critical aspect in the prediction of the attenuation.
+For instance, a \sim 10% change in the mean neutron path length was found to change by 30% (respectively 60%) the total (respectively >10 MeV) attenuation to neutrons.
+Since the building geometry was reproduced with a high level of fidelity with respect to the original construction drawings provided by EdF, a 30% uncertainty on the differential attenuation to neutrons was conservatively assumed in the prediction of the NUCLEUS particle backgrounds (see table 5.1).
+The energy of secondary gamma rays produced by the interaction of atmospheric neutrons in the VNS building material is predicted to range mainly between 50 keV and 10 MeV, with a yield of about 0.3 per primary neutron. When normalized to typical neutron fluxes as measured on the ground (see table 5.1), this production yield results in a negligible (3 orders of magnitude lower) contribution with respect to the gamma-ray ambiance measured in the room (see section 4.3).
+4.3 Gamma-ray ambiance
+The gamma-ray ambiance at the VNS was characterized using a Canberra GR3018 0.68-kg n-type coaxial Reverse-Electrode Ge (REGe) detector [57].
+The REGe detector is cooled down using a 7 L portable liquid nitrogen dewar, allowing a holding time of 3 to 5 days.
+The aluminum endcap is equipped with a 0.5 mm thick beryllium window at one end, which extends the detector sensitivity to low energy ( \mathrm{\lesssim} 10 keV) photons.
+At the other end, a charge-sensitive preamplifier stage along with a temperature monitoring circuit are housed in an adjacent aluminum casing.
+The REGe detector was operated and data were acquired using an all-in-one DSPEC jr 2.0 module from ORTEC [58].
+The DSPEC module amplifies, digitizes, and trapezoidally filters the analog pulses at the output of the preamplifier.
+The parameters of the trapezoidal filter, namely the rise time and the flat top width, are automatically adjusted by the MAESTRO control software [59] for optimal energy resolution.
+This software also emulates a multichannel analyzer to measure the digital pulse amplitudes and save data in histogram form.
+All the measurements reported here were acquired by applying a -5000-V bias voltage, as recommended by the REGe detector manufacturer.
+The gain of the DSPEC amplifier was tuned to extend the dynamic range up to 3 MeV, beyond the highest naturally occurring gamma-ray energy from 208Tl ( \mathrm{\sim} 2.6 MeV).
+The detector energy response was first checked and characterized using 152Eu and 60Co radioactive sources, and also from a background run conducted in a surface laboratory at CEA Paris-Saclay using naturally occurring gamma-ray lines.
+Excellent performances were demonstrated. A perfect linear response from \mathrm{\sim} 100 keV up to \mathrm{\sim} 3 MeV was observed, with e.g. a full width at half maximum for the reconstructed 1332.5 keV 60Co photo-peak of 1.72 keV.
+No stability issues were observed following multiple operations of the setup over a two-year period.
+The detector energy resolution, which is of interest for the modeling of the data presented hereafter, was fitted to the following function [60] on the reconstruction of the most prominent naturally occurring gamma-ray lines:
+\frac{\sigma(E)}{E}=\sqrt{\frac{A}{E^{2}}+\frac{B}{E}+C},
+(1)
+with A = \mathrm{(1.40\pm 0.11)\times 10^{-1}\,keV^{2}} , B = \mathrm{(2.9\pm 0.3)\times 10^{-4}\,keV} and C = \mathrm{(2.6\pm 1.4)\times 10^{-9}} .
+Gamma-ray ambiance measurements were conducted on different sites to check the consistency of the results and the Monte Carlo interpretation of the data.
+Figure 5 compares the ambient gamma-ray spectrum measured at the VNS together with those measured in the CEA Paris-Saclay surface laboratory and the Underground Laboratory (UGL) located at the Technical University of Munich (TU Munich).
+The measured spectra all exhibit the usual naturally occurring gamma-ray lines over a continuum rising at low energies.
+This continuum mostly results from the superposition of the Compton spectra associated with the many gamma-ray lines present in the surrounding environment.
+The high energy portion of the spectra beyond the 2.6-MeV peak of 208Tl shows the beginning of a plateau, which is mainly caused by the interactions of atmospheric muons in the detector.
+A comparison of their respective levels can already give crude information about the overburden of each site.
+Figure 5: Gamma-ray ambiance spectra measured in the VNS (green line) and in two other NUCLEUS laboratories, the respective measuring time is stated in the legend.
+The VNS gamma-ray spectrum was extracted using a data-to-Monte Carlo comparison approach [48].
+A first step models the gamma-ray ambiance in the room by homogeneously distributing the naturally present \mathrm{{}^{40}K} , \mathrm{{}^{232}Th} and \mathrm{{}^{238}U} primordial radionuclides in the nearby concrete walls of the VNS building basement (see figure 1 (b)), and simulating their respective decay chains assuming secular equilibrium.
+The ambient gamma-ray spectrum associated with the decay of each primordial radionuclide was then constructed, saving the energy of any gamma-ray reaching a cylindrical ghost volume enclosing the REGe detector in the VNS.
+In a second step, the ambient gamma-ray spectra sourcing from the decay of each primordial radionuclide decay chain were transported up to the REGe setup to predict the expected distributions of energy depositions.
+A final step fitted the contributions of each of these distributions to best match the experimental data, taking into account the REGe detector energy resolution as described above.
+Figure 6 shows the results of this procedure applied to the VNS data.
+For completeness, the contributions from atmospheric muons and atmospheric neutrons were additionally simulated to achieve a better match to the data beyond the 2.6-MeV gamma-ray line of \mathrm{{}^{208}Tl} .
+Their respective normalizations were fixed using the expected muon and neutron fluxes quoted in table 5.1, scaling each by the expected attenuation from the VNS building.
+The contribution of airborne radon measured in the room was also included (see section 4.4). Their impact on the fit result, however, remained negligible (below 0.5%). A good agreement at the \pm 10\% level is obtained between the simulation and the data over the 100-2600 \mathrm{keV_{ee}} energy range. The largest deviations are observed around some gamma-ray peaks, and most probably come from small errors in the energy calibration of the data and in the energy resolution applied to the Geant4 simulation.
+The extracted contributions from \mathrm{{}^{40}K} , \mathrm{{}^{232}Th} and \mathrm{{}^{238}U} are reported in table 4.3.
+They are expressed here under units of mass activity, and are also compared to those obtained with the same method for the CEA Paris-Saclay and UGL ambient gamma-ray measurement campaigns.
+They are within the range of previous natural radioactivity measurements in concrete building materials [61].
+The total ambient gamma-ray flux, which sums these three contributions, is also indicated in the last column of table 4.3.
+To safely cover the remaining discrepancies between the best-fit model and the data (see bottom panel of figure 6), a \sim 5% systematic uncertainty is considered additionally to the statistical uncertainties in the prediction of the NUCLEUS backgrounds sourcing from ambient gamma rays in the VNS (see section 5.1).
+Table 2: Primordial radionuclide activities extracted from a Monte Carlo fit to the ambient gamma data measured in three different laboratory locations. The corresponding measured total gamma-ray ambiance is also indicated. Quoted uncertainties on the primordial activities are obtained from the fit output, only taking into account statistical uncertainties in the data.
+{NiceTabular}
+cS[table-format=2.2(3)]S[table-format=2.2(3)]S[table-format=2.2(3)]S[table-format=2.2(3)]
+Site Primordial activities [Bq/kg] Total flux [ \mathrm{cm^{-2}s^{-1}} ]
+\mathrm{{}^{40}K} \mathrm{{}^{232}Th} \mathrm{{}^{238}U}
+VNS 59.6(2) 3.28(1) 5.65(2) 5.03(1)
+UGL 18.33(8) 1.91(1) 4.89(1) 3.12(1)
+CEA Paris-Saclay 82.2(4) 5.55(1) 7.86(1) 7.45(1)
+Figure 6: Extraction of the ambient gamma-ray spectrum measured at the VNS. (Top) The experimental data are matched using a Geant4 model broken down into multiple contributions. Only the \mathrm{{}^{40}K} , \mathrm{{}^{232}Th} and \mathrm{{}^{238}U} primordial radionuclides contributions were fitted to the data. See text for further details. (Bottom) Residuals between the best-fit model and the data.
+4.4 Airborne radon activity
+Radon is a radioactive noble gas, which is produced from the decay of primordial uranium and thorium radionuclides.
+It does not chemically bind to the materials within which its parents reside, and can therefore easily escape.
+Airborne radon can be found in high concentrations in indoor environments, especially in areas with minimal air ventilation.
+The most important contribution to airborne radon comes from the \mathrm{{}^{238}U} chain.
+The fifth daughter of \mathrm{{}^{238}U} is \mathrm{{}^{226}Ra} and decays into \mathrm{{}^{222}Rn} . The half-life of \mathrm{{}^{222}Rn} (3.82 d) is long enough for much of the gas to diffuse out in the air.
+Radon also comes from the \mathrm{{}^{232}Th} and \mathrm{{}^{235}U} decay series, which produce \mathrm{{}^{220}Rn} (T1/2=55.6 s) and \mathrm{{}^{219}Rn} (T1/2=3.96 s), respectively.
+Because of their short half-lives, they have much greater chances to decay before becoming airborne and usually contribute much less than \mathrm{{}^{222}Rn} .
+The direct progenies of radon can deposit electrostatically on any detector component surfaces in contact with air (plate-out effect), making them a significant source of background in rare event detection experiments [62].
+Particular attention must be paid to \mathrm{{}^{210}Pb} , which has a half-life of about 22 years and gives birth to the \mathrm{{}^{210}Po} alpha emitter through two successive beta decays.
+A large amount of \mathrm{{}^{210}Pb} deposited on the detector components would then induce a background contribution affecting the whole data-taking of the NUCLEUS experiment.
+Airborne radon activity in the VNS was measured by using an Alpharad Plus radon monitoring device [63].
+This device uses electrostatic deposition of airborne radionuclides on a semiconductor detector operating in flow mode and was set up to collect a measurement every 23 minutes, with 3 minutes of pumping and 20 minutes of alpha particle counting.
+Figure 7 shows the original data grouped into 70-minute intervals in order to reduce statistical fluctuations. They were taken over a two-day period to assess the possible impact of human activity and air ventilation in the room. A periodic day/night variation is clearly visible.
+Figure 7: Measurement of airborne radioactivity in the VNS over a 2-day period. See text for further details.
+Data were fitted with a sinusoidal function on top of a constant average activity.
+The period of the sinusoidal function was fixed to 1 day leaving the other parameters free.
+A constant average radon activity of 22.1(1.5)\text{\,}\mathrm{Bq\,m^{-3}} with a phase of 5.5(0.7)\text{\,}\mathrm{h} and a sinusoidal amplitude of 11.8(2.1)\text{\,}\mathrm{Bq\,m^{-3}} were obtained, showing that radon activity levels were minimal (respectively maximal) at 6 pm (respectively 6 am) and never exceeded \sim 40 Bq m-3 during the measurement.
+The origin of this modulation is yet unknown and calls for additional measurements on longer time periods.
+Thanks to the presence of the air ventilation system, airborne radon activity in the VNS was found to be well below typical activities expected in a basement room (200-600 Bq m-3).
+As shown in figure 6, it is expected to contribute less than 0.01% to the total gamma-ray ambiance.
+It can be then neglected as an external source of background, even in the inside of the NUCLEUS passive shield where the environmental gamma rays are attenuated by more than a factor 50 (see section 5.2.2).
+Finally, the possible plate-out effect on the setup components, especially those located inside the cryostat in close vicinity to the cryogenic detectors, were neglected in the present work because (i) the material screening measurements presented in table 3 include this contribution and (ii) most of a cumulated surface contamination can be mitigated by a simple cleaning [64].
+4.5 Material radiopurity
+Radioactivity intrinsically present in the materials composing the experimental setup can be a key consideration in rare event search experiments.
+This radioactivity can either be of primordial (232Th, 238U, 235U, 40K and their progenies), cosmogenic (i.e. cosmic ray activation of materials) or anthropogenic (e.g. 60Co and 137Cs) origin.
+The decay of radioactive isotopes surrounding the detection volumes can produce background counts in the CE \nu NS RoI.
+As such, most materials ranging from the outermost up to the innermost parts of the NUCLEUS setup were screened using non-destructive gamma spectrometry measurements at the Stella (SubTErranean Low Level Assay) facility of the Laboratorio Nazionale del Gran Sasso (LNGS). The Stella facility comprises 15 HPGe detectors sensitive to radioactivity levels as low as a few \mathrm{\SIUnitSymbolMicro Bq}\text{\,}{\mathrm{kg}}^{-1} in the screening of material samples [65].
+Table 3: Material screening measurements of the main NUCLEUS setup components. Reported activities are expressed in \mathrm{mBq}\text{\,}{\mathrm{kg}}^{-1} . Different progenies originating from the decay chain of the 238U and 232Th primordial radionuclides were measured to check their respective secular equilibrium conditions. Uncertainties are given at the 68% confidence level. Upper limits are given at the 90% confidence level.
+232Th series
+238U series
+Component
+Mass
+Material
+228Ra
+228Th
+40K
+235U
+238U
+226Ra
+210Pb
+Mechanical Structure
+1428.5 kg
+Steel
+< 16
+6 \pm 3
+< 98
+< 3.4
+< 170
+12 \pm 3
+External gamma shield
+2417 kg
+Low radioactivity lead
+< 16
+< 13
+< 95
+< 32
+< 270
+< 2.8
+(89 \pm 7) \times 10^{3}
+External neutron shield
+450.3 kg
+5 %-Borated polyethylene
+1.0 \pm 0.5
+1.5 \pm 0.3
+13 \pm 4
+< 0.73
+< 21
+2.7 \pm 0.4
+Vacuum vessel
+12 kg
+Al6061
+40 \pm 14
+370 \pm 30
+< 160
+130 \pm 40
+3500 \pm 800
+< 8.3
+50K vessel
+3.35 kg
+Al1100
+120 \pm 60
+320 \pm 50
+< 520
+500 \pm 100
+(8 \pm 2) \times 10^{3}
+< 42
+4K vessel
+4.51 kg
+Still vessel
+2.11 kg
+Gold-plated copper
+< 14
+< 14
+< 130
+< 6.2
+< 76
+< 14
+Internal gamma shield
+39.3 kg
+Low radioactivity lead
+< 15
+< 14
+< 71
+< 29
+< 310
+< 10.6
+(40 \pm 4) \times 10^{3}
+Internal neutron shield
+14 kg
+5 %-Borated polyethylene
+1.0 \pm 0.5
+1.5 \pm 0.3
+13 \pm 4
+< 0.73
+< 21
+2.7 \pm 0.4
+Cryogenic neutron shield
+20.90 kg
+Boron carbide (B4C)
+240 \pm 30
+460 \pm 40
+< 360
+30 \pm 10
+800 \pm 300
+260 \pm 20
+Detector housing
+1.51 kg
+Copper
+< 3.3
+< 4.1
+< 23
+< 3.8
+< 92
+< 3.5
+Detector clamps
+0.15 g
+Bronze
+< 60
+< 26
+< 510
+< 15
+< 750
+< 40
+(4.2 \pm 0.9) \times 10^{3}
+Black paint
+\sim 20 g
+Acrylic
+6240 \pm 380
+5920 \pm 370
+4900 \pm 600
+440 \pm 90
+7000 \pm 2000
+5340 \pm 220
+Target detectors
+6.82 g
+Calcium tungstate (CaWO4)
+0.034 \pm 0.003
+0.024 \pm 0.007
+< 0.01
+0.3 \pm 0.01
+3.1 \pm 0.02
+0.174 \pm 0.006
+0.11 \pm 0.006
+Table 3 summarizes the results of the screening measurement campaign.
+The neutron cryogenic (\ceB4C), gamma (Pb) and neutron (5%-borated HDPE) shields as well as the cryostat vessels show the largest activities among the screened NUCLEUS setup components.
+In particular, the \ceB4C cryogenic shielding closely surrounds the cryogenic detectors and is therefore expected to make a sizable contribution to the background.
+Table 3 also reports the screening result of a black paint, which currently coats the inner surface of the radiation shields surrounding the COV (see figure 1 (e)).
+This black paint mitigates infrared reflections, which can otherwise lead to a fast degradation of the COV performances [48].
+Although this acrylic paint shows the highest levels of radioactivity, it is expected to have little impact on the background budget (see section 5.2.3) as it is used in very small amounts. However, other infrared radiation-proof solutions are currently being investigated to avoid the use of such paint.
+Some components used in the NUCLEUS setup still remain to be screened to draw a comprehensive background budget from material contamination.
+Among them, the intrinsic radioactivity of the target detectors and of the COV HPGe crystals needs to be assessed.
+Silicon materials and connectors used in the mounting of the cryogenic detection setup (see figure 1 (f)), such as e.g. the IV, silicon support structure, cabling, and LED fibers remain to be characterized.
+For the background estimate presented in 5.2.3, only the target detectors were considered among the above mentioned non-screened material components, with radioactivity levels estimated from [66].
+5 Prediction of particle backgrounds in the NUCLEUS detectors
+5.1 Assumptions and methods
+The prediction of the residual background rates and spectra in the NUCLEUS cryogenic target detectors uses the characterization of the VNS particle background environment reported in section 4 as an input to the Geant4-based simulation framework described in section 3.
+Four background components are simulated: (i) atmospheric muons and (ii) atmospheric neutrons (i.e. cosmic ray-induced background radiations), (iii) environmental gamma rays and (iv) intrinsic radioactivity coming from the NUCLEUS setup materials (see also table 5.1).
+Among the characterized background sources, only airborne radon was disregarded (see related discussion in section 4.4).
+In the following work, the simulation-generated datasets were analyzed by applying combinations of various selection criteria in order to identify and reject background-like events.
+First, an event is selected if at least one of the target detectors shows a hit, where a detector hit is defined as an energy deposition greater than a given threshold.
+In a second step, the impact of the NUCLEUS veto detectors can be studied by further requiring no hit in one or a combination of them.
+The energy thresholds defining a MV hit, a COV hit, an IV hit and a cryogenic target detector hit were set to 5 MeV, 1 keV, 30 eV and 10 eV, respectively.
+Finally, the identification of a CE \nu NS-like event must meet the combination of all possible anti-coincidence selection criteria, i.e. having (i) no hits in any of the veto detectors and (ii) a hit in one and only one of the target detectors.
+In the following work, the time and energy response of all the active detectors were disregarded.
+Although the NUCLEUS simulation analysis framework allows to predict the fraction of events surviving a set of selection criteria, assumptions about the normalization and associated uncertainty for each of the considered background components are necessary to estimate absolute rates and spectra.
+These are listed in table 5.1 and discussed in the following. Since they are normalization uncertainties they are neglected for the relative shielding attenuation studies presented in section 5.2 and they are only propagated to the residual background rate in the VNS presented in section 4.
+Table 4: Flux and uncertainty assumptions used in the normalization of the different background components. The quoted uncertainties only apply to the computation of the expected rates and spectra of background events at the VNS. See text for further details.
+{NiceTabular}
+lcc
+Background component Flux [ {\mathrm{cm}}^{-2}\text{\,}{\mathrm{s}}^{-1} ] Uncertainty (VNS) [%]
+Atm. muons 1.90 \times\,10^{-2} (surface) 25
+Atm. neutrons 1.34 \times\,10^{-2} (surface) 30
+Env. gamma rays 5.03 (VNS) 20
+Material radioactivity see table 3 30
+The normalization of the cosmic ray-related neutron and muon components are based on literature values, as an absolute flux measurement at the VNS is at this stage missing for both.
+The flux value of the muon component comes from integrating the modified Gaisser parametrization, with an uncertainty mostly driven by the experimental measurements it is adjusted on [47], but also including unaccounted-for effects such as the impact of atmospheric pressure changes and solar modulation of the surface muon flux.
+The neutron component is normalized using the Gordon flux measurement [55].
+The quoted uncertainty includes uncertainties from (i) spread in similar measurements published in the literature (see e.g. [35, 67, 68]) and (ii) the predicted attenuation from the VNS building (see related discussion in section 4.2).
+The ambient gamma-ray component is normalized using the measurement described in section 4.3.
+Although a systematic uncertainty of 5% was assessed, an overall 20% uncertainty was assumed to safely cover any changes in the gamma-ray ambiance following the introduction of auxiliary equipments and materials other than the screened NUCLEUS components as listed in table 3.
+The last background component is internal to the NUCLEUS setup and adds up the primordial radionuclide activity of each of the screened materials (see section 5.2.3). The quoted uncertainty applies to the sum of all contributions, and comes from a crude but conservative estimate, which combines (i) the statistical uncertainty of the least radio-pure material screening measurement (i.e. the cryogenic neutron shield \mathrm{B_{4}C} ), (ii) MC statistical uncertainties and (iii) the difference between modeling the material radioactivity component either setting reported upper limits in table 3 to zero or using them as central values.
+The present modeling is not intended to provide a fine estimate of the expected background data, but rather to detail the NUCLEUS particle background mitigation strategy and to give a range of background levels that can reasonably be expected at the Chooz nuclear power plant.
+Most importantly, it lays the foundations of a future model, which will be validated and fine tuned using the NUCLEUS commissioning data [69] and future data taken at the VNS, such that a potential CE \nu NS signal can be confidently and robustly extracted.
+The following two sections respectively discuss the performances of the NUCLEUS shielding system for the mitigation of particle backgrounds and the particle background budget expected at the NUCLEUS experimental site.
+5.2 Background reduction from the NUCLEUS shielding system
+5.2.1 Mitigation of cosmic ray-induced radiations
+As already mentioned in section 2, the mitigation of cosmic ray-induced backgrounds is a paramount requirement in NUCLEUS because (i) the VNS is a very shallow site and (ii) cosmic-ray radiations unavoidably lead to the production of secondary particles, especially neutrons, when interacting in the materials surrounding the cryogenic target detectors.
+The shielding performances to mitigate surface muons and neutrons were evaluated using a so-called open-air geometry, which ignores the VNS building.
+The starting position and energy of the primary particles were drawn using the atmospheric muon and neutron custom event generators already described in sections 4.1 and 4.2, respectively.
+The size of the tangent plane for illuminating the open-air geometry was smaller than the one used for the VNS building attenuation studies. It was optimized to (120\times 120) cm2 (respectively (280\times 280) cm2) for muons (respectively neutrons).
+For the case of atmospheric neutrons, a crude but conservative approximation scaled down all deposited energies in the COV and the MV volumes by a factor 5 and 2 respectively, to take into account their quenching to neutron-induced nuclear recoils [70, 71, 72]. For muon-induced background, since in the COV, most of the events seen in coincidence with the cryodetectors come from secondary neutrons, a factor 5 down scaling of the energies deposited in the COV is cautiously applied as well.
+The top panels of figure 8 display the rate of energy deposition between 0 and 1 keV in the \ceCaWO4 array of target detectors
+induced by the atmospheric neutron component.
+The top left panel shows how it is reduced by the successive addition of the different NUCLEUS passive shielding layers.
+In a configuration where no shielding is present around the detection setup, the predicted 10^{4}-10^{5} \text{\,}{\mathrm{d}}^{-1}\text{\,}{\mathrm{kg}}^{-1}\text{\,}{\mathrm{keV}}^{-1} event rate in the RoI is far greater than the expected CE \nu NS signal and confirms the need for adding neutron shields to moderate and attenuate this background component.
+Because of spallation and (n,xn) reactions of >10 MeV neutrons in Pb, the external and internal (i.e. inside the cryostat, see figure 1 (e)) gamma shields are detrimental to the suppression of neutron-induced backgrounds, strengthening the need for adding neutron shields.
+The addition of a first 20-cm thick borated HDPE layer reduces by more than one order of magnitude the residual event rate in the CE \nu NS RoI.
+A second 4-cm thick \mathrm{B_{4}C} layer, which is located within the cryostat in the direct vicinity of the cryogenic detection setup (see figure 1 (e)), captures the low-energy ( \lesssim 10 keV) component of the surviving neutron flux.
+It turns out to be a very effective complement to the external neutron shield, further suppressing the event rates in the \ceCaWO4 detectors by a factor \sim 5.
+The emission of a 478 keV gamma-ray line following neutron capture on \mathrm{{}^{10}B} is harmless to the cryogenic target detectors, as it is efficiently shielded and vetoed by the 2.5 cm thick COV HPGe crystals.
+The top right panel of figure 8 shows the impact of the different veto detectors in addition to the attenuation of the passive shield layers.
+While the impact of the MV is marginal, the COV brings a sizable additional reduction of the neutron-induced backgrounds of a factor 5.
+The COV rejection performances particularly depends on its ability to detect low energy nuclear recoils induced by 10-100 keV neutrons reaching the target detectors, as those are mostly driving the rate of residual background events in the CE \nu NS RoI [48].
+For instance, raising the COV threshold from 1 \mathrm{keV_{ee}} to 10 \mathrm{keV_{ee}} degrades the neutron-induced background rejection by approximately 20%.
+Finally, the benefit of applying all vetoes, i.e. (i) using the IV and (ii) requesting only one cryogenic detector hit in addition to the MV and COV anti-coincidence selection criteria, is very marginal.
+This result makes sense as the IV and the gram-scale cryogenic target detectors are small compared to the mean free path of keV to MeV neutrons either in Si, \ceCaWO4 or \ceAl2O3 materials.
+Figure 8: Reduction of the cosmic ray-induced backgrounds by the NUCLEUS shielding. The top (respectively bottom) panels deal with the atmospheric neutron (respectively atmospheric muon) component. Each histogram shows the rate of events with deposited energy between 0 and 1 keV in the \ceCaWO4 array of target detectors. Uncertainties are statistical only. The left panels show the impact of sequentially adding passive shielding layers. The right panels show how using the different veto detectors complements the passive shields. The “all vetoes” selection criteria apply all possible anti-coincidence criteria for the rejection of background events. The CE \nu NS RoI is indicated by the light gray filled area.
+In a similar way, the bottom panels of figure 8 comprehensively details the NUCLEUS shielding mitigation of surface muon-induced backgrounds.
+The bottom left panel first confirms the importance of keeping to a minimum the amount of high-Z materials for limiting the production of muon-induced secondary particles [44].
+In this regard, a thickness of 5 cm of Pb was chosen for both the external and internal gamma shields such that sufficient suppression of external gamma rays can still be achieved when it is combined with the COV (see section 5.2.2).
+The bottom left panel of figure 8 also shows that the addition of neutron shields within the Pb layer reduces the background rate in the \ceCaWO4 array of target detectors mostly at very low deposited energies.
+This can be interpreted as the fact that \sim MeV neutrons produced by muon interactions in Pb are moderated to 1-100 keV energies and partly attenuated by the HDPE and \ceB4C layers. When reaching the target detectors, they then elastically scatter off tungsten nuclei, which predominantly recoil with energies in the \mathcal{O} (100 eV) regime.
+The interaction of muons in Pb produces gamma rays in greater quantities than neutrons, mostly through bremsstrahlung processes [73].
+This fact both explains why (i) as previously shown on the bottom left panel of figure 8, the addition of neutron shield layers makes little impact to the background rates and spectra and (ii) the COV is very efficient in reducing the muon-induced backgrounds, as shown on the right panel of figure 8.
+Unsurprisingly, the MV was also found to be very efficient. When combined with the COV, they are predicted to reject more than 99.8% of the muon-induced backgrounds in the CE \nu NS RoI, making them a negligible contributor to the total background budget (see section 5.3).
+5.2.2 Mitigation of environmental gamma rays
+The mitigation of environmental gamma rays by the NUCLEUS shielding was studied using the best fit modeling of the gamma-ray ambiance measured in the VNS room (see section 4.3).
+Ambient gamma rays were transported up to the cryogenic detectors, with starting positions isotropically distributed using a (120\times 120 ) cm2 plane tangential to a 3-m radius sphere centered on the open-air geometry.
+In the following results, the computation of the expected rates of surviving events used the absolute ambient gamma-ray flux measurement described in section 4.3 and quoted in table 5.1.
+Figure 9 displays energy deposition spectra obtained between 0 and 1 keV in the \ceCaWO4 array of target detectors.
+The left panel illustrates how the NUCLEUS experimental setup passive materials contribute to the suppression of the ambient gamma-ray background component, especially focusing on the Pb external gamma shield.
+In the absence of any shielding, the measured gamma ray ambiance at the VNS results in a flat distribution of events with a rate of \sim 10^{4} \text{\,}{\mathrm{d}}^{-1}\text{\,}{\mathrm{kg}}^{-1}\text{\,}{\mathrm{keV}}^{-1} .
+This confirms the need for adding a gamma ray shield to suppress this contribution down to < 100 \text{\,}{\mathrm{d}}^{-1}\text{\,}{\mathrm{kg}}^{-1}\text{\,}{\mathrm{keV}}^{-1} .
+The optimal amount of Pb material in the external and internal gamma shields results from a trade-off between (i) the production of secondary particles when exposed to cosmic ray-induced neutrons and muons (see section 5.2.1) and (ii) the total reduction of ambient gamma-ray backgrounds when combined with the COV.
+A thickness of 5 cm of Pb followed from extensive Geant4 simulation studies.
+It gives a factor \sim 50 reduction of the event rate in the \ceCaWO4 target detectors, while the rest of the NUCLEUS setup passive materials (see figure 1 (d) and figure 1 (e)) makes an additional factor \sim 10 reduction.
+The right panel of figure 9 illustrates the effect of the NUCLEUS IV and COV detectors.
+It particularly points out the essential role of the COV in reducing the environmental gamma ray contribution down to sufficiently low levels.
+As opposed to the atmospheric neutron backgrounds, varying the COV energy threshold was found to have little impact on the ambient gamma ray rejection performances as long as it stays under the 100 \mathrm{keV_{ee}} range.
+This is mostly because in this energy regime, gamma rays rarely interact through Compton scattering but rather deposit their energy through photo-electric absorption.
+The IV is a very thin detector (see figure 1 (f)), which makes it insensitive to the interactions of environmental gamma rays. As expected, it does not improve the rejection of this background component.
+Figure 9: Reduction of the ambient gamma ray-induced backgrounds with the NUCLEUS shielding. Each histogram shows the rate of events with deposited energy between 0 and 1 keV in the \ceCaWO4 array of target detectors. Uncertainties are statistical only. The impact of the NUCLEUS setup passive materials is shown on the right panel. The left panel illustrates the complementary rejection brought by the use of the IV and COV. The CE \nu NS RoI is indicated by the light gray filled area.
+5.2.3 Mitigation of material radioactivity
+The work reported in this section deals with modeling the backgrounds sourcing from the radioactive contamination measured in the main NUCLEUS setup components (see section 4.5) and how the veto detectors help mitigating them.
+The generation of the primary particles follows a different approach to that used for the previously discussed external sources of background.
+It was done in a similar fashion than for the modeling of the ambient gamma-ray background in the VNS (see section 4.3), using a custom event generator which homogeneously distributes the position of the decaying primordial radionuclides in each of the NUCLEUS setup volumes as implemented in the simulation framework geometry (see figure 1).
+The decay chain of each of the considered primordial radionuclides (232Th, 235U, 238U and 40K) was simulated in one step, unless the activity of a sub-chain was measured (see table 3).
+In the latter case, the simulation of the full decay chain was broken down into the corresponding sub-chains until reaching the first stable nucleus.
+The modeling of the material radioactive contamination contribution to the expected backgrounds in the NUCLEUS cryogenic target detectors involved the analysis of \sim 100 different simulation datasets, each having a primary event statistics corresponding to at least a 500-day exposure time.
+After analysis, the rate and energy spectrum of surviving events associated to each of these datasets were computed using the corresponding chain or sub-chain activities as reported in table 3.
+In the following results, chain or sub-chain measurements resulting in an upper limit were disregarded.
+The impact of this approximation was evaluated by assuming instead such upper limits as effective activity values, giving a modest 5% increase in the expected total background rate.
+The left panel of figure 10 shows the expected residual rate of events in the \ceCaWO4 target detectors between 0 and 1 keV, by combining the contributions of each screened component and each measured chain or sub-chain.
+It also describes how the use of the IV and COV detectors can mitigate this background component.
+Unsurprisingly, the COV is the most efficient veto detector.
+It reduces the background rate by an order of magnitude down to \sim 10 \text{\,}{\mathrm{d}}^{-1}\text{\,}{\mathrm{kg}}^{-1}\text{\,}{\mathrm{keV}}^{-1} levels, once again demonstrating its essential role in the NUCLEUS whole background mitigation strategy.
+The combination of all anti-coincidence selection criteria, including the IV, brings the total background rate to below 10 \text{\,}{\mathrm{d}}^{-1}\text{\,}{\mathrm{kg}}^{-1}\text{\,}{\mathrm{keV}}^{-1} in the CE \nu NS RoI.
+The right panel of figure 10 quantifies the contribution of each of the NUCLEUS setup components, still showing the impact of the different veto detectors.
+For some of them (e.g. the detector clamps), the application of all veto rejection criteria left no surviving events, which resulted in a null contribution to the predicted backgrounds.
+The \ceB4C neutron cryogenic shield contributes most, as it is (i) among the most radioactive of all screened materials and (ii) located close to the cryogenic detectors.
+The second largest contribution comes from the intrinsic radioactivity of the target detectors, for which none of the veto detectors shows a visible effect because they are located outside this specific background source.
+This last observation particularly points out the necessity of having a more careful radiopurity selection for all materials used in the building of the cryogenic target detectors than for the rest of the experiment.
+The fact that the expected NUCLEUS backgrounds from material radioactivity are here limited by the intrinsic radiopurity of the \ceCaWO4 target detector material demonstrates a good management of material screening and selection in the design of the NUCLEUS experiment.
+Figure 10: Modeling of the material radioactivity contribution to the NUCLEUS expected backgrounds. The top panel shows how the veto detectors can help mitigating this background component. The CE \nu NS RoI is indicated by the light gray filled area. Uncertainties are statistical only. The bottom panel breaks down the contribution of each of the screened NUCLEUS components. Each histogram shows the rate of events with deposited energy between 0 and 1 keV in the \ceCaWO4 array of target detectors.
+5.3 Residual background rates and spectra at the VNS
+The prediction of the residual backgrounds in the NUCLEUS cryogenic target detectors at the VNS must take into account the building attenuation to the cosmic ray-induced neutron and muon components.
+By design, the modeling of the ambient gamma ray and material radioactivity contributions at the VNS remains unchanged with respect to the results presented in the previous section.
+The prediction of the atmospheric neutron-induced backgrounds started from the open-air simulation dataset used in section 5.2.1.
+Monte Carlo events passing the analysis selection criteria were reweighted such that the energy distribution of their associated primary neutrons matched the neutron ambiance spectrum as predicted in the VNS instead of the surface Gordon spectrum (see left panel of figure 4).
+Changes in the angular distribution of neutrons or the production of secondary particles due to the building were therefore ignored.
+As opposed to the atmospheric neutrons, the production of secondary particles (neutrons and gamma rays) from the interaction of atmospheric muons in the building materials can make a significant difference in the prediction of the event rates at low energies with respect to e.g. simply rescaling an open-air modeling with the measured attenuation at the VNS.
+A detailed simulation of muon transport through the building up to the target detectors is then required.
+Because of computing time considerations, the atmospheric muon component was modeled using a two-step simulation.
+In a first step, the atmospheric muon custom primary generator was used to transport muons through the VNS building only, scoring the information of any particle tracks reaching the VNS room.
+A second simulation step made use of a bootstrapping method, where the distribution of scored particle tracks was resampled and transported several times through the NUCLEUS shielding up to the target detectors.
+This allowed to obtain a decent statistical accuracy with a much lower computational cost than using a brute force analog simulation.
+The achieved Monte Carlo primary event statistics was for each of the simulated background components larger than at least a year of exposure time.
+The analysis of the simulation datasets applied all possible veto criteria, which selects CE \nu NS-like events as described in section 5.1.
+Given the very low event rates, Monte Carlo statistical uncertainties anyhow had to be taken into account when assessing the uncertainty associated to the background prediction presented here.
+For > 10 counts statistics, the mean event rate was assumed to be Poisson distributed.
+In the case of smaller statistics, upper limits at 90% confidence level were estimated using the Feldman-Cousins prescription for the computation of confidence intervals [74].
+Table 5: Expected background budget in the NUCLEUS target detectors at the VNS. The event rates are expressed in milli count per day (mcpd). The quoted uncertainties are statistical only. The corresponding systematic uncertainties can be directly calculated from the flux relative uncertainties quoted in table 5.1. The CE \nu NS expected count rates are also given for comparison. They were estimated for a 100% operating cycle for the B1 and B2 reactors, as well as a more realistic 80% operating cycle, which takes into account scheduled reactor stops for maintenance and refueling.
+{NiceTabular}
+@@ p0.25ccccc @
+CaWO4 Al2O3
+Background source 10-100 eV 0.1-1 keV 10-100 eV 0.1-1 keV
+Atm. muons < 14 < 18 < 11 < 23
+Atm. neutrons 131\pm 6 305\pm 8 48\pm 4 168\pm 6
+Env. gamma rays 6\pm 3 60\pm 11 < 3 66\pm 11
+Material radioactivity 7.1\pm 1.1 80\pm 5 4.3\pm 1.1 86\pm 6
+Total \mathbf{144\pm 6} \mathbf{445\pm 14} \mathbf{52\pm 4} \mathbf{320\pm 14}
+CE \nu NS signal 218.2 60.7 8.4 -
+Table 5.3 details the expected NUCLEUS background budget both in the \ceCaWO4 and \ceAl2O3 arrays of target detectors.
+Background event rates are reported in the CE \nu NS RoI between 10 and 100 eV as well as higher energies between 0.1 and 1 keV.
+Unsurprisingly, the cosmic ray-induced atmospheric neutron component is predicted to be the main contributor.
+This observation is a direct consequence of the VNS very shallow overburden, which does not completely cut off the neutron component of the surface cosmic ray-induced radiations.
+The unavoidable need for a high-Z material gamma-ray shield, which especially leads to the production of secondary neutrons, complicates the mitigation of this background source.
+Another limitation comes from the compactness of the NUCLEUS shielding, which must fit the dimensions of the VNS.
+Still, section 5.2 demonstrated that a clever combination of passive materials and active detectors allows to achieve a very good suppression of all the particle background sources expected at the VNS.
+In particular, a signal-to-background ratio greater than or equal to one can reasonably be expected in the \ceCaWO4 array of target detectors.
+At the exception of the atmospheric neutrons, the \ceCaWO4 and \ceAl2O3 detectors do not show significant differences in their expected event rates with respect to the achieved statistical uncertainties.
+This is because the NUCLEUS shielding design strongly rejects background events induced by atmospheric muons, environmental gamma rays and material radioactivity, making it difficult to reach high Monte Carlo statistics using analog simulations.
+However, merging the ambient gamma rays and material radioactivity contributions (see e.g. table 5.3) shows that the gamma-induced rates in the \ceCaWO4 and \ceAl2O3 detectors are very similar in the sub-keV recoil energy range.
+Atmospheric neutron-induced event rates are predicted to be larger in the \ceCaWO4 target detectors than in the \ceAl2O3 detectors.
+The reason for this is twofold: (i) the \ceCaWO4 material exhibits a larger neutron interaction cross-section and (ii) the elastic scattering process, which dominates the total neutron interaction cross-section, kinematically produces much smaller recoils in \ceCaWO4 than in \ceAl2O3.
+The top panel of figure 11 shows how the background sources at the VNS contribute to the expected residual event spectrum between 0 and 10 keV in the \ceCaWO4 detectors.
+They all result in an overall flat contribution to the spectrum, except the atmospheric neutron component, which imprints a sharp rise at low energies.
+This rise originates from elastic scattering of 0.001-1 MeV neutrons off tungsten nuclei, which survived the passive shields and veto detectors, and made their way up to the target detectors.
+Interestingly, the residual background spectrum also features fluorescence peaks in the 2-3 keV region, which are predicted to follow from the ionization of M shell electrons in tungsten atoms.
+As further shown by the top panel of figure 11, these fluorescence peaks are mostly induced by atmospheric neutrons and muons.
+If confirmed, they could be an interesting tool to monitor and complement the target detector energy calibration in the keV energy regime and below [75].
+Figure 11: Residual background spectra predicted in the NUCLEUS array of \ceCaWO4 detectors at the VNS. The top panel shows the contribution of the different sources of particle backgrounds to the total spectrum between 0 and 10 keV. The bottom panel illustrates the NUCLEUS shielding total rejection power between 10 and 100 eV. The residual spectrum (solid red line) is compared to the expected CE \nu NS differential recoil spectrum computed assuming a 80% average operating cycle for both the B1 and B2 reactors (green dashed line). The impact of the combined systematic uncertainties sourcing from the normalization of the different background components (dark orange boxes) on the total estimated uncertainties (light orange boxes) is also shown.
+The bottom panel of figure 11 shows how the background events distribute within the CE \nu NS RoI between 10 and 100 eV. The systematic uncertainties shown in the bottom panel of figure 11 and in figure 12 are propagated using a conservative min/max method. The background contributions from all sources are scaled up (respectively down) by their uncertainties and summed to obtain the upper (respectively lower) bound of the plotted uncertainty band.
+Combined to the VNS overburden, a \mathrm{10^{2}-10^{3}} particle background rejection power is expected from the NUCLEUS shielding, bringing the residual rate of events in the targeted 100\text{\,}{\mathrm{d}}^{-1}\text{\,}{\mathrm{kg}}^{-1}\text{\,}{\mathrm{keV}}^{-1} range and at the same level than the expected CE \nu NS signal.
+As already discussed in section 5.2.1, the rejection of atmospheric neutron-induced backgrounds is sensitive to the applied energy threshold for defining a detector hit in the COV.
+All the results presented in table 5.3 and figure 11 were obtained using a 1 \mathrm{keV_{ee}} energy threshold.
+Although already demonstrated in the past [76, 77], achieving such thresholds with the six COV HPGe detectors in a dry cryostat however remains a challenge.
+Figure 12 therefore shows the impact of varying the COV energy threshold on the expected signal-to-background ratio in the CE \nu NS RoI.
+An energy threshold in the \cal{O} (10 \mathrm{keV_{ee}} ) range, as demonstrated during a first commissioning of the experiment [69], degrades the expected signal-to-background ratio, which nevertheless remain acceptable.
+Lack of precise knowledge about the absolute neutron flux at the VNS, which limits the precision of the present background prediction, is illustrated by the gray band on figure 12.
+For a 1 \mathrm{keV_{ee}} COV energy threshold, it expands the signal-to-background ratio to the [0.9-1.5] range at the 68% confidence level.
+Finally, demonstrating a 10 eV energy threshold in all the \ceCaWO4 and \ceAl2O3 target detectors in the early stage of the experiment is challenging [69].
+Figure 12 also shows how the expected signal-to-background ratio would deteriorate when a 20 eV energy threshold is assumed.
+Figure 12: Expected signal-to-background ratio bands as a function of the applied COV energy threshold. Two possible RoIs are also reported for illustrating the impact of the cryogenic target detector energy threshold. The gray band includes on top of the Monte Carlo statistical uncertainties the systematic uncertainties for normalizing each background component. See text for further details.
+6 Conclusions
+This article comprehensively detailed the particle background mitigation strategy of the NUCLEUS experiment for the detection of coherent elastic neutrino-nucleus scattering at the Chooz nuclear power plant.
+The experimental signature of CE \nu NS, which is a simple nuclear recoil with energies reaching at most \cal{O} (1 keV) for reactor antineutrinos, together with the compactness and the very low \sim 3\text{\,}\mathrm{m}\text{\,}\mathrm{w.e.} overburden offered by the VNS experimental site pose serious challenges for the mitigation of particle backgrounds, especially those being induced by cosmic rays.
+A thorough characterization of the background radiation environment of the VNS was used to (i) fine-tune and validate the NUCLEUS Geant4 simulation framework for the modeling and transport of external background sources at the experimental site and (ii) estimate the residual background rates and spectra in the NUCLEUS cryogenic target detectors.
+The NUCLEUS shielding system, which combines several layers of passive shields together with a muon veto and an arrangement of cryogenic vetoes installed in close proximity to the target detectors, is predicted to suppress by more than two orders of magnitude particle-induced backgrounds, giving a CE \nu NS signal-to-background ratio \gtrsim 1 in the 10-100 eV region of interest.
+A key element of the NUCLEUS background mitigation strategy is the high purity germanium COV, which efficiently rejects gamma ray-related backgrounds, thereby minimizing the necessary amount of Pb material and allowing the experimental setup to fit within the small footprint of the VNS.
+The COV was also found to nicely complement the muon veto in rejecting muon-induced backgrounds, and even offers additional rejection to neutrons.
+Additionally to external radiations, background sources internal to the experimental apparatus were also investigated in details.
+The material radioactivity contribution to the background budget was kept to a minimal thanks to a careful selection of the most important setup materials, with a very modest impact comparable to the external ambient gamma rays.
+The total background budget was found to be dominated by a residual cosmic ray-induced fast neutron contribution.
+Although the \ceB4C cryogenic shield was found to be very effective in suppressing neutron-related events in the CE \nu NS region of interest, the shallow VNS overburden makes it difficult to fully suppress this background component.
+Furthermore, the suppression of the cosmic ray-induced neutron backgrounds was found to significantly depend on the COV energy threshold.
+Unsurprisingly, a threshold as low as 1 keVee is highly desirable in order to take full advantage of the COV in reducing these backgrounds.
+Although already very detailed and comprehensive, this version of the NUCLEUS particle background model is not yet ready to provide a precise prediction of the residual background rate and energy spectrum for the NUCLEUS CE \nu NS physics run, as it still features some limitations and physics data to be fine-tuned on.
+Among the most important ones are the absolute normalization of the neutron ambiance at the VNS, for which a measurement is currently missing, and the full completion of the material radioactivity contribution, which lacks the screening measurement of a few elements in very close proximity to the target detectors.
+The data to be collected during the technical run at Chooz, scheduled for early next year, will be then essential for fine-tuning the model in these aspects.
+The reliability of the Geant4 standard physics lists for the transport and interaction of particles down to the sub-keV energy regime is another major question mark regarding the robustness of the present modeling.
+The different commissioning data recently acquired at TU Munich are a very valuable source of information to test and benchmark the NUCLEUS Geant4 background model down to the keV energy range.
+However, the overwhelming LEE background component still prevents such a study in the \cal{O} (100 eV) region.
+The forthcoming technical run at Chooz, which will test and challenge the LEE background mitigation strategy of the NUCLEUS cryogenic detector design, will hopefully provide valuable information to validate the particle background model down to the CE \nu NS region of interest.
+Finally, the brute force analog simulations performed throughout this work required tens, even hundreds, millions of hours of computing time.
+The strong attenuation at play in the transport of particles, together with the scarcity of energy depositions in the sub-keV energy regime, are a computational challenge for achieving a high enough Monte Carlo statistical precision.
+They will certainly require the use of new statistical methods, such as variance reductions techniques, to be not limited by the accuracy and the precision of the particle background model in the future extraction of a CE \nu NS signal at Chooz.
+Acknowledgments
+This work has been financed by the CEA, the INFN, the ÖAW and partially supported by the TU Munich and the MPI für Physik. NUCLEUS members acknowledge additional funding by the DFG through the SFB1258 and the Excellence Cluster ORIGINS, by the European Commission through the ERC-StG2018-804228 “NU-CLEUS”, by the P2IO LabEx (ANR-10-LABX-0038) in the framework ”Investissements d’Avenir” (ANR-11-IDEX-0003-01) managed by the Agence Nationale de la Recherche (ANR), France, by the Austrian Science Fund (FWF) through the ”P34778-N, ELOISE" (DOI:10.55776/P34778), and by the Max-Planck-Institut für Kernphysik (MPIK), Germany.
+The NUCLEUS collaboration thanks the CRESST collaboration for providing input data on the \ceCaWO4 detector radiopurity, as well as the LNGS staff running the Stella facility for the material screening campaigns.
+References
+\bibcommenthead
+[1]
+Freedman, D. Z.
+Coherent effects of a weak neutral current.
+Phys. Rev. D 9,
+1389–1392 (1974).
+URL https://link.aps.org/doi/10.1103/PhysRevD.9.1389.
+[2]
+Kopeliovich, V. B. & Frankfurt, L. L.
+Isotopic and chiral structure of neutral current.
+JETP Lett. (USSR) (Engl. Transl.)
+19, 145–147
+(1974).
+URL https://www.osti.gov/biblio/4289450.
+[3]
+Hasert, F. J. et al.
+Observation of Neutrino Like Interactions Without
+Muon Or Electron in the Gargamelle Neutrino Experiment.
+Phys. Lett. B
+46, 138–140
+(1973).
+[4]
+Drukier, A. & Stodolsky, L.
+Principles and applications of a neutral-current
+detector for neutrino physics and astronomy.
+Phys. Rev. D 30,
+2295–2309 (1984).
+URL https://link.aps.org/doi/10.1103/PhysRevD.30.2295.
+[5]
+Akimov, D. et al.
+Observation of coherent elastic neutrino-nucleus
+scattering.
+Science 357,
+1123–1126 (2017).
+URL https://www.science.org/doi/abs/10.1126/science.aao0990.
+[6]
+Akimov, D. et al.
+Measurement of the coherent elastic neutrino-nucleus
+scattering cross section on csi by coherent.
+Phys. Rev. Lett.
+129, 081801
+(2022).
+URL https://link.aps.org/doi/10.1103/PhysRevLett.129.081801.
+[7]
+Akimov, D. et al.
+First measurement of coherent elastic
+neutrino-nucleus scattering on argon.
+Phys. Rev. Lett.
+126, 012002
+(2021).
+URL https://link.aps.org/doi/10.1103/PhysRevLett.126.012002.
+[8]
+Adamski, S. et al.
+Evidence of coherent elastic neutrino-nucleus
+scattering with coherent’s germanium array.
+Phys. Rev. Lett.
+134, 231801
+(2025).
+URL https://link.aps.org/doi/10.1103/PhysRevLett.134.231801.
+[9]
+Lindhard, J., Nielsen, V.,
+Scharff, M. & Thomsen, P. V.
+Integral equations governing radiation effects.
+Kgl. Danske Videnskab., Selskab. Mat. Fys.
+Medd. 33, 1–42
+(1963).
+URL https://gymarkiv.sdu.dk/MFM/kdvs/mfm%2030-39/mfm-33-10.pdf.
+[10]
+Ackermann, N. et al.
+First observation of reactor antineutrinos by
+coherent scattering (2025).
+URL https://arxiv.org/abs/2501.05206.
+arXiv:2501.05206.
+[11]
+Colaresi, J., Collar, J. I.,
+Hossbach, T. W., Lewis, C. M. &
+Yocum, K. M.
+Measurement of coherent elastic neutrino-nucleus
+scattering from reactor antineutrinos.
+Phys. Rev. Lett.
+129, 211802
+(2022).
+URL https://link.aps.org/doi/10.1103/PhysRevLett.129.211802.
+[12]
+Ackermann, N. et al.
+Final CONUS results on coherent elastic
+neutrino-nucleus scattering at the Brokdorf reactor.
+Phys. Rev. Lett.
+133, 251802
+(2024).
+URL https://link.aps.org/doi/10.1103/PhysRevLett.133.251802.
+[13]
+Li, Y., Herrera, G. &
+Huber, P.
+New physics versus quenching factors in coherent
+neutrino scattering (2025).
+URL https://arxiv.org/abs/2502.12308.
+arXiv:2502.12308.
+[14]
+Cadeddu, M., Dordei, F. &
+Giunti, C.
+A view of coherent elastic neutrino-nucleus
+scattering.
+Europhysics Letters
+143, 34001
+(2023).
+URL https://dx.doi.org/10.1209/0295-5075/ace7f0.
+[15]
+Choi, J. J. et al.
+Exploring coherent elastic neutrino-nucleus
+scattering using reactor electron antineutrinos in the neon experiment.
+The European Physical Journal C
+83, 1–20 (2023).
+URL https://doi.org/10.1140/epjc/s10052-023-11352-x.
+[16]
+Akimov, D. Y. et al.
+The red-100 experiment.
+Journal of Instrumentation
+17, T11011
+(2022).
+URL https://dx.doi.org/10.1088/1748-0221/17/11/T11011.
+[17]
+Aguilar-Arevalo, A. et al.
+Search for coherent elastic neutrino-nucleus
+scattering at a nuclear reactor with connie 2019 data.
+Journal of High Energy Physics
+2022, 17 (2022).
+URL https://doi.org/10.1007/JHEP05(2022)017.
+[18]
+Aguilar-Arevalo, A. et al.
+Searches for cevns and physics beyond the standard
+model using skipper-ccds at connie.
+arXiv preprint (2024).
+URL https://arxiv.org/abs/2403.15976.
+[19]
+Kerman, S. et al.
+Coherency in neutrino-nucleus elastic scattering.
+Phys. Rev. D 93,
+113006 (2016).
+URL https://link.aps.org/doi/10.1103/PhysRevD.93.113006.
+[20]
+Yang, L., Liang, Y. &
+Yue, Q.
+RECODE program for reactor neutrino CEvNS detection
+with PPC Germanium detector.
+PoS TAUP2023,
+296 (2024).
+[21]
+Alekseev, I. et al.
+First results of the \nu\mathrm{GeN}
+experiment on coherent elastic neutrino-nucleus scattering.
+Phys. Rev. D
+106, L051101
+(2022).
+URL https://link.aps.org/doi/10.1103/PhysRevD.106.L051101.
+[22]
+Augier, C. et al.
+First demonstration of 30 evee ionization energy
+resolution with Ricochet germanium cryogenic bolometers.
+The European Physical Journal C
+84, 186 (2024).
+URL https://doi.org/10.1140/epjc/s10052-024-12433-1.
+[23]
+Agnolet, G. et al.
+Background studies for the MINER coherent neutrino
+scattering reactor experiment.
+Nuclear Instruments and Methods in Physics
+Research Section A: Accelerators, Spectrometers, Detectors and Associated
+Equipment 853, 53–60
+(2017).
+URL https://www.sciencedirect.com/science/article/pii/S0168900217302085.
+[24]
+Angloher, G. et al.
+Exploring \mathrm{CEvNS} with nucleus at the chooz
+nuclear power plant.
+The European Physical Journal C
+79, 1018 (2019).
+[25]
+Strauss, R. et al.
+Gram-scale cryogenic calorimeters for rare-event
+searches.
+Physical Review D
+96, 022009
+(2017).
+URL https://link.aps.org/doi/10.1103/PhysRevD.96.022009.
+[26]
+Armengaud, E. et al.
+Searching for low-mass dark matter particles with a
+massive ge bolometer operated above ground.
+Physical Review D
+99, 082003
+(2019).
+URL https://link.aps.org/doi/10.1103/PhysRevD.99.082003.
+[27]
+Adari, P. et al.
+EXCESS workshop: Descriptions of rising low-energy
+spectra.
+SciPost Phys. Proc. 001
+(2022).
+URL https://scipost.org/10.21468/SciPostPhysProc.9.001.
+[28]
+Baxter, D. et al.
+Low-Energy Backgrounds in Solid-State Phonon and
+Charge Detectors.
+Annual Review of Nuclear and Particle
+Science (2025).
+[29]
+Angloher, G. et al.
+Latest observations on the low energy excess in
+CRESST-III.
+SciPost Phys. Proc. 013
+(2023).
+URL https://scipost.org/10.21468/SciPostPhysProc.12.013.
+[30]
+Aguilar-Arevalo, A. et al.
+Confirmation of the spectral excess in DAMIC at
+SNOLAB with skipper CCDs.
+Phys. Rev. D
+109, 062007
+(2024).
+URL https://link.aps.org/doi/10.1103/PhysRevD.109.062007.
+[31]
+Anthony-Petersen, R. et al.
+A stress-induced source of phonon bursts and
+quasiparticle poisoning.
+Nature Communications
+15, 6444 (2024).
+URL https://doi.org/10.1038/s41467-024-50173-8.
+[32]
+Abele, H. et al.
+Commissioning of the nucleus experiment at the
+technical university of munich (2025).
+URL https://arxiv.org/abs/2508.02488.
+arXiv:2508.02488.
+[33]
+Hakenmüller, J. et al.
+Neutron-induced background in the CONUS
+experiment.
+The European Physical Journal C
+79, 699 (2019).
+URL https://doi.org/10.1140/epjc/s10052-019-7160-2.
+[34]
+Bonet, H. et al.
+Full background decomposition of the CONUS
+experiment.
+The European Physical Journal C
+83, 195 (2023).
+URL https://doi.org/10.1140/epjc/s10052-023-11240-4.
+[35]
+Sanchez Garcia, E. et al.
+Background characterization of the CONUS+
+experimental location.
+The European Physical Journal C
+85, 465 (2025).
+URL https://doi.org/10.1140/epjc/s10052-025-14160-7.
+[36]
+Augier, C. et al.
+Fast neutron background characterization of the
+future Ricochet experiment at the ILL research nuclear reactor.
+The European Physical Journal C
+83, 20 (2023).
+URL https://doi.org/10.1140/epjc/s10052-022-11150-x.
+[37]
+Wagner, V. et al.
+Development of a compact muon veto for the nucleus
+experiment.
+Journal of Instrumentation
+17, T05020
+(2022).
+URL https://dx.doi.org/10.1088/1748-0221/17/05/T05020.
+[38]
+Erhart, A. et al.
+A plastic scintillation muon veto for sub-kelvin
+temperatures.
+The European Physical Journal C
+84, 70 (2024).
+[39]
+Goupy, C., Marnieros, S.,
+Mauri, B., Nones, C. &
+Vivier, M.
+Prototyping a high purity germanium cryogenic veto
+system for a bolometric detection experiment.
+Nuclear Instruments and Methods in Physics
+Research Section A: Accelerators, Spectrometers, Detectors and Associated
+Equipment 1064, 169383
+(2024).
+URL https://www.sciencedirect.com/science/article/pii/S0168900224003097.
+[40]
+Del Castello, G.
+Lantern: A multichannel light calibration system for
+cryogenic detectors.
+Nuclear Instruments and Methods in Physics
+Research Section A: Accelerators, Spectrometers, Detectors and Associated
+Equipment 1068, 169728
+(2024).
+URL https://www.sciencedirect.com/science/article/pii/S0168900224006545.
+[41]
+Agostinelli, S. et al.
+Geant4—a simulation toolkit.
+Nuclear instruments and methods in physics
+research section A: Accelerators, Spectrometers, Detectors and Associated
+Equipment 506, 250–303
+(2003).
+URL https://www.sciencedirect.com/science/article/pii/S0168900203013688.
+[42]
+Allison, J. et al.
+Geant4 developments and applications.
+IEEE Transactions on nuclear science
+53, 270–278
+(2006).
+[43]
+Allison, J. et al.
+Recent developments in geant4.
+Nuclear Instruments and Methods in Physics
+Research Section A: Accelerators, Spectrometers, Detectors and Associated
+Equipment 835, 186–225
+(2016).
+URL https://www.sciencedirect.com/science/article/pii/S0168900216306957.
+[44]
+Kluck, H.
+Production Yield of Muon-Induced Neutrons in
+Lead Springer Theses (Springer, 2015).
+[45]
+Brun, R. & Rademakers, F.
+ROOT — an object oriented data analysis
+framework.
+Nuclear Instruments and Methods in Physics
+Research Section A: Accelerators, Spectrometers, Detectors and Associated
+Equipment 389, 81–86
+(1997).
+URL https://www.sciencedirect.com/science/article/pii/S016890029700048X.
+New Computing Techniques in Physics Research V.
+[46]
+Sciences à l’école outreach program.
+https://www.sciencesalecole.org/plan-cosmos-a-lecole-materiel/.
+Accessed: 2024-11-12.
+[47]
+Tang, A., Horton-Smith, G.,
+Kudryavtsev, V. & Tonazzo, A.
+Muon simulations for Super-Kamiokande, KamLAND,
+and CHOOZ.
+Phys. Rev. D 74,
+053007 (2006).
+[48]
+Goupy, C.
+Background mitigation strategy for the
+detection of coherent elastic scattering of reactor antineutrinos on nuclei
+with the NUCLEUS experiment.
+Ph.D. thesis, Université Paris-Cité
+(2024).
+URL https://theses.fr/s310276?domaine=theses.
+[49]
+Bramblett, R. L., Ewing, R. I. &
+Bonner, T. W.
+A new type of neutron spectrometer.
+Nuclear Instruments and Methods
+9, 1–12 (1960).
+URL https://www.sciencedirect.com/science/article/pii/0029554X60900434.
+[50]
+Berthold technologies gmbh & co.kg.
+URL https://www.berthold.com/de/.
+Accessed: 2024-12-05.
+[51]
+Mca-8000d digital multichannel analyzer.
+URL https://www.amptek.com/products/multichannel-analyzers/mca-8000d-digital-multichannel-analyzer.
+Accessed: 2024-12-05.
+[52]
+Pausch, G. & Stein, J.
+Application of {}^{6}{\rm lii}({\rm eu})
+scintillators with photodiode readout for neutron counting in mixed
+gamma-neutron fields.
+IEEE Transactions on Nuclear Science
+55, 1413–1419
+(2008).
+[53]
+Iwanowska, J. et al.
+The BC-704 scintillation screen with light readout
+by wavelength shifting fibers as a highly efficient neutron detector
+(2011).
+[54]
+Yang, H. et al.
+Evaluation of a LiI(Eu) neutron detector with
+coincident double photodiode readout.
+Nuclear Instruments and Methods in Physics
+Research Section A: Accelerators, Spectrometers, Detectors and Associated
+Equipment 652, 364–369
+(2011).
+URL https://www.sciencedirect.com/science/article/pii/S0168900210019078.
+Symposium on Radiation Measurements and Applications
+(SORMA) XII 2010.
+[55]
+Gordon, M. et al.
+Measurement of the flux and energy spectrum of
+cosmic-ray induced neutrons on the ground.
+IEEE Transactions on Nuclear Science
+51, 3427–3434
+(2004).
+[56]
+Private communication with EdF.
+[57]
+Canberra rege detector.
+https://www.directindustry.com/prod/canberra-industries/product-23661-1625936.html.
+Accessed: 2024-07-29.
+[58]
+Dspec jr 2.0 digital signal processing gamma ray spectrometer.
+https://www.ortec-online.com/products/electronic-instruments/multi-channel-analyzers/workstation/dspec-jr-20.
+Accessed: 2024-07-09.
+[59]
+Maestro multichannel analyzer emulation software.
+https://www.ortec-online.com/products/software/maestro-mca.
+Accessed: 2024-07-09.
+[60]
+Knoll, G. F.
+Radiation detection and measurement
+(John Wiley & Sons, 2010).
+[61]
+Trevisi, R., Risica, S.,
+D’alessandro, M., Paradiso, D. &
+Nuccetelli, C.
+Natural radioactivity in building materials in the
+european union: a database and an estimate of radiological significance.
+Journal of environmental radioactivity
+105, 11–20
+(2012).
+URL https://www.sciencedirect.com/science/article/pii/S0265931X11002402.
+[62]
+Heusser, G.
+Low-radioactivity background techniques.
+Annual Review of Nuclear and Particle
+Science 45, 543–590
+(1995).
+URL https://www.annualreviews.org/content/journals/10.1146/annurev.ns.45.120195.002551.
+[63]
+Alpharad plus radon and thoron monitor.
+URL https://www.doza.ru/en/catalog/radiometry-radona-torona-i-ego-dpr/Alpharad-plus/.
+Accessed: 2025-03-25.
+[64]
+Bruenner, S. et al.
+Radon daughter removal from PTFE surfaces and its
+application in liquid xenon detectors.
+The European Physical Journal C
+81, 343 (2021).
+URL https://doi.org/10.1140/epjc/s10052-021-09047-2.
+[65]
+Laubenstein, M.
+Screening of materials with high purity germanium
+detectors at the laboratori nazionali del gran sasso.
+Int. J. Mod. Phys. A
+32, 1743002
+(2017).
+[66]
+Private communication with cresst collaboration.
+[67]
+Pioch, C., Mares, V.,
+Vashenyuk, E., Balabin, Y. &
+Rühm, W.
+Measurement of cosmic ray neutrons with Bonner
+sphere spectrometer and neutron monitor at 79°N.
+Nuclear Instruments and Methods in Physics
+Research Section A: Accelerators, Spectrometers, Detectors and Associated
+Equipment 626-627, 51–57
+(2011).
+URL https://www.sciencedirect.com/science/article/pii/S0168900210022692.
+[68]
+Goldhagen, P.
+Cosmic-ray neutrons on the ground and in the
+atmosphere.
+MRS Bulletin 28,
+131–135 (2003).
+URL https://doi.org/10.1557/mrs2003.41.
+[69]
+collaboration, N.
+Commissioning of the nucleus experiment at the
+technical university of munich.
+To be published (2025).
+[70]
+Bonhomme, A. et al.
+Direct measurement of the ionization quenching factor
+of nuclear recoils in germanium in the keV energy range.
+Eur. Phys. J. C
+82, 815 (2022).
+URL https://doi.org/10.1140/epjc/s10052-022-10768-1.
+[71]
+Laplace, T. A. et al.
+Low energy light yield of fast plastic
+scintillators.
+Nuclear Instruments and Methods in Physics
+Research Section A: Accelerators, Spectrometers, Detectors and Associated
+Equipment 954, 161444
+(2020).
+URL https://www.sciencedirect.com/science/article/pii/S0168900218314360.
+[72]
+Awe, C. et al.
+Measurement of proton quenching in a plastic
+scintillator detector.
+Journal of Instrumentation
+16, P02035
+(2021).
+URL https://dx.doi.org/10.1088/1748-0221/16/02/P02035.
+[73]
+Groom, D. E., Mokhov, N. K. &
+Striganov, S. I.
+Muon stopping power and range tables 10 mev–100
+tev.
+Atomic Data and Nuclear Data Tables
+78, 183–356
+(2001).
+URL https://www.sciencedirect.com/science/article/pii/S0092640X01908617.
+[74]
+Feldman, G. J. & Cousins, R. D.
+Unified approach to the classical statistical
+analysis of small signals.
+Phys. Rev. D 57,
+3873–3889 (1998).
+URL https://link.aps.org/doi/10.1103/PhysRevD.57.3873.
+[75]
+Abele, H. et al.
+Sub-keV electron recoil calibration for cryogenic
+detectors using a novel X-ray fluorescence source (2025).
+URL https://arxiv.org/abs/2505.17686.
+arXiv:2505.17686.
+[76]
+Armengaud, E. et al.
+First results of the EDELWEISS-II WIMP search
+using ge cryogenic detectors with interleaved electrodes.
+Physics Letters B
+687, 294–298
+(2010).
+[77]
+Armengaud, E. et al.
+A search for low-mass WIMPs with EDELWEISS-II
+heat-and-ionization detectors.
+Physical Review D
+86, 051701
+(2012).
+URL https://in2p3.hal.science/in2p3-00716140.
+Generated on Wed Sep 3 09:22:06 2025 by LaTeXML

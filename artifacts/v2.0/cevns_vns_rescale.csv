@@ -1,0 +1,36 @@
+# QPD Phase-12 plan 12-03 -- the OPTIONAL NUCLEUS VNS context line, as a
+#   SINGLE LABELLED SCALAR MULTIPLICATION of the FINISHED primary result.
+# NO SECOND PIPELINE RUN, NO SECOND FLUX TABLE, NO SECOND SPECTRAL SHAPE was
+#   produced (fp-second-vns-run). cevns.nucleus_variant_flux() exists in the
+#   codebase and was NOT called: it would have produced a physically
+#   reasonable second spectrum and silently violated the locked proxy.
+# TWO candidate integral fluxes are carried, because the project's own
+#   arithmetic does not reproduce the NUCLEUS-stated one. A bare 0.28 would be
+#   fake precision on an optional context line (fp-unlabelled-rescale).
+# Project integral flux (frozen reactor_flux_v1.0.csv): 7.495760e+12 nubar/cm^2/s.
+#   nucleus_stated_2026: 2.100000e+12 -> factor 0.280158
+#       source: NUCLEUS Collab., Eur. Phys. J. C 86, 29 (2026), arXiv:2509.03559 -- STATED VNS integral antineutrino flux
+#   project_geometric: 1.830269e+12 -> factor 0.244174
+#       source: cevns.nucleus_flux_normalization(): reconstructed from NUCLEUS's OWN 4.25 GW_th per core, 6 nubar/fission, 200 MeV/fission, at 72 m and 102 m (EPJC 79, 1018 (2019), arXiv:1905.10258 Sect. 2)
+# The NUCLEUS 2019 prose figure 3.000e+12 is a THIRD
+#   number, 1.6391x the geometric reconstruction, and is a
+#   locked forbidden proxy (fp-nucleus-3e12). It is named here only as the gap.
+# CAVEAT: the rescale is valid for the TOTAL RATE NORMALIZATION only. It assumes
+#   the VNS spectral SHAPE is the project's Phase-2 shape, and it says nothing
+#   about duty cycle or site-dependent backgrounds. The VNS also carries
+#   2.92 m.w.e. of overburden that the surface background treatment does not
+#   have -- which is precisely why the 2026-07-22 re-scope demoted this to a
+#   context line (fp-inherited-shielding).
+# RoI: 10 - 100 eV of RECONSTRUCTED energy, on the finished
+#   plan-12-02 spectra.
+# Normalization: data/flux/reactor_flux_v1.0.csv, 3 GW_th at 25 m, surface,
+#   unshielded, used UNMODIFIED. NO rescale of any kind is applied here -- not a
+#   VNS rescale, not a duty cycle, not a shielding or overburden credit
+#   (fp-second-vns-run, fp-inherited-shielding). CONVENTIONS Section D unchanged.
+# Units: integral fluxes in nubar/cm^2/s; rates in counts/kg/day; factors
+#   dimensionless.
+design,candidate,candidate_integral_flux,project_integral_flux,rescale_factor,primary_roi_counts_per_kg_day,rescaled_roi_counts_per_kg_day
+Ta->Al,nucleus_stated_2026,2.1000000000e+12,7.4957604949e+12,2.8015836438e-01,7.2921434582e+01,2.0429549840e+01
+Ta->Al,project_geometric,1.8302692688e+12,7.4957604949e+12,2.4417392606e-01,7.2921434582e+01,1.7805512976e+01
+Al->Hf,nucleus_stated_2026,2.1000000000e+12,7.4957604949e+12,2.8015836438e-01,7.3144064720e+01,2.0491921536e+01
+Al->Hf,project_geometric,1.8302692688e+12,7.4957604949e+12,2.4417392606e-01,7.3144064720e+01,1.7859873451e+01

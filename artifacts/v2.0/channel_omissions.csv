@@ -1,0 +1,22 @@
+# QPD Phase-16 plan 16-02 -- WHAT IS NOT IN THE INVENTORY.
+# Completeness is claimed against THIS LIST, never against silence.  A
+# completeness audit that returned 'nothing missing' for an unshielded SURFACE
+# detector would be vacuous, not reassuring, and the guarding test fails on an
+# empty list.
+#
+# bias_direction is from the Phase-9 Section-5 closed vocabulary ('flatters_SB', 'penalizes_SB', 'neutral').
+# THE ROWS ARE NOT NETTED AGAINST EACH OTHER.  Four of the six flatter
+# S/B_particle by leaving background out; one would penalize it.  Netting them
+# would replace two separately unquantified effects with one invented number.
+#
+# The neutron >20 MeV row carries its in-RoI and its TOTAL-rate bounds in
+# SEPARATE columns, never combined: 1.35e-05..2.55e-05 in the RoI against
+# 8.91e-02..1.69e-01 on the total rate -- four decades apart.
+#
+omission,bias_direction,magnitude_status,in_roi_fraction_lo,in_roi_fraction_hi,total_rate_fraction_lo,total_rate_fraction_hi,reason
+muon_induced_neutrons_at_the_surface,flatters_SB,UNQUANTIFIED_IN_THIS_MILESTONE,,,,,"Cosmic-ray muons produce neutrons by spallation and photonuclear interaction in the wafer, its mount and the surrounding material. Those neutrons elastically scatter in Ge exactly like the ambient sea-level field already in the inventory, so the channel is real and is additive to the denominator. It is not modelled anywhere in this milestone and no bound is available for it here, so it is named rather than estimated."
+muon_induced_secondary_gammas_at_the_surface,flatters_SB,UNQUANTIFIED_IN_THIS_MILESTONE,,,,,"Bremsstrahlung and de-excitation gammas from the same muon flux, Compton scattering in Ge on top of the ambient gamma field already counted. Additive to the denominator, not modelled, and not bounded here."
+cosmogenic_activation_of_71Ge_68Ge_65Zn_by_the_fast_component,flatters_SB,OUT_OF_SCOPE_PHASE_14,,,,,"A real surface-detector effect: the fast nucleon component activates the germanium, and the resulting EC decays deposit at the same sub-keV atomic energies as the 71Ge M line already in the inventory. Phase 14 placed it explicitly out of scope and this phase does not re-open it. Its exposure history is not a physics input this project owns."
+ge71_EC_K_line_X_ray_escape_near_the_wafer_surface,penalizes_SB,UNQUANTIFIED_IN_THIS_MILESTONE,,,,,"The K line at 10368.3 eV deposit sits far above the RoI and is excluded on that basis. But a K capture occurring within an X-ray absorption depth of the wafer face can lose its 9.9 keV X-ray to escape and deposit only the remaining ~470 eV. Escape moves counts DOWNWARD toward the RoI from a line that carries 87.59% of the EC branching, i.e. seven times the M-line branching. Excluded because the escape fraction for a 110 g wafer is not computed anywhere in this milestone. Direction given as penalizes_SB because including it would ADD background."
+neutron_elastic_recoils_above_the_20_MeV_ENDF_ceiling,flatters_SB,BOUNDED_PHASE_13,1.348166e-05,2.554578e-05,0.08905297,0.1687424,"The ENDF elastic evaluation stops at 20 MeV and the sea-level spectrum does not. Phase 13 bounded the omission under two explicit continuations. THE TWO BOUNDS ARE CARRIED SEPARATELY AND ARE NEVER NETTED: in-RoI omission fraction 1.348166e-05 to 2.554578e-05 (negligible there), TOTAL-RATE omission fraction 8.905297e-02 to 1.687424e-01 (not negligible at all). Reporting one in place of the other would misstate the channel by four decades."
+the_low_energy_excess,flatters_SB,BY_CONSTRUCTION_SEE_PLAN_16_03,,,,,"EXCLUDED BY CONSTRUCTION, which is what the _particle subscript records. The LEE is not an oversight here; it is defined out of this denominator and is carried as an explicit overlay band by plan 16-03. NUCLEUS calls it overwhelming in the O(100 eV) region, and for a QPD wafer it is neither shieldable nor inheritable. Listed here so that the omission list is not read as complete without it."

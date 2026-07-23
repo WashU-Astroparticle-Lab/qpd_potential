@@ -1,0 +1,29 @@
+# Phase-15 Plan 15-03: sensitivity of EVERY triggered quantity to the trigger
+# sharpness k over the DECLARED SCAN RANGE (1.0, 12.0), both channels, both designs.
+# repo_HEAD_at_execution = 53ed2d6
+#
+# k IS FIXED BY NO PROJECT ARTIFACT. No trigger threshold has ever been measured
+# for this device; only the 50% point E50 = 0.5 eV carries a project decision
+# (CONVENTIONS Section I, status PHENOMENOLOGICAL). Every triggered number is
+# therefore a ONE-PARAMETER FAMILY.
+#
+# THE SPREAD IS REPORTED AS A RANGE, NOT AS A PLUS-OR-MINUS. A symmetric error
+# bar would misrepresent an unmeasured CHOSEN parameter as a measured one.
+#
+# P(E50) = 1/2 exactly for EVERY k, so the 50% point is a property of the
+# functional form and not of any particular width.
+#
+# columns: design, channel, quantity, units[counts/kg/day], untriggered[counts/kg/day], k=1[counts/kg/day], k=2[counts/kg/day], k=3[counts/kg/day], k=4[counts/kg/day], k=6[counts/kg/day], k=8[counts/kg/day], k=10[counts/kg/day], k=12[counts/kg/day], range_lo[counts/kg/day], range_hi[counts/kg/day], spread_ratio_hi_over_lo[dimensionless], varies_by_an_order_of_magnitude_or_more[bool]
+design,channel,quantity,units[counts/kg/day],untriggered[counts/kg/day],k=1[counts/kg/day],k=2[counts/kg/day],k=3[counts/kg/day],k=4[counts/kg/day],k=6[counts/kg/day],k=8[counts/kg/day],k=10[counts/kg/day],k=12[counts/kg/day],range_lo[counts/kg/day],range_hi[counts/kg/day],spread_ratio_hi_over_lo[dimensionless],varies_by_an_order_of_magnitude_or_more[bool]
+Ta->Al,muon,total_triggered_counts_per_kg_day,counts/kg/day,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.000000e+00,False
+Ta->Al,muon,subev_triggered_counts_per_kg_day,counts/kg/day,1.469466e-02,6.860844e-03,6.660209e-03,6.673175e-03,6.765815e-03,6.971473e-03,7.128963e-03,7.240601e-03,7.320314e-03,6.660209e-03,7.320314e-03,1.099112e+00,False
+Ta->Al,muon,roi_10_100eV_triggered_counts_per_kg_day,counts/kg/day,7.465640e+00,7.427184e+00,7.465322e+00,7.465636e+00,7.465640e+00,7.465640e+00,7.465640e+00,7.465640e+00,7.465640e+00,7.427184e+00,7.465640e+00,1.005178e+00,False
+Ta->Al,compton,total_triggered_counts_per_kg_day,counts/kg/day,2.102771e+05,2.102758e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102758e+05,2.102771e+05,1.000006e+00,False
+Ta->Al,compton,subev_triggered_counts_per_kg_day,counts/kg/day,2.858715e-03,1.742551e-03,1.991829e-03,2.158258e-03,2.258590e-03,2.350425e-03,2.382946e-03,2.396513e-03,2.403301e-03,1.742551e-03,2.403301e-03,1.379186e+00,False
+Ta->Al,compton,roi_10_100eV_triggered_counts_per_kg_day,counts/kg/day,3.424844e+01,3.409808e+01,3.424738e+01,3.424843e+01,3.424844e+01,3.424844e+01,3.424844e+01,3.424844e+01,3.424844e+01,3.409808e+01,3.424844e+01,1.004410e+00,False
+Al->Hf,muon,total_triggered_counts_per_kg_day,counts/kg/day,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.073206e+06,1.000000e+00,False
+Al->Hf,muon,subev_triggered_counts_per_kg_day,counts/kg/day,1.474389e-02,6.890378e-03,6.694680e-03,6.712104e-03,6.808249e-03,7.018019e-03,7.177188e-03,7.289457e-03,7.369403e-03,6.694680e-03,7.369403e-03,1.100785e+00,False
+Al->Hf,muon,roi_10_100eV_triggered_counts_per_kg_day,counts/kg/day,7.723080e+00,7.684351e+00,7.722767e+00,7.723077e+00,7.723080e+00,7.723080e+00,7.723080e+00,7.723080e+00,7.723080e+00,7.684351e+00,7.723080e+00,1.005040e+00,False
+Al->Hf,compton,total_triggered_counts_per_kg_day,counts/kg/day,2.102771e+05,2.102758e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102771e+05,2.102758e+05,2.102771e+05,1.000006e+00,False
+Al->Hf,compton,subev_triggered_counts_per_kg_day,counts/kg/day,3.015155e-03,1.847591e-03,2.117894e-03,2.297948e-03,2.406119e-03,2.504420e-03,2.538705e-03,2.552756e-03,2.559680e-03,1.847591e-03,2.559680e-03,1.385415e+00,False
+Al->Hf,compton,roi_10_100eV_triggered_counts_per_kg_day,counts/kg/day,3.586163e+01,3.570902e+01,3.586059e+01,3.586162e+01,3.586163e+01,3.586163e+01,3.586163e+01,3.586163e+01,3.586163e+01,3.570902e+01,3.586163e+01,1.004274e+00,False

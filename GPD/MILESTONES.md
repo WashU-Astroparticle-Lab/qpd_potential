@@ -1,5 +1,23 @@
 # Milestones
 
+## v1.1 Neutron & Radiogenic Backgrounds (SUPERSEDED: 2026-07-22)
+
+**Status:** SUPERSEDED, not completed. Phases 7–12 were planned; **only Phase 7 executed** (2 plans, verified 19/22 with gaps). Phases 8–12 were never started and are withdrawn.
+
+**Why superseded:** v1.1's premise was to project the in-band background ourselves from *surface, unshielded* ambient fluxes (PARMA/Gordon fast neutrons, own housing radiopurity budget) for a generic 3 GW_th / 25 m reactor site. On 2026-07-22 the user redirected the project to assume deployment at the NUCLEUS Chooz Very-Near-Site behind the NUCLEUS shielding. That makes Phases 8–9 answer the wrong question — NUCLEUS's own Fig. 8 puts the unshielded rate at 10⁴–10⁵ d⁻¹kg⁻¹keV⁻¹ against ~200 after shielding, a 2–3 order-of-magnitude difference — and inverts contract item VALD-08, which had NUCLEUS as an end-of-milestone cross-check rather than a front-of-milestone input.
+
+**Carried forward into v2.0 (NOT discarded):**
+- Phase 7 nuclear data: frozen ENDF/B-VIII.0 + NJOY/Lib80x n-Ge elastic table (thermal→20 MeV, 23155-point resonance-resolved grid), σ_tot(1–2 MeV) = 3.729 b, Σ = 0.1646 cm⁻¹, λ = 6.076 cm, P_int(2 mm) = 3.24%.
+- Abundance-weighted natural T_max/E_n = 0.0536 and the per-isotope kinematics.
+- The gap-D1 decision (truncate the neutron fold at 20 MeV, document the omission, never extrapolate σ_el) — *less* severe at the VNS, since building plus shield cut the >10 MeV flux by ~5–7×, but still to be quantified.
+- Radiopurity/activation machinery, now driven by NUCLEUS's screened material inventory rather than our own assumed budget.
+
+**Withdrawn:** Phases 8 (P-NSRC surface neutron source terms), 9 (P-NTRANS bare single-scatter fold), 10 (P-RAD own housing budget), 11 (P-COSMO as scoped), 12 (P-FOLD as scoped). Their physics content is re-scoped inside v2.0 against the shielded VNS environment.
+
+**Archived evidence:** `GPD/phases/07-scenario-nuclear-data-lock/`, prior `GPD/ROADMAP.md` (v1.1) in git history at `40804a5`.
+
+---
+
 ## v1.0 Reconstructed-Energy Spectra (Shipped: 2026-07-22)
 
 **Phases completed:** 6 phases, 13 plans

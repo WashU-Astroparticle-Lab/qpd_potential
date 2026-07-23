@@ -1,0 +1,21 @@
+# Phase-15 Plan 15-04: ROADMAP Phase 15 SC5 accuracy carry-forward.
+# repo_HEAD_at_execution = b8addf2
+# The machine-readable object Phase 16 propagates. Complete enough that Phase 16
+# need not re-derive any of it. Schema reused from 09-01-MUON-GAMMA-DECLARATION.md
+# Section 5 (the directional-bias rows).
+#
+# CARRIED FORWARD UNCHANGED FROM v1.0. Extending the energy axis does not improve a
+# normalization; the axis and the normalization are independent. No band here is
+# narrower than the v1.0 band it inherited, and a test FAILS if one ever is
+# (fp-narrowed-band).
+#
+# THE MUON SIGN NEVER TRAVELS ALONE. The two PDG statements BRACKET the adopted
+# 1.3659 Hz from opposite sides -- Leg A -20.61%, Leg B +20.34% -- so the ~20%
+# MAGNITUDE is solid while the SIGN is anchor-leg dependent. A bare -20.61% or a bare
+# flatters_SB would let a downstream phase inherit a direction the evidence does not
+# establish (fp-bare-sign).
+#
+# columns: channel, accuracy_label, bias_direction, signed_deviation[percent], anchor_leg, bracketing_disclosure, band_lo[dimensionless], band_hi[dimensionless], underlying_limit, artifact_paths, v1_0_source
+channel,accuracy_label,bias_direction,signed_deviation[percent],anchor_leg,bracketing_disclosure,band_lo[dimensionless],band_hi[dimensionless],underlying_limit,artifact_paths,v1_0_source
+muon,pdg_within_20pct_vald02_tol_30pct,flatters_SB,-20.61,PDG Leg A: ~1 muon cm^-2 min^-1 x A_top = 1.7204 Hz,"PDG Leg B (I_v ~ 70 m^-2 s^-1 sr^-1 with cos^2 theta -> 1.1350 Hz) gives +20.34%, i.e. penalizes_SB. The two legs BRACKET the adopted 1.3659 Hz from opposite sides: the ~20% magnitude is solid, the SIGN is not.",0.65,1.35,"30-35% inter-experiment Gaisser-Guan normalization spread, named in the v1.0 manuscript as this channel's weakest anchor, which no in-repo artifact can narrow. The band x0.65..x1.35 is that spread and it ENCLOSES the PDG leg bracket x0.8309..x1.2595, so it narrows nothing. The channel has NO external benchmark on the reconstructed axis at all: the NUCLEUS Table 5 residual comparison was removed by the 2026-07-22 re-scope.",artifacts/v2.0/em_validity_floors.csv;artifacts/v2.0/muon_dRdEdep_ext.csv;artifacts/v2.0/compton_dRdEdep_ext.csv;artifacts/v2.0/em_v1_regression.csv;artifacts/v2.0/em_dRdErec_ext_TaAl.csv;artifacts/v2.0/em_dRdErec_ext_AlHf.csv;artifacts/v2.0/em_trigger_k_sensitivity.csv,09-01-MUON-GAMMA-DECLARATION.md Sections 2.5 and 5
+gamma,site_band_factor_2,neutral,+0.00,"LABChico measured environmental gamma survey (Eur. Phys. J. Plus, 2022); the adopted normalization IS the anchor","n/a -- the adopted value sits AT the measured anchor, not on either edge of its band. The LOW edge (x0.5) is the flattering one and is NOT used; the high edge (x2) would penalize.",0.5,2.0,"The factor-2 site-dependent band. Its weakest component is the U-238 chain, whose per-line flux rests on the DOCUMENTED ASSUMPTION Phi_U = Phi_Th (chain balance) rather than on a measured line intensity, and which carries flux_unc_frac = 1.0 in data/gamma_lines.csv.",artifacts/v2.0/em_validity_floors.csv;artifacts/v2.0/muon_dRdEdep_ext.csv;artifacts/v2.0/compton_dRdEdep_ext.csv;artifacts/v2.0/em_v1_regression.csv;artifacts/v2.0/em_dRdErec_ext_TaAl.csv;artifacts/v2.0/em_dRdErec_ext_AlHf.csv;artifacts/v2.0/em_trigger_k_sensitivity.csv,09-01-MUON-GAMMA-DECLARATION.md Sections 3.4 and 5

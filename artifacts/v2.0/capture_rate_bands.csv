@@ -1,0 +1,114 @@
+# QPD Phase-14 Plan 14-01 -- Ge (n,gamma) CAPTURE REACTION RATE, band-decomposed
+# ACCURACY_LABEL = order_of_magnitude on EVERY row.  A bound, not a quantification.
+#
+# R = N_Ge INT phi(E_n) sigma_(n,gamma)(E_n) dE_n   [counts kg^-1 day^-1]
+#   dimensions: [cm^-2 s^-1 eV^-1] x [cm^2] x [eV] x [kg^-1] x [s/day]
+#   N_Ge = 8.291565e+24 atoms/kg (CONVENTIONS Section D)
+#
+# ================================= FLUX LEG ==================================
+# phi_default == phi_hi (OUTDOOR).  phi_lo = phi_default/5 is the INDOOR leg
+# (09-02 Section 4), NOT an error bar; it is refused in code and never appears here.
+# The flux is evaluated by the PINNED PARMA DRIVER DIRECTLY at every quadrature node.
+#   1 - 10.14 eV table gap: 232 quadrature nodes fall inside [1, 10] eV; the flux there is BIT-IDENTICAL (True) to a direct parma.differential_flux call, so neither committed
+#   table is interpolated across the gap.  Measured, not assumed.
+#
+# ============================ QUADRATURE CONVERGENCE =========================
+# nodes = 24298 (ACE native union grid + 200/decade + band edges)
+# node doubling (200 -> 400/decade) moves the total by 0.0012%  [pass < 0.5%]
+# band rates sum to the total with residual 2.067e-16  [pass < 0.5%]
+#
+# ======================= THERMAL-DOMINANCE VERDICT (non-identity check) =======
+# THERMAL FRAMING SURVIVES: thermal fraction 76.49% vs the pre-declared 60% threshold.
+# The thermal band (<= 0.5 eV, the same cadmium cutoff Phi_th uses) carries 76.49% of the total Ge capture rate, against the pre-declared 60% threshold. The phase's 'thermal-capture' framing therefore SURVIVES the test -- but 23.51% of the channel is NOT thermal, which the phase title does not admit, and that non-thermal remainder is carried forward to Phase 16 as part of the channel rather than absorbed into the thermal label.
+#
+# ========== THE NAIVE PRODUCT IS NOT THE ANSWER (fp-westcott-product) =========
+# Phi_th x sigma(0.0253 eV) x N_Ge x 86400 = 4383.92 counts/kg/day
+#   vs the SPECTRALLY FOLDED thermal band 3365.54
+#   measured ratio naive/folded = 1.3026 (+30.26%) -- they DIFFER, which is the pass condition.
+#   WHY: sigma_(n,gamma) is a 1/v absorber, so a band-integrated flux times a POINT
+#   cross section is not the reaction rate.  The 2200 m/s point sits above the
+#   flux-weighted mean of sigma over the sub-cadmium band, so the product OVERSTATES it.
+#   The Westcott factor sqrt(pi)/2 = 0.8862 is quoted for
+#   CONTEXT ONLY and is NOT the measured ratio; it is not substituted for it.
+#   TRAP: naive/TOTAL = 0.9964, which LOOKS like agreement.
+#   It is not corroboration: the product overstates the thermal band while knowing
+#   nothing about the epithermal and fast capture in the total.  Two errors nearly
+#   cancelling.  Agreement here would indicate a collapsed fold, not correct physics.
+#
+# ================== DOPPLER SENSITIVITY (the Phase-9 mK caveat) ===============
+# Phase 9 Section 5 handed Phase 14 the 293.6 K processing temperature against a mK
+# crystal as an UNVALIDATED assumption it could not settle.  ANSWERED WITH A NUMBER:
+#   epithermal band, 0.1 K (.805nc) vs 293.6 K (.800nc): +0.01016%
+#   total: +0.00013%
+#   MECHANISM: Doppler broadening is a convolution with a NORMALISED kernel, so it
+#   conserves the resonance integral while reshaping peaks.  A ~0 band-integrated shift
+#   is the EXPECTED result, not a null cross-check.  CAVEAT RETAINED: anything that
+#   resolves individual resonance LINE SHAPES must re-derive from the 0.1 K set.
+#
+# ======================== SELF-SHIELDING / THIN-TARGET CHECK ==================
+# P_capture(2 mm) = Sigma_102 x 0.2 cm, computed from the SAME sigma used in the fold:
+#   at 2200 m/s (sigma = 2.2115 b): 1.952%  << 1
+#   at the fold floor 0.01 eV (sigma = 3.5180 b): 3.105%  << 1
+#   AT THE LARGEST sigma ON THE NODE SET (83.43 b at 102.6 eV): 73.6% -- NOT << 1.
+#   The wafer is nearly BLACK to capture at that resonance peak, so the thin-target
+#   formula OVERSTATES the epithermal band.  Bounded, not corrected: comparing
+#   INT phi (1-exp(-Sigma t)) dE against INT phi Sigma t dE gives, per band --
+#     thermal: attenuated/thin = 0.9915  (-0.85%)
+#     epithermal: attenuated/thin = 0.8900  (-11.00%)
+#     intermediate: attenuated/thin = 0.9868  (-1.32%)
+#     fast: attenuated/thin = 1.0000  (-0.00%)
+#   The THIN-TARGET rate is the one reported in every row below, so this omission's
+#   direction is penalizes_SB (the background is overstated).  Normal incidence, no
+#   scattering, no angular distribution: it BOUNDS the effect, it does not correct it.
+#
+# ================================ BIFFL COMPARISON ===========================
+# Phi_th adopted = 2.767075e-03 cm^-2 s^-1 (cadmium cutoff, 0.5 eV = 5.0e-7 MeV; lower bound 0.01 eV)
+#   SOURCE: GPD/phases/09-sea-level-surface-environment-lock-p-env/09-02-NEUTRON-DECLARATION.md Section 5 (PHASE 9's product) -- Phase 9's product, NOT Phase 13's, NOT re-derived here.
+#   Biffl et al., PRD 107, 092011 (2023) state a requirement Phi_th < 7.0e-04 n/cm^2/s.
+#   RATIO = 3.9530 -- the adopted flux is 3.95x ABOVE the requirement.  This unshielded
+#   sea-level configuration DOES NOT MEET IT, and that direction is stated rather than skipped.
+#
+# top-decade (2 - 20 MeV) fraction of the capture rate = 0.0899% -- the 20 MeV ENDF ceiling omission is negligible for capture (Phase 13 sustained the
+#   CALC-24 deferral on a measured 11.85x margin; the same disposition applies).
+# git_sha = 3365f48
+# reproduce = PYTHONPATH=src /opt/anaconda3/bin/python3 -c "from qpd_potential import capture_channel as c; c.write_capture_rate_bands_csv()"
+# columns: row_kind, isotope, band, E_lo_eV, E_hi_eV, rate_counts_kg_day, band_fraction, accuracy_label, note
+row_kind,isotope,band,E_lo_eV,E_hi_eV,rate_counts_kg_day,band_fraction,accuracy_label,note
+FOLDED_BAND,natural,thermal,0.01,0.5,3.365536e+03,7.649333e-01,order_of_magnitude,"spectral fold, outdoor leg, ACE 293.6 K"
+FOLDED_BAND,natural,epithermal,0.5,1000,8.570758e+02,1.947998e-01,order_of_magnitude,"spectral fold, outdoor leg, ACE 293.6 K"
+FOLDED_BAND,natural,intermediate,1000,1e+06,1.677549e+02,3.812805e-02,order_of_magnitude,"spectral fold, outdoor leg, ACE 293.6 K"
+FOLDED_BAND,natural,fast,1e+06,2e+07,9.410154e+00,2.138780e-03,order_of_magnitude,"spectral fold, outdoor leg, ACE 293.6 K"
+FOLDED_TOTAL,natural,0.01eV-20MeV,0.01,2e+07,4.399777e+03,1.000000e+00,order_of_magnitude,"sum of the four bands to residual 2.07e-16"
+FOLDED_BAND,70Ge,thermal,0.01,0.5,9.553354e+02,2.171327e-01,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,70Ge,epithermal,0.5,1000,3.922832e+01,8.915979e-03,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,70Ge,intermediate,1000,1e+06,5.532640e+01,1.257482e-02,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,70Ge,fast,1e+06,2e+07,4.257105e+00,9.675728e-04,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_TOTAL,70Ge,0.01eV-20MeV,0.01,2e+07,1.054147e+03,2.395911e-01,order_of_magnitude,"abundance-weighted; 70Ge is the 71Ge production rate used by plan 14-02"
+FOLDED_BAND,72Ge,thermal,0.01,0.5,3.700376e+02,8.410372e-02,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,72Ge,epithermal,0.5,1000,1.738068e+01,3.950355e-03,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,72Ge,intermediate,1000,1e+06,3.040296e+01,6.910114e-03,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,72Ge,fast,1e+06,2e+07,2.784985e+00,6.329832e-04,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_TOTAL,72Ge,0.01eV-20MeV,0.01,2e+07,4.206063e+02,9.559718e-02,order_of_magnitude,"abundance-weighted; 70Ge is the 71Ge production rate used by plan 14-02"
+FOLDED_BAND,73Ge,thermal,0.01,0.5,1.733721e+03,3.940475e-01,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,73Ge,epithermal,0.5,1000,7.715161e+02,1.753535e-01,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,73Ge,intermediate,1000,1e+06,4.719505e+01,1.072669e-02,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,73Ge,fast,1e+06,2e+07,6.332507e-01,1.439279e-04,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_TOTAL,73Ge,0.01eV-20MeV,0.01,2e+07,2.553065e+03,5.802716e-01,order_of_magnitude,"abundance-weighted; 70Ge is the 71Ge production rate used by plan 14-02"
+FOLDED_BAND,74Ge,thermal,0.01,0.5,2.882527e+02,6.551529e-02,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,74Ge,epithermal,0.5,1000,1.223009e+01,2.779706e-03,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,74Ge,intermediate,1000,1e+06,3.320279e+01,7.546471e-03,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,74Ge,fast,1e+06,2e+07,1.568714e+00,3.565440e-04,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_TOTAL,74Ge,0.01eV-20MeV,0.01,2e+07,3.352542e+02,7.619801e-02,order_of_magnitude,"abundance-weighted; 70Ge is the 71Ge production rate used by plan 14-02"
+FOLDED_BAND,76Ge,thermal,0.01,0.5,1.818938e+01,4.134160e-03,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,76Ge,epithermal,0.5,1000,1.671971e+01,3.800127e-03,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,76Ge,intermediate,1000,1e+06,1.626599e+00,3.697004e-04,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_BAND,76Ge,fast,1e+06,2e+07,1.660755e-01,3.774635e-05,order_of_magnitude,"abundance-weighted contribution to the natural rate"
+FOLDED_TOTAL,76Ge,0.01eV-20MeV,0.01,2e+07,3.670177e+01,8.341734e-03,order_of_magnitude,"abundance-weighted; 70Ge is the 71Ge production rate used by plan 14-02"
+NAIVE_PRODUCT_NOT_THE_ANSWER,natural,thermal,0.01,0.5,4.383917e+03,,order_of_magnitude,"Phi_th x sigma(0.0253 eV) x N_Ge x 86400. NOT the reaction rate. ratio naive/folded_thermal = 1.3026 (+30.26%); NOT sqrt(pi)/2."
+DOPPLER_CHECK,natural,epithermal,0.5,1000,8.570758e+02,,order_of_magnitude,"ACE set 293.6K; answers the Phase-9 mK caveat with a number"
+DOPPLER_CHECK,natural,epithermal,0.5,1000,8.571628e+02,,order_of_magnitude,"ACE set 0.1K; answers the Phase-9 mK caveat with a number"
+DOPPLER_SIGNED_DIFF,natural,epithermal,0.5,1000,1.015743e-04,,order_of_magnitude,"relative, 0.1K minus 293.6K over 293.6K; dimensionless in the rate column"
+SELF_SHIELDING_CHECK,natural,at_2200ms,0.0253,0.0253,1.952154e-02,,order_of_magnitude,"P_capture(2 mm) = Sigma_102 x 0.2 cm; dimensionless in the rate column"
+SELF_SHIELDING_CHECK,natural,at_sigma_max,102.59,102.59,7.364875e-01,,order_of_magnitude,"NOT << 1 at the resonance peak; the thin-target formula overstates the epithermal band (penalizes_SB)"
+BIFFL_COMPARISON,n/a,thermal,0.01,0.5,3.952964e+00,,order_of_magnitude,"Phi_th adopted / Biffl requirement; ABOVE, so the requirement is NOT met"
+NODE_DOUBLING,natural,0.01eV-20MeV,0.01,2e+07,1.190448e-05,,order_of_magnitude,"200 -> 400 nodes/decade; relative change"

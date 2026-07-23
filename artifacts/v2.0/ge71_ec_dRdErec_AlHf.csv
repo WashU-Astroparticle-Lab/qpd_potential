@@ -1,0 +1,210 @@
+# QPD Phase-14 Plan 14-02 -- 71Ge EC M-line dR/dE_rec, design Al->Hf
+# ACCURACY_LABEL = order_of_magnitude on every row.  This is a BOUND, not a rate:
+#   input = A_sat x (1 - P_K) = 1054.1472 x 0.1241 = 130.8197 counts/kg/day
+#   SCENARIO: SATURATION (t -> inf). At t = 1 d it is 5.88% of this; a rate without its t is UNDEFINED.
+#
+# =========================== DEPOSIT vs RECONSTRUCTED ========================
+# The line is a 158.7 eV DEPOSIT. Its RECONSTRUCTED image is measured here:
+#   deposit bin 256, centre 160.849678 eV
+#   matrix's own unbinned E_rec mean for that column = 62.963872 eV
+#     median 62.970641, p16 62.424624, p84 63.491303, rel_spread 0.008470
+#   MAPPING SLOPE E_rec/E_dep at this line = 0.396748
+#   binned peak bin centre = 59.566214 eV, over 2 populated reconstructed bin(s)
+#   one reconstructed bin here is 11.519% wide, against a response rel_spread of 0.847% -- THE IMAGE IS
+#   NARROWER THAN ONE BIN, so its apparent width is the BINNING and not the physics.
+#   in-RoI fraction over E_rec [10, 100] eV = 1.000000
+#   sub-eV (E_rec < 1 eV) fraction = 0.000000
+#   QUOTING 158.7 eV AS THE POSITION ON THIS AXIS WOULD BE fp-deposit-as-reconstructed.
+#
+# ================================ COUNTS BUDGET ==============================
+# input 130.819666; deposit 130.819666; reconstructed 130.819666
+# leaked_below_floor 0; leaked_above_top 0
+# residual_retained_plus_leaked 0.000e+00; residual_retained_only +0.000e+00; residual_fold 0.000e+00
+# The two residuals COINCIDE BY CONSTRUCTION here because NO broadening is applied and
+# the monochromatic input lies strictly inside the deposit axis, so there is no kernel
+# leakage to separate them. Reported separately for parity with the Phase-13 neutron
+# path, and the coincidence is STATED rather than presented as two confirmations.
+# Nothing is rescaled.
+#
+# ============================== NO IA BROADENING =============================
+# 2W_e = 250.02 at 158.7 eV: the electron-side IA validity condition
+# IS SATISFIED here (Phase 15 measured 0.1574 < 1 at the 0.1 eV
+# grid floor, where it FAILS). The exclusion therefore does NOT rest on that criterion,
+# and it does NOT rest on smallness either -- Phase 15 established that argument would
+# have been false. It rests on the nuclear-kernel transplant understating the width by
+# 5.9616x, and on the EC deposit being an atomic relaxation
+# energy rather than a recoil. Stake: the electron-side kernel would give 10.0366 eV
+# = 6.3243% of the line, ~half a reconstructed bin.
+# broaden=False is enforced in code: fold_monochromatic_line RAISES on broaden=True.
+# The rate is NEVER multiplied by exp(-2W).
+#
+# ================================== TRIGGER ==================================
+# CONVENTIONS Section I: P_trig is an ANALYSIS efficiency MULTIPLIED on top of eps ~ 0.5,
+# evaluated on the DEPOSIT centres BEFORE R acts. E50 = 0.5 eV exactly, k = 4.0.
+# P_trig at the line's deposit bin = 0.999999998506 -- essentially 1, as
+# expected 2.5 decades above E50.
+#
+# git_sha = 7301ff9
+# reproduce = PYTHONPATH=src /opt/anaconda3/bin/python3 -c "from qpd_potential import capture_channel as c; c.write_ge71_ec_erec_csv('Al->Hf')"
+# columns: E_rec_keV, dRdErec_bound, dRdErec_trigger_weighted, P_trig_effective, regime, accuracy_label
+E_rec_keV,dRdErec_bound,dRdErec_trigger_weighted,P_trig_effective,regime,accuracy_label
+1.059253725e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.188502227e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.333521432e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.496235656e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.678804018e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.883649089e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.113489040e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.371373706e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.660725060e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.985382619e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+3.349654392e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+3.758374043e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+4.216965034e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+4.731512590e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+5.308844442e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+5.956621435e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+6.683439176e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+7.498942093e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+8.413951416e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+9.440608763e-06,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.059253725e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.188502227e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.333521432e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.496235656e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.678804018e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.883649089e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.113489040e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.371373706e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.660725060e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.985382619e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+3.349654392e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+3.758374043e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+4.216965034e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+4.731512590e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+5.308844442e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+5.956621435e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+6.683439176e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+7.498942093e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+8.413951416e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+9.440608763e-05,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.059253725e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.188502227e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.333521432e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.496235656e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.678804018e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.883649089e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.113489040e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.371373706e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.660725060e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+2.985382619e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+3.349654392e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+3.758374043e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+4.216965034e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+4.731512590e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+5.308844442e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+5.956621435e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+6.683439176e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+7.498942093e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+8.413951416e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+9.440608763e-04,0.000000e+00,0.000000e+00,1.000000000,sub_eV_trigger_probability_regime,order_of_magnitude
+1.059253725e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.188502227e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.333521432e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.496235656e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.678804018e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.883649089e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.113489040e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.371373706e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.660725060e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.985382619e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.349654392e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.758374043e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.216965034e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.731512590e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.308844442e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.956621435e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+6.683439176e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+7.498942093e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+8.413951416e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+9.440608763e-03,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.059253725e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.188502227e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.333521432e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.496235656e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.678804018e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.883649089e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.113489040e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.371373706e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.660725060e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.985382619e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.349654392e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.758374043e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.216965034e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.731512590e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.308844442e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.956621435e-02,1.130582e+04,1.130582e+04,0.999999999,dRdErec,order_of_magnitude
+6.683439176e-02,6.915792e+03,6.915792e+03,0.999999999,dRdErec,order_of_magnitude
+7.498942093e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+8.413951416e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+9.440608763e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.059253725e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.188502227e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.333521432e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.496235656e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.678804018e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.883649089e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.113489040e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.371373706e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.660725060e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.985382619e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.349654392e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.758374043e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.216965034e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.731512590e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.308844442e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.956621435e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+6.683439176e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+7.498942093e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+8.413951416e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+9.440608763e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.059253725e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.188502227e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.333521432e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.496235656e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.678804018e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.883649089e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.113489040e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.371373706e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.660725060e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.985382619e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.349654392e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.758374043e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.216965034e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.731512590e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.308844442e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.956621435e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+6.683439176e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+7.498942093e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+8.413951416e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+9.440608763e+00,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.059253725e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.188502227e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.333521432e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.496235656e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.678804018e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.883649089e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.113489040e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.371373706e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.660725060e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+2.985382619e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.349654392e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+3.758374043e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.216965034e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+4.731512590e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.308844442e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+5.956621435e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+6.683439176e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+7.498942093e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+8.413951416e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+9.440608763e+01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
