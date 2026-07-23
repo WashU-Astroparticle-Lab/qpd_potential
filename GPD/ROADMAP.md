@@ -112,14 +112,21 @@ Milestone audit: PASS with open questions ([`milestones/v1.0-MILESTONE-AUDIT.md`
 4. The monolithic single-readout wafer is shown to carry **no multiplicity handle at all**, so NUCLEUS's multiplicity cut contributes exactly zero rejection, and this is stated explicitly rather than absorbed into a lumped factor.
 5. **Stop-condition discharged:** if the wafer does not fit, the phase reports the milestone premise as void — a forced shield/veto redesign means φ_post at the detector position is no longer NUCLEUS's φ_post and essentially nothing transfers — and returns control to the user for re-scope. No reduced veto credit is assumed and no resized veto is invented.
 
+**Status:** COMPLETE 2026-07-22 — **gate discharged NO FIT**. See `08-05-GATE-VERDICT.md`.
+Milestone premise reported VOID; awaiting user re-scope decision.
+SC1 evidence-route amendment: EPJC 86,29 Fig. 1 was confirmed to carry no scale bar or dimension
+callout, so SC1 as literally worded is not dischargeable from it; the verdict rests on
+arXiv:2508.02488 (promoted to a Phase-8 anchor during execution; describes the TUM commissioning
+setup, not Chooz) corroborated by arXiv:1905.10258.
+
 **Plans:** 5 plans
 
 Plans:
-- [ ] 08-01-PLAN.md -- Freeze and integrity-check the primary NUCLEUS sources; emit the grep-verified verbatim evidence block; establish that EPJC 86,29 Fig. 1 carries no scale bar or dimension callout
-- [ ] 08-02-PLAN.md -- Derive the wafer's own muon self-veto acceptance as two separate numbers (A_self_direct, A_self_induced = 0) and establish the multiplicity rejection as exactly zero
-- [ ] 08-03-PLAN.md -- Amend SC1's evidence route with justification and compute the fit determination on three bases with tight/loose bounds and stated uncertainty
-- [ ] 08-04-PLAN.md -- Write the binding L1/L1*/L2 taxonomy, place L2 and L1* credits in code as 1.0 sentinels, correct the factor-5 and ~9 cm^2 errors in PITFALLS.md
-- [ ] 08-05-PLAN.md -- Discharge the VALD-09 gate, report the premise and phase-by-phase disposition, return control to the user for re-scope
+- [x] 08-01-PLAN.md -- Freeze and integrity-check the primary NUCLEUS sources; emit the grep-verified verbatim evidence block; establish that EPJC 86,29 Fig. 1 carries no scale bar or dimension callout
+- [x] 08-02-PLAN.md -- Derive the wafer's own muon self-veto acceptance as two separate numbers (A_self_direct, A_self_induced = 0) and establish the multiplicity rejection as exactly zero
+- [x] 08-03-PLAN.md -- Amend SC1's evidence route with justification and compute the fit determination on three bases with tight/loose bounds and stated uncertainty
+- [x] 08-04-PLAN.md -- Write the binding L1/L1*/L2 taxonomy, place L2 and L1* credits in code as 1.0 sentinels, correct the factor-5 and ~9 cm^2 errors in PITFALLS.md
+- [x] 08-05-PLAN.md -- Discharge the VALD-09 gate, report the premise and phase-by-phase disposition, return control to the user for re-scope
 
 ### Phase 9: VNS Environment Lock and Post-Shield Fluence Recovery (P-ENV)
 

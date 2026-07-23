@@ -7,7 +7,7 @@ See: GPD/PROJECT.md
 **Machine-readable scoping contract:** `GPD/state.json` field `project_contract`
 
 **Core research question:** Reactor-CEvNS, cosmic-muon, and environmental-gamma Compton spectra in reconstructed energy for a 4"×4"×2mm single-sided Ge wafer read out by QPDs (Ta→Al and Al→Hf designs).
-**Current focus:** Phase 1 complete ✓ — next: Phase 2 (Reactor Flux Model) and Phase 4 (Muon & Compton) can start
+**Current focus:** Phase 8 complete (5/5 plans) — **VALD-09 gate discharged NO FIT**. v2.0 milestone premise reported VOID. HALTED awaiting the user's re-scope decision.
 
 ## Current Position
 
@@ -15,9 +15,40 @@ See: GPD/PROJECT.md
 **Current Phase Name:** Veto-Envelope Geometry Gate (P-VETO)
 **Total Phases:** 9
 **Current Plan:** none
-**Total Plans in Phase:** none
-**Status:** Ready to plan
+**Total Plans in Phase:** 5 (all complete)
+**Status:** BLOCKED — awaiting user re-scope decision (SC5-mandated return of control)
 **Last Activity:** 2026-07-22
+
+### Phase 8 gate outcome
+
+**NO FIT.** A face-parallel 10.16 cm wafer requires a covering circle of √2·a = 14.3684 cm; the
+published COV cap crystal outer diameter is 10.0 cm (arXiv:2508.02488v1 §2, corroborated by
+arXiv:1905.10258 Fig. 8). Clearance **−4.3684 cm**, cap 30.4% smaller than required. Sign-robust to
+every published rounding interval, but **conditional on a face-parallel mounting premise** — the
+orientation-invariant floor is only −0.1620 cm and is not sign-robust. Neither leg is simultaneously
+premise-free and sign-robust.
+
+Independently verified (21/24 contract targets; 8/8 physics checks re-derived, not taken on faith):
+the 10.0 cm cap re-grepped from the frozen source with SHA-256 matching MANIFEST, the mass closure
+reproduced (1045.17 g at ρ_Ge = 5.323), and the orientation minima re-derived by multistart
+Nelder–Mead attaining min b₂ = 7.325626 cm and min projected diameter = 10.161968 cm exactly.
+
+**The milestone-void argument does NOT rest on the contested cap diameter.** Its load-bearing input
+is the **45.88× payload footprint change** (103.2256 cm² wafer vs the published 2.25 cm² array-crystal
+footprint), which forces the Cu support and B₄C liner redesign however the coverage comparison
+resolves.
+
+**Open and material:** assembly-level coverage (route B) is disclosed and quantified, NOT excluded —
+it needs only 24.6858 cm² of non-cap projection at a 2.1842 cm radial reach past the cap rim, and no
+published source constrains the rectangular COV crystals' lateral dimensions, placement, or mass.
+
+Transferable veto credit remains exactly **1.0**. No reduced credit assumed; no resized veto invented
+(locked user decision 2026-07-22).
+
+**Downstream disposition:** Phases 10 and 11 are site-independent and survive intact (neither carries
+a NUCLEUS anchor). Phases 9, 13, 14, 16 are void; Phases 12 and 15 do not survive in current form,
+though Phase 15's L1 inputs (2.92 m w.e. overburden, 1.41 attenuation, measured 5.03 cm⁻² s⁻¹ VNS
+gamma ambience) do transfer.
 
 **Progress:** [██████████] 100%
 
@@ -35,6 +66,10 @@ None yet.
 - [RESOLVED Phase 5] Saturated-regime reconstruction: non-paralyzable dead-time model (count-integral estimator; plateau = saturation). User decision 2026-07-21.
 - [RESOLVED Phase 5] Ta->Al tunneling params: Table II Al-trap column; Ta absorber gap is a binary trapping gate (α-Ta ratio 3.58≥2), response numerically independent of it above the gate.
 - What absolute environmental gamma flux and line composition best represent a surface-level reactor-site deployment? [Phase 4: sourced from Heusser 1995 with a factor-2 site-dependent band; edges exact, total rate MEDIUM.]
+- **[BLOCKING, Phase 8] Which re-scope direction?** Four candidates in `08-05-GATE-VERDICT.md` §8.2, none adopted: (1) room-level inputs only + independent shield; (2) revisit the wafer format — note REQUIREMENTS.md places this out of scope as "a stop-condition, not an optimization trigger"; (3) retarget to a different host experiment; (4) obtain the Goupy 2024 thesis first (manual browser download; would settle assembly-level route B directly).
+- [Phase 8] How much would φ_post at the detector position actually change under a forced redesign? **Unquantified** — the premise-void argument is component-level, not a transport calculation.
+- [Phase 8] What are the rectangular COV crystal dimensions, placement, and total mass, and the Cu support geometry? Only the unobtained Goupy 2024 thesis (NNT 2024UNIP7170 / HAL tel-05298505) can answer; HAL serves an anti-bot challenge, so it needs a manual browser download to `data/external/goupy_thesis_2024.pdf`.
+- [Phase 8, deferred] Is binary coverage the right efficacy criterion at all? A veto degrades continuously with partial coverage; Phase 8 does not defend the binary framing.
 
 ## Performance Metrics
 
