@@ -276,7 +276,11 @@ def rel_dev(E, y_a, Eb, y_b, elo, ehi):
 def build_union_grid(native_grids_eV):
     """Union of all isotopes' native (reconstructed) energy grids with
     shared_energy_grid() (keV -> eV), clipped to the ENDF support."""
-    shared_eV = shared_energy_grid() * 1.0e3  # keV -> eV
+    # PLAN 10-03 CALLER PIN: v1.0, explicitly. This data-preparation script
+    # writes the frozen data/endf_nGe_elastic_v1.1.csv; its union grid must
+    # not move under an archived artifact. The extension is irrelevant here
+    # anyway -- the result is clipped to the ENDF support.
+    shared_eV = shared_energy_grid("v1.0") * 1.0e3  # keV -> eV
     allg = np.concatenate([np.asarray(g, float) for g in native_grids_eV]
                           + [shared_eV])
     lo = max(min(g.min() for g in native_grids_eV), 1.0e-5)

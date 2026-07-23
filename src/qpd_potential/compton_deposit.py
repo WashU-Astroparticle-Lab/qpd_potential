@@ -156,10 +156,18 @@ class ComptonSpectrum:
     line_rates_hz: np.ndarray   # R_i per line [Hz]
     n_per_line: int
     counts_per_kg_day: float    # integral of dR/dE_dep dE (energy closure)
+    #: RAW, UNWEIGHTED Monte-Carlo entry count per bin, summed over lines.  Plan
+    #: 15-02 addition: purely diagnostic, consumes no random numbers and enters no
+    #: rate; it exists so a bin with NO estimator support is distinguishable from
+    #: a bin whose rate is genuinely small.  Defaulted so no existing constructor
+    #: call site changes.
+    mc_entries: np.ndarray = None  # type: ignore[assignment]
+    grid_version: str = "v1.0"
 
 
 def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720,
-                   batch_size: int = 5_000_000) -> ComptonSpectrum:
+                   batch_size: int = 5_000_000,
+                   grid_version: str = "v1.0") -> ComptonSpectrum:
     """Assemble the Compton electron-recoil dR/dE_dep on the shared log E_dep grid.
 
     For each sourced line: sample T_e ~ Klein-Nishina (angle -> kinematics), weight
@@ -173,10 +181,30 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720,
     result is exactly reproducible for a given ``(n_per_line, seed, batch_size)``. This
     is a STATISTICS-ONLY control: the physics (S(x,Z) binding, kinematics, rates, grid)
     is unchanged; larger ``n_per_line`` only shrinks the per-bin MC error.
+
+    ``grid_version`` (Plan 15-02).  DEFAULTS TO ``"v1.0"``, which preserves the
+    Plan 10-03 caller pin exactly: this function writes
+    ``data/compton_dRdEdep.csv`` and a caller that does not ask for the extension
+    still gets the v1.0 axis.  Pass ``"v2.0-ext"`` EXPLICITLY for the 744-bin
+    extended run.  The per-(line, batch) child streams are spawned from
+    ``SeedSequence(seed)`` and every draw precedes ``np.histogram``, so for a
+    given ``(n_per_line, seed, batch_size)`` the extended run's bins ``160..743``
+    are BIT-IDENTICAL to the v1.0 run (``np.array_equal``).
     """
     lines = cs.load_gamma_lines()
 
-    edges = shared_energy_grid()
+    # PLAN 10-03 CALLER PIN, KEPT LITERALLY (Plan 15-02 leaves it in place because
+    # this function writes data/compton_dRdEdep.csv). The branch is deliberately
+    # explicit rather than collapsed to `shared_energy_grid(grid_version)`: the
+    # literal v1.0 pin is what
+    # tests/test_energy_grid_extension.py::test_phase4_producers_still_emit_the_584_bin_axis
+    # greps for, and it states at the call site that the DEFAULT path is v1.0.
+    # Phase 15's extended run reaches the other branch only by naming
+    # grid_version="v2.0-ext" explicitly at its own call site.
+    if grid_version == "v1.0":
+        edges = shared_energy_grid("v1.0")
+    else:
+        edges = shared_energy_grid(grid_version)
     centers = np.sqrt(edges[:-1] * edges[1:])
     dwidth = np.diff(edges)
     per_day = 86400.0 / cs.MASS_KG           # Hz -> counts/kg/day
@@ -189,6 +217,7 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720,
 
     sumw = np.zeros(centers.size)
     sumw2 = np.zeros(centers.size)
+    entries = np.zeros(centers.size, dtype=np.int64)   # RAW counts, Plan 15-02
 
     e_g, e_edge, e_edge_s, r_line = [], [], [], []
     total_rate = 0.0
@@ -214,6 +243,7 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720,
             h2 = h.astype(float)
             sumw += h2 * w
             sumw2 += h2 * w * w
+            entries += h
             te_max = max(te_max, float(te.max()))
             remaining -= n_b
 
@@ -240,6 +270,8 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720,
         line_rates_hz=np.asarray(r_line),
         n_per_line=n_per_line,
         counts_per_kg_day=counts_per_kg_day,
+        mc_entries=entries,
+        grid_version=grid_version,
     )
 
 

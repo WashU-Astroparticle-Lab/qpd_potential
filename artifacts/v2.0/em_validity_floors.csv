@@ -1,0 +1,43 @@
+# Phase-15 Plan 15-01: low-energy validity floors of the two v1.0 ELECTRON-RECOIL deposit models.
+# repo_HEAD_at_execution = e6efbcf
+# interpreter = /opt/anaconda3/bin/python3 (numpy 1.26.4, scipy 1.17.1)
+# reproduce = /opt/anaconda3/bin/python3 -c "import sys;sys.path.insert(0,'src');from qpd_potential import em_recoil as e;print(e.validity_floor_rows())"
+#
+# IA BROADENING VERDICT (machine-readable in src/qpd_potential/em_recoil.py):
+#   muon    = does_not_apply   (recoiling body: atomic electron; Landau-Vavilov IS the fluctuation)
+#   compton = does_not_apply   (recoiling body: bound electron; distribution is the Compton profile J(p_z))
+# The nuclear omega_bar = 17.8597 meV is NEVER applied to either channel. No rate is multiplied by exp(-2W).
+#
+# ELECTRON-SIDE ANALOGUE, EVALUATED NOT DISMISSED (fp-unexamined-no):
+#   omega_bar_e = 2 sigma_pz^2/m_e in [0.634740, 2353.1] eV
+#   lower bound is RIGOROUS (uncertainty principle over the Ge covalent bond 2.449986 A)
+#   ratio to the nuclear omega_bar = 35.5404; width ratio sqrt = 5.9616x (up to 363.0x)
+#   electron-side IA validity 2W_e = T/omega_bar_e = 0.1574 at the 0.0999350 eV extended floor: BELOW 1, IA invalid there.
+#
+# LANDAU-VAVILOV FLOOR: xi = I at ell = 9.7129 um -> Delta_p = 4111.8165 eV.
+#   I = 350.0 eV. PROVENANCE: src/qpd_potential/muon_deposit.py::I_GE = 350.0e-6 MeV, the germanium mean excitation energy already in use by the committed Landau-Vavilov chain (PDG 'Atomic and Nuclear Properties of Materials' table for Ge, I = 350.0 eV). Read from the code, not re-typed. The external PDG value is [UNVERIFIED - not re-fetched in this phase]; what IS verified is that this is the same I that produced every v1.0 Delta_p.
+#   reference muon E_mu = 4.0 GeV (beta*gamma = 37.844651), the 09-01 Sec 2.3 reference point.
+#   THIS FLOOR LIES ABOVE THE 10.14 eV v1.0 GRID FLOOR: 209 of the 584 frozen v1.0 bins (35.79%) lie below it.
+#   That count is reported as measured. The criterion was NOT softened and I was NOT re-chosen (fp-floor-softened).
+#   Sensitivity to I, varied CONSISTENTLY in the criterion AND the Delta_p bracket (em_recoil.landau_floor_sensitivity_to_I):
+#     I=300 eV -> floor 3570.66 eV, 204 v1.0 bins indicted;  I=322 eV -> 3809.72 eV, 206;
+#     I=350 eV -> floor 4111.82 eV, 209 v1.0 bins indicted (COMMITTED VALUE);  I=400 eV -> 4645.81 eV, 213.
+#     Over a +/-14% swing in I the count runs 204..213. NO value of I makes it zero (fp-floor-softened).
+#
+# COMPTON: the S(x,Z=32) table domain COVERS the extended floor (x = 1.288806e-02 A^-1, 12.888x above the
+#   table floor 1e-3 A^-1), so no interpolator raises. THAT IS NOT A VALIDITY STATEMENT: the adopted physical
+#   floor (Ge indirect gap at T->0 less the free-exciton binding, 0.73955 eV) sits 7.400x ABOVE the extended
+#   grid floor. A number the table returns is not a rate the physics supports (fp-suppressed-means-valid).
+#
+# ACCURACY LABELS CARRIED UNNARROWED (ROADMAP Phase 15 SC5). The muon label always carries the Leg A citation
+#   AND the Leg A/Leg B bracketing disclosure; a bare -20.61% would over-read a sign the evidence does not fix.
+#
+# NO RELOCATION QUANTITY appears in this table or in the code that produced it: no overburden, no attenuation
+#   factor, no NUCLEUS ambience, no buildup factor, no veto rejection percentage. Veto credit is exactly 1.0.
+channel,criterion_name,floor_eV[eV],v1_grid_floor_eV[eV],ext_grid_floor_eV[eV],floor_above_v1_grid_floor[bool],floor_over_v1_grid_floor_ratio[dimensionless],n_v1_bins_below_floor[count],n_ext_bins_below_floor[count],chord_at_floor_cm[cm],chord_at_floor_lattice_constants[dimensionless (a=5.658 A)],xi_at_floor_eV[eV],I_eV[eV],x_inv_angstrom[1/angstrom],S_incoherent[dimensionless (0..Z=32)],S_over_Z[dimensionless],accuracy_label,note
+muon,landau_vavilov_xi_le_I,4111.816513779805,10.144972680282425,0.09993497,True,405.3058242109861,209,369,0.0009712912897427487,17166.689461695805,350.00000000000006,350.0,,,,"flatters_SB(-20.61% vs PDG Leg A; Leg B +20.34%; legs BRACKET the adopted 1.3659 Hz, magnitude ~20% solid, SIGN anchor-leg dependent)","Landau-Vavilov continuous straggling requires many collisions, i.e. xi >> I. Crossing computed on the committed muon_deposit path at E_mu = 4.0 GeV, the reference point of the 09-01 vertical-chord scalars. The committed chain already guards the THIN end via kappa = 6.727e-05; this guards the other end. THIS FLOOR LIES ABOVE THE v1.0 GRID FLOOR AND THEREFORE INDICTS BINS THE v1.0 MANUSCRIPT PUBLISHED."
+muon,chord_map_v1_grid_floor,10.144972680282425,10.144972680282425,0.09993497,False,1.0,0,0,4.428416861065722e-06,78.26823720512057,1.595758057074221,350.0,,,,"flatters_SB(-20.61% vs PDG Leg A; Leg B +20.34%; legs BRACKET the adopted 1.3659 Hz, magnitude ~20% solid, SIGN anchor-leg dependent)","Chord required for a Delta_p of exactly the v1.0 grid floor, inverted on the committed mpv_deposit path. Reported for scale, not as a validity criterion."
+muon,chord_map_ext_grid_floor,0.09993497,10.144972680282425,0.09993497,False,0.009850688922428711,0,0,1.0574343759118465e-07,1.8689190100951687,0.03810412339507026,350.0,,,,"flatters_SB(-20.61% vs PDG Leg A; Leg B +20.34%; legs BRACKET the adopted 1.3659 Hz, magnitude ~20% solid, SIGN anchor-leg dependent)",Chord required for a Delta_p of exactly the extended grid floor. UNDER TWO GERMANIUM LATTICE CONSTANTS: the deposit at the extended floor corresponds to a muon path of a few atomic layers.
+compton,ge_pair_creation_threshold,0.73955,10.144972680282425,0.09993497,False,0.07289817560942034,0,70,,,,,nan,nan,nan,"neutral(factor-2 site band x0.5..x2, LABChico anchor)","Adopted physical floor: germanium indirect band gap at T -> 0 (0.7437 eV) less the free-exciton binding (4.15 meV). Below this no electron-hole pair can be created, so an 'electron recoil deposit' is not the physical process the S(x,Z) machinery describes. [UNVERIFIED - training data]; the 300 K gap 0.661 eV is the named alternative."
+compton,S_suppression_at_ext_grid_floor,0.09993497,10.144972680282425,0.09993497,False,0.009850688922428711,0,0,,,,,0.012888055723153349,0.06994746203447447,0.002185858188577327,"neutral(factor-2 site band x0.5..x2, LABChico anchor)","S(x, Z=32) read from the committed data/ge_incoherent_S.csv. The table domain COVERS this x, so no interpolator raises on the extended axis. A number the table returns is NOT a rate the physics supports: this recoil sits a factor 7.40 BELOW the adopted pair-creation floor."
+compton,S_suppression_at_v1_grid_floor,10.144972680282425,10.144972680282425,0.09993497,False,1.0,0,0,,,,,0.12985363245434053,3.9538035904702196,0.12355636220219436,"neutral(factor-2 site band x0.5..x2, LABChico anchor)","S(x, Z=32) at the v1.0 grid floor, same committed table. This recoil is above the pair-creation floor by a factor 13.7."

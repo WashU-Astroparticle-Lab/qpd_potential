@@ -1,0 +1,92 @@
+# QPD Phase-14 Plan 14-01 -- Ge capture CASCADE RECOIL BOUNDS and the INELASTIC bound
+# ACCURACY_LABEL = order_of_magnitude on every row.  BOUNDS, not quantifications (ROADMAP SC2).
+#
+# ===================== THE RIGOROUS, CASCADE-FREE BOUND ======================
+# EVERY (n,gamma) capture yields EXACTLY ONE recoiling nucleus, so at most one event
+# per capture can land in the RoI:   R_RoI <= R_capture.
+# It holds on the RECOIL axis, the DEPOSIT axis and the RECONSTRUCTED axis alike,
+# because the response matrix's columns each sum to 1 -- the fold moves counts, it does
+# not create them.  It is derived in one line and NOT obtained by integrating a spectrum,
+# and it depends on NO cascade parameter: not the multiplicity, not the gamma-energy
+# partition, not the angular correlation (test-bound-is-cascade-free asserts that by
+# varying all three and checking the number does not move).
+#   BOUND = 4399.78 counts kg^-1 day^-1
+#   vs Phase-13 ELASTIC in E_rec 10-100 eV: 5430.29 (Ta->Al) / 5485.15 (Al->Hf) -- the SAME ORDER.
+#   vs Phase-12 CEvNS TOTAL 118.73: 37.1x LARGER.
+#   THE BOUND IS LOOSE BY AN UNKNOWN FACTOR <= 1: converting it into an in-RoI
+#   FRACTION needs the cascade, which is exactly what is not fully determined below.
+#
+# =============== THE SINGLE-GAMMA CEILING IS NOT THE CASCADE ANSWER ==========
+# fp-single-gamma-as-cascade.  Sum(E_gamma^2) != (Sum E_gamma)^2, demonstrated with a
+#   3-gamma partition [2000000.0, 3000000.0, 2415900.0] eV summing to the 70Ge Q-value:
+#   Sum(E^2) = 1.883657e+13 eV^2 vs (Sum E)^2 = 5.499557e+13 eV^2, ratio 0.342511.
+#   For an equal-energy multiplicity-N cascade the isotropic mean is T_max/N with N
+#   LEFT SYMBOLIC -- no multiplicity is assigned from recollection (fp-assumed-multiplicity).
+#
+# ===================== EGAF DISPOSITION: ACQUIRED, AND ITS LIMIT =============
+# The EGAF prompt capture-gamma line lists WERE retrieved and are frozen at
+# data/egaf/*.ens with the retrieval command, byte counts and SHA-256 recorded in
+# data/egaf/MANIFEST.md.  This DISCHARGES the acquisition half of ROADMAP SC1.
+# BUT THE SHARPENING GAP SURVIVES, AND IS NOW NAMED WITH A NUMBER: the OBSERVED
+# cascade does not carry the full capture Q-value, so the line list cannot close a
+# cascade recoil SPECTRUM.  Completeness = Sum(I_i E_i) / Q_cap per capture:
+#   70Ge -> 71GE: 82 gammas, NR=4.81, sigma_0=3.15 b, completeness = 0.6084, observed multiplicity = 2.233
+#   72Ge -> 73GE: 45 gammas, NR=3.631, sigma_0=0.98 b, completeness = 0.6022, observed multiplicity = 1.662
+#   73Ge -> 74GE: 603 gammas, NR=12.94, sigma_0=15.0 b, completeness = 0.7050, observed multiplicity = 4.245
+#   74Ge -> 75GE: 36 gammas, NR=2.76, sigma_0=0.34 b, completeness = 0.6654, observed multiplicity = 2.027
+#   76Ge -> 77GE: 9 gammas, NR=13.1, sigma_0=0.06 b, completeness = 5.0177, observed multiplicity = 8.493
+#   NOTE the 76Ge outlier: EGAF normalises to sigma_0 = 0.06 b against the ENDF/ACE
+#   0.1546 b, and only 9 gammas are listed, so its completeness exceeds 1 and is
+#   NOT used. 76Ge carries 0.54% of the natural thermal capture, so excluding it
+#   changes nothing -- but the inconsistency is reported rather than smoothed.
+#   EACH FILE CARRIES THREE DATASETS ({~EGAF}, ^BUDAPEST, ^L^A^N^L) with separate
+#   normalisations; only {~EGAF} is used. Summing all three -- what a naive
+#   whole-file parse does -- inflates the per-capture intensity ~3x, and the
+#   completeness check above is what caught it.
+#
+# ======================= INELASTIC (ROADMAP SC5), NAMED ======================
+# summed MT=51..91, natural: 2666.83 counts kg^-1 day^-1
+#   94.42% of it from the 1-20 MeV band; top-decade (2-20 MeV) fraction = 73.55%.
+#   THE TOP-DECADE FRACTION EXCEEDS 10%, so Phase 13's 11.85x >20 MeV margin is NOT
+#   reused for this channel: the >20 MeV omission for INELASTIC is labelled
+#   flatters_SB and carried as such.
+# PLACEMENT: The nuclear recoil accompanying discrete inelastic scattering is set by the FAST incident neutron and lands at tens to hundreds of keV -- three to four decades ABOVE the 10-100 eV RoI -- so the inelastic reaction-rate bound is very loose there. The part landing near the band is the separate GAMMA-EMISSION recoil E_gamma^2/(2Mc^2), a few eV for the named levels.
+#   flux-and-cross-section-weighted mean incident energy = 4.2381 MeV; elastic-kinematics recoil ceiling f x <E_n> = 227.16 keV, which is ~3 decades ABOVE the 100 eV RoI top.
+#   74Ge 596 keV level: gamma-emission recoil = 2.5766 eV
+#   72Ge 834 keV level: gamma-emission recoil = 5.1855 eV
+#
+# git_sha = 3365f48
+# reproduce = PYTHONPATH=src /opt/anaconda3/bin/python3 -c "from qpd_potential import capture_channel as c; c.write_capture_recoil_bounds_csv()"
+# columns: quantity, isotope, value, units, expression, evidence_class, accuracy_label, basis
+quantity,isotope,value,units,expression,evidence_class,accuracy_label,basis
+in_RoI_upper_bound,natural,4.399777e+03,counts/kg/day,"R_RoI <= R_capture",RIGOROUS_BOUND,order_of_magnitude,"every capture yields exactly one recoiling nucleus; holds on any axis because R's columns sum to 1; independent of every cascade parameter"
+ratio_to_Phase12_CEvNS_total,natural,3.705699e+01,dimensionless,"bound / 118.73",RIGOROUS_BOUND,order_of_magnitude,"Phase-12 CEvNS total on the reconstructed axis; the bound is a TOTAL reaction rate, so this compares totals, not a spectrum to a spectrum"
+single_gamma_ceiling,70Ge,4.157748e+02,eV,"T_max = Q_cap^2/(2 M_(A+1) c^2)",RIGOROUS_BOUND,order_of_magnitude,"Q_cap = 7415890.0 eV READ from the ENDF MF=3 MT=102 QM field; recoiling body is 71Ge. A CEILING, never the cascade answer"
+single_gamma_ceiling,72Ge,3.382958e+02,eV,"T_max = Q_cap^2/(2 M_(A+1) c^2)",RIGOROUS_BOUND,order_of_magnitude,"Q_cap = 6782890.0 eV READ from the ENDF MF=3 MT=102 QM field; recoiling body is 73Ge. A CEILING, never the cascade answer"
+single_gamma_ceiling,73Ge,7.541104e+02,eV,"T_max = Q_cap^2/(2 M_(A+1) c^2)",RIGOROUS_BOUND,order_of_magnitude,"Q_cap = 10196200.0 eV READ from the ENDF MF=3 MT=102 QM field; recoiling body is 74Ge. A CEILING, never the cascade answer"
+single_gamma_ceiling,74Ge,3.028675e+02,eV,"T_max = Q_cap^2/(2 M_(A+1) c^2)",RIGOROUS_BOUND,order_of_magnitude,"Q_cap = 6505220.0 eV READ from the ENDF MF=3 MT=102 QM field; recoiling body is 75Ge. A CEILING, never the cascade answer"
+single_gamma_ceiling,76Ge,2.570658e+02,eV,"T_max = Q_cap^2/(2 M_(A+1) c^2)",RIGOROUS_BOUND,order_of_magnitude,"Q_cap = 6072570.0 eV READ from the ENDF MF=3 MT=102 QM field; recoiling body is 77Ge. A CEILING, never the cascade answer"
+multiplicity_N_mean,any,,eV,"<T> = T_max / N (N SYMBOLIC)",CONDITIONAL_ESTIMATE,order_of_magnitude,"equal-energy isotropic cascade of multiplicity N. N is NOT assigned a value here; assigning one from recollection is fp-assumed-multiplicity"
+sum_of_squares_vs_square_of_sum,70Ge,3.425107e-01,dimensionless,"Sum(E^2) / (Sum E)^2",CONDITIONAL_ESTIMATE,order_of_magnitude,"explicit 3-gamma partition [2000000.0, 3000000.0, 2415900.0] eV summing to Q_cap; shows with numbers why the single-gamma ceiling overstates a real cascade"
+egaf_cascade_completeness,70Ge,6.084443e-01,dimensionless,"Sum(I E) / Q_cap",CONDITIONAL_ESTIMATE,order_of_magnitude,"82 observed gammas, EGAF dataset only; the deficit is unobserved quasi-continuum strength"
+egaf_mean_recoil_observed,70Ge,1.616112e+02,eV,"<T> = Sum(I E^2)/(2 M c^2)",CONDITIONAL_ESTIMATE,order_of_magnitude,"isotropic-cascade MEAN over the OBSERVED lines only. A MEAN, not a spectrum, and the in-RoI fraction is not determined by it"
+egaf_mean_recoil_upper_bracket,70Ge,3.244102e+02,eV,"<T> <= [Sum(I E^2) + E_miss * Q] / (2 M c^2)",RIGOROUS_BOUND,order_of_magnitude,"given the observed list and energy conservation: maximising the missing Sum(I E^2) subject to Sum(I E) = E_miss and E_i <= Q puts it all at E = Q. Tighter than the single-gamma ceiling"
+egaf_cascade_completeness,72Ge,6.022192e-01,dimensionless,"Sum(I E) / Q_cap",CONDITIONAL_ESTIMATE,order_of_magnitude,"45 observed gammas, EGAF dataset only; the deficit is unobserved quasi-continuum strength"
+egaf_mean_recoil_observed,72Ge,1.552647e+02,eV,"<T> = Sum(I E^2)/(2 M c^2)",CONDITIONAL_ESTIMATE,order_of_magnitude,"isotropic-cascade MEAN over the OBSERVED lines only. A MEAN, not a spectrum, and the in-RoI fraction is not determined by it"
+egaf_mean_recoil_upper_bracket,72Ge,2.898323e+02,eV,"<T> <= [Sum(I E^2) + E_miss * Q] / (2 M c^2)",RIGOROUS_BOUND,order_of_magnitude,"given the observed list and energy conservation: maximising the missing Sum(I E^2) subject to Sum(I E) = E_miss and E_i <= Q puts it all at E = Q. Tighter than the single-gamma ceiling"
+egaf_cascade_completeness,73Ge,7.050285e-01,dimensionless,"Sum(I E) / Q_cap",CONDITIONAL_ESTIMATE,order_of_magnitude,"603 observed gammas, EGAF dataset only; the deficit is unobserved quasi-continuum strength"
+egaf_mean_recoil_observed,73Ge,1.864571e+02,eV,"<T> = Sum(I E^2)/(2 M c^2)",CONDITIONAL_ESTIMATE,order_of_magnitude,"isotropic-cascade MEAN over the OBSERVED lines only. A MEAN, not a spectrum, and the in-RoI fraction is not determined by it"
+egaf_mean_recoil_upper_bracket,73Ge,4.088982e+02,eV,"<T> <= [Sum(I E^2) + E_miss * Q] / (2 M c^2)",RIGOROUS_BOUND,order_of_magnitude,"given the observed list and energy conservation: maximising the missing Sum(I E^2) subject to Sum(I E) = E_miss and E_i <= Q puts it all at E = Q. Tighter than the single-gamma ceiling"
+egaf_cascade_completeness,74Ge,6.653579e-01,dimensionless,"Sum(I E) / Q_cap",CONDITIONAL_ESTIMATE,order_of_magnitude,"36 observed gammas, EGAF dataset only; the deficit is unobserved quasi-continuum strength"
+egaf_mean_recoil_observed,74Ge,1.495358e+02,eV,"<T> = Sum(I E^2)/(2 M c^2)",CONDITIONAL_ESTIMATE,order_of_magnitude,"isotropic-cascade MEAN over the OBSERVED lines only. A MEAN, not a spectrum, and the in-RoI fraction is not determined by it"
+egaf_mean_recoil_upper_bracket,74Ge,2.508880e+02,eV,"<T> <= [Sum(I E^2) + E_miss * Q] / (2 M c^2)",RIGOROUS_BOUND,order_of_magnitude,"given the observed list and energy conservation: maximising the missing Sum(I E^2) subject to Sum(I E) = E_miss and E_i <= Q puts it all at E = Q. Tighter than the single-gamma ceiling"
+egaf_cascade_completeness,76Ge,5.017671e+00,dimensionless,"Sum(I E) / Q_cap",CONDITIONAL_ESTIMATE,order_of_magnitude,"EXCLUDED: EGAF sigma_0 disagrees with the ENDF/ACE thermal cross section for this isotope and the completeness exceeds 1"
+inelastic_reaction_rate,natural,2.666833e+03,counts/kg/day,"R = N_Ge INT phi sigma_MT51_91 dE",RIGOROUS_BOUND,order_of_magnitude,"summed MT=51..91 folded over the same flux; a RATE bound, and a very loose one in the RoI because its nuclear recoils land far above it"
+inelastic_reaction_rate,70Ge,4.464743e+02,counts/kg/day,"abundance-weighted",RIGOROUS_BOUND,order_of_magnitude,"contribution to the natural inelastic rate"
+inelastic_reaction_rate,72Ge,7.086313e+02,counts/kg/day,"abundance-weighted",RIGOROUS_BOUND,order_of_magnitude,"contribution to the natural inelastic rate"
+inelastic_reaction_rate,73Ge,2.788609e+02,counts/kg/day,"abundance-weighted",RIGOROUS_BOUND,order_of_magnitude,"contribution to the natural inelastic rate"
+inelastic_reaction_rate,74Ge,1.014656e+03,counts/kg/day,"abundance-weighted",RIGOROUS_BOUND,order_of_magnitude,"contribution to the natural inelastic rate"
+inelastic_reaction_rate,76Ge,2.181597e+02,counts/kg/day,"abundance-weighted",RIGOROUS_BOUND,order_of_magnitude,"contribution to the natural inelastic rate"
+inelastic_nuclear_recoil_scale,natural,2.271606e+05,eV,"f_nat x <E_n>",CONDITIONAL_ESTIMATE,order_of_magnitude,"elastic-kinematics ceiling at the rate-weighted mean incident energy; ~3 decades ABOVE the 100 eV RoI top, which is why the rate bound is loose"
+gamma_emission_recoil,74Ge,2.576622e+00,eV,"T = E_gamma^2/(2 M c^2), E_gamma = 596 keV",RIGOROUS_BOUND,order_of_magnitude,"the 74Ge 596 keV level named by ROADMAP SC5; this is the part of the inelastic channel landing NEAR the band"
+gamma_emission_recoil,72Ge,5.185487e+00,eV,"T = E_gamma^2/(2 M c^2), E_gamma = 834 keV",RIGOROUS_BOUND,order_of_magnitude,"the 72Ge 834 keV level named by ROADMAP SC5"

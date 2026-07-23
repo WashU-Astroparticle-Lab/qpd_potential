@@ -123,7 +123,10 @@ def bin_edges_and_widths() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     histogram normalization used the LINEAR bin widths dE = edge_{i+1}-edge_i,
     so the closure integral must use those same widths.
     """
-    edges = shared_energy_grid()
+    # PLAN 10-03 CALLER PIN: v1.0, explicitly. This function writes
+    # data/combined_dRdEdep.csv, which response_matrix.load_E_dep_grid_eV
+    # still parses for the archived v1.0 provenance. Phase 15 owns the re-run.
+    edges = shared_energy_grid("v1.0")
     centers = np.sqrt(edges[:-1] * edges[1:])
     dE = np.diff(edges)
     return edges, centers, dE

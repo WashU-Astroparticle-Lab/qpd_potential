@@ -1,0 +1,93 @@
+# QPD Phase-13 -- Ge NEUTRON ELASTIC nuclear-recoil channel.
+# accuracy_label = order_of_magnitude   <-- inherited at the point of definition from
+#   09-02-NEUTRON-DECLARATION.md Section 3.4. The ONLY independent
+#   cross-check the input flux owns is a SINGLE >10 MeV integral agreeing to
+#   -8.77% UNTUNED; nothing validates its eV-keV differential shape, which is
+#   exactly the band that sets this rate. No quantity here may be quoted to
+#   better than this label (fp-precision-inflation).
+#
+# AXIS TAG: E_n is INCIDENT NEUTRON KINETIC ENERGY; T is NUCLEAR RECOIL
+#   energy. A 1 MeV neutron does not deposit 1 MeV. Recoil axis is keV_nr on
+#   the unified phonon scale, NO Lindhard and NO quenching (CONVENTIONS B).
+#
+# flux_column = phi_default (outdoor, == phi_hi); phi_lo NOT USED.
+#   phi_lo = phi_default/5 is the INDOOR leg, a configuration question and not
+#   an error bar for an unshielded surface wafer (09-02 Section 4). Requesting
+#   it RAISES in neutron_recoil.neutron_flux_cm2_s_MeV.
+# NOT applied, under any name: shield attenuation, post-shield fluence,
+#   overburden, buildup factor -- all NOT applied. Veto credit and
+#   multiplicity credit are NOT applied; veto credit is exactly 1.0 by
+#   construction.
+#
+# f = T_max/E_n = 0.0536 (natural Ge, abundance weighted)
+#   PROVENANCE: parsed from data/endf_nGe_elastic_v1.1.csv header line
+#   'T_max/E_n natural (abundance-weighted, AS COMPUTED) = 0.0536'. Not transcribed from prose (fp-quote-from-prose).
+#   per isotope 4A/(1+A)^2: 70Ge=0.0555, 72Ge=0.054, 73Ge=0.0533, 74Ge=0.0526, 76Ge=0.0513
+# N_Ge = 8.291565e+24 atoms/kg, DERIVED as 4.4136e+22 atoms/cm^3 / 5.323 g/cm^3 x 1000 g/kg
+#   from the frozen table's own header (CONVENTIONS D quotes 8.29e24; agree
+#   to better than 0.05%).
+# sigma_el source = ENDF/B-VIII.0 + LANL Lib80x, 23155-point union grid, 293.6 K,
+#   validity 1.031e-05 eV -> 2e+07 eV; resonance peak 669.1 b at 102.59 eV.
+#   frozen-table git_sha = f742c63
+# truncation_energy_upper_eV = 2e+07  (the ENDF ceiling; sigma_el is NEVER extrapolated above it)
+# truncation_energy_lower_eV = 5  (the sub-5 eV seam)
+# flux source = pinned PARMA v4.10 / Sato 2015 driver, commit 6ff37cacb8cf003e2fc269963f9a08f812407264,
+#   anchor scalar k = 1.0961 applied uniformly (Gordon 2004 >10 MeV integral only).
+#   The driver is evaluated DIRECTLY at every quadrature node, which is how
+#   the 1 eV - 10.14 eV gap between the two committed flux tables is closed;
+#   neither committed table is interpolated or extrapolated across it.
+# git_sha = f3839b5
+#
+# ============== THE >20 MeV OMISSION, BOUNDED AT THE SURFACE =======
+# The frozen sigma_el stops at the ENDF/B-VIII.0 ceiling and is NEVER
+#   extrapolated above it. This table bounds what that omits.
+#
+# CONSERVATISM OF THE CONTINUATION -- MEASURED BEFORE IT WAS USED
+#   (fp-unchecked-continuation; the Phase-12(c) METHOD is reused, its
+#   CONCLUSION is re-measured):
+#   over the top decade 2e+06 - 2e+07 eV, 421 points,
+#   sigma_el runs 1.998519 b -> 1.222782 b with an OLS slope of -2.667195e-03 b/MeV;
+#   over the last half-decade the slope is -1.068209e-01 b/MeV.
+#   THE TREND APPROACHING THE CEILING IS DECREASING. But the band is NOT
+#   monotone: sigma_el peaks at 2.316993 b at 8e+06 eV before falling,
+#   and 34.0% of the steps in the decade rise.
+#   TWO continuations are therefore reported rather than one:
+#     flat_at_ceiling  -- sigma frozen at its 20 MeV value; justified by the
+#                         measured decreasing trend at the ceiling;
+#     flat_at_band_max -- sigma frozen at the top-decade maximum, which bounds
+#                         from above even if the trend reversed above 20 MeV.
+#
+# ELASTIC ONLY -- AN UNDERSTATEMENT, DECLARED
+#   The frozen set is MF=3 MT=2 elastic. Above ~20 MeV nonelastic and
+#   spallation channels are comparable to or larger than elastic AND produce
+#   larger recoils per interaction, so this bound UNDERSTATES the true >20 MeV
+#   impact. direction = flatters_SB, in the 09-02 Section 7 schema. It is NOT
+#   netted against the channel's penalizes_SB central value (fp-net-omissions).
+#
+# TWO FRACTIONS, NOT ONE (fp-single-omission-number)
+#   The flat-box height falls as 1/E_n, so a neutron far above the ceiling
+#   spreads its recoil over a proportionally wider box and contributes almost
+#   nothing inside a 90 eV-wide RoI while contributing its full cross section
+#   to the T-integrated total. baseline in-RoI 4.418963e+03 counts/kg/day over 10-100 eV;
+#   baseline total 3.129873e+04 counts/kg/day.
+#   Neutrons above the ceiling reach recoils up to 5.36e+08 eV, far above the emitted axis.
+#
+# THE TWO DECLARED OMISSIONS OF 09-02 SECTION 6, RESOLVED AGAINST EACH OTHER
+#   sigma_el ceiling 2e+07 eV; committed flux-table top edge 2e+08 eV.
+#   SUBSUMED = True: every neutron above the flux-table ceiling is
+#   also above the sigma_el ceiling, so they are NOT two additive omissions.
+#   20.5485% of the >10 MeV flux lies above the flux-table ceiling (09-02 records 21%),
+#   and that is 22.9261% of what lies above the sigma_el ceiling.
+#   The flux-table ceiling is NOT an independent omission here at all: this
+#   channel never reads that table for the fold. The pinned PARMA driver is
+#   evaluated directly at every quadrature node and reaches 1e+10 eV.
+#
+# columns: continuation, sigma_b_used, flux_above_ceiling_cm2_s,
+#   delta_dRdT_counts_kg_day_keV (flat in T below the ceiling's own T_max),
+#   added_in_roi_counts_kg_day, omission_fraction_in_roi,
+#   added_total_counts_kg_day, omission_fraction_total,
+#   sigma_slope_top_decade_b_per_MeV, elastic_only, direction
+# reproduce: PYTHONPATH=src /opt/anaconda3/bin/python3 -c "from qpd_potential import neutron_recoil as n; n.write_omission_table()"
+continuation,sigma_b_used,flux_above_ceiling_cm2_s,delta_dRdT_counts_kg_day_keV,added_in_roi_counts_kg_day,omission_fraction_in_roi,added_total_counts_kg_day,omission_fraction_total,sigma_slope_top_decade_b_per_MeV,elastic_only,direction,accuracy_label
+flat_at_ceiling,1.222782,3.181822e-03,6.619441e-01,5.957497e-02,1.348166e-05,2.787245e+03,8.905297e-02,-2.667195e-03,true,flatters_SB,order_of_magnitude
+flat_at_band_max,2.316993,3.181822e-03,1.254287e+00,1.128858e-01,2.554578e-05,5.281422e+03,1.687424e-01,-2.667195e-03,true,flatters_SB,order_of_magnitude
