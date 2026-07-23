@@ -169,6 +169,8 @@ Plans:
 
 ### Phase 9: Sea-Level Surface Environment Lock (P-ENV)
 
+**Status:** COMPLETE 2026-07-22. Surface environment frozen as `data/surface_environment_v2.0.csv` + `src/qpd_potential/surface_environment.py`. Phase-7 gap D2 CLOSED (PARMA driver committed; untuned integral lands -8.77% from Gordon with no fitting; joint identity 3.88e-6 over all 584 bin centres). **Phi_th = 2.767075e-3 cm^-2 s^-1** (0.01-0.5 eV, cadmium cutoff) is a NAMED input for Phase 14. Directional-bias audit PASSED and came out MIXED, not flattering: muon -20.61% vs PDG (flatters_SB), gamma at anchor (neutral), neutron on the outdoor leg (penalizes_SB); compounded factor 1.2171. **Caveat carried:** the two PDG statements BRACKET the adopted muon rate (Leg A -20.61%, Leg B +20.34%), so the flattering SIGN is anchor-leg dependent -- any downstream S/B claim leaning on it must cite Leg A explicitly.
+
 > **Re-scoped 2026-07-22.** Previously *"VNS Environment Lock and Post-Shield Fluence Recovery"*. Its entire purpose — transcribing the NUCLEUS environment, recovering φ_post by regularized inversion of their published deposit spectra, and proving the transfer on their two published targets — is **void** with the milestone premise. Replaced by a much smaller phase. Deletions are itemized under *Removed by the 2026-07-22 re-scope* below.
 
 **Goal:** The unshielded sea-level environment the wafer sits in is declared **once** and frozen as a single provenance-headed input set covering all three particle channels — muons, environmental gammas, and neutrons — with v1.0's already-validated muon and gamma inputs re-declared unchanged, and with the one genuinely new input, a rough sea-level neutron flux, actually retrieved from published literature and labelled order-of-magnitude at the point of definition rather than downstream.
@@ -198,13 +200,19 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 09-01-PLAN.md -- Re-declare the v1.0 muon and environmental-gamma inputs as numerically identical, verified by direct comparison against the frozen artifacts, with each channel's accuracy direction recorded
-- [ ] 09-02-PLAN.md -- Freeze the PARMA source at its pinned commit, commit a driver that reproduces both Gordon-anchored integrals and the committed flux table (closing Phase-7 gap D2), and emit the named thermal component Phi_th or a named gap
-- [ ] 09-03-PLAN.md -- Assemble the frozen three-channel surface environment set, execute the no-shielded-quantity scan and the directional-bias audit, and take the researcher checkpoint
+- [x] 09-01-PLAN.md -- Re-declare the v1.0 muon and environmental-gamma inputs as numerically identical, verified by direct comparison against the frozen artifacts, with each channel's accuracy direction recorded
+- [x] 09-02-PLAN.md -- Freeze the PARMA source at its pinned commit, commit a driver that reproduces both Gordon-anchored integrals and the committed flux table (closing Phase-7 gap D2), and emit the named thermal component Phi_th or a named gap
+- [x] 09-03-PLAN.md -- Assemble the frozen three-channel surface environment set, execute the no-shielded-quantity scan and the directional-bias audit, and take the researcher checkpoint
 
 > **Anchor-line correction (2026-07-22):** this section's anchor line says the sea-level neutron flux "has no anchor yet and none is asserted here". That is true of the milestone anchor registry but NOT of the repository: `data/ambient_neutron_flux_v1.1.csv` already exists from Phase 7 Plan 07-01 (PARMA v4.10 / Sato 2015 shape from official source at pinned commit `6ff37cac`, Gordon-2004 integral anchor k = 1.09610 giving Phi(>10 MeV) = 3.55e-3 cm^-2 s^-1, with a recorded user decision of 2026-07-22 switching off the paywalled Gordon/JEDEC coefficients). Phase 9 therefore ADOPTS AND VERIFIES rather than re-sourcing. What is genuinely open is Phase-7 gap D2: no PARMA driver was ever committed, so the decisive integrals have never been recomputed.
 
 ### Phase 10: Sub-eV Grid Extension and the Trigger Observable (P-GRID)
+
+**Status:** COMPLETE 2026-07-22. Grid: 744 bins / 745 edges, floor 0.0999350 eV, first centre 0.1013838 eV, 79.988714 bins/decade. `np.array_equal` on the v1.0 overlap **True**, max difference **exactly 0.0**. Count conservation 3.331e-16, zero off-grid mass. **Anchor count reconciled: 32 emitted lines from 22 call sites -- NOT the 24 asserted in `MILESTONES.md` and the v1.0 audit, which remains unsourced.** Double-counting verdict: P(no counts registered) = 2.0e-4 at 0.1 eV (Ta->Al) and exactly 0 at 0.5/1 eV, so it MAY be multiplied with the trigger curve -- **but only for this model**, since P(zero)~0 follows from the linear yield assigning 0.018 quasiparticles to a sensor holding 6.89 ueV against a 190 ueV gap; a threshold model would invert it.
+
+> **Two findings against expectation:** the registered count is NOT an integer (228/359 distinct non-integer values at 0.1 eV, from fractional sensor populations and mean-pinning rescales); and for Al->Hf the 1/sqrt(N) label OVERSTATES the spread by 12.5% at 0.1 eV while UNDERSTATING it by 11.6% at 0.5 eV -- a sign change noise would not produce.
+>
+> **Deviation:** the `shared_energy_grid` default stayed `v1.0`. Flipping it to the extended axis broke a Phase-9 test (`shapes (744,) (584,)`); a v1.0 default makes silent re-binning impossible rather than merely pinned-against, and fails safe.
 
 **Goal:** The pipeline's energy axis reaches 0.1 eV with every response matrix regenerated and every legacy artifact either re-gridded or explicitly bounded, and the *observable itself* is redefined below ~1 eV — where a differential rate is not the right object — as a trigger-probability curve with a fixed 0.5 eV midpoint.
 **Depends on:** Phase 8 (gate). Independent of Phase 9 — runs in parallel with it.
@@ -225,11 +233,11 @@ Plans:
 **Plans:** 5 plans, 4 waves
 
 Plans:
-- [ ] 10-01-PLAN.md -- interpolator boundary discipline: every tabulated-input interpolator raises outside its declared domain (SC3)
-- [ ] 10-02-PLAN.md -- trigger-probability curve, 50% point exactly 0.5 eV, multiplying eps ~ 0.5 (SC4)
-- [ ] 10-03-PLAN.md -- 744-bin extended axis preserving the v1.0 edge set EXACTLY; caller version pins; energy-keyed sub-seed (SC1)
-- [ ] 10-04-PLAN.md -- regenerate R for both designs, count conservation <=1e-3, sub-eV diagnostics, anchor re-run and count audit (SC1)
-- [ ] 10-05-PLAN.md -- archived-artifact disposition register, counting-statistics floor as best case, sub-eV regime labelling (SC2, SC5)
+- [x] 10-01-PLAN.md -- interpolator boundary discipline: every tabulated-input interpolator raises outside its declared domain (SC3)
+- [x] 10-02-PLAN.md -- trigger-probability curve, 50% point exactly 0.5 eV, multiplying eps ~ 0.5 (SC4)
+- [x] 10-03-PLAN.md -- 744-bin extended axis preserving the v1.0 edge set EXACTLY; caller version pins; energy-keyed sub-seed (SC1)
+- [x] 10-04-PLAN.md -- regenerate R for both designs, count conservation <=1e-3, sub-eV diagnostics, anchor re-run and count audit (SC1)
+- [x] 10-05-PLAN.md -- archived-artifact disposition register, counting-statistics floor as best case, sub-eV regime labelling (SC2, SC5)
 
 > **Planning finding (2026-07-22), load-bearing for SC2:** the obvious extension `shared_energy_grid(e_lo_kev=1e-4)` yields the right bin count (744) but a different spacing -- `log10(2e9)/744` versus v1.0's `log10(2e7)/584` -- so overlapping edges drift by up to 5.102e-4 relative and **every archived v1.x spectrum placed on it would be silently reinterpolated**, violating SC2. Prepending **160 bins at the v1.0 spacing** instead gives 744 bins, floor 0.0999350 eV, and `np.array_equal(new[160:], old) == True`. 159 bins would floor at 0.10285 eV and fail SC1, so 160 is unique. Plans therefore require `np.array_equal`, not `np.allclose`.
 >
