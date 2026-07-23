@@ -1438,8 +1438,8 @@ def run_em_fold_extended(
     Pipeline order (Phase-12 lock): any broadening on the native axis upstream of
     the deposit rebin -- not applicable here, see guard 2 -- then
     ``R(E_rec|E_dep)``, then the trigger curve as an analysis efficiency on the
-    DEPOSIT axis, MULTIPLYING eps rather than replacing it.  The rate is NEVER
-    multiplied by ``exp(-2W)``.
+    DEPOSIT axis, MULTIPLYING eps rather than replacing it.
+    The rate is NEVER multiplied by ``exp(-2W)`` (milestone-wide prohibition).
     """
     from . import em_recoil as _er, trigger as _trigger
 

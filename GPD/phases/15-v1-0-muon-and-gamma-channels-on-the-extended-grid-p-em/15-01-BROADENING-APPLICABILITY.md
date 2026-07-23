@@ -533,7 +533,7 @@ Per channel, in §2 and §3.4. Collected:
 * No measurement of a sub-eV energy-loss distribution exists for either channel in
   this repository or its anchor registry. The determination is published physics
   applied to committed numbers, not a fit.
-* The Ge band gap as the Compton physical floor is the conservative reading; the
+* The Ge band gap as the Compton physical floor is the more restrictive reading; the
   exciton correction is applied and named, and a band-structure threshold would be a
   different choice. `[UNVERIFIED — training data]`.
 * `ω̄_e`'s valence and whole-atom estimators are `[UNVERIFIED — training data]`. The
