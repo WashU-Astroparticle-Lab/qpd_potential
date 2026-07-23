@@ -46,7 +46,7 @@
 
 ### Validations
 
-- [ ] **VALD-09** *(GATING — milestone stop-condition)*: Determine whether a 4″×4″×2 mm, ~110 g Ge wafer physically fits the NUCLEUS COV/IV veto envelope, which is dimensioned for 6.8 g CaWO₄ and 4.5 g Al₂O₃ 3×3 arrays. The wafer has ~11× the footprint (103 vs ~9 cm²) and, being monolithic, has **no multiplicity handle at all**. Inherited veto credit defaults to **zero** unless earned. **If the wafer does not fit, STOP and re-scope with the user** (user decision 2026-07-22) — a forced shield/veto redesign means φ_post at the detector position is no longer NUCLEUS's φ_post and essentially nothing transfers. Must be resolved before the background chain is built on top of it.
+- [x] **VALD-09** *(GATING — milestone stop-condition; **DISCHARGED NO FIT 2026-07-22**, see `phases/08-veto-envelope-geometry-gate-p-veto/08-05-GATE-VERDICT.md`)*: Determine whether a 4″×4″×2 mm, ~110 g Ge wafer physically fits the NUCLEUS COV/IV veto envelope, which is dimensioned for 6.8 g CaWO₄ and 4.5 g Al₂O₃ 3×3 arrays. **Footprint comparison, basis-labelled (corrected 2026-07-22 — the earlier unlabelled "~11× the footprint (103 vs ~9 cm²)" was wrong to state without a basis):** the wafer face is **103.2256 cm²**; on the **published NUCLEUS array-crystal basis** the reference footprint is **2.25 cm² = 9 × (5 mm)²** (arXiv:1905.10258 Fig. 8 + §3.2.1, the 5 mm edge independently confirmed by two mass closures), giving **45.9×**; on **this project's own holder-scale estimate** of ~9 cm² — **not a NUCLEUS number and not traceable to any NUCLEUS publication** — it is **11.5×**. The two bases differ by exactly a factor of 4 and neither may be quoted without its label (`fp-unlabelled-area-ratio`; `veto_envelope.area_ratio()` raises unless a basis is named). Being monolithic, the wafer has **no multiplicity handle at all**. Inherited veto credit defaults to **zero** unless earned. **If the wafer does not fit, STOP and re-scope with the user** (user decision 2026-07-22) — a forced shield/veto redesign means φ_post at the detector position is no longer NUCLEUS's φ_post and essentially nothing transfers. Must be resolved before the background chain is built on top of it.
 - [ ] **VALD-10**: Sub-eV validity gates. The extended pipeline must reproduce the frozen v1.0 spectrum above ~10 eV to < 1% (no silent change to validated results), and dR/dT must be **flat** from 100 meV to 10 eV, equal to the analytic T→0 plateau from the frozen ∫Φ. Guards against kinematic thresholds silently falling below a tabulated floor and returning zero rather than erroring.
 - [ ] **VALD-11**: Neutron target-scaling calibration. Reproduce **both** published CaWO₄/Al₂O₃ neutron rate ratios from a single normalization — 1.81 in 10–100 eV and 1.20 in 0.1–1 keV — before any Ge neutron number is trusted. The band-dependence is driven by 1/T_max compression; a crude flat-box estimate gives ≈1.1, i.e. ~60% low on a ratio where normalization cancels.
 - [ ] **VALD-12** *(hard gate on any S/B claim)*: Reproduce CONUS+ as a limiting case — S/B ≈ 0.03 in 0.4–1 keV_ee at 7.4 m.w.e. (Nature 643, 1229 (2025): 395 ± 106 events in 327 kg·d against SM 347 ± 59, 3.7σ). This is the **only measured Ge-at-a-reactor S/B in existence**, and our predicted 0.65–1.2 is more than an order of magnitude better. No headline S/B may be claimed until this reproduces.
@@ -106,13 +106,13 @@ Deferred by explicit user scoping decision (2026-07-22). Tracked, not in the v2.
 
 | Requirement | Decisive Output / Deliverable | Anchor / Benchmark | Prior Inputs / Baselines | False Progress To Reject |
 | ----------- | ----------------------------- | ------------------ | ------------------------ | ------------------------ |
-| CALC-11/12 | φ_post(E_n) artifact + digitized VNS input set | NUCLEUS EPJC 86, 29 (2026) Figs. 4, 8–11; Tables 2–5 | VALD-02 digitizer | `fp-nucleus-3e12`; lethargy/per-energy confusion; reading post-veto curves as pre-veto |
+| ~~CALC-11/12~~ **CALC-11 (re-pointed); CALC-12 unmet by design** | Frozen **sea-level surface** environment set — v1.0 muon + gamma re-declared unchanged, plus a rough sea-level neutron flux, order-of-magnitude labelled | **Source to be retrieved and verified in Phase 9**; candidates only (Gordon et al. IEEE TNS 51, 3427 (2004); ICRU/JEDEC-class spectra) — none asserted | v1.0 `paper/sections/backgrounds.tex` treatment; Phase-7 frozen n-Ge elastic set | `fp-shielded-quantity-leak`; `fp-precision-inflation`; quoting a sea-level neutron flux from memory rather than a retrieved source; lethargy/per-energy confusion |
 | CALC-13/14/15/16 | Sub-eV spectra + trigger-probability curve | Campbell-Deem PRD 106, 036019; Sears PRB 35, 2038 | v1.0 `R(E_rec\|E_dep)` | `fp-poisson-as-resolution`; applying e^(−2W) to the total rate (it suppresses only the zero-phonon channel) |
 | CALC-18/23 | Ge neutron + capture dR/dE_rec | Frozen ENDF/B-VIII.0 n-Ge elastic; ENDF MT=102 + EGAF; NCrystal | Phase 7 (carried forward), T_max/E_n = 0.0536 | `fp-mass-scaled-target`; reporting the capture channel as zero when φ_th is simply unobtained |
 | CALC-19/20 | Compton + muon dR/dE_rec at the VNS | NUCLEUS Table 2; overburden 2.92 m.w.e., attenuation 1.41 | v1.0 Klein–Nishina and Gaisser–Guan machinery | Retaining the v1.0 sea-level muon flux or the Heusser gamma normalization after relocation |
 | CALC-21/22 | S/B_particle + LEE-erasure amplitude | NUCLEUS Table 5 @ **100% duty** (356.5, not the prose 280) | Our CaWO₄ closure fold (407.7, ratio 1.14) | `fp-veto-credit-transfer`; `fp-lee-omission`; `fp-nucleus-prose-280` (flatters S/B by 27%) |
-| VALD-09 | Geometry-fit determination | NUCLEUS Fig. 1e/f envelope | Wafer 103 cm² vs ~9 cm² | Proceeding past a failed gate on a premise already known false |
-| VALD-12 | CONUS+ limiting-case reproduction | Nature 643, 1229 (2025) | v1.0 CONUS+ rate-scale check (factor 0.99) | Claiming 0.65–1.2 S/B without reproducing the only measured value |
+| VALD-09 **(discharged NO FIT)** | Geometry-fit determination | arXiv:2508.02488 COV cap 100 mm (**sole load-bearing geometric source**; TUM commissioning setup, not Chooz), corroborated by arXiv:1905.10258; EPJC 86,29 Fig. 1e/f established **dimensionally silent** | Wafer face **103.2256 cm²** vs the **published array-crystal 2.25 cm² = 9 × (5 mm)²** → **45.9×** (published-array-crystal basis). The project's own ~9 cm² holder-scale estimate → **11.5×**; **not a NUCLEUS number** | `fp-unlabelled-area-ratio` (quoting either ratio without its basis); proceeding past a failed gate on a premise already known false |
+| VALD-12 **(restated 2026-07-22)** | CONUS+ **signal-side** reproduction — their SM CEvNS rate, not their S/B | Nature 643, 1229 (2025): SM expectation **347 ± 59** in 327 kg·d at 3.6 GW_th / 20.7 m, 0.4–1 keV_ee | v1.0 CONUS+ rate-scale check (factor 0.99) | Presenting the restated signal-side check as though it still validated the **ratio**; carrying the withdrawn 0.65–1.2 expectation in any form |
 
 **Forbidden proxies (milestone-wide):** `fp-deposited-only`, `fp-no-saturation`, `fp-full-absorption`, keVee↔keVnr mixing / Lindhard quenching on the phonon scale, `fp-lumped-A`, `fp-gwe-gwth`, `fp-nucleus-3e12` (folding at the 2019 prose flux), **`fp-nucleus-prose-280`** (anchoring on the §2 prose CEvNS value instead of Table 5), **`fp-veto-credit-transfer`** (inheriting gram-scale veto rejection for a 110 g monolithic wafer), **`fp-lee-omission`** (reporting S/B without the LEE band), **`fp-mass-scaled-target`** (scaling CaWO₄/Al₂O₃ residuals to Ge by mass), **`fp-poisson-as-resolution`** (quoting the emergent counting floor as a resolution model).
 
@@ -122,10 +122,10 @@ Mapped by the roadmapper 2026-07-22. Every v2.0 primary requirement maps to **ex
 
 | Requirement | Phase | Status |
 | ----------- | ----- | ------ |
-| VALD-09 *(GATING stop-condition)* | Phase 8 — Veto-Envelope Geometry Gate (P-VETO) | Pending |
-| CALC-11 | Phase 9 — VNS Environment Lock & Fluence Recovery (P-ENV) | Pending |
-| CALC-12 | Phase 9 — VNS Environment Lock & Fluence Recovery (P-ENV) | Pending |
-| VALD-11 *(gate on the Ge swap)* | Phase 9 — VNS Environment Lock & Fluence Recovery (P-ENV) | Pending |
+| VALD-09 *(GATING stop-condition)* | Phase 8 — Veto-Envelope Geometry Gate (P-VETO) | **Discharged NO FIT 2026-07-22** |
+| CALC-11 *(re-pointed; text needs re-wording)* | Phase 9 — Sea-Level Surface Environment Lock (P-ENV) | Pending — **object list void** (NUCLEUS VNS digitization set → sea-level surface set) |
+| CALC-12 | ~~Phase 9~~ | **Unmet by design (2026-07-22 re-scope)** — no shield, so no post-shield fluence to recover; regularized inversion also excluded by the lowered accuracy expectation |
+| VALD-11 *(gate on the Ge swap)* | ~~Phase 9~~ | **Unmet by design (2026-07-22 re-scope)** — it licensed swapping NUCLEUS's two-target residuals onto Ge, and no NUCLEUS residual is used any more. The kinematic-compression physics it protected is retained as ROADMAP Phase 13 SC4 |
 | CALC-13 | Phase 10 — Sub-eV Grid & Trigger Observable (P-GRID) | Pending |
 | CALC-16 | Phase 10 — Sub-eV Grid & Trigger Observable (P-GRID) | Pending |
 | CALC-14 *(must precede CALC-15; own early plan)* | Phase 11 — Phonon Conventions & IA Broadening (P-CONV) | Pending |
@@ -133,21 +133,23 @@ Mapped by the roadmapper 2026-07-22. Every v2.0 primary requirement maps to **ex
 | CALC-17 | Phase 12 — CEvNS at the VNS to 100 meV (P-SIG) | Pending |
 | CALC-25 | Phase 12 — CEvNS at the VNS to 100 meV (P-SIG) | Pending |
 | VALD-10 | Phase 12 — CEvNS at the VNS to 100 meV (P-SIG) | Pending |
-| CALC-18 | Phase 13 — Ge Neutron Re-Fold (P-TGT) | Pending |
-| CALC-23 | Phase 14 — Ge-Only Capture Channels (P-GEONLY) | Pending |
-| CALC-19 | Phase 15 — Gamma & Muon Re-Fold (P-EM) | Pending |
-| CALC-20 | Phase 15 — Gamma & Muon Re-Fold (P-EM) | Pending |
-| CALC-21 | Phase 16 — S/B Assembly, LEE, CONUS+ Gate (P-SB) | Pending |
-| CALC-22 *(terminal)* | Phase 16 — S/B Assembly, LEE, CONUS+ Gate (P-SB) | Pending |
-| VALD-12 *(hard gate on any headline S/B)* | Phase 16 — S/B Assembly, LEE, CONUS+ Gate (P-SB) | Pending |
-| CALC-24 | — (follow-up, not in the v2.0 roadmap) | Deferred |
+| CALC-18 *(re-pointed; text needs re-wording)* | Phase 13 — Ge Neutron Fold from the Sea-Level Flux (P-TGT) | Pending — input changes from φ_post to the rough sea-level flux; channel labelled order-of-magnitude |
+| CALC-23 | Phase 14 — Ge-Only Capture Channels (P-GEONLY) | Pending — reduced to bounds |
+| CALC-19 *(re-pointed; text needs re-wording)* | Phase 15 — v1.0 Muon & Gamma on the Extended Grid (P-EM) | Pending — the "replacing the v1.0 Heusser band" clause is **void**; v1.0 normalization stands |
+| CALC-20 *(re-pointed; text needs re-wording)* | Phase 15 — v1.0 Muon & Gamma on the Extended Grid (P-EM) | Pending — the "replacing the v1.0 sea-level/no-overburden assumption" clause is **void**; v1.0 normalization stands |
+| CALC-21 | Phase 16 — S/B Assembly, LEE, Signal-Side CONUS+ Check (P-SB) | Pending — unchanged by the re-scope |
+| CALC-22 *(terminal)* | Phase 16 — S/B Assembly, LEE, Signal-Side CONUS+ Check (P-SB) | Pending — one baseline only; veto credit 1.0 by construction |
+| VALD-12 *(restated 2026-07-22)* | Phase 16 — S/B Assembly, LEE, Signal-Side CONUS+ Check (P-SB) | Pending — **restated to its signal-side leg** (reproduce CONUS+'s SM CEvNS rate, not their S/B); the ratio now has no external validation, which must be disclosed on the deliverable |
+| CALC-24 | — (follow-up, not in the v2.0 roadmap) | Deferred — **deferral rationale void** (it rested on VNS shield attenuation of the >10 MeV flux, which does not exist at the surface); deferral itself still stands under the lowered accuracy expectation |
 | SIMU-05 | — (follow-up, not in the v2.0 roadmap) | Deferred |
 | RADX-01 | — (follow-up, not in the v2.0 roadmap) | Deferred |
 | MANU-01 | — (follow-up, not in the v2.0 roadmap) | Deferred |
 | SENS-01 | — (follow-up, not in the v2.0 roadmap) | Deferred |
 
-**Coverage:** 17/17 primary requirements mapped, no orphans, no duplicates. 5/5 follow-up requirements explicitly unmapped by design.
+**Coverage (revised 2026-07-22 re-scope):** **15/17** primary requirements mapped, no duplicates. **2 orphaned by design** — CALC-12 and VALD-11, both listed above with their reason. Neither requirement text has been deleted; disposition (formally retire, defer to a follow-up milestone, or leave as a recorded non-goal) is the orchestrator's call. 5/5 follow-up requirements remain explicitly unmapped by design.
 
-**Ordering constraints encoded in the roadmap dependency DAG:** VALD-09 (Phase 8) gates everything; CALC-11 → CALC-12 → VALD-11 within Phase 9, and VALD-11 must pass before Phase 13 (CALC-18) starts; CALC-13 (Phase 10) gates all sub-eV work; CALC-14 must complete before CALC-15 inside Phase 11; VALD-12 must pass before any headline claim in Phase 16.
+> **Soft spot in the traceability, stated rather than papered over.** Phase 9's re-pointed deliverable — the frozen sea-level surface environment set, and specifically the rough sea-level neutron flux, the one genuinely new input of the re-scope — is carried under **CALC-11** provisionally, but CALC-11's literal text is the NUCLEUS VNS digitization set. Either re-word CALC-11 or add a new ID and re-map Phase 9. Until then Phase 9's coverage is nominal, not clean.
+
+**Ordering constraints encoded in the roadmap dependency DAG (revised 2026-07-22):** VALD-09 (Phase 8) is **discharged**; ~~CALC-11 → CALC-12 → VALD-11 within Phase 9, and VALD-11 before Phase 13~~ — **removed with CALC-12 and VALD-11**; CALC-13 (Phase 10) still gates all sub-eV work; CALC-14 must still complete before CALC-15 inside Phase 11; CALC-25 (Phase 12) no longer depends on Phase 9; the restated VALD-12 must still pass before any headline claim in Phase 16.
 
 **Coverage note (open):** no CALC ID explicitly owns "produce the CEvNS dR/dE_rec at the VNS normalization," which is the milestone's decisive signal deliverable. It is implied jointly by CALC-15/16/17 + VALD-10 and consumed by CALC-22, and is carried as a Phase-12 deliverable rather than a new requirement ID. Similarly, Ge inelastic (⁷⁴Ge 596 keV, ⁷²Ge 834 keV) and the B₄C ¹⁰B(n,α)⁷Li 478 keV γ line are carried as adjacent-scope deliverables in Phase 14 without a dedicated ID.
