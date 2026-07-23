@@ -519,12 +519,32 @@ def test_extended_artifacts_have_disposition_rows():
 
 
 def test_no_second_normalization_anywhere():
-    """fp-second-vns-run / fp-inherited-shielding, held shut at the source level."""
+    """fp-second-vns-run / fp-inherited-shielding, held shut at the source level.
+
+    Parsed, not grepped: both names appear in PROSE in these modules, because naming the
+    trap is the point.  Only an AST walk distinguishes a mention from a call.
+
+    * ``cevns.nucleus_variant_flux`` may never be called ANYWHERE. It would build a
+      second ReactorFlux at a second normalization -- a second spectral shape.
+    * ``cevns.nucleus_flux_normalization`` may never be called from ``fold.py``, and in
+      ``cevns_subev.py`` only from ``vns_rescale``, where it supplies one of the two
+      DECLARED integral fluxes for the labelled scalar rescale. It reads stated numbers;
+      it does not build a flux table and it does not run a fold.
+    """
+    import ast
     for mod in ("cevns_subev.py", "fold.py"):
-        code = open(os.path.join(_ROOT, "src", "qpd_potential", mod)).read()
-        code = "\n".join(l for l in code.splitlines() if not l.lstrip().startswith("#"))
-        assert "nucleus_variant_flux" not in code
-        assert "nucleus_flux_normalization" not in code
+        tree = ast.parse(open(os.path.join(_ROOT, "src", "qpd_potential", mod)).read())
+        for node in ast.walk(tree):
+            name = (node.attr if isinstance(node, ast.Attribute)
+                    else node.id if isinstance(node, ast.Name) else None)
+            assert name != "nucleus_variant_flux", f"{mod} calls the variant-flux trap"
+        if mod == "fold.py":
+            assert "nucleus_flux_normalization" not in ast.dump(tree)
+    allowed = [f for f in ast.walk(ast.parse(
+        open(os.path.join(_ROOT, "src", "qpd_potential", "cevns_subev.py")).read()))
+        if isinstance(f, ast.FunctionDef)
+        and "nucleus_flux_normalization" in ast.dump(f)]
+    assert [f.name for f in allowed] == ["vns_rescale"]
     for d in _DESIGNS:
         h = open(_spectra_path(d)).read()
         assert "fp-second-vns-run" in h and "UNMODIFIED" in h

@@ -1005,6 +1005,389 @@ def make_subev_spectra_figure(out_path: Optional[str] = None,
     return out_path
 
 
+# =========================================================================== #
+# PLAN 12-03: closure -- the v1.0 regression, the target-swap benchmark, the    #
+#             labelled VNS scalar rescale                                       #
+# =========================================================================== #
+#
+# NOTHING HERE PRODUCES A NEW SPECTRUM.  Plan 12-02 owns the fold.  This section
+# compares, documents and (scalar-)rescales a FINISHED result.
+
+#: The v1.0 frozen reconstructed spectra this phase regresses against.
+V1_RECON_FILE = {"Ta->Al": "reconstructed_spectra_TaAl.csv",
+                 "Al->Hf": "reconstructed_spectra_AlHf.csv"}
+
+#: Above this reconstructed energy the extended pipeline must reproduce v1.0 (VALD-10).
+REGRESSION_FLOOR_eV = 10.0
+
+#: ROADMAP VALD-10 target on the folded comparison.
+REGRESSION_TARGET = 0.01
+
+#: CIAAW standard atomic weights [u] and proton numbers, for the target-swap
+#: benchmark arithmetic.  Recomputed here rather than quoted from GPD/literature/.
+_ATOMIC = {
+    "Ca": (40.078, 20),
+    "W": (183.84, 74),
+    "O": (15.999, 8),
+    "Ge": (72.630, 32),
+    "184W": (184.0, 74),       # the single isotope, a DIFFERENT quantity
+}
+
+
+def _read_two_columns(path: str, value_col: int = 1) -> np.ndarray:
+    rows = []
+    with open(path) as fh:
+        for line in fh:
+            if not line.strip() or line.startswith("#") or line[0].isalpha():
+                continue
+            t = line.split(",")
+            rows.append(float(t[value_col]))
+    return np.asarray(rows, float)
+
+
+def v1_regression(design: str) -> dict:
+    """Compare the plan-12-02 extended ``dR/dE_rec`` against the frozen v1.0 spectrum.
+
+    THE COMPARISON IS AN INDEX CARRY, NOT AN INTERPOLATION.  The reconstructed-energy
+    grids of ``artifacts/stage1/response_matrix_*.npz`` and
+    ``artifacts/v2.0/response_matrix_*_ext.npz`` are asserted equal with
+    ``np.array_equal`` (max difference exactly 0.0), so bins are selected by INDEX.
+    Neither spectrum is interpolated onto the other (``fp-regression-by-interpolation``):
+    a tolerance-based axis comparison would let Phase-10's ``fp-naive-logspace`` drift
+    (up to 5.1e-4 relative) through unnoticed, and interpolating would smooth a real
+    deviation away.
+
+    The comparison object is the **UN-TRIGGERED** extended spectrum: the trigger is an
+    analysis efficiency and the v1.0 numbers carry none.
+    """
+    from . import fold, trigger
+
+    z1 = np.load(os.path.join(_PROJECT_ROOT, "artifacts", "stage1",
+                              f"response_matrix_{'TaAl' if design == 'Ta->Al' else 'AlHf'}.npz"),
+                 allow_pickle=True)
+    z2 = fold.load_design_extended(design)
+    axis_identical = bool(np.array_equal(z1["E_rec_edges_eV"], z2["E_rec_edges_eV"]))
+    axis_max_diff = float(np.abs(z1["E_rec_edges_eV"] - z2["E_rec_edges_eV"]).max())
+    if not axis_identical:
+        raise ValueError(
+            "the v1.0 and extended reconstructed-energy edge sets are NOT identical; "
+            "every comparison in this phase against v1.0 would be invalid")
+
+    E_rec = z2["E_rec_centers_eV"]
+    v1_path = os.path.join(_PROJECT_ROOT, "artifacts", "stage1", V1_RECON_FILE[design])
+    v1 = _read_two_columns(v1_path, value_col=1)      # cevns_dRdErec
+    # the v1.0 CSV drops the [0, 1e-3 eV) underflow catch-bin; re-align by INDEX
+    if v1.size != E_rec.size - 1:
+        raise ValueError(f"v1.0 spectrum has {v1.size} rows for {E_rec.size - 1} bins")
+    ext_untriggered = fold.run_cevns_fold_extended(design, broaden=True)["dRdErec"][1:]
+    ext_unbroadened = fold.run_cevns_fold_extended(design, broaden=False)["dRdErec"][1:]
+    E = E_rec[1:]
+    idx = np.arange(1, E_rec.size)
+
+    mask = (E > REGRESSION_FLOOR_eV) & (v1 > 0.0)
+    dev = np.zeros_like(v1)
+    dev[mask] = (ext_untriggered[mask] - v1[mask]) / v1[mask]
+    dev_unbroadened = np.zeros_like(v1)
+    dev_unbroadened[mask] = (ext_unbroadened[mask] - v1[mask]) / v1[mask]
+
+    # P_trig well above the boundary must be indistinguishable from 1, so comparing the
+    # un-triggered object cannot be hiding a real deviation.
+    P_hi = float(trigger.P_trig(100.0))
+
+    a = np.abs(dev[mask])
+    return {
+        "design": design,
+        "axis_index_carry": axis_identical,
+        "axis_max_difference": axis_max_diff,
+        "E_rec_eV": E,
+        "v1_index": idx,
+        "mask": mask,
+        "v1": v1,
+        "extended": ext_untriggered,
+        "extended_unbroadened": ext_unbroadened,
+        "deviation": dev,
+        "deviation_unbroadened": dev_unbroadened,
+        "n_compared": int(mask.sum()),
+        "max_abs_deviation": float(a.max()),
+        "max_at_E_rec_eV": float(E[mask][int(np.argmax(a))]),
+        "mean_abs_deviation": float(a.mean()),
+        "min_abs_deviation": float(a.min()),
+        "n_above_target": int((a > REGRESSION_TARGET).sum()),
+        "max_abs_deviation_broadening_off": float(np.abs(dev_unbroadened[mask]).max()),
+        "P_trig_at_100eV": P_hi,
+    }
+
+
+_REGRESSION_COLUMNS = ["E_rec_eV", "v1_edge_index", "v1_dRdErec", "ext_dRdErec",
+                       "relative_deviation", "ext_dRdErec_broadening_off",
+                       "relative_deviation_broadening_off"]
+
+
+def write_v1_regression_table(path: Optional[str] = None,
+                              designs: Sequence[str] = ("Ta->Al", "Al->Hf")) -> str:
+    """Emit ``artifacts/v2.0/cevns_v1_regression.csv`` (both designs, one file)."""
+    if path is None:
+        path = os.path.join(ARTIFACT_DIR_V2, "cevns_v1_regression.csv")
+    res = {d: v1_regression(d) for d in designs}
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        fh.write(
+            "# QPD Phase-12 plan 12-03 (VALD-10, regression leg) -- the extended sub-eV\n"
+            "#   pipeline against the committed FROZEN v1.0 CEvNS reconstructed spectra,\n"
+            f"#   bin by bin above {REGRESSION_FLOOR_eV:g} eV of reconstructed energy.\n"
+            "# THE COMPARISON IS AN INDEX CARRY, NOT AN INTERPOLATION. The v1.0 and\n"
+            "#   extended reconstructed-energy edge sets are identical under np.array_equal\n"
+            "#   with maximum difference EXACTLY 0.0, so bins are selected by index.\n"
+            "#   Neither spectrum was interpolated onto the other\n"
+            "#   (fp-regression-by-interpolation).\n"
+            "# The compared object is the UN-TRIGGERED extended spectrum: the trigger is an\n"
+            "#   analysis efficiency and the v1.0 numbers carry none. P_trig(100 eV) = "
+            f"{res[designs[0]]['P_trig_at_100eV']:.12f},\n"
+            "#   indistinguishable from 1 far above the boundary, so that choice cannot be\n"
+            "#   hiding a real deviation.\n"
+            "# RESULT, per design:\n"
+        )
+        for d in designs:
+            r = res[d]
+            fh.write(
+                f"#   {d}: {r['n_compared']} bins compared, "
+                f"{r['E_rec_eV'][r['mask']].min():.4g} - {r['E_rec_eV'][r['mask']].max():.4g} eV\n"
+                f"#       max |deviation| = {r['max_abs_deviation']*100:.4f}% at E_rec = "
+                f"{r['max_at_E_rec_eV']:.4g} eV;  mean {r['mean_abs_deviation']*100:.4f}%;  "
+                f"min {r['min_abs_deviation']:.3e} (NON-ZERO, so the comparison is not vacuous)\n"
+                f"#       bins above the 1% VALD-10 target: {r['n_above_target']}\n"
+                f"#       with broadening OFF the same maximum is "
+                f"{r['max_abs_deviation_broadening_off']*100:.4f}% -- the IA kernel is NOT the\n"
+                "#       cause of the residual; the Phase-10 response-matrix REGENERATION is.\n")
+        fh.write(
+            "# The archived v1.0 R_non_paralyzable and the regenerated extended one are NOT\n"
+            "#   bit-identical on their overlapping deposit columns (they are independent\n"
+            "#   Monte Carlo samplings), which is what this residual measures.\n"
+            + _NORMALIZATION_HEADER
+            + "# Units: E_rec in eV; both rates in counts/kg/day/keV; deviation dimensionless.\n"
+        )
+        fh.write("design," + ",".join(_REGRESSION_COLUMNS) + "\n")
+        for d in designs:
+            r = res[d]
+            for i in np.nonzero(r["mask"])[0]:
+                fh.write(
+                    f"{d},{r['E_rec_eV'][i]:.10e},{r['v1_index'][i]:d},"
+                    f"{r['v1'][i]:.10e},{r['extended'][i]:.10e},{r['deviation'][i]:.10e},"
+                    f"{r['extended_unbroadened'][i]:.10e},"
+                    f"{r['deviation_unbroadened'][i]:.10e}\n")
+    return path
+
+
+def frozen_v1_recoil_support() -> dict:
+    """The frozen v1.0 CEvNS RECOIL table's own support, confirmed programmatically.
+
+    ROADMAP SC3 asks that ``T = 0.290 eV`` "reproduces the frozen v1.0 value exactly".
+    This function is how that clause is adjudicated rather than asserted: the frozen
+    table's support starts at 5 eV, so **there is no frozen v1.0 value at 0.290 eV to
+    compare against**.  Recomputing ``dR/dT`` at 0.290 eV with the same code and calling
+    the agreement a regression would be an identity dressed as a check.
+    """
+    from . import fold
+    T = fold.read_cevns(fold.CEVNS_CSV)["T_eV"]
+    return {
+        "path": "artifacts/stage1/cevns_dRdT.csv",
+        "n_rows": int(T.size),
+        "T_min_eV": float(T.min()),
+        "T_max_eV": float(T.max()),
+        "covers_0p290_eV": bool(T.min() <= 0.290),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# The target-swap benchmark                                                    #
+# --------------------------------------------------------------------------- #
+def compound_n2_over_a() -> dict:
+    """``sum N_i^2 / sum A_i`` for natural Ge and for the CaWO4 compound, RECOMPUTED.
+
+    This arithmetic is cheap and is the ONE part of the target-swap benchmark this
+    repository can actually reproduce, so it is recomputed here rather than quoted from
+    ``GPD/literature/`` (which is the source of 22.7 / 44.2 / 1.95 / 65.8).
+
+    It is computed only in order to be **REJECTED** as the Ge/CaWO4 benchmark: the naive
+    ratio omits the Helm form factor, the kinematic ``T_max/E_nu`` compression, and the
+    per-isotope threshold structure that the same-pipeline fold includes.  The benchmark
+    is the same-pipeline ratio **2.31** (``fp-naive-compound-ratio``).
+    """
+    def n2a(items):
+        sN2 = sum((_ATOMIC[s][0] - _ATOMIC[s][1]) ** 2 * c for s, c in items)
+        sA = sum(_ATOMIC[s][0] * c for s, c in items)
+        return sN2 / sA
+
+    ge = n2a([("Ge", 1)])
+    cawo4 = n2a([("Ca", 1), ("W", 1), ("O", 4)])
+    w_natural = n2a([("W", 1)])
+    w184 = n2a([("184W", 1)])
+    return {
+        "Ge": ge,
+        "CaWO4_compound": cawo4,
+        "naive_ratio_CaWO4_over_Ge": cawo4 / ge,
+        "pure_W_standard_atomic_weight": w_natural,
+        "pure_184W": w184,
+        "same_pipeline_benchmark_ratio": 2.31,
+        "atomic_weights_used": {k: v[0] for k, v in _ATOMIC.items()},
+        "verdict": ("the naive compound ratio is REJECTED as the Ge/CaWO4 benchmark; "
+                    "the same-pipeline fold gives 2.31. The pure-tungsten value describes "
+                    "a DIFFERENT material and must not stand in for the CaWO4 compound."),
+    }
+
+
+def closure_provenance_search(needle: str = "407.7") -> dict:
+    """Repository-wide search for the CaWO4 closure figure OUTSIDE GPD prose.
+
+    Planning finding F7 predicts nothing: no CaWO4 module, no test, no notebook cell,
+    no committed artifact reproduces it.  This function RECORDS what the search returns
+    rather than asserting the prediction (``fp-closure-as-reproduced``).
+    """
+    import subprocess
+    # WORD-BOUNDED. A bare substring search for "407.7" matches by coincidence inside
+    # long numeric fields of several committed CSVs, which would manufacture a
+    # reproducible source that does not exist.
+    pattern = needle.replace(".", "[.]")
+    cmd = f"git grep -lE '(^|[^0-9.]){pattern}([^0-9]|$)' | sort"
+    out = subprocess.run(["bash", "-c", cmd],
+                         cwd=_PROJECT_ROOT, capture_output=True, text=True).stdout.split()
+    # this module itself carries the search string as a default argument
+    out = [p for p in out if not p.endswith("cevns_subev.py")]
+    prose = [p for p in out if p.startswith("GPD/")]
+    reproducible = [p for p in out
+                    if p.endswith((".py", ".ipynb", ".csv", ".npz", ".json"))
+                    and not p.startswith("GPD/")]
+    return {
+        "needle": needle,
+        "command": cmd,
+        "all_hits": out,
+        "gpd_prose_hits": prose,
+        "reproducible_hits": reproducible,
+        "has_reproducible_source": bool(reproducible),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# The optional VNS context line -- a LABELLED SCALAR RESCALE, nothing else      #
+# --------------------------------------------------------------------------- #
+ROI_LO_eV, ROI_HI_eV = 10.0, 100.0
+
+
+def vns_rescale(designs: Sequence[str] = ("Ta->Al", "Al->Hf")) -> dict:
+    """The NUCLEUS VNS siting as a SINGLE labelled scalar multiplication.
+
+    It is a multiplication applied to the FINISHED primary result or it is not reported
+    (``fp-second-vns-run``).  ``cevns.nucleus_variant_flux()`` exists in the codebase and
+    is exactly the trap: calling it would produce a physically reasonable SECOND spectrum
+    and silently violate the locked forbidden proxy.  **It is not called.**
+
+    TWO candidate integral fluxes, both named, because the project's own arithmetic does
+    not reproduce the NUCLEUS-stated one (``fp-unlabelled-rescale``):
+
+    * **2.1e12** nubar/cm^2/s -- STATED by NUCLEUS, EPJC 86, 29 (2026), arXiv:2509.03559.
+    * **1.830269e12** -- what ``cevns.nucleus_flux_normalization()`` RECONSTRUCTS from
+      NUCLEUS's own stated 4.25 GW_th per core, 6 nubar/fission, 200 MeV/fission at 72 m
+      and 102 m.  A ~15% gap, already recorded in ``state.json``.
+
+    (Their 2019 prose "about 3e12" is a third number and is a locked forbidden proxy,
+    ``fp-nucleus-3e12``.  It is reported here only as the gap it is.)
+    """
+    from . import cevns as _cevns, fold
+
+    norm = _cevns.nucleus_flux_normalization()
+    ours = integral_flux()
+    candidates = {
+        "nucleus_stated_2026": {
+            "integral_flux": 2.1e12,
+            "source": ("NUCLEUS Collab., Eur. Phys. J. C 86, 29 (2026), arXiv:2509.03559 "
+                       "-- STATED VNS integral antineutrino flux"),
+        },
+        "project_geometric": {
+            "integral_flux": float(norm["site_flux"]),
+            "source": ("cevns.nucleus_flux_normalization(): reconstructed from NUCLEUS's "
+                       "OWN 4.25 GW_th per core, 6 nubar/fission, 200 MeV/fission, at "
+                       "72 m and 102 m (EPJC 79, 1018 (2019), arXiv:1905.10258 Sect. 2)"),
+        },
+    }
+    for v in candidates.values():
+        v["rescale_factor"] = v["integral_flux"] / ours
+
+    per_design = {}
+    for d in designs:
+        r = fold.run_cevns_fold_extended(d, broaden=True)
+        E = r["E_rec_centers_eV"]
+        roi = (E >= ROI_LO_eV) & (E <= ROI_HI_eV)
+        primary = float(r["N_rec"][roi].sum())
+        per_design[d] = {
+            "primary_roi_counts_per_kg_day": primary,
+            "roi_bins": int(roi.sum()),
+            **{k: primary * v["rescale_factor"] for k, v in candidates.items()},
+        }
+    return {
+        "project_integral_flux": ours,
+        "candidates": candidates,
+        "nucleus_2019_prose_flux": float(norm["prose_flux"]),
+        "prose_over_geometric": float(norm["prose_over_geometric"]),
+        "per_design": per_design,
+        "roi_eV": (ROI_LO_eV, ROI_HI_eV),
+    }
+
+
+def write_vns_rescale_table(path: Optional[str] = None,
+                            designs: Sequence[str] = ("Ta->Al", "Al->Hf")) -> str:
+    """Emit ``artifacts/v2.0/cevns_vns_rescale.csv``."""
+    if path is None:
+        path = os.path.join(ARTIFACT_DIR_V2, "cevns_vns_rescale.csv")
+    v = vns_rescale(designs)
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        fh.write(
+            "# QPD Phase-12 plan 12-03 -- the OPTIONAL NUCLEUS VNS context line, as a\n"
+            "#   SINGLE LABELLED SCALAR MULTIPLICATION of the FINISHED primary result.\n"
+            "# NO SECOND PIPELINE RUN, NO SECOND FLUX TABLE, NO SECOND SPECTRAL SHAPE was\n"
+            "#   produced (fp-second-vns-run). cevns.nucleus_variant_flux() exists in the\n"
+            "#   codebase and was NOT called: it would have produced a physically\n"
+            "#   reasonable second spectrum and silently violated the locked proxy.\n"
+            "# TWO candidate integral fluxes are carried, because the project's own\n"
+            "#   arithmetic does not reproduce the NUCLEUS-stated one. A bare 0.28 would be\n"
+            "#   fake precision on an optional context line (fp-unlabelled-rescale).\n"
+            f"# Project integral flux (frozen reactor_flux_v1.0.csv): {v['project_integral_flux']:.6e}"
+            " nubar/cm^2/s.\n"
+        )
+        for k, c in v["candidates"].items():
+            fh.write(f"#   {k}: {c['integral_flux']:.6e} -> factor "
+                     f"{c['rescale_factor']:.6f}\n#       source: {c['source']}\n")
+        fh.write(
+            f"# The NUCLEUS 2019 prose figure {v['nucleus_2019_prose_flux']:.3e} is a THIRD\n"
+            f"#   number, {v['prose_over_geometric']:.4f}x the geometric reconstruction, and is a\n"
+            "#   locked forbidden proxy (fp-nucleus-3e12). It is named here only as the gap.\n"
+            "# CAVEAT: the rescale is valid for the TOTAL RATE NORMALIZATION only. It assumes\n"
+            "#   the VNS spectral SHAPE is the project's Phase-2 shape, and it says nothing\n"
+            "#   about duty cycle or site-dependent backgrounds. The VNS also carries\n"
+            "#   2.92 m.w.e. of overburden that the surface background treatment does not\n"
+            "#   have -- which is precisely why the 2026-07-22 re-scope demoted this to a\n"
+            "#   context line (fp-inherited-shielding).\n"
+            f"# RoI: {ROI_LO_eV:g} - {ROI_HI_eV:g} eV of RECONSTRUCTED energy, on the finished\n"
+            "#   plan-12-02 spectra.\n"
+            + _NORMALIZATION_HEADER
+            + "# Units: integral fluxes in nubar/cm^2/s; rates in counts/kg/day; factors\n"
+            "#   dimensionless.\n"
+        )
+        cols = ["design", "candidate", "candidate_integral_flux", "project_integral_flux",
+                "rescale_factor", "primary_roi_counts_per_kg_day",
+                "rescaled_roi_counts_per_kg_day"]
+        fh.write(",".join(cols) + "\n")
+        for d in designs:
+            pd = v["per_design"][d]
+            for k, c in v["candidates"].items():
+                fh.write(f"{d},{k},{c['integral_flux']:.10e},"
+                         f"{v['project_integral_flux']:.10e},{c['rescale_factor']:.10e},"
+                         f"{pd['primary_roi_counts_per_kg_day']:.10e},{pd[k]:.10e}\n")
+    return path
+
+
 if __name__ == "__main__":  # pragma: no cover
     import sys as _sys
     which = _sys.argv[1] if len(_sys.argv) > 1 else "12-01"
@@ -1017,5 +1400,8 @@ if __name__ == "__main__":  # pragma: no cover
             print(write_extended_spectrum(_d))
         print(write_trigger_table())
         print(make_subev_spectra_figure())
+    elif which == "12-03":
+        print(write_v1_regression_table())
+        print(write_vns_rescale_table())
     else:
         raise SystemExit(f"unknown target {which!r}")
