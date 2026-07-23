@@ -519,6 +519,33 @@ Plans:
 
 ### Phase 16: S/B_particle Assembly, LEE Overlay, and the Signal-Side CONUS+ Check (P-SB)
 
+**Status:** COMPLETE 2026-07-23. **TERMINAL DELIVERABLE OF MILESTONE v2.0.**
+
+**HEADLINE S/B_particle** -- 10-100 eV reconstructed RoI, trigger applied, veto credit **exactly 1.0 BY CONSTRUCTION**, configuration **NUCLEUS's-shielding-absent** (never "conservative"), at `order_of_magnitude` (band multiplier [10^-0.5, 10^+0.5]):
+
+| design | estimates only | estimates + bounds (**LOWER bound**) |
+|---|---|---|
+| Ta->Al | **1.33e-2** | **7.29e-3** |
+| Al->Hf | **1.32e-2** | **7.27e-3** |
+
+Sub-eV (E_rec <= 1 eV): 1.05e-3 / 4.11e-4 and 1.05e-3 / 4.12e-4. **The two designs are NOT distinguishable at the assembled label.** Reported as computed -- no target value carried, nothing adjusted.
+
+**In-RoI CEvNS signal, COMPUTED not substituted: 72.9214 / 73.1441** counts/kg/day. The 118.73 total is 1.63x larger and appears only under TOTAL-labelled fields.
+
+**Denominator (RoI, Ta->Al, counts/kg/day):** neutron elastic 5430.29 (54.3%) - prompt (n,gamma) capture <=4399.78 (44.0%, **full band**; thermal-only would understate 1.31x) - 71-Ge M line <=130.82 at saturation (1.3%; 7.6975 at t = 1 d) - Compton 34.25 - muon 7.47 - **total 10002.60**. Ge inelastic <=2666.83 EXCLUDED (-21.049% if added).
+
+**VALD-12: PARTIALLY CONFIRMED, WINDOW-CONDITIONAL.** Pre-registered 0.4-1 keV_ee -> ratio **5.278664e-4** against a pre-declared factor 2.0: **the pre-registered leg is a FAIL by 3.28 decades**. Declared alternate 160 eV_ee -> **8.333761e-1** at central quenching (bracket 0.401-1.765). Spread **4.504 decades**. Only 34.85% of the pre-registered window lies inside our kinematic support (measured edge 3031.6858 eV_nr). The Billard route agrees to 0.87% but its leverage was measured: only **4.7e-6** of its weight sits above that window's lower edge, so it does NOT reach there. **The ROADMAP backtracking trigger is LIVE and the gate travels on every downstream deliverable.**
+
+**SC4: SUPERSEDED BY MEASUREMENT.** d(S/B_particle)/dA = 0, shown by contrast (S/B_total moves 1.94e3x across A in [1e-6, 1e6] dru while S/B_particle is unchanged), and the required LEE integral S - B = **-5399.0791** counts/kg/day, negative. Replacements under their OWN names (RoI, central alpha): **`lee_equals_B_particle` = 942.4 dru** at E_0 = 1 keV (estimates+bounds), **`lee_equals_S` = 6.870 dru** -- against an extrapolated LEE of 1.00e4-2.04e4 dru, i.e. **10.6-21.7x above dominance and 1456-2972x above erasure.**
+
+**Completeness audit:** all five published headlines reproduced BEFORE entry to the sum (worst residual 1.18e-5 against a 1e-4 tolerance declared first), **zero channels blocked**; both double-count candidates resolved by reaction AND event time; leave-one-out monotone; **omission list NON-EMPTY (6 rows, un-netted)** -- muon-induced neutrons, muon-induced secondary gammas, cosmogenic 71-Ge/68-Ge/65-Zn, 71-Ge K-line X-ray escape (`penalizes_SB`), neutron >20 MeV (in-RoI and total-rate bounds carried separately, four decades apart), and the LEE by construction.
+
+> **Findings against expectation:** (1) **Chang's x118 mass extrapolation CANCELS in dru** (already mass-normalized) -- the survey's "x120" is a total-rate factor, not an amplitude factor; the two device models disagree by only ~2x in dru and **do not strictly bracket** the one germanium anchor. (2) A 3-decade move from the inelastic bound **was never arithmetically available** on a 1e4 denominator; the 21% move sits INSIDE the order_of_magnitude band, so the exclusion is not load-bearing for the headline. (3) **Five guards fired during execution and were FIXED, not relaxed.**
+>
+> **Validation honestly bounded:** S/B_particle has external validation of its **NUMERATOR ONLY** and none of the ratio. The 407.7 dru CaWO4 closure still has no reproducible artifact, and with VALD-11 deleted there is **no background-side target-swap validation at all**. The trigger-k discharge covers muon and Compton only; the neutron channel dominates the sub-eV denominator and has no committed reconstructed-axis k-scan, so the emitted spread is a LOWER BOUND.
+
+**SC verdicts:** SC1 PARTIALLY CONFIRMED (window-conditional), SC2 CONFIRMED, SC3 CONFIRMED, SC4 SUPERSEDED BY MEASUREMENT.
+
 > **Kept and amended 2026-07-22.** Still the terminal `S/B_particle` assembly. Three amendments. **(a)** The zero-inherited-veto-credit baseline is now the **only** baseline rather than one of two, and per Phase 8 it must be described as **NUCLEUS's-shielding-absent** and **never as "conservative"** — an L2-off, shield-absent configuration is a *different and worse* configuration, not a conservative subset. **(b)** The LEE band is untouched: the LEE is a property of the wafer's ~10,300 Al films, not of the site. **(c)** The CONUS+ gate is **restated to its signal-side leg**, because reproducing a shielded experiment's S/B from an unshielded-surface pipeline is not a coherent test — see SC1, which also states what is lost.
 
 **Goal:** The milestone's headline number exists and is defensible: `S/B_particle` for an unshielded-surface QPD Ge wafer, at a veto credit of 1.0 by construction, with the low-energy excess carried as a band rather than buried, with every channel's accuracy label surviving into the assembled band, and with the signal chain checked against the only measured Ge-at-a-reactor CEvNS observation.
@@ -548,9 +575,9 @@ Plans:
 **Plans:** 3 plans, waves 1 -> 2 -> 3
 
 Plans:
-- [ ] 16-01-PLAN.md -- VALD-12 signal-side CONUS+ check; window PRE-REGISTERED, ratio-vs-window sensitivity curve, restatement cost written on the deliverable
-- [ ] 16-02-PLAN.md -- channel inventory completeness/no-double-count audit + S/B_particle assembly; veto credit 1.0 by construction, two denominator layers, order_of_magnitude band
-- [ ] 16-03-PLAN.md -- LEE (A, alpha) overlay band, SC4-as-written adjudication, crossover amplitudes, terminal figure and closeout
+- [x] 16-01-PLAN.md -- VALD-12 signal-side CONUS+ check; window PRE-REGISTERED, ratio-vs-window sensitivity curve, restatement cost written on the deliverable
+- [x] 16-02-PLAN.md -- channel inventory completeness/no-double-count audit + S/B_particle assembly; veto credit 1.0 by construction, two denominator layers, order_of_magnitude band
+- [x] 16-03-PLAN.md -- LEE (A, alpha) overlay band, SC4-as-written adjudication, crossover amplitudes, terminal figure and closeout
 
 > **Two issues flagged during planning 2026-07-23, both resolved by ORCHESTRATOR DECISION rather than by the planner.**
 >
