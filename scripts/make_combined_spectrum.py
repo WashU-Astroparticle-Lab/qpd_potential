@@ -29,6 +29,10 @@ import os
 
 import matplotlib
 import numpy as np
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'src'))
+from qpd_potential import trigger  # noqa: E402
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -41,6 +45,62 @@ ROI_LO, ROI_HI = 10.0e-3, 100.0e-3   # keV; the 10-100 eV reconstructed RoI
 # matrices as R_non_paralyzable (25 kHz non-paralyzable censoring, CONVENTIONS Sect. F).
 # These are the per-design onsets carried in the npz, drawn so the effect is visible.
 SAT_ONSET_EDEP_eV = {"TaAl": 52.90739510057845, "AlHf": 32.12999702464278}
+
+
+def _deposit(channel):
+    """(E_dep [eV], dR/dE_dep [counts/kg/day/keV]) for one channel, on the extended grid."""
+    if channel == "cevns":
+        r = _rows_dep("cevns_dRdT_ext.csv"); return _c(r, "T_eV_nr"), _c(r, "dRdT_total")
+    if channel == "neutron":
+        r = _rows_dep("neutron_dRdT_ge_ext.csv"); return _c(r, "T_eV_nr"), _c(r, "dRdT")
+    r = _rows_dep(f"{channel}_dRdEdep_ext.csv")
+    return _c(r, "E_dep_keV[keV]") * 1e3, _c(r, "dRdEdep[counts/kg/day/keV]")
+
+
+def _rows_dep(path):
+    with open(os.path.join(ART, path)) as fh:
+        return list(csv.DictReader(x for x in fh if not x.startswith("#")))
+
+
+def _c(rows, name):
+    return np.array([float(r[name]) for r in rows])
+
+
+def unsaturated(channel, design):
+    """The spectrum the SAME deposits would give with NO bandwidth saturation.
+
+    The unsaturated limit is the linear response E_rec = C * E_dep, with C read
+    from the response matrix's own low-energy behaviour (0.4972 Ta->Al) rather
+    than assumed. dR/dE_rec = (dR/dE_dep)/C, both already per keV.
+
+    The SAME trigger weighting is applied as to the solid curve, so the only
+    difference between solid and dotted is saturation -- which is the point.
+    Above the saturation onset the solid curve piles up while this one keeps
+    going, out past 100 keV.
+    """
+    z = np.load(os.path.join(ART, f"response_matrix_{design}_ext.npz"), allow_pickle=True)
+    Ed_m, med = z["E_dep_centers_eV"], z["E_rec_median_non_paralyzable_eV"]
+    C = float(np.interp(1.0, Ed_m, med)) / 1.0
+    E, dRdE = _deposit(channel)
+    P = np.asarray(trigger.P_trig(E), float)
+    return E * C, dRdE * P / C
+
+
+def sat_marks(design):
+    """Saturation onset and whole-array plateau, mapped deposit -> RECONSTRUCTED
+    through the response matrix's OWN measured median, not an assumed slope.
+
+    An earlier version of this figure multiplied the deposit-axis onset by a
+    hand-picked 0.5. That is the cross-axis error this project has hit twice
+    (Phase 13 caught itself; Phase 14 wrote a forbidden proxy for it). The
+    measured mapping gives 23.4 eV rec for Ta->Al, not the 26.5 the 0.5 slope
+    produced.
+    """
+    z = np.load(os.path.join(ART, f"response_matrix_{design}_ext.npz"), allow_pickle=True)
+    Ed, med = z["E_dep_centers_eV"], z["E_rec_median_non_paralyzable_eV"]
+    to_rec = lambda e: float(np.interp(e, Ed, med))
+    return (float(z["saturation_onset_Edep_eV"]), to_rec(float(z["saturation_onset_Edep_eV"])),
+            float(z["whole_array_plateau_Edep_eV"]), to_rec(float(z["whole_array_plateau_Edep_eV"])))
 FLOOR = 0.0999350e-3                 # Phase-10 grid floor, 99.935 meV
 SUBEV = 1.0e-3                       # below 1 eV, P_trig is the reported observable
 CAPTURE_BOUND = 4399.78              # counts/kg/day, Phase 14, in-RoI, rigorous
@@ -68,18 +128,18 @@ def read(path, ecol, ycol):
 
 def continua(design):
     return [
-        dict(label="CEvNS signal", c="#1f77b4", lw=2.5, z=6,
+        dict(label="CEvNS signal", key="cevns", c="#1f77b4", lw=2.5, z=6,
              d=read(f"cevns_dRdErec_ext_{design}.csv", "E_rec_keV", "dRdErec_trigger_weighted"),
              raw=read(f"cevns_dRdErec_ext_{design}.csv", "E_rec_keV", "dRdErec_central")),
-        dict(label=f"Neutron elastic  /{N_SUPPRESSION:.0f} (ASSUMED)", c="#d62728", lw=1.9, z=5, sup=True,
+        dict(label=f"Neutron elastic  /{N_SUPPRESSION:.0f} (ASSUMED)", key="neutron", c="#d62728", lw=1.9, z=5, sup=True,
              d=read(f"neutron_dRdErec_ext_{design}.csv", "E_rec_keV", "dRdErec_trigger_weighted"),
              raw=read(f"neutron_dRdErec_ext_{design}.csv", "E_rec_keV", "dRdErec_central")),
-        dict(label="Compton ($\\gamma$ ambient)", c="#2ca02c", lw=1.7, z=4,
+        dict(label="Compton ($\\gamma$ ambient)", key="compton", c="#2ca02c", lw=1.7, z=4,
              d=read(f"em_dRdErec_ext_{design}.csv", "E_rec_keV[keV]",
                     "compton_dRdErec_triggered[counts/kg/day/keV]"),
              raw=read(f"em_dRdErec_ext_{design}.csv", "E_rec_keV[keV]",
                       "compton_dRdErec_untriggered[counts/kg/day/keV]")),
-        dict(label="Cosmic muons", c="#9467bd", lw=1.7, z=4,
+        dict(label="Cosmic muons", key="muon", c="#9467bd", lw=1.7, z=4,
              d=read(f"em_dRdErec_ext_{design}.csv", "E_rec_keV[keV]",
                     "muon_dRdErec_triggered[counts/kg/day/keV]"),
              raw=read(f"em_dRdErec_ext_{design}.csv", "E_rec_keV[keV]",
@@ -105,10 +165,13 @@ def panel(ax, design, title):
     for ch in continua(design):
         f = N_SUPPRESSION if ch.get("sup") else 1.0
         E, y = ch["d"]; y = y / f
-        Er, yr = ch["raw"]; yr = yr / f
+        # dotted ghost = the SAME deposits with NO saturation (linear response).
+        # The gap to the solid curve is therefore the bandwidth-saturation cost.
+        Er, yr = unsaturated(ch["key"], design); yr = yr / f
         mr = yr > 0
-        if mr.any():   # untriggered ghost -- the gap to the solid curve IS the trigger rolloff
-            ax.loglog(Er[mr] * 1e3, yr[mr], color=ch["c"], lw=1.0, ls=":", alpha=0.5, zorder=ch["z"] - 1)
+        if mr.any():
+            ax.loglog(Er[mr] * 1e3, yr[mr], color=ch["c"], lw=1.1, ls=":", alpha=0.75,
+                      zorder=ch["z"] - 1)
         m = y > 0
         if m.any():
             ax.loglog(E[m] * 1e3, y[m], color=ch["c"], lw=ch["lw"], label=ch["label"], zorder=ch["z"])
@@ -129,18 +192,24 @@ def panel(ax, design, title):
     ax.axvspan(ROI_LO * 1e3, ROI_HI * 1e3, color="0.85", alpha=0.4, zorder=0)
     ax.axvline(FLOOR * 1e3, color="0.35", ls=":", lw=1.1, zorder=1)
     ax.axvline(SUBEV * 1e3, color="0.55", ls="-.", lw=1.0, zorder=1)
-    # saturation onset, mapped deposit -> reconstructed with the measured ~0.5 slope
-    sat_rec = SAT_ONSET_EDEP_eV[design] * 0.5
-    ax.axvline(sat_rec, color="#e377c2", ls="--", lw=1.6, zorder=2)
-    ax.annotate(f"bandwidth saturation onset\n{SAT_ONSET_EDEP_eV[design]:.1f} eV dep "
-                f"($\\approx${sat_rec:.0f} eV rec)",
-                xy=(sat_rec, 4e5), fontsize=7.4, color="#e377c2",
+    on_dep, on_rec, pl_dep, pl_rec = sat_marks(design)
+    ax.axvline(on_rec, color="#e377c2", ls="--", lw=1.6, zorder=2)
+    ax.annotate(f"saturation onset  {on_dep:.0f} eV dep = {on_rec:.0f} eV rec",
+                xy=(on_rec, 2e6), fontsize=7.2, color="#e377c2",
                 ha="right", rotation=90, va="top")
+    # the saturated band: above the whole-array plateau the readout is bandwidth-limited
+    ax.axvspan(pl_rec, 1.2e5, color="#e377c2", alpha=0.13, zorder=0)
+    ax.annotate(f"bandwidth-saturated\n(plateau {pl_dep/1e3:.1f} keV dep = {pl_rec/1e3:.1f} keV rec)",
+                xy=(pl_rec * 1.35, 2e6), fontsize=7.2, color="#c2559b",
+                ha="left", rotation=90, va="top")
     ax.set_xlabel("Reconstructed energy  $E_{\\rm rec}$   [eV]")
     ax.set_title(title, fontsize=11.5)
     ax.grid(True, which="major", alpha=0.28)
     ax.grid(True, which="minor", alpha=0.09)
-    ax.set_xlim(0.09, 3.0e3)
+    # Full data range. The previous 3 keV limit cut off 100% of the muon channel's
+    # counts and hid its pile-up peak at ~18.8 keV -- which IS the saturation
+    # signature, i.e. the figure omitted exactly the effect it claimed to mark.
+    ax.set_xlim(0.09, 1.2e5)
     ax.set_ylim(1e-2, 3e6)
 
 
@@ -169,7 +238,11 @@ panel(axes[0], "TaAl", "Ta$\\rightarrow$Al     $S/B_{\\rm particle}$ = "
 panel(axes[1], "AlHf", "Al$\\rightarrow$Hf     $S/B_{\\rm particle}$ = "
       f"{SB['AlHf'][0]:.3f}  (est.)   /   {SB['AlHf'][1]:.3f}  (incl. bounds)")
 axes[0].set_ylabel(r"$dR/dE_{\rm rec}$   [counts kg$^{-1}$ day$^{-1}$ keV$^{-1}$]")
-axes[0].legend(loc="lower left", fontsize=8.2, framealpha=0.94)
+from matplotlib.lines import Line2D  # noqa: E402
+_h, _l = axes[0].get_legend_handles_labels()
+_h.append(Line2D([0], [0], color="0.35", ls=":", lw=1.4))
+_l.append("same channel, NO saturation\n(linear $E_{\\rm rec}$ = 0.497 $E_{\\rm dep}$)")
+axes[0].legend(_h, _l, loc="lower left", fontsize=8.0, framealpha=0.94)
 
 axes[1].text(0.985, 0.02,
              "shaded band: 10–100 eV RoI\n"
@@ -189,13 +262,18 @@ fig.text(0.5, 0.032,
          "whose ~5 and ~50 are event-rate reductions in CaWO$_4$ that embed a target response which is not Ge's.",
          ha="center", fontsize=8.4, style="italic")
 fig.text(0.5, 0.014,
-         "Faint dotted = untriggered; the gap is the trigger-efficiency rolloff at the NEW $E_{50}$ = 1.0 eV (deposit). "
-         "Saturation was always in $R$, not added here.",
+         "Dotted = the SAME deposits with NO bandwidth saturation (linear $E_{\\rm rec}$ = 0.497 $E_{\\rm dep}$, trigger applied); solid minus dotted IS the saturation cost. "
+         "Dotted curves are spikier because $R$ smooths the deposit spectra's MC noise -- that is sampling scatter, not structure.",
          ha="center", fontsize=8.4, style="italic")
 
 fig.tight_layout(rect=[0, 0.075, 1, 0.955])
 fig.savefig(os.path.join(ART, "combined_spectrum_v2.0.png"), dpi=155)
-fig.savefig(os.path.join(ART, "combined_spectrum_v2.0.pdf"))
+# CreationDate=None makes the PDF byte-stable across runs. Without it matplotlib
+# stamps the current time, so every regeneration dirtied a tracked artifact and
+# tripped the Phase-10 frozen-artifact guard -- noise that would train a reader to
+# ignore that guard.
+fig.savefig(os.path.join(ART, "combined_spectrum_v2.0.pdf"),
+            metadata={"CreationDate": None})
 print("wrote combined_spectrum_v2.0.png\n")
 
 for design in ("TaAl", "AlHf"):
