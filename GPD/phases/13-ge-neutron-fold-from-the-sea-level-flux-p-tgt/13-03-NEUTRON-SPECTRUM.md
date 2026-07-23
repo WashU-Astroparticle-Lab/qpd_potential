@@ -1,7 +1,7 @@
 # 13-03 — The Ge Neutron NR Spectrum in Reconstructed Energy, and the Phase-13 Closeout
 
 **Plan:** 13-03 (wave 3) · **accuracy_label = `order_of_magnitude`** on every quantity below.
-**Interpreter:** `/opt/anaconda3/bin/python3`. **Tests:** `tests/test_neutron_fold.py` (24 passed).
+**Interpreter:** `/opt/anaconda3/bin/python3`. **Tests:** `tests/test_neutron_fold.py` (22 passed).
 **Modules:** `src/qpd_potential/fold.py` (appended neutron-only extended path),
 `src/qpd_potential/neutron_recoil.py` (appended 13-03 section).
 
@@ -281,11 +281,22 @@ conservatism was bought elsewhere.
   precisely (`fp-precision-inflation`).
 - The five directional-bias rows of §7, **un-netted**.
 - The omission bounds of `13-02` §6, in-RoI and total-rate **separately**.
-- **The headline number Phase 16 needs to see first:** this channel sits at **≈1.1–1.4×10⁷ counts
-  kg⁻¹ day⁻¹ keV⁻¹** at the bottom of the reconstructed axis against the Phase-12 CEvNS signal's
-  ~2.4×10³ counts kg⁻¹ day⁻¹ keV⁻¹ on the recoil axis at the same energy — **about four orders of
-  magnitude**. For an unshielded outdoor surface wafer that is the expected result, not a bug, but
-  it means the sub-eV S/B of this milestone is set by this background and not by the signal.
+- **The headline number Phase 16 needs to see first**, measured on the SHARED reconstructed axis
+  against `artifacts/v2.0/cevns_dRdErec_ext_TaAl.csv` rather than across axes:
+
+  | `E_rec` | neutron | CEvNS | **ratio** |
+  |---|---|---|---|
+  | 0.094 eV | 1.135×10⁷ | 3.696×10³ | **3.07×10³** |
+  | 0.473 eV | 4.229×10⁶ | 4.210×10³ | 1.00×10³ |
+  | 0.944 eV | 2.803×10⁶ | 3.998×10³ | 7.01×10² |
+  | 9.44 eV | 2.009×10⁵ | 2.258×10³ | **89** |
+  | 94.4 eV | 3.706×10⁴ | 3.049×10² | **122** |
+
+  (counts kg⁻¹ day⁻¹ keV⁻¹, Ta→Al, both untriggered.) So the honest statement is **a factor of a
+  few thousand in the sub-eV region and roughly a factor 10² inside the 10–100 eV RoI** — not "four
+  orders of magnitude", which would over-state it. For an unshielded outdoor surface wafer a
+  background far above the signal is the expected result, not a bug, but it means the sub-eV S/B of
+  this milestone is set by this background and not by the signal.
 
 **To Phase 14 (thermal capture, (n,γ), ⁷¹Ge EC, Ge inelastic):**
 

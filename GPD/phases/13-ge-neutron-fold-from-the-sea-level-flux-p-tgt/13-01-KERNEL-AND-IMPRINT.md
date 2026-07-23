@@ -196,10 +196,13 @@ construction, so the Plan 13-03 floor-coverage assertion holds on the EDGE.
 Band integrals: **10–100 eV RoI: 4.419×10³ counts kg⁻¹ day⁻¹**; 0.1–1 eV: 3.739×10³;
 full axis: 3.130×10⁴.
 
-**Order-of-magnitude context, stated plainly.** The Phase-12 CEvNS spectrum on the same axis is
-~2.35×10³ counts kg⁻¹ day⁻¹ keV⁻¹ at 0.1 eV. This neutron channel is **~4 orders of magnitude
-larger there**. For an unshielded outdoor surface wafer that is the expected result, not a bug —
-but it means the neutron channel, not CEvNS, sets S/B, and Phase 16 must receive it with its
+**Order-of-magnitude context, stated plainly and measured rather than rounded up.** The Phase-12
+CEvNS recoil spectrum on its own axis is 2.3499×10³ counts kg⁻¹ day⁻¹ keV⁻¹ at T = 0.101 eV. This
+neutron channel is **5.9×10³ times larger there** — a factor of a few thousand, not "four orders of
+magnitude". The comparison that matters is the one on the shared **reconstructed** axis, and Plan
+13-03 makes it: 3.07×10³ at the bottom reconstructed bin and ~10² inside the RoI. For an
+unshielded outdoor surface wafer a background well above the signal is the expected result, not a
+bug — but it means the neutron channel, not CEvNS, sets S/B, and Phase 16 must receive it with its
 `order_of_magnitude` label attached (`fp-silent-neutron-omission`).
 
 The spectrum is strictly positive and **monotonically non-increasing**, as a suffix integral of a
