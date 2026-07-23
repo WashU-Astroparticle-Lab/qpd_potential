@@ -14,6 +14,27 @@ produced it, that is recorded as a gap rather than filled.
 **Sign convention (inherited from Plan 08-03):** clearance `C = D_available − W_required` in cm;
 `C < 0` is a shortfall of `|C|`.
 
+> ### ⚠ CORRECTED 2026-07-22 — Phase-8 gap-closure pass
+>
+> This document was corrected after `08-VERIFICATION.md` found six gaps. **The verdict, its
+> direction, and the milestone-void argument are unchanged.** What changed:
+>
+> | Gap | Change | Where |
+> |---|---|---|
+> | **G1** *(significant)* | The coverage premise is restated as **assembly-level**, the single-cap step is derived explicitly and marked as an **inference**, and the overturning threshold is **re-derived into two routes**. The "2.06 kg would be visible in a published mass" argument closes only the single-cap route; the **assembly-level route is not closed by any published statement**. | §1 premise 1, §1.4, §2.6 item 3, §8.1, §8.2 direction 4 |
+> | **G2** *(significant)* | The paper's own Chooz-transfer sentence (arXiv:2508.02488v1 §2, now 08-01 **A.18**) is added. It **licenses 29.7 / 43.0 cm for Chooz** and **conspicuously does not extend to the COV**, which is where the load-bearing 100 mm lives — a **disconfirming** observation for this phase's central transfer. | §2.1 |
+> | **G3** *(minor)* | The 2019 "outer veto... diameter of 10 cm" is no longer described as a statement of the same quantity as the 100 mm cap crystal. | §1, §2.1, `veto_envelope.py` |
+> | **G4** *(minor)* | The two sampled `min b₂` values are reconciled: they were **two different runs**, not a transcription slip. Canonical run re-run and fixed at **7.3945 cm**. | 08-03 §2.1 |
+> | **G5** *(minor)* | The `min b₁` bracket is tightened from `[9.5789, ≲9.72]` to an attained **9.6669 cm**. | 08-03 §2.1 |
+> | **G6** *(trivial)* | "52 grep commands, all re-running and exiting 0" corrected: **7 of 57 exit 1 by design**. | §6 |
+>
+> **What did NOT change, and why the re-scope decision remains safe.** The verifier independently
+> re-grepped the 10.0 cm cap from the frozen source, reproduced the 1045.17 g mass closure, and
+> re-derived every orientation extremum by multistart Nelder–Mead (`min b₂ = 7.325626`,
+> `min projected Ø = 10.161968`, both attained exactly). The **premise-void argument of §4 does not
+> depend on the contested cap diameter at all** — its load-bearing input is the **45.88× payload
+> footprint change**, which is untouched by every gap above. §4 now states this explicitly.
+
 ---
 
 ## 1. The verdict
@@ -23,19 +44,42 @@ produced it, that is recorded as a gap rather than filled.
 > On the **coverage** comparison: with the wafer face mounted parallel to the cryogenic-outer-veto
 > (COV) cap plane, a circular cap crystal must have a diameter of **√2 × 10.16 = 14.3684 cm** to
 > cover the wafer's projected footprint. The published COV cap-crystal outer diameter is
-> **10.0 cm** — arXiv:2508.02488v1 §2 "Cryogenic Outer Veto" ("100 mm diameter"), independently
-> corroborated by arXiv:1905.10258 (EPJC 79, 1018 (2019)) Fig. 8 caption ("a diameter of 10 cm").
+> **10.0 cm** — arXiv:2508.02488v1 §2 "Cryogenic Outer Veto" ("100 mm diameter"), with the outer
+> veto's characteristic diameter independently placed at 10 cm six years earlier by
+> arXiv:1905.10258 (EPJC 79, 1018 (2019)) Fig. 8 caption ("an outer veto (3) with a diameter of
+> 10 cm").
 > The clearance is **C = −4.3684 cm**. The cap is **30.4 % smaller than required**; equivalently
 > the requirement is **43.7 % larger** than the published cap.
 
-**Both premises, stated with the verdict rather than beneath it:**
+**All three premises, stated with the verdict rather than beneath it.** *(Premise 2 was made
+explicit on 2026-07-22 by the gap-closure pass; it was previously folded invisibly into premise 1.)*
 
-1. **Coverage premise** — a COV cap crystal must *cover* the wafer footprint. Licensed by the
-   paper's own description of the COV as one that "hermetically covers the cryogenic target
-   detectors" (08-01 evidence block A.11). Weaker than any cavity assumption, but not premise-free.
-2. **Face-parallel mounting premise** — the wafer face lies parallel to the cap plane, as in every
+1. **Coverage premise — ASSEMBLY-level.** The COV must *cover* the wafer footprint. Licensed by the
+   paper's own description: "**The COV is an arrangement of two cylindrical and four rectangular
+   2.5 cm thick HPGe crystals**... **It** hermetically covers the cryogenic target detectors"
+   (08-01 A.10 + A.11). The grammatical subject of "hermetically covers" is **the six-crystal
+   arrangement**. Weaker than any cavity assumption, but not premise-free.
+2. **Single-cap premise — an INFERENCE, not a published statement.** The requirement above is
+   applied to **one cylindrical cap**. That step follows from the published architecture — six
+   crystals giving nearly-4π coverage (A.20), two cylindrical and four rectangular (A.10), and the
+   crystal installed **"directly above the target detectors"** being a **cylinder** (A.1) — under
+   the further assignment that the two cylinders are the top and bottom of the enclosure and the
+   four rectangles are its lateral walls. **No published sentence states that assignment.** The full
+   derivation, with the inferential step marked, is `08-03-FIT-DETERMINATION.md` §3.1. It is the
+   *same* assumption the tight cavity estimate already rests on. **Consequence: falsifiability, not
+   direction** — see §1.4.
+3. **Face-parallel mounting premise** — the wafer face lies parallel to the cap plane, as in every
    planar cryogenic detector stack and as implied by the wafer's single instrumented face
    (~10,300 sensors at 1/mm² on one face, `GPD/CONVENTIONS.md` §D). This is an **assumption**.
+
+> **Corroboration correction (2026-07-22, gap G3).** The 2019 caption attributes its "diameter of
+> 10 cm" to component **(3)**, which the same paper defines as *"a surrounding kg-scale cryogenic
+> detector used as outer veto"* (08-01 **A.19**) — plausibly the **assembly**, not one cap crystal.
+> It is therefore **no longer described as an independent statement of the same quantity** as the
+> 100 mm cap. What survives is that two papers, two setup generations apart, both place the outer
+> veto's characteristic diameter at 10 cm. **Direction: conservative** — if the 10 cm is the
+> assembly extent, every clearance becomes more negative. The 100 mm *cap* read is licensed by the
+> 08-01 C.1 mass closure, not by the 2019 caption.
 
 **Sign-robustness across the published dimension's precision interval** (Plan 08-03 §4, each
 clearance re-evaluated at the interval endpoints, not asserted):
@@ -105,7 +149,8 @@ half-width. Staking a milestone-gating stop-condition on a 0.16 cm margin drawn 
 1-to-2-significant-figure source would be `fp-unstated-precision`.
 
 **Neither leg of the argument is simultaneously premise-free and sign-robust.** The coverage leg is
-sign-robust but needs a coverage premise and a mounting premise. The edge leg needs no premise at
+sign-robust but needs an assembly-level coverage premise, the **single-cap inference** (§1
+premise 2, added 2026-07-22) and a mounting premise. The edge leg needs no premise at
 all but is not sign-robust. Stated in exactly those terms so that no downstream artifact can
 recover a false certainty from either.
 
@@ -115,12 +160,59 @@ neither.
 
 ### 1.4 What the margin's size does and does not license
 
-**Size of the margin:** 4.3684 cm on the verdict basis. Overturning the verdict requires a
-published Chooz cap crystal of **at least 14.3684 cm** diameter — **more than 43 % larger** than
-the published 100 mm. Plan 08-03 §9 item 3 quantifies the consequence: a cap 43 % larger in
-diameter is 2.06× in area and, at the published 2.5 cm thickness, would mass **2.06 kg** rather
-than the independently published "a mass of 1 kg" — a change that would be visible in any published
-mass statement.
+**Size of the margin:** 4.3684 cm on the verdict basis.
+
+> **⚠ CORRECTED 2026-07-22 (verification gap G1). This paragraph previously read: "Overturning the
+> verdict requires a published Chooz cap crystal of at least 14.3684 cm diameter... would mass
+> 2.06 kg... a change that would be visible in any published mass statement." That argument closes
+> ONE of two routes. As written it told the reader the verdict was harder to overturn than it is.**
+
+The coverage basis can fail in **two** distinct ways, because premise 2 above is an inference:
+
+**Route A — the SINGLE-CAP route. Effectively closed by the published evidence.**
+Overturning the verdict this way requires a published Chooz cap crystal of **at least 14.3684 cm**
+diameter — **more than 43 % larger** than the published 100 mm. Plan 08-03 §9 item 3a quantifies
+the consequence: a cap 43 % larger in diameter is 2.06× in area and, at the published 2.5 cm
+thickness, would mass **2.06 kg** rather than the independently published "a mass of 1 kg" — a
+change that **would** be visible in the one published COV crystal mass statement. *Unchanged.*
+
+**Route B — the ASSEMBLY-LEVEL route. NOT closed. No published statement closes it.**
+If the four rectangular COV crystals project over the payload's top face rather than standing
+purely as lateral walls, the six-crystal assembly can hermetically cover a 10.16 × 10.16 cm
+footprint with **no 14.37 cm cap and no 2.06 kg crystal anywhere**. Quantified as a threshold in
+Plan 08-03 §9 item 3b:
+
+| Threshold quantity for route B | Value |
+|---|---|
+| Wafer face area | 103.2256 cm² |
+| Covered by a centred, published 10.0 cm cap | 78.5398 cm² |
+| **Residual area the rest of the assembly would have to project over** | **24.6858 cm² = 23.9 % of the wafer face** |
+| **Radial shortfall at a wafer corner** (7.1842 − 5.0000 cm) | **2.1842 cm** |
+
+**Why no published statement excludes route B.** The **only** published dimension of the
+rectangular COV crystals is their **2.5 cm thickness**. No source gives their length, width,
+placement, or mass; **no total COV mass is published**; and the only published per-crystal mass is
+the 1 kg of the single commissioning **cylinder**. A redistribution of germanium into larger
+rectangles would leave **no signature in any published mass statement** — which is exactly the
+argument route A depends on.
+
+**Honest weighing, so this correction is not read as a retraction.** Two published facts push
+against route B: A.1 places a **cylinder** directly above the target detectors, and a six-crystal
+nearly-4π enclosure most naturally assigns four rectangles to four lateral walls. Two considerations
+push for it: the Chooz payload is 18 targets + 6 COV crystals rather than one commissioning
+detector, and A.18 shows the paper's own Chooz-transfer claim stops short of the COV. **Published
+text cannot settle it.** Route B is listed under §8 for expert verification, and it is the honest
+answer to "how hard is this verdict to overturn?"
+
+**Neither route touches the verdict's DIRECTION.** Rows 1b and 2 of the fit determination — the
+orientation-invariant floor (−0.1620 cm) and the premise-free edge comparison (−0.1600 cm) — ask
+only whether the wafer is wider than the published crystal, not what covers what. They are
+untouched by both routes. What routes A and B govern is the *size of the margin* and the *strength
+of the falsification claim*.
+
+**`fp-resized-veto` compliance.** The 24.6858 cm² and 2.1842 cm figures are **thresholds for
+overturning the verdict**, computed from the published cap and the wafer, exactly as the 14.3684 cm
+figure is. No modified veto geometry is proposed, sized, or costed anywhere.
 
 **What the margin licenses:**
 
@@ -158,6 +250,35 @@ travel with every number taken from it:
 - **It is the single load-bearing geometric source of this phase** — the 10.0 cm cap diameter, the
   29.7 cm internal shielding and the 43.0 cm bore all come from it.
 
+> **⚠ ADDED 2026-07-22 (verification gap G2) — the paper draws its OWN Chooz-transfer boundary, and
+> this phase had not used it. It is the sharpest available evidence on exactly this weak point, and
+> it cuts both ways.** Verbatim, arXiv:2508.02488v1 §2 "Passive shielding" (08-01 **A.18**,
+> recorded with its own reproducible grep command):
+>
+> > "It is important to note that **the passive shielding** described above – and commissioned in
+> > this work – **is identical to the configuration planned for Chooz**, with just one exception: an
+> > additional boron carbide (B₄C) layer surrounding the target detectors."
+>
+> **(a) It LICENSES the shielding numbers for Chooz — corroboration this phase had left unclaimed.**
+> The **29.7 cm internal shielding** and the **43.0 cm cryostat bore** are Chooz dimensions *by the
+> paper's own statement*, not merely commissioning dimensions transferred by assumption. The single
+> exception named — an extra B₄C layer at Chooz — is already carried independently as 08-01 A.9, so
+> the two sources agree on what the exception is. This *strengthens* the loose cavity bound (the
+> +2.3316 cm number of §1.2), which is built from the 29.7 cm.
+>
+> **(b) It conspicuously does NOT extend to the COV — and that points AGAINST the transfer this
+> verdict relies on.** The grammatical subject is **the passive shielding**, verified mechanically
+> at A.18. The paper takes care to draw a Chooz-identity boundary and **draws none around the
+> Cryogenic Outer Veto** — in the very section that says only one of six COV crystals was
+> installed. A negative check confirms no equivalent COV statement exists (A.18, `grep -c` → 0).
+> **The load-bearing 10.0 cm therefore sits outside the only explicit transfer claim its own source
+> makes.**
+>
+> **This does not overturn the verdict** — the 2019 "10 cm" (with the A.19 caveat), the independent
+> 2.5 cm COV thickness in arXiv:2509.03559v1, and the C.1 mass closure still support the 100 mm
+> read. But **the caveat of this section must from here on be argued from this sentence**, which is
+> specific and published, rather than from the general observation that the paper is about TUM.
+
 What licenses the 100 mm read: the mass closure ρ_Ge · π · (5.0 cm)² · (2.5 cm) = **1045.17 g** at
 ρ_Ge = 5.323 g/cm³ against the paper's independently published "a mass of 1 kg" (08-01 §C.1). This
 is reported as **consistent with a 1-significant-figure "1 kg"** — *not* as "within 5 %": the
@@ -180,6 +301,14 @@ the rectangular crystals are larger than the caps.
 
 - The **verdict itself** — the coverage comparison is against the published cap *outer diameter*
   and makes no cavity assumption whatsoever.
+  > **⚠ QUALIFIED 2026-07-22 (gap G1). "No cavity assumption" is true and remains true; "wholly
+  > independent of the weak anchor" is not.** The cavity estimate and the verdict's **single-cap
+  > premise** (§1 premise 2) rest on the *same* unpublished geometric assignment — that the four
+  > rectangular crystals are lateral walls sitting inside the cylindrical cap rim. If that
+  > assignment fails, the cavity estimate fails **and** the single-cap coverage requirement fails
+  > with it (route B of §1.4). What genuinely survives the failure of that assignment is narrower:
+  > the **orientation-invariant** and **edge** comparisons, which are unaffected, and the milestone
+  > premise-void chain of §4, which rests on the payload-footprint ratio instead.
 - The **three-tier taxonomy** (`GPD/analysis/VETO-TAXONOMY.md`) — a classification of published
   statements, correct either way, as its own §"This taxonomy stands independently of the
   geometry-fit verdict" records.
@@ -207,8 +336,23 @@ dimension.
    the verdict it would additionally have to enlarge the **cap crystals**.
 3. **Evidence that the 100 mm crystal is commissioning-only, with larger Chooz cylinders.**
    Weakened qualitatively by arXiv:2509.03559v1's independent 2.5 cm COV thickness (matching the
-   commissioning 25 mm) and by the 2019 paper's independent "10 cm" from a setup generation six
-   years earlier; quantified above (43 % larger ⇒ 2.06 kg vs published 1 kg).
+   commissioning 25 mm) and by the 2019 paper's "10 cm" from a setup generation six years earlier
+   (**now with the A.19 caveat: attributed to the outer-veto assembly, not demonstrably a cap
+   crystal**); **strengthened by A.18**, whose Chooz-identity claim covers the passive shielding
+   and pointedly not the COV. Quantified above as **route A only** (43 % larger ⇒ 2.06 kg vs
+   published 1 kg).
+
+3b. **⚠ ADDED 2026-07-22 (verification gap G1) — a published Chooz COV in which the rectangular
+   crystals project over the payload's top face.** This overturns the coverage requirement **without
+   any larger cap and without any anomalous published mass**: assembly-level hermetic coverage of a
+   10.16 cm square footprint needs only that the non-cap crystals fill the **24.6858 cm²** residual
+   (23.9 % of the wafer face) out to a corner radius of 7.1842 cm — a **2.1842 cm** radial reach
+   beyond the published cap rim. **No published source constrains the rectangular crystals' lateral
+   dimensions, placement, or mass, so nothing published excludes this.** It would leave the EDGE and
+   orientation-invariant comparisons intact but would collapse the verdict's 4.37 cm margin. Along
+   with item 5, this is now one of the two most efficient ways to disconfirm the current framing.
+   Status: unresolved; requires the Goupy thesis (§8.2 direction 4) or NUCLEUS collaboration
+   knowledge. No computational check can settle it.
 4. **A source stating the COV internal cavity dimension directly.** Replaces the cavity rows with a
    measurement; does not touch the coverage or edge rows.
 5. **A published statement that the wafer would be mounted other than face-parallel.** Does not
@@ -358,6 +502,33 @@ The premise, as the ROADMAP states it: *only the target-independent fluence φ(E
 position transfers from NUCLEUS to us*, with that experiment's measured environment and passive
 attenuation adopted as input while the target response is re-folded for Ge.
 
+> ### ⚠ WHAT THIS CHAIN ACTUALLY RESTS ON — stated explicitly 2026-07-22
+>
+> **This chain does NOT depend on the contested cap diameter, on the single-cap inference (§1
+> premise 2), or on the Chooz-transfer question of §2.1.** Its load-bearing input is the
+> **payload-footprint change**, which no gap found by `08-VERIFICATION.md` touches:
+>
+> | Quantity | Value | Provenance |
+> |---|---|---|
+> | Wafer face area | **103.2256 cm²** | `GPD/CONVENTIONS.md` §D (10.16 × 10.16) |
+> | Published NUCLEUS 3 × 3 array crystal footprint | **2.25 cm²** = 9 × (5 mm)² | arXiv:1905.10258 Fig. 8 "two 3 × 3 arrays" + §3.2.1 "(5 mm)³"; the 5 mm edge independently confirmed by two mass closures (08-01 C.2/C.3) |
+> | **Payload footprint ratio** | **45.88×** | — |
+>
+> **A 45.9× change in payload footprint forces the copper support structure and the nearly-4π B₄C
+> liner arrangement to be redesigned however the coverage comparison resolves.** Neither the 100 mm
+> cap diameter nor the assembly-vs-single-cap question enters this figure at any point: it is a
+> comparison between the wafer's own dimensions and a published *target-array* crystal footprint,
+> corroborated by two independent mass closures.
+>
+> **This is why the re-scope decision is safe to make even if the coverage comparison were
+> overturned tomorrow.** It is a stronger foundation than the one the verdict itself leans on, and
+> it is stated here so the user is not relying on §1 alone. *(This observation originated with the
+> Phase-8 verifier; it is carried here because the re-scope decision turns on it.)*
+>
+> **The honest limit is unchanged and is restated below:** the chain is component-level, not a
+> transport calculation. "The support and liner must be redesigned" is well-founded; "φ_post
+> therefore changes by X" is not computed anywhere.
+
 **The physical reasoning chain:**
 
 1. A wafer of this size **cannot occupy the published envelope** (§1).
@@ -427,12 +598,26 @@ than against an impression of it.
 | **The wafer's own self-veto acceptance decomposition** — `A_self_direct` (three thresholds), `A_self_induced ≡ 0`, `R_mu`, `f_dead` at two resolving times | `src/qpd_potential/wafer_self_veto.py`, `data/wafer_self_veto.csv` | Derived entirely from the wafer's own frozen chord × Landau–Vavilov deposit distribution. Depends on no NUCLEUS geometry |
 | **The multiplicity identity** `ε_mult(1) ≡ 0`, unit-tested under exact identity comparison and shown model-independent | same module; consumed by `veto_credit.multiplicity_rejection_is_zero()` | A counting identity about a single-readout target |
 | **The frozen, integrity-checked source cache** — four NUCLEUS primary sources plus Figure 1 as raw HTML *and* probe-validated normalized text, with per-artifact curl command, UTC timestamp, byte size, SHA-256 and integrity verdict; plus the recorded failed Goupy acquisition | `data/external/nucleus/`, `MANIFEST.md`, `html_to_text.py` | An evidentiary asset usable by any future scope that cites NUCLEUS at all |
-| **The verbatim evidence block** — 34 quotes / 52 grep commands, all re-running and exiting 0; the three separated factor-5 statements; four mass closures with ρ sensitivity; the Fig. 1 inspection record; the cross-version verdict table | `08-01-SOURCE-EVIDENCE.md` | Same |
+| **The verbatim evidence block** — **37 quotes / 57 grep commands, all reproducing their annotated expectations** (see the correction below); the three separated factor-5 statements; four mass closures with ρ sensitivity; the Fig. 1 inspection record; the cross-version verdict table | `08-01-SOURCE-EVIDENCE.md` | Same |
 | **The Phase-9 trace-selection handoff** — the Fig. 8 caption evidence that the left panels are passive-only and the right panels are the veto detectors, with the instruction to digitize the passive-only trace because reading a post-veto curve as pre-veto would import an L2 credit through the digitization | `GPD/literature/PITFALLS.md` (dated Phase-8 correction) | Applies to any future digitization of that figure, under any scope |
 | **The geometry module with its sourced constants** — the four comparison bases, the true SO(3) orientation minima, the separately named tight and loose cavity constants, the basis-raising `area_ratio()` | `src/qpd_potential/veto_envelope.py`, `tests/test_veto_envelope.py` (21 tests) | The determination machinery itself, reusable against any other envelope |
 | **The PITFALLS corrections** — every factor-5 occurrence labelled `[F5-a]`/`[F5-b]`/`[F5-c]` by which of the three §5.2.1 statements it is; the array footprint basis-labelled with the published 2.25 cm² value and its two mass closures; every area ratio carrying a basis label | `GPD/literature/PITFALLS.md` | Corrections to project-level errors, independent of the verdict |
 
-Full repository test suite at the close of Phase 8: **310 passed**.
+> **⚠ CORRECTION — 2026-07-22 (verification gap G6). "All re-running and exiting 0" was wrong.**
+> `grep -c` **exits 1 when the count is zero**, and the evidence block deliberately contains
+> zero-match negative checks. As of the 2026-07-22 addendum the block carries **57 commands, of
+> which 7 exit 1 by design**: six establish the Success-Criterion-1 amendment (`envelope`,
+> `cavity`, `inner diameter`, `clearance`, `100 mm`, `m.w.e` are all absent from
+> `2509.03559v1.txt`), and the seventh is A.18's check that **no Chooz-identity statement is made
+> about the COV**. Those seven exits are the *point* of six of the block's most load-bearing
+> findings, not failures.
+>
+> **The correct statement is: all 57 commands reproduce their annotated expectations.** Re-verified
+> during the gap-closure pass; the 7 nonzero exits are exactly the 7 annotated zero-match checks and
+> no others. `08-01-SOURCE-EVIDENCE.md` §G now carries the same warning at the source.
+
+Full repository test suite at the close of Phase 8: **310 passed**; re-run at the close of the
+2026-07-22 gap-closure pass and reported in `08-VERIFICATION-GAPCLOSURE.md`.
 
 ---
 
@@ -500,9 +685,33 @@ otherwise would make the determination **inconclusive**, not a fit — but incon
 ROADMAP anchor list**, and the only genuinely independent route — the Goupy thesis — was never
 obtained.)
 
+**How hard is it to overturn? — corrected 2026-07-22 (gap G1), because this is the question a
+re-scope decision turns on.** There are **two** routes, not one:
+
+- **Route A (single cap):** needs a published Chooz cap ≥ 14.3684 cm, implying **2.06 kg** against
+  the published 1 kg. **Effectively closed** — a doubled crystal mass would be visible in the one
+  published COV crystal mass statement.
+- **Route B (assembly-level):** needs only that the four **rectangular** COV crystals project over
+  the payload's top face, filling **24.6858 cm²** (23.9 % of the wafer face) out to a **2.1842 cm**
+  radial reach beyond the cap rim. **NOT closed.** No published source gives the rectangular
+  crystals' lateral dimensions, placement, or mass; no total COV mass is published. **Nothing
+  published excludes route B**, and the "would be visible in a published mass" argument does not
+  apply to it. (Details: §1.4.)
+
+**Neither route changes the verdict's direction**, because the orientation-invariant (−0.1620 cm)
+and premise-free edge (−0.1600 cm) comparisons ask only whether the wafer is wider than the
+published crystal. **And the milestone-void argument of §4 depends on neither route** — its
+load-bearing input is the 45.88× payload-footprint change.
+
+**A disconfirming observation the user should have (added 2026-07-22, gap G2).** arXiv:2508.02488v1
+states that its **passive shielding** "is identical to the configuration planned for Chooz, with
+just one exception". It makes **no equivalent statement about the COV**. That licenses the 29.7 cm
+and 43.0 cm for Chooz — corroboration this phase had not claimed — and it means the load-bearing
+10.0 cm **sits outside the only explicit transfer claim its own source makes**. See §2.1.
+
 **Surviving deliverables.** The three-tier taxonomy and its 1.0 credit constants in code; the
 wafer's own self-veto decomposition and the multiplicity identity; the frozen integrity-checked
-source cache and the 34-quote evidence block; the Phase-9 trace-selection handoff; the geometry
+source cache and the 37-quote evidence block; the Phase-9 trace-selection handoff; the geometry
 module with its sourced constants; the PITFALLS corrections. (Detail: §6.)
 
 **Disposition summary.** Phases **10** and **11** are physically site-independent and **survive
@@ -523,7 +732,7 @@ reporting disposition; the choice is the user's.**
 | **1** | **Adopt room-level environmental inputs only** — the 2.92 ± 0.01 m.w.e. overburden, the 1.41 ± 0.02 attenuation, the Table 4 surface flux normalizations, the measured 5.03 cm⁻²s⁻¹ VNS gamma ambience — and **design an independent shield** for the wafer | The site and its **measured** environment. These are exactly the L1 rows of the surviving taxonomy, so the classification work already done supports it directly. Phases 10, 11 carry over unchanged; Phase 15's muon leg is nearly intact | **Shield design work the milestone never scoped.** φ_post would have to be produced by our own shield model rather than by inverting NUCLEUS's deposit spectra, and the rejected transport options (OpenMC unbuildable on osx-arm64; full Geant4 out of scope by user decision) are exactly the tools that would normally do it. SIMU-05 (hand-rolled 1-D multigroup) is currently *follow-up* scope |
 | **2** | **Revisit the wafer format** | Would potentially restore the entire v2.0 premise as written | **`GPD/REQUIREMENTS.md` explicitly places this out of scope.** Its Out-of-Scope table reads: *"Detector geometry / sensor-layout optimization — Fixed 4″×4″×2 mm single-sided wafer from v1.0 — and note **VALD-09 may show this geometry is incompatible with the adopted veto envelope, which is a stop-condition, not an optimization trigger**."* Surfacing this option is **not** the same as recommending it; it is listed because a complete option set is what the decision requires, and choosing it would require the user to reverse a recorded scoping decision |
 | **3** | **Retarget to a different host experiment** whose envelope accommodates a 10.16 cm plate | Keeps the wafer geometry fixed and keeps the "adopt a measured environment" methodology, which is the milestone's real intellectual content | A new host means a new environment, new anchors, and a new literature survey. Every NUCLEUS-derived anchor in Phases 9 and 12–16 would be replaced. The Phase-8 machinery (`veto_envelope.py`, the taxonomy's tier definitions and swap test) is reusable against another envelope, but the numbers are not |
-| **4** | **Obtain the Goupy 2024 thesis first**, before deciding anything | **The only route that could overturn the verdict.** What it would resolve: the **rectangular COV crystal dimensions** and the **copper support geometry** — converting the internal cavity from *bounded* (currently a tight estimate of ~5 cm and a loose bound of 16.7 cm that differ by more than a factor of three, only one of which excludes the wafer) into a *read* dimension. It is also the only genuinely independent third source on the envelope | Requires a **manual browser download by the user**: NNT 2024UNIP7170 / HAL tel-05298505, unobtainable by any scripted route (live anti-bot challenge recorded in `MANIFEST.md` §4). **Realistic expectation, stated so the option is not oversold:** even a cavity of ≥10.16 cm in two axes would overturn only the two *cavity* clearances. To touch the verdict it would additionally have to show **larger cap crystals** — at least 14.3684 cm, more than 43 % larger than the published 100 mm, implying ~2.06 kg against the published 1 kg |
+| **4** | **Obtain the Goupy 2024 thesis first**, before deciding anything | **The only route that could overturn the verdict.** What it would resolve: the **rectangular COV crystal dimensions** and the **copper support geometry** — converting the internal cavity from *bounded* (currently a tight estimate of ~5 cm and a loose bound of 16.7 cm that differ by more than a factor of three, only one of which excludes the wafer) into a *read* dimension. It is also the only genuinely independent third source on the envelope | Requires a **manual browser download by the user**: NNT 2024UNIP7170 / HAL tel-05298505, unobtainable by any scripted route (live anti-bot challenge recorded in `MANIFEST.md` §4). **Realistic expectation, stated so the option is not oversold — CORRECTED 2026-07-22 (gap G1):** even a cavity of ≥10.16 cm in two axes would overturn only the two *cavity* clearances. To touch the **verdict** it would have to show **either** (route A) larger cap crystals — at least 14.3684 cm, more than 43 % larger than the published 100 mm, implying ~2.06 kg against the published 1 kg — **or** (route B) **rectangular crystals arranged to project over the payload's top face**, filling the 24.6858 cm² residual out to a 2.1842 cm radial reach beyond the cap rim. **Route B needs no larger cap and no anomalous mass, and the thesis is exactly the source that would settle it**, since the rectangular-crystal geometry and the Cu support are what it would show. This makes direction 4 a *materially better* prospect for overturning the verdict than the previous wording implied — the earlier text closed only route A. It remains **the only route that could overturn the verdict**, and it remains unobtained |
 
 ### 8.3 Halt
 

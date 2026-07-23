@@ -21,10 +21,26 @@ RETRACTED LEMMA -- DO NOT REINSTATE.
 
 SAMPLING DISCIPLINE.
   Uniform SO(3) sampling approaches an attained infimum FROM ABOVE and never
-  reaches it (a 2e5-sample reference run gave min b2 = 7.4210 cm and min projected
-  diameter = 10.2039 cm against analytic 7.3256 and 10.1620). Every sampled
-  assertion here is therefore a ONE-SIDED LOWER BOUND. No equality-against-a-
-  sampled-value assertion appears anywhere in this file.
+  reaches it. Every sampled assertion here is therefore a ONE-SIDED LOWER BOUND.
+  No equality-against-a-sampled-value assertion appears anywhere in this file.
+
+  REFERENCE VALUES CORRECTED 2026-07-22 (Phase-8 verification gap G4). This
+  docstring previously quoted min b2 = 7.4210 cm and min projected diameter =
+  10.2039 cm. Those came from a PRE-EXECUTION PLANNING run, not from the run this
+  file performs -- two different draws, not a transcription slip (a transcription
+  slip cannot move the projected diameter from 10.1623 to 10.2039). The values
+  produced by the code below, re-run during the gap closure and reproducing
+  exactly, are:
+
+      min b1 = 9.7076,  min b2 = 7.3945,  min projected diameter = 10.1623  [cm]
+
+  against analytic 7.3256 (min b2) and 10.1620 (projection floor).
+
+  MIN-B1 BRACKET TIGHTENED 2026-07-22 (gap G5). The sampled 9.7076 cm is NOT the
+  attained minimum: multistart Nelder-Mead over SO(3) reaches 9.666923 cm, at a
+  CUBIC bounding box. The zero-thickness Prince-Rupert bound is 9.578940 cm. The
+  sampled value must therefore lie strictly between 9.666923 and 9.75; both ends
+  are asserted below.
 
 Reproducibility: numpy 1.26.4, scipy 1.17.1, Python 3.11.7, Darwin 25.3.0
 (osx-arm64). Rotation seed 20260722, fixed below.
@@ -47,6 +63,21 @@ TOL_CM = 1e-3
 
 ROTATION_SEED = 20260722
 N_ROTATIONS = 200_000  # >= 1e5 as required by test-orientation-invariance
+
+# --------------------------------------------------------------------------- #
+# G5 (2026-07-22): the ATTAINED min b1 for the physical t = 0.20 cm plate.      #
+#                                                                              #
+# `ve.min_bbox_largest_side` returns the t -> 0 Prince-Rupert bound 9.578940 cm,#
+# which is NOT attained at t = 0.20 cm. Multistart Nelder-Mead over SO(3)       #
+# (400 random starts from numpy default_rng(7), xatol=1e-12, fatol=1e-14)       #
+# converges to the value below, at the recorded rotation vector, where the      #
+# bounding box is a CUBE. Independently reproduced by the Phase-8 verifier.     #
+# Recorded rather than re-optimized here: the optimization is slow and          #
+# stochastic, while the cubic bounding box at the recorded orientation is an    #
+# exact, cheap, deterministic check that the value really is attained.          #
+# --------------------------------------------------------------------------- #
+ATTAINED_MIN_B1_CM = 9.666923177
+ATTAINED_MIN_B1_ROTVEC = (-1.713819510662, -1.970359820681, 1.072690070499)
 
 
 # --------------------------------------------------------------------------- #
@@ -189,10 +220,99 @@ def test_so3_sampled_minima_are_bounded_below_by_the_true_infima():
     assert b1_min > analytic_b1_zero_t + 0.05
     # The demonstrated cube side: <~ 9.72 cm, NOT 9.58 cm.
     assert b1_min < 9.75
+    # G5 (2026-07-22): the ATTAINED minimum is 9.666923 cm (multistart Nelder-Mead,
+    # cubic bounding box), so uniform sampling -- which approaches from above --
+    # must land strictly above it. This is the tightened upper bracket end.
+    assert b1_min > ATTAINED_MIN_B1_CM
 
     # -- the sampled minima approach FROM ABOVE (records the discipline) -----
     assert b2_min > analytic_b2
     assert proj_min > analytic_proj
+
+    # -- G4 (2026-07-22): pin the CANONICAL sampled triple so the planning-run
+    #    figures (7.4210 / 10.2039) cannot silently reappear in any artifact.
+    assert b1_min == pytest.approx(9.7076, abs=1e-4)
+    assert b2_min == pytest.approx(7.3945, abs=1e-4)
+    assert proj_min == pytest.approx(10.1623, abs=1e-4)
+
+
+def test_min_b1_attained_value_is_above_the_zero_thickness_prince_rupert_bound():
+    """G5 (2026-07-22): the physical t = 0.20 cm plate does NOT attain 9.5789 cm.
+
+    `min_bbox_largest_side` returns the t -> 0 Prince-Rupert bound. The attained
+    minimum for the real plate is 9.666923 cm, found by multistart Nelder-Mead over
+    SO(3) and independently reproduced by the Phase-8 verifier. This test does not
+    re-run the optimization (it is slow and stochastic); it locks in the ORDERING
+    and the recorded value, and verifies that the recorded orientation really is a
+    cube of that side -- which is what makes 9.666923 an ATTAINED value rather than
+    another loose sampled one.
+    """
+    pr_zero_thickness = ve.min_bbox_largest_side(A)
+    assert pr_zero_thickness == pytest.approx(9.578940, abs=1e-6)
+
+    # Strict ordering: zero-thickness bound < attained minimum < sampled value.
+    assert pr_zero_thickness < ATTAINED_MIN_B1_CM < 9.7076
+    assert ATTAINED_MIN_B1_CM - pr_zero_thickness == pytest.approx(0.0880, abs=1e-3)
+
+    # The attaining orientation gives a CUBIC bounding box: all three sides equal
+    # to ATTAINED_MIN_B1_CM. A cube is the signature of a smallest-enclosing-cube
+    # solution, and it is why this value is attained rather than approached.
+    verts = _plate_vertices(A, T)
+    sides = _bbox_sides_sorted(
+        Rotation.from_rotvec(ATTAINED_MIN_B1_ROTVEC).apply(verts)
+    )
+    assert sides[0] == pytest.approx(ATTAINED_MIN_B1_CM, abs=1e-5)
+    assert sides[1] == pytest.approx(ATTAINED_MIN_B1_CM, abs=1e-5)
+    assert sides[2] == pytest.approx(ATTAINED_MIN_B1_CM, abs=1e-5)
+
+
+def test_cov_crystal_diameter_note_retires_the_same_quantity_claim():
+    """G3 (2026-07-22): the 2019 '10 cm' is not registered as the same quantity.
+
+    The 2019 Fig. 8 caption attributes its 10 cm to component (3), which the same
+    paper defines as 'a surrounding kg-scale cryogenic detector used as outer veto'
+    (08-01 A.19) -- plausibly the ASSEMBLY. Registering it as a second statement of
+    the CAP-CRYSTAL diameter is unsupported, and the note must not do so.
+    """
+    note = ve.GEOMETRY_CONSTANTS["COV_CRYSTAL_DIAMETER_CM"].note
+    low = note.lower()
+    # The retired phrase may appear ONLY inside its own retraction, never as a
+    # live claim. Both conditions are checked: the retraction marker is present,
+    # and the phrase is not left standing anywhere after it.
+    assert "retired as unsupported" in low
+    retired_phrase = "two published statements of the same quantity"
+    assert low.count(retired_phrase) == 1, "the retired phrase must appear once, in its retraction"
+    assert low.index(retired_phrase) < low.index("retired as unsupported")
+    assert "A.19" in note                      # the retiring evidence is cited
+    assert "mass closure" in note.lower()      # what actually licenses the read
+    # G2: the Chooz-transfer boundary must travel with this constant.
+    assert "A.18" in note
+
+    # ...and the shielding constant must record that it IS inside that boundary.
+    shield = ve.GEOMETRY_CONSTANTS["INTERNAL_SHIELD_DIAMETER_CM"].note
+    assert "A.18" in shield
+
+
+def test_coverage_premise_is_stated_as_assembly_level_with_the_single_cap_inference():
+    """G1 (2026-07-22): the coverage basis must not claim a published single-cap premise.
+
+    08-01 A.11's grammatical subject is the six-crystal COV arrangement. Applying the
+    coverage requirement to one cylindrical cap is an INFERENCE and must be labelled
+    as one, together with the fact that it shares its unpublished geometric assignment
+    with the tight cavity bound.
+    """
+    premise = ve.comparison_bases()["coverage"].premise
+    low = premise.lower()
+    assert "assembly-level" in low
+    assert "inference" in low
+    assert "no published sentence states" in low
+    assert "cavity_tight" in low or "COV_CAVITY_TIGHT_CM" in premise
+    # Both overturning routes must be named, so the 2.06 kg argument cannot be read
+    # as closing the assembly-level route.
+    assert "route a" in low and "route b" in low
+    assert "24.6858" in premise
+    # The property that makes this basis the verdict carrier is unchanged.
+    assert "no cavity assumption" in low
 
 
 def test_exact_values_at_the_attaining_orientations():

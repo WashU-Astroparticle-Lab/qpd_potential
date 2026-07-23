@@ -259,6 +259,114 @@ grep -o -F "The two HPGe crystals were housed within 3-mm thick copper boxes and
 
 ---
 
+> **ADDENDUM — Phase-8 gap closure, 2026-07-22.** Entries **A.18**, **A.19** and **A.20** were added
+> after the Phase-8 verification pass, which found that the paper's own Chooz-transfer scope
+> sentence was absent from every Phase-8 artifact (verification gap **G2**) and that the 2019
+> "diameter of 10 cm" had been registered as a statement of the same quantity as the 100 mm cap
+> crystal without support (gap **G3**). They follow the same rule as every other entry: quoted from
+> a locally frozen file by a recorded command, no WebFetch. **Revised totals for this document:
+> 37 quotes / 57 grep commands, of which 7 are deliberately zero-match negative checks that
+> `grep -c` exits 1 on** (was 34 quotes / 52 commands with 6 zero-match checks). Verified by
+> re-running the §G extraction loop after the addendum.
+
+### A.18 The paper's own Chooz-transfer boundary — ⚠ scoped to the PASSIVE SHIELDING only
+
+**arXiv:2508.02488v1**, §2 "Passive shielding", immediately after A.2. *Math-bearing: the dashes are
+U+2013 EN DASH in the frozen text.*
+
+> It is important to note that the passive shielding described above – and commissioned in this work – is identical to the configuration planned for Chooz, with just one exception: an additional boron carbide (B4C) layer surrounding the target detectors.
+
+```bash
+grep -o -F "It is important to note that the passive shielding described above – and commissioned in this work – is identical to the configuration planned for Chooz, with just one exception: an additional boron carbide (B4C) layer surrounding the target detectors." 2508.02488v1.txt
+```
+
+**This is the single most consequential sentence in the paper for Phase 8, and it cuts both ways.**
+
+**(a) What it licenses.** It states explicitly that the commissioning **passive shielding** *is the
+Chooz configuration*. The **297 mm internal shielding cylinder (A.2)** and the **430 mm cryostat
+bore (A.3)** are therefore Chooz dimensions by the paper's own statement, not merely commissioning
+dimensions transferred by assumption. Phase 8 had left this corroboration unclaimed. The one
+exception the sentence names — an additional B₄C layer at Chooz — is *already* carried
+independently as A.9 (the nearly-4π 4 cm B₄C layer of arXiv:2509.03559v1), so the two sources agree
+on what the exception is.
+
+**(b) What it conspicuously does NOT license.** The subject of "is identical to the configuration
+planned for Chooz" is **the passive shielding**, and nothing else. The paper draws an explicit
+Chooz-identity boundary and **does not draw one around the Cryogenic Outer Veto** — in the same
+section that states only one of the six COV crystals was installed (A.1). The **100 mm cap
+diameter, the single load-bearing geometric number of this phase, sits outside the scope of the
+paper's own transfer claim.**
+
+The grammatical subject is confirmed mechanically rather than asserted:
+
+```bash
+grep -o -E "[^.]{0,130}is identical to the configuration planned for Chooz" 2508.02488v1.txt
+# -> It is important to note that the passive shielding described above – and commissioned in this
+#    work – is identical to the configuration planned for Chooz
+```
+
+**Negative check — no equivalent statement exists for the COV** (annotated expectation: `0`,
+`grep -c` exits 1):
+
+```bash
+grep -c -E "(COV|outer veto)[^.]{0,200}identical to the configuration planned for Chooz" 2508.02488v1.txt   # 0
+```
+
+> **How this must be used.** A.18(b) is a **disconfirming** observation for the phase's own
+> load-bearing transfer, and it is recorded as one. It does not overturn the 100 mm read — the 2019
+> paper's independent "10 cm" (A.13) and arXiv:2509.03559v1's independent 2.5 cm thickness (A.10)
+> still support it — but the phase's Chooz caveat must be argued **from this sentence**, not from
+> the general observation that the paper describes a TUM setup.
+
+### A.19 What the 2019 paper means by "outer veto" — ⚠ the 10 cm is attributed to component (3)
+
+**arXiv:1905.10258** (EPJC **79**, 1018 (2019)), §"detector concept", defining the numbered
+components used in the Fig. 8 caption quoted at A.13.
+
+> (3) a surrounding kg-scale cryogenic detector used as outer veto
+
+```bash
+grep -o -F "(3) a surrounding kg-scale cryogenic detector used as outer veto" 1905.10258.txt
+```
+
+**Consequence for A.13.** The Fig. 8 caption's "an outer veto (3) with a diameter of 10 cm"
+attributes the 10 cm to **component (3)**, which this sentence defines as *the surrounding
+detector* — i.e. plausibly the **outer-veto assembly**, not one cap crystal. A.13 and A.1 may
+therefore **not** be described as two published statements of *the same quantity*. What can be said
+is weaker and is what should be said:
+
+- Both papers place the outer veto's characteristic diameter at **10 cm**, six years apart, from two
+  different setup generations.
+- If the 10 cm is the **assembly** extent, then the cap crystals and the internal cavity are
+  **strictly smaller** than 10 cm. That direction makes the no-fit case *stronger*, so the
+  ambiguity is **conservative** for the verdict — but the corroboration of the 100 mm *cap* read is
+  weaker than "same quantity" implies, and the 100 mm read rests on the C.1 mass closure rather
+  than on A.13.
+
+### A.20 The COV as a six-detector nearly-4π arrangement — the architecture statement
+
+**arXiv:2508.02488v1**, §2 "Cryogenic Outer Veto". *Math-bearing: `4\pi` is "4π".*
+
+> an arrangement of six high-purity germanium detectors operated at around 10 mK and read out through the ionization channel which provides a nearly 4\pi coverage around the target detectors
+
+```bash
+grep -o -F "an arrangement of six high-purity germanium detectors operated at around 10 mK and read out through the ionization channel which provides a nearly 4\pi coverage around the target detectors" 2508.02488v1.txt
+```
+
+**Why this entry exists.** Together with A.10 (two cylindrical + four rectangular) and A.1 (the one
+crystal installed **"directly above the target detectors"** is a **cylinder**), this is the complete
+published basis for any claim about *which* crystal covers the payload's top face. It is recorded
+here because Phase 8 originally licensed a **single-cap** coverage requirement from A.11, whose
+grammatical subject is the **six-crystal arrangement**. See 08-03 §3 row 1 and §9 item 3 for the
+corrected premise and the re-derived overturning threshold.
+
+**What these three entries do NOT establish:** no published sentence assigns the two cylinders to
+the top and bottom of the enclosure and the four rectangles to its four lateral walls. That
+assignment is an **inference** from the crystal count and from A.1's "directly above", and it is
+labelled as an inference wherever it is used.
+
+---
+
 ## B. Rejection statements (the L2 catalogue)
 
 All from **arXiv:2509.03559v1**. Section attributions were determined by locating each quote
@@ -857,8 +965,22 @@ against the frozen files. See `08-01-SUMMARY.md` §"Acceptance tests" for the re
 # reproduce:
 cd data/external/nucleus
 grep -h '^grep ' ../../../GPD/phases/08-veto-envelope-geometry-gate-p-veto/08-01-SOURCE-EVIDENCE.md \
-  | while IFS= read -r cmd; do eval "$cmd" >/dev/null 2>&1 || echo "FAIL: $cmd"; done
+  | while IFS= read -r cmd; do eval "$cmd" >/dev/null 2>&1 || echo "NONZERO EXIT: $cmd"; done
 ```
+
+> **Read the exit codes correctly — this loop is not a pass/fail test.** As of the 2026-07-22
+> addendum the document carries **57 commands, of which 7 exit 1 by design**: `grep -c` returns 1
+> when the count is zero, and those seven are the deliberately **zero-match negative checks** whose
+> annotated expectation in the text is `# 0` or `# exit 1, no match`. Six of them establish the
+> Success-Criterion-1 amendment (the named source is dimensionally silent: `envelope`, `cavity`,
+> `inner diameter`, `clearance`, `100 mm`, `m.w.e` all absent from `2509.03559v1.txt`); the seventh
+> is A.18's check that no Chooz-identity statement is made about the COV. **The correct statement of
+> this document's integrity is that all 57 commands reproduce their annotated expectations — not
+> that all 57 exit 0.** Any artifact describing this evidence block as "all exiting 0" is wrong; see
+> the dated correction in `08-05-GATE-VERDICT.md` §6.
+
+Verified 2026-07-22 (gap closure): 57/57 commands reproduce their annotated expectations; the 7
+nonzero exits are exactly the 7 annotated zero-match checks and no others.
 
 ---
 
@@ -873,10 +995,26 @@ grep -h '^grep ' ../../../GPD/phases/08-veto-envelope-geometry-gate-p-veto/08-01
 - Densities ρ_CaWO₄ = 6.06 and ρ_Al₂O₃ = 3.98 g/cm³ are **assumed standard values**, not quoted from
   any NUCLEUS source. The closures in C.2/C.3 depend on them.
 
+- **(added 2026-07-22, gap closure)** The paper's own Chooz-identity claim is **scoped to the
+  passive shielding** and is **not** extended to the COV (A.18). The load-bearing 100 mm therefore
+  sits *outside* the only explicit transfer statement the source makes, while the 29.7 cm and
+  43.0 cm *are* inside it. This is the sharpest available evidence on this phase's named weak point
+  and it points **against** the COV transfer.
+
 **Unvalidated assumptions.**
 - That the TUM commissioning COV crystal and the Chooz COV cap crystals are **the same part**.
   Supported by the shared 2.5 cm / 25 mm thickness and the 10 cm / 100 mm diameter agreement (§D),
-  but not read from a Chooz source.
+  but not read from a Chooz source. **Weakened further by A.18:** the paper explicitly transfers
+  its passive shielding to Chooz and explicitly does not transfer its COV.
+- **(added 2026-07-22, gap closure)** That the two cylindrical COV crystals are the **top and bottom
+  caps** and the four rectangular crystals are the **four lateral walls** of the enclosure. This
+  assignment is an inference from the six-crystal count (A.20), the two-cylinder/four-rectangle
+  composition (A.10) and A.1's "installed **directly above** the target detectors". **No published
+  sentence states it.** Any *single-cap* coverage requirement depends on it; see 08-03 §3 row 1.
+- **(added 2026-07-22, gap closure)** That the 2019 Fig. 8 "diameter of 10 cm" describes a **cap
+  crystal** rather than the **outer-veto assembly**. A.19 shows the 2019 paper defines its component
+  (3) as "a surrounding kg-scale cryogenic detector", so the assembly reading is available. The
+  ambiguity is conservative for the verdict but the "same quantity" framing is retired.
 - That the 2026 array totals 6.8 g / 4.5 g divide over exactly **9** crystals per array. The count 9
   comes from the 2019 paper's "3 × 3 array" (A.13/A.14) and is corroborated by the 18-target Chooz
   payload (A.4/A.5, 2 × 9 = 18), but the 2026 paper never says "3 × 3" itself.
