@@ -176,7 +176,11 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720,
     """
     lines = cs.load_gamma_lines()
 
-    edges = shared_energy_grid()
+    # PLAN 10-03 CALLER PIN: v1.0, explicitly. This function writes
+    # data/compton_dRdEdep.csv; inheriting a changed default would silently
+    # re-bin a validated v1.0 artifact. Re-running the Phase-4 deposit Monte
+    # Carlo onto the extended axis is Phase 15's job, not Phase 10's.
+    edges = shared_energy_grid("v1.0")
     centers = np.sqrt(edges[:-1] * edges[1:])
     dwidth = np.diff(edges)
     per_day = 86400.0 / cs.MASS_KG           # Hz -> counts/kg/day

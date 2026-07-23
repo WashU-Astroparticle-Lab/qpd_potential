@@ -75,6 +75,7 @@ import numpy as np
 from . import params
 from . import energy_scale as es
 from . import response as resp
+from . import muon_deposit as md
 
 # --------------------------------------------------------------------------- #
 # Defaults (all overridable; recorded in the npz metadata for reproducibility)  #
@@ -124,6 +125,33 @@ def load_E_dep_grid_eV(csv_path: str = _COMBINED_CSV) -> np.ndarray:
                 continue  # column-name header row
     E_keV = np.asarray(vals, dtype=float)
     return np.sort(E_keV) * 1.0e3  # keV -> eV
+
+
+def E_dep_grid_from_shared_grid_eV(version: str = "v1.0") -> np.ndarray:
+    """Deposit-axis CENTRES [eV] computed from the grid function. Plan 10-03.
+
+    Centres are the GEOMETRIC MEANS of adjacent ``shared_energy_grid(version)``
+    edges (the v1.0 Phase-4 convention), converted keV -> eV.
+
+    WHY THIS EXISTS. ``load_E_dep_grid_eV`` parses
+    ``data/combined_dRdEdep.csv``, which makes the response matrix's deposit
+    axis a function of an ARCHIVED PHASE-4 PRODUCT. That axis cannot be extended
+    without re-running the Phase-4 muon and Compton Monte Carlo, which is Phase
+    15's job. This route decouples the axis from the archive so plan 10-04 can
+    regenerate R on the 744-bin extended axis. The CSV parser is kept unchanged
+    so the archived provenance stays readable.
+
+    MEASURED DISCREPANCY BETWEEN THE TWO ROUTES. The CSV centres are
+    round-tripped through a decimal text representation and deviate from the
+    exact geometric means by up to **4.918e-07 relative** (CSV first centre
+    10.144970 eV vs exact 10.144972680282425 eV). The archived
+    ``artifacts/stage1/response_matrix_*.npz`` were built on the CSV values.
+    **Bit-identical reproduction of the archived matrices is therefore NOT
+    achievable and must not be promised** (``fp-bit-identical-promise``).
+    """
+    edges_keV = md.shared_energy_grid(version)
+    centres_keV = np.sqrt(edges_keV[:-1] * edges_keV[1:])
+    return centres_keV * 1.0e3
 
 
 def _log_edges_from_centers(centers: np.ndarray) -> np.ndarray:
@@ -384,6 +412,43 @@ def time_over_saturation_curve(
 # --------------------------------------------------------------------------- #
 
 
+#: Fixed-precision canonical form of a deposit centre, used as the sub-seed key.
+#: 12 significant digits: the grid spacing is 1.25e-2 dex ~ 2.9% between adjacent
+#: centres, so no two columns can collide, while the 4.918e-07 CSV-vs-exact
+#: centre discrepancy IS resolved -- i.e. the CSV-sourced and grid-sourced axes
+#: deliberately produce DIFFERENT seeds, which is why plan 10-04 compares against
+#: the archived matrices statistically rather than bitwise.
+_SEED_KEY_FORMAT = "%.12e"
+
+
+def column_seed_sequence(seed: int, design_name: str, variant: str,
+                         E_dep_eV: float) -> np.random.SeedSequence:
+    """Per-column MC sub-seed, a stable function of the column's DEPOSIT ENERGY.
+
+    Plan 10-03. The pre-existing scheme was::
+
+        ss = SeedSequence([seed, crc32(design), crc32(variant)])
+        child_seeds = ss.spawn(n_edep)
+        rng = default_rng(child_seeds[j])          # j is the ORDINAL INDEX
+
+    so a column's sub-seed was a function of *how many columns sat below it*.
+    Prepending the 160 sub-eV columns of the extended axis shifts every index and
+    therefore RE-SEEDS every column above 10.14 eV. Any comparison of the
+    regenerated matrix against v1.0 would then be pure Monte Carlo noise, and a
+    real regression of order that noise would be invisible (``fp-ordinal-seed``).
+
+    Keying on the deposit energy instead makes the sub-seed independent of the
+    column count and of the column order. Stability across processes is
+    preserved by using ``zlib.crc32``, never Python's per-process-salted builtin
+    ``hash`` -- the same reason the original scheme used crc32 on the design and
+    variant names.
+    """
+    key = zlib.crc32((_SEED_KEY_FORMAT % float(E_dep_eV)).encode())
+    return np.random.SeedSequence(
+        [int(seed), zlib.crc32(design_name.encode()), zlib.crc32(variant.encode()), key]
+    )
+
+
 def build_matrix(
     design: es.Design,
     variant: str,
@@ -415,15 +480,12 @@ def build_matrix(
     hi = np.zeros(n_edep, dtype=float)
     mean_curve = np.zeros(n_edep, dtype=float)
 
-    # column-deterministic sub-seeding -> reproducible ACROSS PROCESSES (stable
-    # crc32, NOT the per-process-salted builtin hash) AND order-independent.
-    ss = np.random.SeedSequence(
-        [seed, zlib.crc32(d.name.encode()), zlib.crc32(variant.encode())]
-    )
-    child_seeds = ss.spawn(n_edep)
-
+    # column-deterministic sub-seeding, keyed to the column's DEPOSIT ENERGY.
+    # See column_seed_sequence: the pre-10-03 ordinal scheme would have re-seeded
+    # every column above 10.14 eV when 160 columns were prepended.
     for j, E in enumerate(E_dep_centers_eV):
-        rng = np.random.default_rng(child_seeds[j])
+        rng = np.random.default_rng(
+            column_seed_sequence(seed, d.name, variant, float(E)))
         samples, _diag = E_rec_samples(
             float(E), d, variant, C, rng,
             f_prompt=f_prompt, r=r, n_sensors=n_sensors,

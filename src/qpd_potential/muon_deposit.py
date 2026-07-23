@@ -203,12 +203,115 @@ def sample_deposit(x_gcm2: np.ndarray, bg: np.ndarray, rng: np.random.Generator)
 # --------------------------------------------------------------------------- #
 # Shared logarithmic deposited-energy grid (identical to the Compton plan)     #
 # --------------------------------------------------------------------------- #
-def shared_energy_grid(e_lo_kev: float = 1.0e-2, e_hi_kev: float = 2.0e5,
-                       bins_per_decade: int = 80):
-    """Log E_dep grid edges [keV]: 0.01 keV -> 200 MeV, ~80 bins/decade."""
-    n_dec = np.log10(e_hi_kev / e_lo_kev)
-    nbins = int(round(n_dec * bins_per_decade))
-    return np.logspace(np.log10(e_lo_kev), np.log10(e_hi_kev), nbins + 1)
+#: The v1.0 grid parameters, frozen. Every archived v1.x deposit spectrum lives
+#: on the edge array these produce.
+_V1_0_LO_keV = 1.0e-2
+_V1_0_HI_keV = 2.0e5
+_V1_0_BINS_PER_DECADE = 80
+
+#: Number of bins PREPENDED at the v1.0 spacing to reach 0.1 eV. UNIQUE:
+#:   159 -> floor 0.1028536 eV, ABOVE 0.1 eV, fails success criterion 1
+#:   160 -> floor 0.0999350 eV, 744 bins  <-- the only value satisfying both
+#:   161 -> floor 0.0970993 eV but 745 bins, breaking "~744 bins"
+_EXT_PREPENDED_BINS = 160
+
+GRID_VERSIONS = ("v1.0", "v2.0-ext")
+
+#: DELIBERATELY "v1.0" -- see DEVIATION D1 in 10-03-GRID-CONSTRUCTION.md.
+#:
+#: Plan 10-03 as written instructed making "v2.0-ext" the default so that
+#: `shared_energy_grid()` "runs from 0.1 eV" literally. That instruction assumed
+#: Phase 10 owns every call site. It does not: Phase 9 was executing
+#: CONCURRENTLY in this worktree and adding its own unpinned callers, and
+#: flipping the default made `tests/test_env_v1_identity.py::
+#: test_no_photopeak_above_edge` fail with
+#:     ValueError: operands could not be broadcast together with shapes (744,) (584,)
+#: -- a Phase-9 file this phase is not permitted to edit.
+#:
+#: That failure is not an inconvenience, it is the FORBIDDEN PROXY ITSELF
+#: (`fp-default-change`) caught in the act: a caller that does not state its
+#: version silently receives a different axis. A v1.0 default makes silent
+#: re-binning IMPOSSIBLE rather than merely pinned-against, and it fails in the
+#: safe direction -- a caller that forgets to ask for the extension gets the
+#: v1.0 axis and then trips the plan 10-01 `_erec_of_edep` guard if it tries to
+#: evaluate sub-eV, instead of quietly re-binning an archived artifact.
+#:
+#: ROADMAP success criterion 1 is therefore discharged by
+#: `shared_energy_grid("v2.0-ext")`, and criterion 2 is discharged more strongly
+#: than the plan's own construction would have discharged it.
+DEFAULT_GRID_VERSION = "v1.0"
+
+
+def _v1_0_edges() -> np.ndarray:
+    """The v1.0 edge array, byte-for-byte what v1.0 shipped."""
+    n_dec = np.log10(_V1_0_HI_keV / _V1_0_LO_keV)
+    nbins = int(round(n_dec * _V1_0_BINS_PER_DECADE))          # 584
+    return np.logspace(np.log10(_V1_0_LO_keV), np.log10(_V1_0_HI_keV), nbins + 1)
+
+
+def v1_0_dex_per_bin() -> float:
+    """Realised decades per bin of the v1.0 grid = log10(2e7)/584.
+
+    = 0.0125017637 dex/bin = **79.988714 bins/decade**, NOT exactly 80. The
+    `round(n_dec * bins_per_decade)` in the original definition is what makes
+    "80 bins/decade" nominal rather than exact, and the extension must inherit
+    THIS number rather than re-solve the rounding over a wider range.
+    """
+    n_dec = np.log10(_V1_0_HI_keV / _V1_0_LO_keV)
+    return n_dec / int(round(n_dec * _V1_0_BINS_PER_DECADE))
+
+
+def shared_energy_grid(version: str = DEFAULT_GRID_VERSION) -> np.ndarray:
+    """Shared log deposited-energy grid EDGES [keV]. Plan 10-03.
+
+    ``version="v1.0"``      585 edges / 584 bins, 0.01 keV -> 2e5 keV.
+                            Floor exactly 10 eV, first bin centre
+                            **10.144972680282425 eV** (the "10.14 eV" quoted
+                            throughout the project). This is byte-for-byte what
+                            v1.0 shipped.
+
+    ``version="v2.0-ext"``  745 edges / **744 bins** (the default). Built by
+                            **PREPENDING 160 bins at the v1.0 spacing**, NOT by
+                            re-running ``logspace`` over the wider range. Floor
+                            **0.0999350 eV** (<= 0.1 eV, so the axis reaches
+                            0.1 eV), first bin centre **0.1013838 eV**, and
+                            ``np.array_equal(edges[160:], v1_0_edges)`` is True
+                            with maximum absolute difference **exactly 0.0**.
+
+    WHY PREPEND RATHER THAN REBUILD (ROADMAP Phase 10 success criterion 2, and
+    ``fp-naive-logspace``). ``np.logspace(log10(1e-4), log10(2e5), 745)`` also
+    gives 744 bins and a first centre of 0.1014497 eV that looks entirely
+    correct. But its spacing is log10(2e9)/744 = 0.0125013844 dex/bin against
+    the v1.0 log10(2e7)/584 = 0.0125017637, so its overlapping edges drift from
+    the v1.0 edges by up to **5.101629e-04 relative**. Every archived v1.x
+    spectrum placed on that axis would be silently reinterpolated --- which is
+    exactly the failure success criterion 2 forbids. Both constructions pass a
+    bin-count check, so only ``np.array_equal`` distinguishes them; a tolerance
+    check would let the drift through.
+
+    The realised spacing is 79.988714 bins/decade, not 80 --- see
+    ``v1_0_dex_per_bin``.
+    """
+    if version not in GRID_VERSIONS:
+        raise ValueError(
+            f"unknown grid version {version!r}; expected one of {GRID_VERSIONS}. "
+            "Pass the version EXPLICITLY at every call site: an implicit default "
+            "is how an archived v1.x product gets silently re-binned "
+            "(ROADMAP Phase 10 success criterion 2)."
+        )
+    v1 = _v1_0_edges()
+    if version == "v1.0":
+        return v1
+    dex = v1_0_dex_per_bin()
+    prepended = _V1_0_LO_keV * 10.0 ** (
+        -np.arange(_EXT_PREPENDED_BINS, 0, -1) * dex)
+    ext = np.concatenate([prepended, v1])
+    # In-code assertion: the tail IS the v1.0 array, exactly. Not allclose.
+    assert np.array_equal(ext[_EXT_PREPENDED_BINS:], v1), (
+        "extended grid tail is not bit-identical to the v1.0 edge array"
+    )
+    assert ext.size == 745 and ext[0] * 1.0e3 <= 0.1
+    return ext
 
 
 # --------------------------------------------------------------------------- #
@@ -311,7 +414,10 @@ def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
     n_batches = int(np.ceil(n_samples / batch_size))
     child_seeds = np.random.SeedSequence(seed).spawn(n_batches)
 
-    edges = shared_energy_grid()
+    # PLAN 10-03 CALLER PIN: v1.0, explicitly. This function writes
+    # data/muon_dRdEdep.csv (1e9 MC samples, validated); inheriting a changed
+    # default would silently re-bin it. Phase 15 owns the re-run.
+    edges = shared_energy_grid("v1.0")
     centers = np.sqrt(edges[:-1] * edges[1:])
     dwidth = np.diff(edges)
     nb = edges.size - 1

@@ -148,7 +148,9 @@ def test_energy_closure():
 # Shared grid + convergence (test-compton-convergence)                         #
 # --------------------------------------------------------------------------- #
 def test_shared_grid_matches_muon():
-    assert np.array_equal(_SPEC.edges_kev, shared_energy_grid())
+    # PLAN 10-03 CALLER PIN: v1.0. The frozen Compton spectrum is a v1.0
+    # product and must keep matching the v1.0 axis, not the extended default.
+    assert np.array_equal(_SPEC.edges_kev, shared_energy_grid("v1.0"))
 
 
 def test_convergence_edges_and_bins():
