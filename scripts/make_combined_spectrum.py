@@ -195,7 +195,12 @@ fig.text(0.5, 0.014,
 
 fig.tight_layout(rect=[0, 0.075, 1, 0.955])
 fig.savefig(os.path.join(ART, "combined_spectrum_v2.0.png"), dpi=155)
-fig.savefig(os.path.join(ART, "combined_spectrum_v2.0.pdf"))
+# CreationDate=None makes the PDF byte-stable across runs. Without it matplotlib
+# stamps the current time, so every regeneration dirtied a tracked artifact and
+# tripped the Phase-10 frozen-artifact guard -- noise that would train a reader to
+# ignore that guard.
+fig.savefig(os.path.join(ART, "combined_spectrum_v2.0.pdf"),
+            metadata={"CreationDate": None})
 print("wrote combined_spectrum_v2.0.png\n")
 
 for design in ("TaAl", "AlHf"):
