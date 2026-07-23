@@ -192,15 +192,10 @@ def panel(ax, design, title):
                     color="#ff7f0e", alpha=0.55, hatch="///", edgecolor="#ff7f0e",
                     zorder=2, label=f"Prompt (n,$\\gamma$) capture /{N_SUPPRESSION:.0f}  [BOUND,\nno spectral shape derived]")
 
-    ax.axvspan(ROI_LO * 1e3, ROI_HI * 1e3, color="0.85", alpha=0.4, zorder=0)
-    ax.axvline(FLOOR * 1e3, color="0.35", ls=":", lw=1.1, zorder=1)
-    ax.axvline(SUBEV * 1e3, color="0.55", ls="-.", lw=1.0, zorder=1)
+    # Vertical guide lines (grid floor, sub-eV boundary, saturation onset) and the
+    # grey RoI window removed by user request 2026-07-23 to declutter. The pink
+    # saturated-band shading is kept -- it carries the saturation the curves show.
     on_dep, on_rec, pl_dep, pl_rec = sat_marks(design)
-    ax.axvline(on_rec, color="#e377c2", ls="--", lw=1.6, zorder=2)
-    ax.annotate(f"saturation onset  {on_dep:.0f} eV dep = {on_rec:.0f} eV rec",
-                xy=(on_rec, 2e6), fontsize=7.2, color="#e377c2",
-                ha="right", rotation=90, va="top")
-    # the saturated band: above the whole-array plateau the readout is bandwidth-limited
     ax.axvspan(pl_rec, 1.2e5, color="#e377c2", alpha=0.13, zorder=0)
     ax.annotate(f"bandwidth-saturated\n(plateau {pl_dep/1e3:.1f} keV dep = {pl_rec/1e3:.1f} keV rec)",
                 xy=(pl_rec * 1.35, 2e6), fontsize=7.2, color="#c2559b",
@@ -248,10 +243,9 @@ _l.append("same channel, NO saturation\n(linear $E_{\\rm rec}$ = 0.497 $E_{\\rm 
 axes[0].legend(_h, _l, loc="lower left", fontsize=8.0, framealpha=0.94)
 
 axes[1].text(0.985, 0.02,
-             "shaded band: 10–100 eV RoI\n"
-             "dotted: grid floor 99.9 meV\n"
-             "dash-dot: below 1 eV the reported\n"
-             "observable is $P_{\\rm trig}$, not $dR/dE$",
+             "pink band: bandwidth-saturated\n"
+             "below 1 eV the reported observable\n"
+             "is $P_{\\rm trig}$, not $dR/dE$",
              transform=axes[1].transAxes, ha="right", va="bottom", fontsize=8,
              bbox=dict(fc="white", ec="0.7", alpha=0.92))
 
