@@ -270,7 +270,11 @@ def shared_energy_grid(version: str = DEFAULT_GRID_VERSION) -> np.ndarray:
                             throughout the project). This is byte-for-byte what
                             v1.0 shipped.
 
-    ``version="v2.0-ext"``  745 edges / **744 bins** (the default). Built by
+    ``version="v2.0-ext"``  745 edges / **744 bins**.  **NOT the default** --
+                            ``DEFAULT_GRID_VERSION`` reads ``"v1.0"`` and is
+                            authoritative; the extension is opt-in at every call
+                            site (see the ``DEFAULT_GRID_VERSION`` note above and
+                            DEVIATION D1 in 10-03-GRID-CONSTRUCTION.md).  Built by
                             **PREPENDING 160 bins at the v1.0 spacing**, NOT by
                             re-running ``logspace`` over the wider range. Floor
                             **0.0999350 eV** (<= 0.1 eV, so the axis reaches
@@ -328,6 +332,13 @@ class MuonSpectrum:
     vertical_mpv_mev: float    # sampled MPV for near-vertical chords [MeV]
     vertical_mean_mev: float   # mean deposit for the vertical chord [MeV]
     n_samples: int
+    #: RAW, UNWEIGHTED Monte-Carlo entry count per bin.  Plan 15-02 addition:
+    #: purely diagnostic, it consumes no random numbers and enters no rate, and
+    #: it exists so that a bin with NO estimator support can be distinguished
+    #: from a bin whose rate is genuinely small.  Defaulted so no existing
+    #: constructor call site changes.
+    mc_entries: np.ndarray = None  # type: ignore[assignment]
+    grid_version: str = "v1.0"
 
 
 # Near-vertical MPV accumulation grid (theta < 5 deg deposits, MeV).
@@ -372,6 +383,10 @@ def _mc_batch(n: int, rng: np.random.Generator, edges: np.ndarray,
 
     sumw, _ = np.histogram(dep_kev, bins=edges, weights=weight)
     sumw2, _ = np.histogram(dep_kev, bins=edges, weights=weight ** 2)
+    # RAW entry count -- Plan 15-02.  Consumes no random numbers (np.histogram is
+    # deterministic given the samples), so the RNG stream is unchanged and the
+    # v1.0 result is bit-identical with or without this line.
+    entries, _ = np.histogram(dep_kev, bins=edges)
     sum_w = float(weight.sum())
     sum_w2 = float((weight ** 2).sum())
 
@@ -381,12 +396,13 @@ def _mc_batch(n: int, rng: np.random.Generator, edges: np.ndarray,
     vhist, _ = np.histogram(dv, bins=_VERT_MPV_NBINS, range=_VERT_MPV_RANGE)
     n_near_vert = int(near_vert.sum())
 
-    return sumw, sumw2, sum_w, sum_w2, vhist, n_near_vert
+    return sumw, sumw2, sum_w, sum_w2, vhist, n_near_vert, entries
 
 
 def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
                 e_min_gev: float = 0.2, e_max_gev: float = 1.0e5,
-                batch_size: int = 5_000_000) -> MuonSpectrum:
+                batch_size: int = 5_000_000,
+                grid_version: str = "v1.0") -> MuonSpectrum:
     """Fold Gaisser-Guan flux (x) ray-box chord (x) Landau-Vavilov MPV deposit
     into the muon dR/dE_dep on the shared grid [counts/kg/day/keV].
 
@@ -407,6 +423,16 @@ def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
     and MC errors are IDENTICAL in construction to the single-pass estimator
     (all accumulators are sums), only the sampling is chunked -- the physics,
     weighting, grid, and Landau/chord/flux models are unchanged.
+
+    ``grid_version`` (Plan 15-02).  DEFAULTS TO ``"v1.0"``, which preserves the
+    Plan 10-03 caller pin exactly: this function writes ``data/muon_dRdEdep.csv``
+    and a caller that does not ask for the extension still gets the v1.0 axis.
+    Pass ``"v2.0-ext"`` EXPLICITLY for the 744-bin extended run.  The RNG stream
+    is independent of the histogram edges -- every random draw in ``_mc_batch``
+    precedes ``np.histogram`` -- so for a given ``(n_samples, seed, batch_size)``
+    the extended run's bins ``160..743`` are BIT-IDENTICAL to the v1.0 run
+    (``np.array_equal``), which is what licenses the exact-re-drive route
+    (``tests/test_em_extended.py::test_smallN_bit_identity_muon``).
     """
     if n_samples < 1:
         raise ValueError("n_samples must be >= 1")
@@ -414,10 +440,18 @@ def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
     n_batches = int(np.ceil(n_samples / batch_size))
     child_seeds = np.random.SeedSequence(seed).spawn(n_batches)
 
-    # PLAN 10-03 CALLER PIN: v1.0, explicitly. This function writes
-    # data/muon_dRdEdep.csv (1e9 MC samples, validated); inheriting a changed
-    # default would silently re-bin it. Phase 15 owns the re-run.
-    edges = shared_energy_grid("v1.0")
+    # PLAN 10-03 CALLER PIN, KEPT LITERALLY (Plan 15-02 leaves it in place because
+    # this function writes data/muon_dRdEdep.csv -- 1e9 MC samples, validated).
+    # The branch is deliberately explicit rather than collapsed to
+    # `shared_energy_grid(grid_version)`: the literal v1.0 pin is what
+    # tests/test_energy_grid_extension.py::test_phase4_producers_still_emit_the_584_bin_axis
+    # greps for, and it states at the call site that the DEFAULT path is v1.0.
+    # Phase 15's extended run reaches the other branch only by naming
+    # grid_version="v2.0-ext" explicitly at its own call site.
+    if grid_version == "v1.0":
+        edges = shared_energy_grid("v1.0")
+    else:
+        edges = shared_energy_grid(grid_version)
     centers = np.sqrt(edges[:-1] * edges[1:])
     dwidth = np.diff(edges)
     nb = edges.size - 1
@@ -428,13 +462,14 @@ def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
     sum_w2 = 0.0
     vhist = np.zeros(_VERT_MPV_NBINS)
     n_near_vert = 0
+    entries = np.zeros(nb, dtype=np.int64)
 
     remaining = n_samples
     for b in range(n_batches):
         n_b = int(min(batch_size, remaining))
         remaining -= n_b
         rng = np.random.default_rng(child_seeds[b])
-        bw, bw2, sw, sw2, bvh, bnv = _mc_batch(
+        bw, bw2, sw, sw2, bvh, bnv, bent = _mc_batch(
             n_b, rng, edges, e_min_gev, e_max_gev
         )
         sumw += bw
@@ -443,6 +478,7 @@ def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
         sum_w2 += sw2
         vhist += bvh
         n_near_vert += bnv
+        entries += bent
 
     # --- integral rate ----------------------------------------------------- #
     rate_hz = float(sum_w / n_samples)
@@ -475,6 +511,8 @@ def run_muon_mc(n_samples: int = 2_000_000, seed: int = 20260720,
         vertical_mpv_mev=vertical_mpv,
         vertical_mean_mev=vertical_mean,
         n_samples=n_samples,
+        mc_entries=entries,
+        grid_version=grid_version,
     )
 
 
