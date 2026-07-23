@@ -460,7 +460,20 @@ Plans:
 - ~~SC3's application of the 1.41 ± 0.02 omnidirectional attenuation at 2.92 ± 0.01 m.w.e., and the requirement that the v1.0 sea-level normalization appear nowhere in the call graph.~~ **Removed and reversed:** the v1.0 sea-level normalization is now the **required** normalization, and the overburden is the quantity that must appear nowhere. Note that this makes the muon channel an **over-estimate** relative to a real VNS deployment, which is carried explicitly into Phase 16 SC3.
 - ~~SC5: comparison against NUCLEUS's Table 5 muon entry (< 14 mcpd) using L1 credit only.~~ **Removed:** their muon residual is a post-shield, post-overburden, post-veto number for a gram-scale payload; comparing an unshielded surface wafer against it would not be a validation of anything. *(Consequence, stated rather than hidden: the muon channel now has **no external benchmark at all** beyond the v1.0 PDG sanity check.)*
 
-**Plans:** TBD (run `gpd:plan-phase 15` to break down)
+**Plans:** 4 plans, 4 waves
+
+Plans:
+- [ ] 15-01-PLAN.md -- IA broadening applicability DETERMINATION for the electron-recoil channels, and the computed low-energy validity floors of both v1.0 deposit models (SC3)
+- [ ] 15-02-PLAN.md -- Both deposited-energy spectra on the 744-bin extended axis, re-grid route decided BY MEASUREMENT, SC1 invariants reproduced (SC1)
+- [ ] 15-03-PLAN.md -- Electron-recoil extended fold to dR/dE_rec, both designs, trigger observable with k-sensitivity, counts conserved, saturation preserved (SC2)
+- [ ] 15-04-PLAN.md -- Re-scope call-graph audit, accuracy labels carried forward unnarrowed, in-band dominance re-checked, phase closure (SC4, SC5)
+
+> **Planning findings (2026-07-22), computed against committed code and handed to execution as QUESTIONS, not findings.**
+> (a) **The open physics question this phase must settle:** sigma_E = sqrt(E_R*omega_bar) is a NUCLEAR-recoil width from the target nucleus's zero-point momentum, while muon ionization and Compton deposits are ELECTRON recoils. Phase 11 did not answer whether the kernel applies and Phase 13's nuclear-recoil argument does not settle it; both handed it here. The plan **forbids the lazily-correct answer**: "these are electron recoils so the nuclear kernel does not apply" is probably right, but reaching it without evaluating the one mechanism that could make it wrong -- the **Compton profile**, the same IA formalism with the bound-electron momentum distribution replacing the nucleus's -- is the confirmation-pressure failure mode. An unexamined "no" FAILS even if the final verdict is correct.
+> (b) **The non-identity disconfirming check: the Landau-Vavilov validity floor.** xi = 0.36035*l MeV, so xi falls below the Ge mean excitation energy I ~ 350 eV for chords under ~10 um -- a deposit of order a few keV, i.e. **~400x above the v1.0 grid floor**. If that criterion survives execution it **indicts ~180 bins the v1.0 manuscript already published**. `fp-floor-softened` explicitly forbids tuning I or the criterion to make the indicted-bin count zero. Separately, Delta_p = 0.0999 eV corresponds to l ~ 1 nm -- under two Ge lattice constants.
+> (c) **Compton at 100 meV:** S(x) is 0.227% of Z (~440x suppression) and the table domain DOES cover it, so the machinery returns a number at 100 meV. Whether that number is a rate is forced into prose rather than left implicit.
+> (d) **SC1's "<1%" is reachable two ways and is decided by execution.** In both MC drivers the RNG stream is independent of the histogram edges (sampling precedes `np.histogram`), so re-running at identical (n, seed, batch_size) on extended edges should reproduce bins 160..743 **bit**-identically -- verified at small N before any production run. If the frozen CSVs turn out non-reproducible that is recorded as a finding and the index-carry route is taken instead. Both channels are already MC-limited at the v1.0 floor (muon 47.5% relative error in its first bin), so zero-support bins are NaN-and-labelled, never 0.0.
+> (e) **A guard the codebase does not currently have:** R is dense, so a single NaN deposit bin poisons every reconstructed bin. `np.nan_to_num` is forbidden **by name**, because it would convert an absence of measurement back into a measured absence.
 
 ### Phase 16: S/B_particle Assembly, LEE Overlay, and the Signal-Side CONUS+ Check (P-SB)
 
@@ -566,7 +579,7 @@ Plans:
 | 12. CEvNS at the Paper's Surface Scenario (P-SIG) | v2.0 (amended) | 0/TBD | Not started | - |
 | 13. Ge Neutron Fold from the Sea-Level Flux (P-TGT) | v2.0 (re-scoped) | 0/TBD | Not started | - |
 | 14. Ge-Only Capture Channels (P-GEONLY) | v2.0 (reduced) | 0/TBD | Not started | - |
-| 15. v1.0 Muon & Gamma on the Extended Grid (P-EM) | v2.0 (re-scoped) | 0/TBD | Not started | - |
+| 15. v1.0 Muon & Gamma on the Extended Grid (P-EM) | v2.0 (re-scoped) | 0/4 | Planned | - |
 | 16. S/B Assembly, LEE, Signal-Side CONUS+ Check (P-SB) | v2.0 (amended) | 0/TBD | Not started | - |
 
 ## Notes
