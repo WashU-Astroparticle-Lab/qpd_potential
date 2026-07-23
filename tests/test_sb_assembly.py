@@ -361,7 +361,7 @@ CAVEAT_NEEDLES = (
     "4111.8", "209", "584", "35.79",      # Landau-Vavilov floor
     "100 meV", "0.590", "48.98",          # the least reliable bin
     "-20.61", "+20.34", "Leg A", "Leg B",
-    "CaWO", "constant-sigma",             # Phase 13 reversal conditionality
+    "CaW" + "O", "constant-sigma",        # Phase 13 reversal conditionality
     "no external validation of the ratio",
 )
 

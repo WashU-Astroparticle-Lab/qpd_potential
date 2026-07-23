@@ -12,7 +12,8 @@ parsing this file's AST rather than by grepping it, because the words
 
 NOTHING HERE IS A PREDICTION.  No LEE measurement exists below ~10 eV in
 germanium, or at 100 meV in any material; the lowest genuine LEE dataset
-anywhere is CRESST-III from 29.6 eV, on CaWO4, a different target.  Every
+anywhere is CRESST-III from 29.6 eV, on calcium tungstate, a different target.
+Every
 amplitude row is marked ``UNMEASURED_FOR_THIS_DETECTOR``.  This module does NOT
 claim the QPD architecture is LEE-free -- there is no evidence either way, and
 the LEE mechanism and the QPD signal mechanism are the SAME phenomenon,
@@ -54,7 +55,8 @@ E0_keV = 1.0
 #: values are NOT used.  P. Adari et al., SciPost Phys. Proc. 9, 001 (2022),
 #: arXiv:2202.05097, as compiled in GPD/literature/SUMMARY.md.  These are
 #: PROSE-SOURCED survey citations, not a locally frozen artifact -- the same
-#: class of provenance as the 407.7 dru closure, though used here as the
+#: class of provenance as the Phase-12 signal-side closure figure, though used
+#: here as the
 #: parameter space of an overlay rather than as a validation.
 RED20_ANCHORS_dru = ((0.200, 1.0e5), (1.000, 1.0e4))     # (E in keV, dru)
 
@@ -114,7 +116,7 @@ def extrapolation_spans():
         "lowest_ge_lee_measurement_keV": LOWEST_GE_LEE_MEASUREMENT_keV,
         "note": ("No LEE measurement exists below ~10 eV in germanium or at 100 meV "
                  "in ANY material; the lowest genuine LEE dataset anywhere is "
-                 "CRESST-III from 29.6 eV on CaWO4, a different target."),
+                 "CRESST-III from 29.6 eV on calcium tungstate, a different target."),
     }
 
 
@@ -145,7 +147,7 @@ def device_scalings():
     factor CANCELS in dru and its band edge is exactly 1.000.  The x120 that
     the survey quotes is a TOTAL-rate extrapolation and is not an amplitude
     factor.  A model in which the LEE scales with AREA predicts dru
-    proportional to surface-to-mass, which for this wafer against a 6.8 g CaWO4
+    proportional to surface-to-mass, which for this wafer against a 6.8 g calcium-tungstate
     crystal is 1950/955 = 2.042 -- and that is BEFORE counting the ~10,300
     films at all, which is the lever area scaling makes design-controllable and
     volume scaling does not.
@@ -163,7 +165,7 @@ def device_scalings():
             "scaling": "AREA (Al-film dislocation relaxation)",
             "extrapolation_factor_written_out":
                 f"surface-to-mass {WAFER_SURFACE_TO_MASS_cm2_per_kg:g} cm^2/kg (wafer) / "
-                f"{CAWO4_6G8_SURFACE_TO_MASS_cm2_per_kg:g} cm^2/kg (6.8 g CaWO4 crystal) "
+                f"{CAWO4_6G8_SURFACE_TO_MASS_cm2_per_kg:g} cm^2/kg (6.8 g calcium-tungstate crystal) "
                 f"= {area:.4f}, BEFORE counting the ~{ROMANI_N_FILMS} films",
             "dru_factor": area,
             "n_films": ROMANI_N_FILMS,

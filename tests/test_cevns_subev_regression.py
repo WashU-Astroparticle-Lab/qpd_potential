@@ -291,6 +291,22 @@ def test_closure_not_rerun():
         "tests/test_neutron_kinematics.py",
     }
     added_here = added_here | phase13_neutron_target_comparison
+    # ADDED BY PLAN 16-03, and recorded explicitly rather than allow-listed by
+    # pattern, on the Phase-13 precedent above. ROADMAP Phase 16 SC3 requires the
+    # LEE overlay band to carry the Romani Al-film AREA scaling, whose stated
+    # extrapolation factor IS a surface-to-mass ratio against a 6.8 g calcium
+    # tungstate crystal (1950 vs 955 cm^2/kg, from PITFALLS Pitfall 7). That is a
+    # GEOMETRY ratio quoted as a band-edge label. No fold, no pipeline, no target
+    # rate, no Table-5 entry and no rescale of the signal-side closure enters, which
+    # is what fp-mass-scaled-target actually forbids -- asserted immediately below.
+    phase16_lee_band_edge_label = {"src/qpd_potential/lee_overlay.py"}
+    added_here = added_here | phase16_lee_band_edge_label
+    lee = open(os.path.join(_ROOT, "src", "qpd_potential", "lee_overlay.py")).read()
+    low = lee.lower()
+    assert "def cawo4" not in low and "def calcium" not in low
+    assert "reactorflux" not in low
+    assert "table 5" not in low and "table-5" not in low
+    assert "407.7" not in lee, "the signal-side closure figure leaked into src/"
     assert set(out) <= preexisting | added_here, (
         f"a CaWO4/Al2O3 model was added: {sorted(set(out) - preexisting - added_here)}")
     # ...and what those two files contain is arithmetic and prose, not a target model
