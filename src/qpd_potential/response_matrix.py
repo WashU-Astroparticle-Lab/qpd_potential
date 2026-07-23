@@ -154,6 +154,21 @@ def E_dep_grid_from_shared_grid_eV(version: str = "v1.0") -> np.ndarray:
     return centres_keV * 1.0e3
 
 
+def _git_sha() -> str:
+    """Short git SHA of the working tree, for the npz provenance header."""
+    import subprocess
+    try:
+        sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"],
+                             cwd=_PROJECT_ROOT, capture_output=True,
+                             text=True, timeout=10).stdout.strip()
+        dirty = subprocess.run(["git", "status", "--porcelain"],
+                               cwd=_PROJECT_ROOT, capture_output=True,
+                               text=True, timeout=10).stdout.strip()
+        return sha + ("-dirty" if dirty else "") if sha else "unknown"
+    except Exception:                                    # pragma: no cover
+        return "unknown"
+
+
 def _log_edges_from_centers(centers: np.ndarray) -> np.ndarray:
     """Geometric-midpoint bin edges for a log-spaced set of centers."""
     c = np.asarray(centers, dtype=float)
@@ -479,6 +494,12 @@ def build_matrix(
     lo = np.zeros(n_edep, dtype=float)
     hi = np.zeros(n_edep, dtype=float)
     mean_curve = np.zeros(n_edep, dtype=float)
+    n_obs_mean = np.zeros(n_edep, dtype=float)
+    p_zero = np.zeros(n_edep, dtype=float)
+    n_distinct = np.zeros(n_edep, dtype=int)
+    spread = np.zeros(n_edep, dtype=float)
+    n_off_hi = np.zeros(n_edep, dtype=int)
+    n_off_lo = np.zeros(n_edep, dtype=int)
 
     # column-deterministic sub-seeding, keyed to the column's DEPOSIT ENERGY.
     # See column_seed_sequence: the pre-10-03 ordinal scheme would have re-seeded
@@ -491,6 +512,14 @@ def build_matrix(
             f_prompt=f_prompt, r=r, n_sensors=n_sensors,
             N_s=N_s, M_pool=M_pool, ec_emg_max=ec_emg_max,
         )
+        # PLAN 10-04, fp-renormalised-conservation. Count samples that fall OFF
+        # the E_rec grid BEFORE histogramming. np.histogram silently discards
+        # anything above the top edge, and `col = h / h.sum()` then renormalises
+        # whatever is left, so the column always sums to 1 no matter how much
+        # probability was thrown away. The conservation test is meaningless
+        # without this counter.
+        n_off_hi[j] = int(np.count_nonzero(samples > E_rec_edges_eV[-1]))
+        n_off_lo[j] = int(np.count_nonzero(samples < E_rec_edges_eV[0]))
         h, _ = np.histogram(samples, bins=E_rec_edges_eV)
         counts[:, j] = h
         col = h / h.sum() if h.sum() > 0 else h
@@ -501,6 +530,13 @@ def build_matrix(
         lo[j] = float(np.percentile(samples, 16))
         hi[j] = float(np.percentile(samples, 84))
         mean_curve[j] = float(samples.mean())
+        # Sub-eV diagnostics (plan 10-04 claim-subev-diagnosed). E_rec = C * N_obs,
+        # so the registered count and its discreteness are recoverable exactly.
+        n_obs = samples / C if C > 0 else samples
+        n_obs_mean[j] = float(n_obs.mean())
+        p_zero[j] = float(np.count_nonzero(samples <= 0.0) / samples.size)
+        n_distinct[j] = int(np.unique(samples).size)
+        spread[j] = float(samples.std(ddof=1) / samples.mean()) if samples.mean() > 0 else np.nan
 
     return {
         "design": d.name,
@@ -513,6 +549,12 @@ def build_matrix(
         "E_rec_p16_eV": lo,
         "E_rec_p84_eV": hi,
         "E_rec_mean_eV": mean_curve,
+        "N_obs_mean": n_obs_mean,
+        "P_zero_count": p_zero,
+        "n_distinct_Erec": n_distinct,
+        "rel_spread": spread,
+        "n_offgrid_high": n_off_hi,
+        "n_offgrid_low": n_off_lo,
     }
 
 
@@ -532,10 +574,34 @@ def run_design(
     csv_path: str = _COMBINED_CSV,
     write: bool = True,
     out_dir: str = _ARTIFACT_DIR,
+    grid_version: Optional[str] = None,
+    file_name: Optional[str] = None,
+    variants: Optional[tuple] = None,
+    provenance_note: str = "",
 ) -> dict:
-    """Build + (optionally) save response_matrix_<design>.npz for both variants."""
+    """Build + (optionally) save response_matrix_<design>.npz for both variants.
+
+    ``grid_version``  None (default) keeps the v1.0 behaviour: the deposit axis
+                      is PARSED from ``data/combined_dRdEdep.csv``. Passing
+                      "v1.0" or "v2.0-ext" instead sources the axis from
+                      ``E_dep_grid_from_shared_grid_eV`` (plan 10-03), which is
+                      how plan 10-04 builds on the 744-column extended axis.
+                      The two v1.0 routes differ by up to 4.918e-07 relative --
+                      see ``E_dep_grid_from_shared_grid_eV`` -- so they are NOT
+                      interchangeable and produce different sub-seeds.
+    ``file_name``     output file name override; the v1.0
+                      ``artifacts/stage1/response_matrix_*.npz`` must never be
+                      overwritten (``fp-overwrite-v1-matrices``).
+    ``variants``      censoring variants to build; defaults to
+                      ``params.CENSORING_VARIANTS`` (both).
+    """
     d = es.resolve_design(design_name)
-    E_dep = load_E_dep_grid_eV(csv_path)
+    if grid_version is None:
+        E_dep = load_E_dep_grid_eV(csv_path)
+        axis_source = os.path.relpath(csv_path, _PROJECT_ROOT)
+    else:
+        E_dep = E_dep_grid_from_shared_grid_eV(grid_version)
+        axis_source = f"muon_deposit.shared_energy_grid({grid_version!r}) geometric means"
     E_rec_edges = build_E_rec_edges_eV(bins_per_decade)
     E_rec_centers = np.sqrt(E_rec_edges[1:-1] * np.maximum(E_rec_edges[2:], E_rec_edges[1:-1]))
     # centers for the underflow bin + log bins (underflow center = its geometric-ish mid)
@@ -556,7 +622,7 @@ def run_design(
         "saturation_onset_Edep_eV": onset_Edep,
         "whole_array_plateau_Edep_eV": plateau_Edep,
     }
-    for variant in params.CENSORING_VARIANTS:
+    for variant in (variants or params.CENSORING_VARIANTS):
         m = build_matrix(
             d, variant, E_dep, E_rec_edges,
             seed=seed, N_s=N_s, M_pool=M_pool, ec_emg_max=ec_emg_max,
@@ -569,13 +635,20 @@ def run_design(
         out[f"E_rec_p84_{variant}_eV"] = m["E_rec_p84_eV"]
         out[f"E_rec_mean_{variant}_eV"] = m["E_rec_mean_eV"]
         out[f"C_{variant}_eV_per_event"] = m["C_eV_per_event"]
+        # Plan 10-04 diagnostics, stored per variant.
+        out[f"N_obs_mean_{variant}"] = m["N_obs_mean"]
+        out[f"P_zero_count_{variant}"] = m["P_zero_count"]
+        out[f"n_distinct_Erec_{variant}"] = m["n_distinct_Erec"]
+        out[f"rel_spread_{variant}"] = m["rel_spread"]
+        out[f"n_offgrid_high_{variant}"] = m["n_offgrid_high"]
+        out[f"n_offgrid_low_{variant}"] = m["n_offgrid_low"]
 
     # LABELED SECONDARY (never auto-switched): time-over-saturation estimator.
     tos = time_over_saturation_curve(E_dep, d)
     out["tos_t_over_s"] = tos["t_over_s"]
 
     meta = {
-        "plan": "05-02",
+        "plan": "05-02" if grid_version is None else "10-04",
         "design": d.name,
         "seed": int(seed),
         "N_s": int(N_s),
@@ -587,9 +660,41 @@ def run_design(
         "n_sensors": float(params.N_SENSORS.value),
         "tau_d_s": float(params.TAU_D.value),
         "saturation_ceiling_hz": float(resp.SATURATION_CEILING_HZ),
-        "censoring_variants": list(params.CENSORING_VARIANTS),
+        "censoring_variants": list(variants or params.CENSORING_VARIANTS),
         "E_dep_range_eV": [float(E_dep.min()), float(E_dep.max())],
-        "E_dep_source_grid": os.path.relpath(csv_path, _PROJECT_ROOT),
+        "E_dep_n_columns": int(E_dep.size),
+        "E_dep_source_grid": axis_source,
+        "grid_version": grid_version,
+        "seed_scheme": (
+            "response_matrix.column_seed_sequence: SeedSequence([seed, crc32(design), "
+            "crc32(variant), crc32('%.12e' % E_dep_eV)]). Plan 10-03: the sub-seed is a "
+            "stable function of the column's DEPOSIT ENERGY, not of its ordinal index, so "
+            "prepending the 160 sub-eV columns does not re-seed the 584 columns above "
+            "10.14 eV (fp-ordinal-seed)."),
+        "git_sha": _git_sha(),
+        "linear_yield_extrapolation_caveat": (
+            "BELOW ~1 eV THIS MATRIX IS A MEAN-FIELD EXTRAPOLATION, NOT A DEVICE "
+            "PREDICTION. energy_scale.n_qp_yield is exactly linear, N_qp = eps*E_sensor/"
+            "Delta_tr, with no pair-breaking threshold and no discreteness. At a 0.1 eV "
+            "deposit the off-spot per-sensor share is ~6.8 ueV against an Al trap gap "
+            "Delta_tr ~ 190 ueV, so the model assigns ~0.018 quasiparticles to a sensor "
+            "that could not energetically host one. The bottom two decades are therefore "
+            "a linear extrapolation two decades below where the chain was ever validated. "
+            "Phase 10 can only label this; it cannot fix it. A matrix that looks smooth at "
+            "0.1 eV is NOT evidence that the extrapolation is valid."),
+        "subev_regime_note": (
+            "Below trigger.SUBEV_REGIME_BOUNDARY_eV = 1.0 eV the project's REPORTED "
+            "observable is the trigger probability P_trig(E_dep) (CONVENTIONS Section I, "
+            "plan 10-02), not dR/dE_rec. The trigger curve is NOT folded into this matrix: "
+            "it is an analysis efficiency on a rate, not part of the response kernel "
+            "(fp-trigger-applied-here)."),
+        "phase10_provenance_note": provenance_note,
+        "v1_comparison_note": (
+            "The archived artifacts/stage1/response_matrix_*.npz were built on deposit "
+            "centres round-tripped through data/combined_dRdEdep.csv, which differ from "
+            "the exact geometric means by up to 4.918e-07 relative. BIT-IDENTICAL "
+            "reproduction of the archived matrices is NOT achievable and is not claimed "
+            "(fp-bit-identical-promise)."),
         "R_column_norm": "each E_dep column sums to 1 over E_rec bins (incl. underflow)",
         "estimator": "count-integral E_rec = C * sum_i N_obs,i (Plan 05-01 deliverable)",
         "mc_fluctuation_model": {
@@ -605,7 +710,7 @@ def run_design(
 
     if write:
         os.makedirs(out_dir, exist_ok=True)
-        path = os.path.join(out_dir, DESIGN_FILE[d.name])
+        path = os.path.join(out_dir, file_name or DESIGN_FILE[d.name])
         np.savez_compressed(path, **out)
         out["_path"] = path
     return out

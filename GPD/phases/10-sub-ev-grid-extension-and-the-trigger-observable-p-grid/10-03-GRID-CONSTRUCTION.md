@@ -146,7 +146,7 @@ Recorded command, re-run by
 grep -rn "shared_energy_grid(" --include=*.py src/ tests/
 ```
 
-**28 hits, 28 rows.** (The `def shared_energy_grid(` line itself is excluded.)
+**29 hits, 29 rows.** (28 at the end of plan 10-03; plan 10-04 added one prose hit at `response_matrix.py:604`, enumerated below.) (The `def shared_energy_grid(` line itself is excluded.)
 
 ### 5.1 Raw output
 
@@ -193,6 +193,7 @@ tests/test_compton_channel.py:153:    assert np.array_equal(_SPEC.edges_kev, sha
 | `src/qpd_potential/compton_deposit.py:183` | `spectrum()` — writes `data/compton_dRdEdep.csv` | **v1.0**, explicit | Phase-4 producer. Same reason: silent re-binning of an archived v1.x product is exactly what success criterion 2 forbids. |
 | `src/qpd_potential/response_matrix.py:133` | docstring of `E_dep_grid_from_shared_grid_eV` | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |
 | `src/qpd_potential/response_matrix.py:152` | `E_dep_grid_from_shared_grid_eV(version)` | **caller-supplied**, required argument | The decoupling point added by this plan. It has no default of its own: the caller must name the version, which is how plan 10-04 selects the 744-column axis while the v1.0 comparison rebuild selects 584. |
+| `src/qpd_potential/response_matrix.py:604` | `axis_source` provenance string in `run_design` | n/a — prose | Not a call site: an f-string recording which axis route the npz provenance header should name. ADDED BY PLAN 10-04; enumerated here rather than filtered out by a pattern tweak, so the grep count stays auditable. |
 | `src/qpd_potential/parma_neutron_flux.py:296` | PHASE 9 FILE — comment stating its grid is deliberately NOT this one | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |
 | `src/qpd_potential/parma_neutron_flux.py:333` | PHASE 9 FILE — CSV header string | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |
 | `src/qpd_potential/parma_neutron_flux.py:338` | PHASE 9 FILE — CSV header string | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |
