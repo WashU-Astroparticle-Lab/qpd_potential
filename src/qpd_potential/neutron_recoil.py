@@ -730,11 +730,13 @@ def imprint_statistic(T_eV, dRdT, *, lo_eV: float = IMPRINT_BAND_LO_eV,
     """
     T = np.asarray(T_eV, dtype=float)
     y = np.asarray(dRdT, dtype=float)
-    if np.any(y <= 0):
-        raise ValueError("imprint statistic needs a strictly positive spectrum")
-    slope = np.gradient(np.log(y), np.log(T))
-    a = np.abs(slope)
     m = (T >= lo_eV) & (T <= hi_eV)
+    if np.any(y[m] <= 0):
+        raise ValueError("imprint statistic needs a strictly positive spectrum "
+                         "inside its band")
+    with np.errstate(divide="ignore", invalid="ignore"):
+        slope = np.gradient(np.log(np.where(y > 0, y, np.nan)), np.log(T))
+    a = np.abs(slope)
     if m.sum() < 5:
         raise ValueError("imprint band contains too few points")
     i = int(np.argmax(a[m]))
@@ -1861,3 +1863,551 @@ def calc24_disposition() -> dict:
             "for the total-rate omission to reach that label."
         ).format(roi=worst_roi, tot=worst_tot, mult=label / worst_tot),
     }
+
+
+# =========================================================================== #
+# Plan 13-03: the extended-axis recoil table, the error budget and the figure. #
+# Appended; nothing above moved.                                              #
+# =========================================================================== #
+
+EXT_DRDT_CSV = os.path.join(ARTIFACT_DIR, "neutron_dRdT_ge_ext.csv")
+ERROR_BUDGET_CSV = os.path.join(ARTIFACT_DIR, "neutron_error_budget.csv")
+SPECTRA_PDF = os.path.join(ARTIFACT_DIR, "neutron_subev_spectra.pdf")
+EXT_RECON_CSV = {
+    "Ta->Al": os.path.join(ARTIFACT_DIR, "neutron_dRdErec_ext_TaAl.csv"),
+    "Al->Hf": os.path.join(ARTIFACT_DIR, "neutron_dRdErec_ext_AlHf.csv"),
+}
+
+
+def write_ext_dRdT_table(path: str = EXT_DRDT_CSV, *,
+                         route: str = SUB5EV_ROUTE_DECLARED,
+                         per_decade: int = 200,
+                         bins_per_decade: int = NATIVE_BINS_PER_DECADE) -> str:
+    """Emit the UNBROADENED extended-axis recoil table Plan 13-03 folds.
+
+    NO RESAMPLE IS PERFORMED, and that is a measured statement rather than a
+    convenience: the Plan 13-01 native axis was already BUILT as log bins whose
+    bottom EDGE is exactly the Phase-10 extended-grid floor 0.0999350 eV, with the
+    knots at the geometric bin centres, so ``ia_broadening.native_edges`` of those
+    knots reproduces the axis edges exactly and the extended-axis binning IS the
+    native binning.  Re-gridding it onto a coarser axis would only lose the
+    resonance resolution the SC3 imprint claim depends on.  The identity is
+    asserted in ``tests/test_neutron_fold.py``.
+    """
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    edges, T = native_recoil_axis(bins_per_decade=bins_per_decade)
+    y = fold_dRdT(T, route=route, per_decade=per_decade)
+    y_ctrl = fold_dRdT(T, route=route, per_decade=per_decade,
+                       sigma_b_fn=smoothed_sigma_fn(route=route))
+    hdr = _provenance_header([
+        "#",
+        "# ==================== BROADENING PROVENANCE ========================",
+        "# broadened_provenance = false",
+        "#   THIS TABLE IS UNBROADENED. The IA Gaussian kernel is applied DOWNSTREAM,",
+        "#   EXACTLY ONCE, inside fold.run_neutron_fold_extended(broaden=True) on the",
+        "#   RECOIL axis and upstream of R(E_rec|E_dep). Phase 12 recorded that feeding",
+        "#   an already-broadened table with broaden=True applies the kernel TWICE with",
+        "#   no error raised anywhere; fold.read_broadened_provenance now reads THIS",
+        "#   line and fold.run_neutron_fold_extended RAISES DoubleBroadeningError on",
+        "#   the attempt (fp-double-broaden). Discipline is not the control; the guard",
+        "#   is code, and it is tested by trying it.",
+        "#   ia_broadening.BROADENING_DEFAULT is False; broadening is turned on",
+        "#   deliberately, per call. The rate is NEVER multiplied by exp(-2W).",
+        "#",
+        "# ==================== AXIS ==========================================",
+        f"# {len(T)} log bins at {bins_per_decade}/decade. Bottom bin EDGE exactly "
+        f"{edges[0]:.7g} eV,",
+        f"#   the Phase-10 extended-grid floor; top edge {edges[-1]:.9g} eV = f x "
+        f"{endf_ceiling_eV():.6g} eV.",
+        "#   Knots are the geometric bin centres, so ia_broadening.native_edges",
+        "#   reproduces these edges exactly and NO RESAMPLE onto the extended axis is",
+        "#   needed -- the native binning already IS the extended-axis binning at the",
+        "#   floor. Re-gridding onto a coarser axis would discard the resonance",
+        "#   resolution the SC3 imprint claim rests on.",
+        "#",
+        "# columns:",
+        "#   T_eV_nr                recoil energy [eV], unified phonon scale, no quenching",
+        "#   dRdT                   counts/kg/day/keV -- the physical spectrum",
+        "#   dRdT_smoothed_control  the SC3 control, folded from a resonance-integral-",
+        "#                          preserving SMOOTHED sigma_el. NOT a result. It exists",
+        "#                          so the imprint question can be re-asked on the",
+        "#                          RECONSTRUCTED axis with the control pushed through the",
+        "#                          IDENTICAL chain.",
+        "# reproduce: PYTHONPATH=src /opt/anaconda3/bin/python3 -c \"from "
+        "qpd_potential import neutron_recoil as n; n.write_ext_dRdT_table()\"",
+    ])
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(hdr) + "\n")
+        fh.write("T_eV_nr,dRdT,dRdT_smoothed_control,accuracy_label\n")
+        for t, a, b in zip(T, y, y_ctrl):
+            fh.write(f"{t:.10e},{a:.10e},{b:.10e},{ACCURACY_LABEL}\n")
+    return path
+
+
+# --------------------------------------------------------------------------- #
+# Error budget (ROADMAP SC2)                                                    #
+# --------------------------------------------------------------------------- #
+#: Gordon's quoted >10 MeV integral range, 3.5-3.6e-3 cm^-2 s^-1 with midpoint
+#: 3.550e-3 (09-02 Section 7).  Its HALF-WIDTH is the resolving power of the only
+#: independent cross-check this channel owns: a flux shape change that moves the
+#: >10 MeV integral by less than this is invisible to it.
+GORDON_RANGE_LO = 3.5e-3
+GORDON_RANGE_HI = 3.6e-3
+GORDON_HALF_WIDTH_REL = (GORDON_RANGE_HI - GORDON_RANGE_LO) / (
+    GORDON_RANGE_HI + GORDON_RANGE_LO)
+
+
+def gordon_preserving_perturbation(kind: str):
+    """A flux SHAPE perturbation the >10 MeV Gordon integral cannot see.
+
+    Both constructions multiply phi by a factor that is EXACTLY 1 above 10 MeV, so
+    the channel's only independent cross-check is blind to them by construction,
+    and both change the eV-keV band that actually sets the in-RoI recoil rate.
+
+    ``kind="bump"``  a lognormal enhancement centred in the epithermal plateau;
+    ``kind="tilt"``  a lethargy tilt across the whole sub-10-MeV band.
+    """
+    e_ref = 1.0e7   # 10 eV*1e6 = 10 MeV, the bottom of the Gordon integral
+
+    def _g(e_eV):
+        e = np.asarray(e_eV, dtype=float)
+        out = np.ones_like(e)
+        below = e < e_ref
+        if kind == "bump":
+            # centred at 100 eV, lognormal width 2 in ln E, amplitude +100%
+            w = np.exp(-0.5 * (np.log(e[below] / 1.0e2) / 2.0) ** 2)
+            out[below] = 1.0 + 1.0 * w
+        elif kind == "tilt":
+            # a +/-0.05 lethargy tilt, ramped smoothly to 1 at 10 MeV
+            x = np.log(e[below] / 1.0) / np.log(e_ref / 1.0)
+            out[below] = (e[below] / 1.0) ** (-0.05) * (1.0 - x) + x
+        else:
+            raise ValueError(f"unknown perturbation {kind!r}")
+        return out
+
+    return _g
+
+
+def flux_perturbation_effect(kind: str, *, per_decade: int = 200) -> dict:
+    """In-RoI recoil-rate change, and the >10 MeV integral change, under a shape kick."""
+    g = gordon_preserving_perturbation(kind)
+
+    def _phi(e_eV):
+        return neutron_flux_cm2_s_MeV(e_eV) * g(e_eV)
+
+    _, T = native_recoil_axis()
+    y0 = fold_dRdT(T, per_decade=per_decade)
+    y1 = fold_dRdT(T, per_decade=per_decade, flux_fn=_phi)
+    r0 = band_integrated_rate(T, y0, ROI_LO_eV, ROI_HI_eV)
+    r1 = band_integrated_rate(T, y1, ROI_LO_eV, ROI_HI_eV)
+
+    e = np.logspace(7.0, 10.0, 3001)          # 10 MeV -> 10 GeV
+    phi0 = neutron_flux_cm2_s_MeV(e)
+    i0 = float(np.trapz(phi0 / EV_PER_MEV, e))
+    i1 = float(np.trapz(phi0 * g(e) / EV_PER_MEV, e))
+    return {
+        "kind": kind,
+        "in_roi_rate_baseline": r0, "in_roi_rate_perturbed": r1,
+        "in_roi_relative_change": r1 / r0 - 1.0,
+        "gt10MeV_integral_baseline_cm2_s": i0,
+        "gt10MeV_integral_perturbed_cm2_s": i1,
+        "gt10MeV_relative_change": i1 / i0 - 1.0,
+        "gordon_half_width_rel": GORDON_HALF_WIDTH_REL,
+        "invisible_to_the_only_cross_check":
+            bool(abs(i1 / i0 - 1.0) < GORDON_HALF_WIDTH_REL),
+    }
+
+
+def kernel_perturbation_effect(*, per_decade: int = 200) -> dict:
+    """Kernel-side sensitivities, sourced from the frozen table's OWN validation.
+
+    sigma_el enters the fold linearly, so a uniform fractional perturbation of
+    sigma_el moves the in-RoI rate by exactly that fraction -- which is why these
+    rows are numbers rather than estimates.  The omega_bar leg is a real re-fold.
+    """
+    from . import params as _params
+
+    h = elastic_header()
+    _, T = native_recoil_axis()
+    y = fold_dRdT(T, per_decade=per_decade)
+    r0 = band_integrated_rate(T, y, ROI_LO_eV, ROI_HI_eV)
+    rows = []
+    for name, pct, src in (
+        ("sigma_el mesh convergence", h.mesh_convergence_pct,
+         "frozen table header: max over isotopes, 0.1 keV - 1 MeV"),
+        ("sigma_el Doppler sensitivity", h.doppler_sensitivity_pct,
+         "frozen table header: 293.6 K vs 0.1 K, 0.1 keV - 1 MeV"),
+        ("sigma_el ACE vs MF=3 MT=2", h.ace_vs_mf3_pct,
+         "frozen table header: max over isotopes, 1.1 - 20 MeV"),
+    ):
+        frac = pct / 100.0
+        y_p = fold_dRdT(T, per_decade=per_decade,
+                        sigma_b_fn=lambda e, _f=frac: (1.0 + _f) * sigma_for_fold_b(e))
+        r_p = band_integrated_rate(T, y_p, ROI_LO_eV, ROI_HI_eV)
+        rows.append({"term": name, "input_pct": pct, "source": src,
+                     "in_roi_relative_change": r_p / r0 - 1.0, "bounded": True})
+    return {"in_roi_rate_baseline": r0, "rows": rows,
+            "omega_bar_harmonic_eV": _params.OMEGA_BAR_eV.value,
+            "omega_bar_arithmetic_eV": _params.OMEGA_BAR_ARITHMETIC_eV.value}
+
+
+def _bottom_bin_counts() -> float:
+    """Unbroadened counts in the bottom bin of the native recoil axis."""
+    edges, T = native_recoil_axis()
+    return float(fold_dRdT(np.array([T[0]]))[0] * (edges[1] - edges[0]) / EV_PER_KEV)
+
+
+def _bottom_bin_leak_fraction() -> float:
+    from . import fold as _fold
+    r = _fold.run_neutron_fold_extended("Ta->Al")
+    return float(r["leakage"]["below_floor_per_bin"][0] / _bottom_bin_counts())
+
+
+def _bottom_bin_below_zero_fraction() -> float:
+    from . import fold as _fold
+    r = _fold.run_neutron_fold_extended("Ta->Al")
+    return float(r["leakage"]["below_zero_per_bin"][0] / _bottom_bin_counts())
+
+
+def run_neutron_spectra(design: str, *, sharpness: float | None = None,
+                        path: str | None = None) -> dict:
+    """Central, upper-width and smoothed-control folds for one design."""
+    from . import fold as _fold, params as _params
+    kw = {} if path is None else {"path": path}
+    return {
+        "central": _fold.run_neutron_fold_extended(design, sharpness=sharpness, **kw),
+        "upper": _fold.run_neutron_fold_extended(
+            design, sharpness=sharpness,
+            omega_bar_eV=_params.OMEGA_BAR_ARITHMETIC_eV.value, **kw),
+        "control": _fold.run_neutron_fold_extended(design, sharpness=sharpness,
+                                                   rate_column=2, **kw),
+    }
+
+
+def write_ext_spectrum(design: str, res: dict | None = None,
+                       path: str | None = None) -> str:
+    """Emit artifacts/v2.0/neutron_dRdErec_ext_{TaAl,AlHf}.csv."""
+    from . import fold as _fold, params as _params, trigger as _trigger
+
+    if res is None:
+        res = run_neutron_spectra(design)
+    if path is None:
+        path = EXT_RECON_CSV[design]
+    c, u = res["central"], res["upper"]
+    bud = c["counts_budget"]
+    leak = c["leakage"]
+    boundary = _fold.subev_boundary_Erec_eV(design)
+    # bin 0 of the E_rec axis is the [0, 1e-3 eV) underflow catch-bin, not a
+    # physical differential bin. Dropped exactly as the Phase-12 writer does.
+    sl = slice(1, None)
+    E_rec_keV = c["E_rec_centers_eV"][sl] / EV_PER_KEV
+    y = c["dRdErec"][sl]
+    yt = c["dRdErec_trigger"][sl]
+    yu = u["dRdErec"][sl]
+    with np.errstate(divide="ignore", invalid="ignore"):
+        p_eff = np.where(y > 0, yt / y, 0.0)
+
+    hdr = _provenance_header([
+        "#",
+        f"# ==================== Ge NEUTRON NR dR/dE_rec, design {design} ======",
+        "# THE BACKGROUND CHANNEL THE v1.0 PAPER OMITTED ENTIRELY, and ~91% of",
+        "#   NUCLEUS's shielded RoI budget. It arrives with its label, its omission",
+        "#   bounds and its directional-bias row attached (fp-silent-neutron-omission).",
+        f"# Response: artifacts/v2.0/{_fold.EXT_DESIGN_FILE[design]}, key",
+        "#   R_non_paralyzable, 161 E_rec x 744 E_dep (Phase-10 EXTENDED axis; the v1.0",
+        "#   584-column matrix would truncate at 10.14 eV and discard the entire sub-eV",
+        "#   region this milestone exists to reach).",
+        "# Pipeline order (Phase-12 lock, not negotiable): IA Gaussian broadening on the",
+        "#   RECOIL axis -> rebin onto the extended deposit grid -> R(E_rec|E_dep) ->",
+        "#   the trigger curve as an ANALYSIS efficiency on the DEPOSIT axis, MULTIPLYING",
+        "#   eps and never replacing it (CONVENTIONS Section I).",
+        f"# Broadening: APPLIED, broaden=True at this call site; the global",
+        f"#   ia_broadening.BROADENING_DEFAULT is still {c['broadening_default']}. The",
+        "#   input recoil table declares broadened_provenance = false and the fold",
+        "#   RAISES if it does not (fp-double-broaden).",
+        "# APPLICABILITY: the IA width is a NUCLEAR-recoil width. Neutron elastic",
+        "#   recoils are nuclear recoils, so it applies here on the same footing as",
+        "#   CEvNS. That is ASSERTED from the shared nuclear-recoil character; the",
+        "#   Phase-11 derivation was performed for the CEvNS channel and is not",
+        "#   re-derived. Phase 15's ELECTRON-recoil channels are a separate question.",
+        f"# Central column: the LOCKED harmonic VDOS mean omega_bar = "
+        f"{c['omega_bar_eV']:.10e} eV (CONVENTIONS J).",
+        f"# dRdErec_upper_width_onesided: the ONE-SIDED UPPER moment systematic on the",
+        f"#   ARITHMETIC VDOS mean {u['omega_bar_eV']:.10e} eV, a x"
+        f"{np.sqrt(u['omega_bar_eV'] / c['omega_bar_eV']):.6f} correction on the WIDTH.",
+        "#   'UPPER' refers to the WIDTH, not the rate: a wider kernel moves MORE mass",
+        "#   off the bottom of the axis, so in the bottom decade this column sits BELOW",
+        "#   the central curve. Never absorbed, never averaged. There is NO lower band.",
+        "# The rate is NEVER multiplied by exp(-2W) (CONVENTIONS J, milestone-wide).",
+        "#",
+        "# ==================== COUNTS BUDGET ================================",
+        f"#   input_counts                  = {bud['input_counts']:.6f} counts/kg/day",
+        f"#   leaked_below_floor            = {bud['leaked_below_floor']:.6f} "
+        f"({bud['leaked_below_floor'] / bud['input_counts']:.6%} of input)",
+        f"#   leaked_below_zero (a SUBSET)  = {bud['leaked_below_zero']:.6f} "
+        f"({bud['leaked_below_zero'] / bud['input_counts']:.6%})",
+        f"#   leaked_above_top              = {bud['leaked_above_top']:.6f}",
+        f"#   deposit_counts                = {bud['deposit_counts']:.6f}",
+        f"#   reconstructed_counts          = {bud['reconstructed_counts']:.6f}",
+        f"#   residual_retained_plus_leaked = {bud['residual_retained_plus_leaked']:.6e}"
+        "   <- MUST CLOSE (ROADMAP SC1, <= 1e-3)",
+        f"#   residual_retained_only        = {bud['residual_retained_only']:+.6e}"
+        "   <- MUST MISS. A retained-only",
+        "#       residual that also closed would be evidence of a hidden rescale, not of",
+        "#       conservation (fp-renormalize-leakage). Leakage is REPORTED, never",
+        "#       renormalized (CONVENTIONS J).",
+        f"#   residual_fold                 = {bud['residual_fold']:.6e}"
+        "   <- exact: R's columns sum to 1",
+        "#   BOTTOM-BIN caveat, carried not buried: the 100 meV bin is the least",
+        "#     reliable number in the milestone (CONVENTIONS J). On THIS axis its own",
+        f"#     kernel leaks {_bottom_bin_leak_fraction():.6%} below the floor and "
+        f"{_bottom_bin_below_zero_fraction():.6%} to unphysical T < 0,",
+        f"#     with sigma_E = {leak['sigma_eV'][0]:.6f} eV at the bottom-bin centre "
+        f"{c['rebin']['T_min_eV']:.7f} eV",
+        "#     against a symmetric Gaussian fitted to an asymmetric lineshape. Nothing",
+        "#     is renormalized. The per-bin record is in",
+        "#     artifacts/v2.0/neutron_error_budget.csv.",
+        "#",
+        "# columns: E_rec_keV, dRdErec_central, dRdErec_trigger_weighted,",
+        "#   dRdErec_upper_width_onesided, P_trig_effective, regime, accuracy_label",
+        f"#   regime: 'trigger_probability' below the E_rec image "
+        f"{boundary:.6f} eV of the",
+        f"#   {_trigger.SUBEV_REGIME_BOUNDARY_eV:g} eV DEPOSITED regime boundary "
+        "(read off this matrix's own",
+        "#   median mapping curve, not assumed to be 0.5x anything); 'rate' above it.",
+        "# reproduce: PYTHONPATH=src /opt/anaconda3/bin/python3 -c \"from "
+        f"qpd_potential import neutron_recoil as n; n.write_ext_spectrum('{design}')\"",
+    ])
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(hdr) + "\n")
+        fh.write("E_rec_keV,dRdErec_central,dRdErec_trigger_weighted,"
+                 "dRdErec_upper_width_onesided,P_trig_effective,regime,"
+                 "accuracy_label\n")
+        for e, a, b, d_, p in zip(E_rec_keV, y, yt, yu, p_eff):
+            reg = ("trigger_probability" if e * EV_PER_KEV < boundary else "rate")
+            fh.write(f"{e:.10e},{a:.10e},{b:.10e},{d_:.10e},{p:.10e},{reg},"
+                     f"{ACCURACY_LABEL}\n")
+    return path
+
+
+def imprint_survival(design: str = "Ta->Al", *, res: dict | None = None) -> dict:
+    """Does the SC3 resonance imprint survive onto the RECONSTRUCTED axis?
+
+    The real spectrum and the smoothed-sigma CONTROL are folded through the
+    IDENTICAL chain, so any difference between them cannot be a chain artefact.
+    The verdict is recorded either way; a washout is a legitimate finding.
+    """
+    from . import fold as _fold, ia_broadening as _ia
+
+    if res is None:
+        res = run_neutron_spectra(design)
+    c, ctrl = res["central"], res["control"]
+    _, T = native_recoil_axis()
+    y_r = fold_dRdT(T)
+    y_c = fold_dRdT(T, sigma_b_fn=smoothed_sigma_fn())
+    Tb, y_rb, _, _ = _ia.broaden_native_spectrum(T, y_r, None)
+    _, y_cb, _, _ = _ia.broaden_native_spectrum(T, y_c, None)
+
+    def _contrast(x, a, b, lo, hi):
+        m = (x >= lo) & (x <= hi) & (b > 0)
+        return float(np.max(np.abs(a[m] / b[m] - 1.0)))
+
+    Ed = c["E_dep_centers_eV"]
+    Er = c["E_rec_centers_eV"]
+    # The E_rec image of the imprint band: the response median maps E_dep -> E_rec
+    # with a slope near 0.47, so the band is looked for where the feature LANDS.
+    er_lo, er_hi = 0.5, 3.0
+    stages = {
+        "recoil_axis_unbroadened": dict(
+            real=imprint_statistic(T, y_r), control=imprint_statistic(T, y_c),
+            contrast=_contrast(T, y_r, y_c, IMPRINT_BAND_LO_eV, IMPRINT_BAND_HI_eV),
+            bin_width_pct=100.0 * (T[1] / T[0] - 1.0)),
+        "recoil_axis_broadened": dict(
+            real=imprint_statistic(Tb, y_rb), control=imprint_statistic(Tb, y_cb),
+            contrast=_contrast(Tb, y_rb, y_cb, IMPRINT_BAND_LO_eV, IMPRINT_BAND_HI_eV),
+            bin_width_pct=100.0 * (Tb[1] / Tb[0] - 1.0)),
+        "deposit_axis": dict(
+            real=imprint_statistic(Ed, c["dRdEdep"], lo_eV=IMPRINT_BAND_LO_eV,
+                                   hi_eV=IMPRINT_BAND_HI_eV),
+            control=imprint_statistic(Ed, ctrl["dRdEdep"], lo_eV=IMPRINT_BAND_LO_eV,
+                                      hi_eV=IMPRINT_BAND_HI_eV),
+            contrast=_contrast(Ed, c["dRdEdep"], ctrl["dRdEdep"],
+                               IMPRINT_BAND_LO_eV, IMPRINT_BAND_HI_eV),
+            bin_width_pct=100.0 * (Ed[1] / Ed[0] - 1.0)),
+        "reconstructed_axis": dict(
+            real=imprint_statistic(Er[1:], c["dRdErec"][1:], lo_eV=er_lo, hi_eV=er_hi),
+            control=imprint_statistic(Er[1:], ctrl["dRdErec"][1:], lo_eV=er_lo,
+                                      hi_eV=er_hi),
+            contrast=_contrast(Er[1:], c["dRdErec"][1:], ctrl["dRdErec"][1:],
+                               er_lo, er_hi),
+            bin_width_pct=100.0 * (Er[3] / Er[2] - 1.0)),
+    }
+    final = stages["reconstructed_axis"]
+    return {
+        "design": design,
+        "threshold": IMPRINT_EXCURSION_THRESHOLD,
+        "stages": stages,
+        "survives_on_reconstructed_axis": bool(
+            final["real"]["passes"] and not final["control"]["passes"]),
+        "washout_factor_statistic": (stages["recoil_axis_unbroadened"]["real"]["excursion"]
+                                     / final["real"]["excursion"]),
+        "washout_factor_contrast": (stages["recoil_axis_unbroadened"]["contrast"]
+                                    / final["contrast"]),
+        "ia_sigma_over_E_at_edge": float(
+            np.sqrt(5.5 * __import__("qpd_potential.params",
+                                     fromlist=["x"]).OMEGA_BAR_eV.value) / 5.5),
+    }
+
+
+def write_error_budget(path: str = ERROR_BUDGET_CSV) -> str:
+    """Emit artifacts/v2.0/neutron_error_budget.csv (ROADMAP SC2).
+
+    THIS IS NOT A BUDGET OF TWO NUMBERS WHERE ONE IS BIGGER.  The kernel term is
+    BOUNDED, at the 1e-6 to 1e-3 level, by measurements this project performed and
+    that live in the frozen table's own validation block.  The flux term is
+    UNBOUNDED by available evidence: 09-02 Section 3.4 records that Gordon's
+    differential coefficients are paywalled, that no differential validation of the
+    eV-keV shape exists, and that two spectra can share the >10 MeV integral and
+    differ badly there.  The flux rows below are therefore marked UNBOUNDED and
+    carry a DEMONSTRATION -- two explicit shape perturbations the only independent
+    cross-check cannot see -- rather than a plausible-looking error bar
+    (fp-manufactured-flux-uncertainty).
+    """
+    from . import fold as _fold, params as _params
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    k = kernel_perturbation_effect()
+    fx = [flux_perturbation_effect("bump"), flux_perturbation_effect("tilt")]
+    rows = []
+    for r in k["rows"]:
+        rows.append((r["term"], "kernel", f"{r['input_pct']:.6g}% uniform on sigma_el",
+                     f"{r['in_roi_relative_change']:+.6e}", "bounded", r["source"]))
+    # the omega_bar leg is a real re-fold through the whole chain, per design
+    for design in ("Ta->Al", "Al->Hf"):
+        c = _fold.run_neutron_fold_extended(design)
+        u = _fold.run_neutron_fold_extended(
+            design, omega_bar_eV=_params.OMEGA_BAR_ARITHMETIC_eV.value)
+        Er = c["E_rec_centers_eV"]
+        m = (Er >= ROI_LO_eV) & (Er <= ROI_HI_eV)
+        rel_roi = float(u["N_rec"][m].sum() / c["N_rec"][m].sum() - 1.0)
+        rel_tot = float(u["N_rec"].sum() / c["N_rec"].sum() - 1.0)
+        rows.append((f"omega_bar harmonic -> arithmetic ({design})", "kernel",
+                     f"{_params.OMEGA_BAR_eV.value:.6e} -> "
+                     f"{_params.OMEGA_BAR_ARITHMETIC_eV.value:.6e} eV",
+                     f"{rel_roi:+.6e}", "bounded",
+                     f"CONVENTIONS J locked band; total-rate leg {rel_tot:+.6e}"))
+    for f in fx:
+        rows.append((f"flux eV-keV shape perturbation '{f['kind']}'", "flux",
+                     "multiplicative shape factor, EXACTLY 1 above 10 MeV",
+                     f"{f['in_roi_relative_change']:+.6e}", "UNBOUNDED",
+                     f">10 MeV Gordon integral moves by "
+                     f"{f['gt10MeV_relative_change']:+.3e}, against the Gordon range's "
+                     f"own half-width {GORDON_HALF_WIDTH_REL:.4f} -- INVISIBLE to the "
+                     "only independent cross-check this channel owns"))
+    rows.append(("flux eV-keV differential shape", "flux",
+                 "no independent validation exists or is obtainable here",
+                 "UNBOUNDED", "UNBOUNDED",
+                 "09-02 Section 3.4: Gordon's differential coefficients are paywalled; "
+                 "the only cross-check is a SINGLE >10 MeV integral. No numeric value "
+                 "is entered here, deliberately (fp-manufactured-flux-uncertainty)"))
+
+    hdr = _provenance_header([
+        "#",
+        "# ==================== ERROR BUDGET (ROADMAP SC2) ===================",
+        "# The dominant uncertainty is the INPUT FLUX, not the frozen kernel, and that",
+        "#   is established BY MEASUREMENT on both sides rather than asserted.",
+        "#",
+        "# KERNEL SIDE -- numbers that exist, from the frozen table's OWN validation",
+        f"#   block: mesh convergence {elastic_header().mesh_convergence_pct}%, "
+        f"Doppler {elastic_header().doppler_sensitivity_pct}%,",
+        f"#   ACE-vs-MF3 {elastic_header().ace_vs_mf3_pct}%. sigma_el enters the fold",
+        "#   LINEARLY, so a uniform fractional perturbation moves the in-RoI rate by",
+        "#   exactly that fraction -- these rows are identities of the fold, checked.",
+        "#   The omega_bar row is a real re-fold through broadening, the deposit rebin",
+        "#   and the response chain, at the CONVENTIONS J locked upper band.",
+        "#",
+        "# FLUX SIDE -- a number that does NOT exist, DEMONSTRATED rather than asserted.",
+        "#   Two explicit shape perturbations were constructed, each multiplying phi by a",
+        "#   factor that is EXACTLY 1 above 10 MeV so the >10 MeV Gordon integral is",
+        "#   preserved identically, and each changing the eV-keV band that actually sets",
+        f"#   the in-RoI recoil rate: '{fx[0]['kind']}' moves it by "
+        f"{fx[0]['in_roi_relative_change']:+.4%} and '{fx[1]['kind']}' by "
+        f"{fx[1]['in_roi_relative_change']:+.4%},",
+        "#   while the only independent cross-check this channel owns registers",
+        f"#   {fx[0]['gt10MeV_relative_change']:+.3e} and "
+        f"{fx[1]['gt10MeV_relative_change']:+.3e} -- i.e. NOTHING.",
+        "#   THE ASYMMETRY IS THE FINDING: the kernel term is bounded at 1e-6 to 1e-3 by",
+        "#   measurements this project performed; the flux term is UNBOUNDED by available",
+        "#   evidence, and the two perturbations above are lower witnesses to that, not",
+        "#   an estimate of it. Their amplitudes were CHOSEN; nothing in the evidence",
+        "#   bounds them.",
+        "#   NO integral-level figure is entered as a differential error bar. In",
+        "#   particular the untuned PARMA-vs-Gordon offset is an INTEGRAL agreement above",
+        "#   10 MeV and appears nowhere in this table as an uncertainty",
+        "#   (fp-manufactured-flux-uncertainty).",
+        "#",
+        "# columns: term, side, perturbation, in_roi_relative_change, bounded, note",
+        "# reproduce: PYTHONPATH=src /opt/anaconda3/bin/python3 -c \"from "
+        "qpd_potential import neutron_recoil as n; n.write_error_budget()\"",
+    ])
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(hdr) + "\n")
+        fh.write("term,side,perturbation,in_roi_relative_change,bounded,note,"
+                 "accuracy_label\n")
+        for r in rows:
+            fh.write(",".join(['"%s"' % x for x in r]) + f",{ACCURACY_LABEL}\n")
+    return path
+
+
+def make_spectra_figure(path: str = SPECTRA_PDF) -> str:
+    """Both designs' dR/dE_rec from 100 meV, with the label ON the figure."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from . import fold as _fold
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    fig, ax = plt.subplots(figsize=(7.2, 5.0))
+    styles = {"Ta->Al": "-", "Al->Hf": "--"}
+    for design, ls in styles.items():
+        r = _fold.run_neutron_fold_extended(design)
+        E = r["E_rec_centers_eV"][1:]
+        y = r["dRdErec"][1:]
+        yt = r["dRdErec_trigger"][1:]
+        m = (E > 0) & (y > 0)
+        ax.plot(E[m], y[m], ls, color="C0", lw=1.6,
+                label=f"{design} untriggered")
+        mt = (E > 0) & (yt > 0)
+        ax.plot(E[mt], yt[mt], ls, color="C3", lw=1.6,
+                label=f"{design} trigger-weighted")
+        b = _fold.subev_boundary_Erec_eV(design)
+        ax.axvline(b, color="0.5", ls=":", lw=1.0)
+        ax.text(b, 0.30, f"  sub-eV regime boundary ({design}) {b:.3f} eV",
+                transform=ax.get_xaxis_transform(), fontsize=6.5,
+                color="0.35", rotation=90, va="bottom")
+    ax.axvspan(0.0999350, 1.0, color="0.92", zorder=0)
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(0.08, 1.0e4)
+    ax.set_xlabel(r"reconstructed energy $E_{\rm rec}$  [eV]")
+    ax.set_ylabel(r"$dR/dE_{\rm rec}$  [counts kg$^{-1}$ day$^{-1}$ keV$^{-1}$]")
+    ax.set_title("Ge neutron elastic nuclear-recoil background, "
+                 "unshielded outdoor sea level", fontsize=10)
+    ax.legend(fontsize=8, loc="lower left")
+    ax.grid(alpha=0.25, which="both", lw=0.4)
+    ax.text(0.985, 0.965,
+            f"accuracy_label = {ACCURACY_LABEL}\n"
+            "phi_default (outdoor); phi_lo NOT USED\n"
+            "keV_nr unified phonon scale, no quenching\n"
+            "IA kernel applied once, upstream of R",
+            transform=ax.transAxes, ha="right", va="top", fontsize=7.5,
+            bbox=dict(boxstyle="round,pad=0.35", fc="w", ec="0.6", lw=0.6))
+    ax.text(0.02, 0.955, "shaded: sub-eV region (0.0999350 - 1 eV)\n"
+            "step near E_rec ~ 2.6 eV = the response image of the 5.50 eV\n"
+            "kinematic edge of the 102.59 eV 73Ge resonance",
+            transform=ax.transAxes, fontsize=7, color="0.35", va="top")
+    fig.tight_layout()
+    fig.savefig(path)
+    plt.close(fig)
+    return path

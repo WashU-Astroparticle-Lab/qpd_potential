@@ -287,7 +287,26 @@ def test_no_shielded_token_applied_in_the_13_02_artifacts():
 
 
 def test_no_mass_scaled_nucleus_residual_anywhere():
-    """fp-mass-scaled-target: retained as a standing prohibition."""
+    """fp-mass-scaled-target: retained as a standing prohibition.
+
+    What the proxy forbids is SCALING a NUCLEUS CaWO4 or Al2O3 measured residual
+    rate to germanium by a mass argument. Naming NUCLEUS as context -- "neutrons
+    were ~91% of their shielded RoI budget" -- is not that, so the guard is
+    written against the things that would actually constitute the proxy: reading
+    one of their data files, or a rescale/residual quantity entering the channel.
+    """
+    banned = ("nucleus2019", "nucleus_", "data/external/nucleus", "table 5",
+              "rescale", "residual rate", "mass-scal", "mass scal")
     for p in (nr.COMPRESSION_CSV, nr.OMISSION_CSV, nr.__file__):
-        low = open(p, encoding="utf-8").read().lower()
-        assert "nucleus" not in low or "no nucleus" in low, p
+        for i, line in enumerate(open(p, encoding="utf-8"), 1):
+            low = line.lower()
+            for b in banned:
+                context_ok = any(c in low for c in (
+                    "fp-mass-scaled-target", "no nucleus", "never", "leakage",
+                    "renormaliz", "conserv", "not netted", "hidden rescale"))
+                if b in low and not context_ok:
+                    raise AssertionError(f"{p}:{i}: {b!r}: {line.strip()[:120]}")
+    # ...and no NUCLEUS measured quantity is importable from this channel at all
+    src = open(nr.__file__, encoding="utf-8").read()
+    assert "veto_credit" not in src and "veto_envelope" not in src
+    assert "nucleus2019_fig1_ge" not in src

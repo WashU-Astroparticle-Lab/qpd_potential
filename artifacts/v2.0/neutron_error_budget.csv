@@ -1,0 +1,80 @@
+# QPD Phase-13 -- Ge NEUTRON ELASTIC nuclear-recoil channel.
+# accuracy_label = order_of_magnitude   <-- inherited at the point of definition from
+#   09-02-NEUTRON-DECLARATION.md Section 3.4. The ONLY independent
+#   cross-check the input flux owns is a SINGLE >10 MeV integral agreeing to
+#   -8.77% UNTUNED; nothing validates its eV-keV differential shape, which is
+#   exactly the band that sets this rate. No quantity here may be quoted to
+#   better than this label (fp-precision-inflation).
+#
+# AXIS TAG: E_n is INCIDENT NEUTRON KINETIC ENERGY; T is NUCLEAR RECOIL
+#   energy. A 1 MeV neutron does not deposit 1 MeV. Recoil axis is keV_nr on
+#   the unified phonon scale, NO Lindhard and NO quenching (CONVENTIONS B).
+#
+# flux_column = phi_default (outdoor, == phi_hi); phi_lo NOT USED.
+#   phi_lo = phi_default/5 is the INDOOR leg, a configuration question and not
+#   an error bar for an unshielded surface wafer (09-02 Section 4). Requesting
+#   it RAISES in neutron_recoil.neutron_flux_cm2_s_MeV.
+# NOT applied, under any name: shield attenuation, post-shield fluence,
+#   overburden, buildup factor -- all NOT applied. Veto credit and
+#   multiplicity credit are NOT applied; veto credit is exactly 1.0 by
+#   construction.
+#
+# f = T_max/E_n = 0.0536 (natural Ge, abundance weighted)
+#   PROVENANCE: parsed from data/endf_nGe_elastic_v1.1.csv header line
+#   'T_max/E_n natural (abundance-weighted, AS COMPUTED) = 0.0536'. Not transcribed from prose (fp-quote-from-prose).
+#   per isotope 4A/(1+A)^2: 70Ge=0.0555, 72Ge=0.054, 73Ge=0.0533, 74Ge=0.0526, 76Ge=0.0513
+# N_Ge = 8.291565e+24 atoms/kg, DERIVED as 4.4136e+22 atoms/cm^3 / 5.323 g/cm^3 x 1000 g/kg
+#   from the frozen table's own header (CONVENTIONS D quotes 8.29e24; agree
+#   to better than 0.05%).
+# sigma_el source = ENDF/B-VIII.0 + LANL Lib80x, 23155-point union grid, 293.6 K,
+#   validity 1.031e-05 eV -> 2e+07 eV; resonance peak 669.1 b at 102.59 eV.
+#   frozen-table git_sha = f742c63
+# truncation_energy_upper_eV = 2e+07  (the ENDF ceiling; sigma_el is NEVER extrapolated above it)
+# truncation_energy_lower_eV = 5  (the sub-5 eV seam)
+# flux source = pinned PARMA v4.10 / Sato 2015 driver, commit 6ff37cacb8cf003e2fc269963f9a08f812407264,
+#   anchor scalar k = 1.0961 applied uniformly (Gordon 2004 >10 MeV integral only).
+#   The driver is evaluated DIRECTLY at every quadrature node, which is how
+#   the 1 eV - 10.14 eV gap between the two committed flux tables is closed;
+#   neither committed table is interpolated or extrapolated across it.
+# git_sha = 71e6949
+#
+# ==================== ERROR BUDGET (ROADMAP SC2) ===================
+# The dominant uncertainty is the INPUT FLUX, not the frozen kernel, and that
+#   is established BY MEASUREMENT on both sides rather than asserted.
+#
+# KERNEL SIDE -- numbers that exist, from the frozen table's OWN validation
+#   block: mesh convergence 0.1117%, Doppler 0.000254%,
+#   ACE-vs-MF3 3.96e-05%. sigma_el enters the fold
+#   LINEARLY, so a uniform fractional perturbation moves the in-RoI rate by
+#   exactly that fraction -- these rows are identities of the fold, checked.
+#   The omega_bar row is a real re-fold through broadening, the deposit rebin
+#   and the response chain, at the CONVENTIONS J locked upper band.
+#
+# FLUX SIDE -- a number that does NOT exist, DEMONSTRATED rather than asserted.
+#   Two explicit shape perturbations were constructed, each multiplying phi by a
+#   factor that is EXACTLY 1 above 10 MeV so the >10 MeV Gordon integral is
+#   preserved identically, and each changing the eV-keV band that actually sets
+#   the in-RoI recoil rate: 'bump' moves it by +41.3294% and 'tilt' by -16.3054%,
+#   while the only independent cross-check this channel owns registers
+#   +0.000e+00 and +0.000e+00 -- i.e. NOTHING.
+#   THE ASYMMETRY IS THE FINDING: the kernel term is bounded at 1e-6 to 1e-3 by
+#   measurements this project performed; the flux term is UNBOUNDED by available
+#   evidence, and the two perturbations above are lower witnesses to that, not
+#   an estimate of it. Their amplitudes were CHOSEN; nothing in the evidence
+#   bounds them.
+#   NO integral-level figure is entered as a differential error bar. In
+#   particular the untuned PARMA-vs-Gordon offset is an INTEGRAL agreement above
+#   10 MeV and appears nowhere in this table as an uncertainty
+#   (fp-manufactured-flux-uncertainty).
+#
+# columns: term, side, perturbation, in_roi_relative_change, bounded, note
+# reproduce: PYTHONPATH=src /opt/anaconda3/bin/python3 -c "from qpd_potential import neutron_recoil as n; n.write_error_budget()"
+term,side,perturbation,in_roi_relative_change,bounded,note,accuracy_label
+"sigma_el mesh convergence","kernel","0.1117% uniform on sigma_el","+1.117000e-03","bounded","frozen table header: max over isotopes, 0.1 keV - 1 MeV",order_of_magnitude
+"sigma_el Doppler sensitivity","kernel","0.000254% uniform on sigma_el","+2.540000e-06","bounded","frozen table header: 293.6 K vs 0.1 K, 0.1 keV - 1 MeV",order_of_magnitude
+"sigma_el ACE vs MF=3 MT=2","kernel","3.96e-05% uniform on sigma_el","+3.960000e-07","bounded","frozen table header: max over isotopes, 1.1 - 20 MeV",order_of_magnitude
+"omega_bar harmonic -> arithmetic (Ta->Al)","kernel","1.785968e-02 -> 2.419553e-02 eV","-1.088714e-06","bounded","CONVENTIONS J locked band; total-rate leg -1.256033e-03",order_of_magnitude
+"omega_bar harmonic -> arithmetic (Al->Hf)","kernel","1.785968e-02 -> 2.419553e-02 eV","-4.399988e-05","bounded","CONVENTIONS J locked band; total-rate leg -1.256033e-03",order_of_magnitude
+"flux eV-keV shape perturbation 'bump'","flux","multiplicative shape factor, EXACTLY 1 above 10 MeV","+4.132937e-01","UNBOUNDED",">10 MeV Gordon integral moves by +0.000e+00, against the Gordon range's own half-width 0.0141 -- INVISIBLE to the only independent cross-check this channel owns",order_of_magnitude
+"flux eV-keV shape perturbation 'tilt'","flux","multiplicative shape factor, EXACTLY 1 above 10 MeV","-1.630539e-01","UNBOUNDED",">10 MeV Gordon integral moves by +0.000e+00, against the Gordon range's own half-width 0.0141 -- INVISIBLE to the only independent cross-check this channel owns",order_of_magnitude
+"flux eV-keV differential shape","flux","no independent validation exists or is obtainable here","UNBOUNDED","UNBOUNDED","09-02 Section 3.4: Gordon's differential coefficients are paywalled; the only cross-check is a SINGLE >10 MeV integral. No numeric value is entered here, deliberately (fp-manufactured-flux-uncertainty)",order_of_magnitude

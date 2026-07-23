@@ -1041,3 +1041,280 @@ if __name__ == "__main__":  # pragma: no cover
         for ch, v in cc.items():
             print(f"  {ch:8s} N_dep={v['N_dep']:.4f} N_rec={v['N_rec']:.4f} rel={v['rel']:.2e}")
     print(_json.dumps(landing_report(), indent=2, default=float))
+
+
+# =========================================================================== #
+# Phase-13 plan 13-03: a NEUTRON-ONLY extended fold path.                      #
+#                                                                             #
+# Appended, not inserted.  ``fold.py`` line numbers are keyed by the Phase-10   #
+# interpolator inventory (fold.py:554/588/592) and the Phase-12 summary records  #
+# that shifting them is itself a defect, so nothing above this line moved.       #
+#                                                                             #
+# WHY A CHANNEL-SPECIFIC PATH.  ``run_fold`` folds all three channels and raises #
+# on the still-584-bin muon and Compton grids, exactly as it did for Phase 12.   #
+# =========================================================================== #
+
+NEUTRON_EXT_CSV = os.path.join(EXT_ARTIFACT_DIR, "neutron_dRdT_ge_ext.csv")
+
+NEUTRON_EXT_RECON_FILE = {
+    "Ta->Al": "neutron_dRdErec_ext_TaAl.csv",
+    "Al->Hf": "neutron_dRdErec_ext_AlHf.csv",
+}
+
+#: Header key every recoil table produced by Phase 13 carries.  It is what makes
+#: the double-broaden trap CATCHABLE rather than a discipline problem: Phase 12
+#: recorded that feeding an already-broadened table with ``broaden=True`` applies
+#: the IA kernel TWICE with no error raised anywhere in the codebase.
+BROADENED_PROVENANCE_KEY = "broadened_provenance"
+
+
+class DoubleBroadeningError(ValueError):
+    """Raised when an already-broadened recoil table is fed with broaden=True."""
+
+
+def read_broadened_provenance(path: str):
+    """Read ``broadened_provenance = true|false`` from a recoil table's header.
+
+    Returns ``True``, ``False``, or ``None`` when the table declares nothing --
+    and ``None`` is NOT treated as "unbroadened".  A table that does not say is a
+    table whose broadening state is unknown, and the guard says so.
+    """
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            if not line.startswith("#"):
+                break
+            import re as _re
+            if not _re.search(r"(?<![A-Za-z_])" + BROADENED_PROVENANCE_KEY
+                              + r"\s*=", line):
+                continue
+            val = line.split("=", 1)[1].strip().lower()
+            if val.startswith("true"):
+                return True
+            if val.startswith("false"):
+                return False
+    return None
+
+
+def read_neutron_recoil_table(path: str = NEUTRON_EXT_CSV,
+                              rate_column: int = 1) -> dict:
+    """The Phase-13 neutron recoil table: ``T_eV_nr`` in column 0.
+
+    ``rate_column`` selects which rate column to fold.  Column 1 is the physical
+    spectrum; column 2 is the smoothed-sigma CONTROL, which exists so that the
+    SC3 imprint question can be re-asked on the RECONSTRUCTED axis with the
+    control pushed through the IDENTICAL chain -- a difference between them then
+    cannot be a chain artefact.
+    """
+    # Parse only the LEADING numeric tokens: the Phase-13 tables carry a trailing
+    # per-row ``accuracy_label`` string, which is deliberate -- a consumer cannot
+    # read a rate out of this channel without also reading its label.
+    parsed = []
+    with open(path, encoding="utf-8") as fh:
+        for line in fh:
+            if line.startswith("#"):
+                continue
+            vals = []
+            for tok in line.strip().split(","):
+                try:
+                    vals.append(float(tok))
+                except ValueError:
+                    break
+            if len(vals) > rate_column:
+                parsed.append(vals)
+    rows = np.asarray(parsed, dtype=float)
+    if rows.ndim != 2:
+        raise ValueError(f"{path}: no numeric rows with a column {rate_column}")
+    T = rows[:, 0]
+    order = np.argsort(T)
+    return {"T_eV": T[order], "dRdT": rows[order, rate_column],
+            "rate_column": int(rate_column),
+            "broadened_provenance": read_broadened_provenance(path)}
+
+
+def rebin_recoil_arrays_to_edep_grid(
+    E_dep_edges_eV: np.ndarray, T_eV: np.ndarray, dRdT: np.ndarray, *,
+    broaden: bool | None = None, omega_bar_eV: float | None = None,
+) -> dict:
+    """Array-input twin of :func:`rebin_cevns_to_edep_grid`.
+
+    Identical arithmetic, identical helper calls, identical low-edge treatment --
+    it differs only in taking the recoil arrays directly rather than reading a
+    fixed 8-column CSV layout.  ``tests/test_neutron_fold.py`` asserts it
+    reproduces ``rebin_cevns_to_edep_grid`` BIT-IDENTICALLY on the Phase-12 CEvNS
+    table, so the two cannot drift apart silently.
+    """
+    T = np.asarray(T_eV, float)
+    y = np.asarray(dRdT, float)
+    floor = float(E_dep_edges_eV[0])
+
+    if broaden is None:
+        broaden = ia_broadening.BROADENING_DEFAULT
+    broadening_leakage = None
+    if broaden:
+        T, y, _, broadening_leakage = ia_broadening.broaden_native_spectrum(
+            T, y, None, omega_bar_eV=omega_bar_eV)
+
+    counts = rebin_counts(T, y, E_dep_edges_eV)
+    dE_dep_keV = np.diff(E_dep_edges_eV) / 1.0e3
+    dRdEdep = counts / dE_dep_keV
+
+    inner = T[(T > T[0]) & (T < floor)]
+    sub_edges = np.concatenate([[T[0]], inner, [floor]])
+    low_counts = rebin_counts(T, y, sub_edges)
+    low_centers = np.sqrt(sub_edges[:-1] * sub_edges[1:])
+    low_Erec = LOW_E_SLOPE * low_centers
+
+    return {
+        "counts": counts,
+        "dRdEdep": dRdEdep,
+        "low_counts": low_counts,
+        "low_Erec_eV": low_Erec,
+        "broadening_applied": bool(broaden),
+        "broadening_leakage": broadening_leakage,
+        "floor_eV": floor,
+        "T_min_eV": float(T[0]),
+        "T_max_eV": float(T[-1]),
+    }
+
+
+def run_neutron_fold_extended(
+    design: str, *, path: str = NEUTRON_EXT_CSV, broaden: bool = True,
+    omega_bar_eV: Optional[float] = None, sharpness: Optional[float] = None,
+    p_trig_override: Optional[np.ndarray] = None, rate_column: int = 1,
+) -> dict:
+    """Fold the Ge NEUTRON elastic channel ALONE through the extended matrices.
+
+    Modelled on :func:`run_cevns_fold_extended` and carrying its three structural
+    guards -- the 744-column shape check, the floor-coverage assertion on the
+    bottom bin EDGE rather than the first knot, and a ``counts_budget`` that keeps
+    ``residual_retained_plus_leaked`` and ``residual_retained_only`` SEPARATE --
+    plus one guard Phase 12 identified but the codebase still lacked: an
+    already-broadened input fed with ``broaden=True`` now RAISES
+    (``fp-double-broaden``) instead of applying the kernel twice in silence.
+
+    APPLICABILITY, STATED RATHER THAN ASSUMED.  IA broadening is a NUCLEAR-recoil
+    width.  Neutron elastic recoils are nuclear recoils, so the kernel applies here
+    on the same footing as CEvNS.  That is asserted from the shared nuclear-recoil
+    character; the Phase-11 derivation was performed for the CEvNS channel and is
+    not re-derived here.  Phase 15's ELECTRON-recoil channels are a separate
+    question and are not settled by this.
+
+    Pipeline order (Phase-12 lock, not negotiable): IA broadening on the recoil
+    axis, upstream of the deposit rebin; then ``R(E_rec|E_dep)``; then the trigger
+    curve as an analysis efficiency on the DEPOSIT axis, MULTIPLYING eps.  The rate
+    is NEVER multiplied by ``exp(-2W)``.
+    """
+    from . import params as _params, trigger as _trigger
+
+    src = read_neutron_recoil_table(path, rate_column=rate_column)
+    if broaden and src["broadened_provenance"] is not False:
+        raise DoubleBroadeningError(
+            f"{os.path.basename(path)} declares "
+            f"{BROADENED_PROVENANCE_KEY} = {src['broadened_provenance']!r} and "
+            "broaden=True was requested. Applying the IA kernel to an already-"
+            "broadened (or unlabelled) recoil table would widen every sub-eV "
+            "feature by sqrt(2) and change the leakage budget while looking "
+            "entirely normal (fp-double-broaden). Feed the UNBROADENED table, or "
+            "pass broaden=False.")
+
+    d = load_design_extended(design)
+    R = d["R_non_paralyzable"]
+    E_dep_edges = d["E_dep_edges_eV"]
+    E_dep_centers = d["E_dep_centers_eV"]
+    E_rec_edges = d["E_rec_edges_eV"]
+    E_rec_centers = d["E_rec_centers_eV"]
+    dE_rec_keV = np.diff(E_rec_edges) / 1.0e3
+
+    if R.shape[1] != E_dep_centers.size or E_dep_centers.size != 744:
+        raise ValueError(
+            f"{design}: expected the 744-column EXTENDED response matrix, got "
+            f"{R.shape}. The v1.0 584-column matrix would truncate at 10.14 eV "
+            "and silently discard the entire sub-eV region this milestone exists "
+            "to reach.")
+
+    # FLOOR COVERAGE, asserted on the bottom bin EDGE rather than the first knot.
+    native_lo = float(ia_broadening.native_edges(src["T_eV"])[0])
+    floor = float(E_dep_edges[0])
+    if native_lo > floor * (1.0 + 1.0e-9):
+        raise ValueError(
+            f"the recoil table {os.path.basename(path)} has its bottom bin edge at "
+            f"{native_lo!r} eV but the extended deposit grid floors at {floor!r} eV. "
+            "Its support does not reach the floor; folding it would report a "
+            "sub-eV spectrum the table never covered.")
+
+    reb = rebin_recoil_arrays_to_edep_grid(
+        E_dep_edges, src["T_eV"], src["dRdT"],
+        broaden=broaden, omega_bar_eV=omega_bar_eV)
+    N_dep = reb["counts"]
+
+    if p_trig_override is None:
+        P = np.asarray(_trigger.P_trig(E_dep_centers, sharpness=sharpness), float)
+    else:
+        P = np.asarray(p_trig_override, float)
+        if P.shape != E_dep_centers.shape:
+            raise ValueError("p_trig_override must live on the deposit centres")
+
+    N_rec = _add_low_edge(fold_counts(N_dep, R), reb["low_counts"],
+                          reb["low_Erec_eV"], E_rec_edges)
+    low_P = np.asarray(_trigger.P_trig(reb["low_Erec_eV"] / LOW_E_SLOPE,
+                                       sharpness=sharpness), float) \
+        if p_trig_override is None else np.ones_like(reb["low_counts"])
+    N_rec_trig = _add_low_edge(fold_counts(N_dep * P, R),
+                               reb["low_counts"] * low_P,
+                               reb["low_Erec_eV"], E_rec_edges)
+
+    dRdErec = N_rec / dE_rec_keV
+    dRdErec_trig = N_rec_trig / dE_rec_keV
+
+    T_src, y_src = src["T_eV"], src["dRdT"]
+    dE_src_keV = np.diff(ia_broadening.native_edges(T_src)) / 1.0e3
+    input_counts = float(np.sum(y_src * dE_src_keV))
+    leak = reb["broadening_leakage"]
+    leaked_below = float(leak["below_floor"]) if leak else 0.0
+    leaked_below_zero = float(leak["below_zero"]) if leak else 0.0
+    leaked_above = float(leak["above_top"]) if leak else 0.0
+    deposit_counts = float(N_dep.sum() + reb["low_counts"].sum())
+    rec_counts = float(N_rec.sum())
+
+    budget = {
+        "input_counts": input_counts,
+        "leaked_below_floor": leaked_below,
+        "leaked_below_zero": leaked_below_zero,   # a SUBSET of leaked_below_floor
+        "leaked_above_top": leaked_above,
+        "deposit_counts": deposit_counts,
+        "reconstructed_counts": rec_counts,
+        # The budget that must CLOSE:
+        "residual_retained_plus_leaked": abs(
+            deposit_counts + leaked_below + leaked_above - input_counts) / input_counts,
+        # The one that must MISS.  A retained-only residual that also closes is
+        # evidence of a hidden rescale (fp-renormalize-leakage).
+        "residual_retained_only": (deposit_counts - input_counts) / input_counts,
+        # R's columns sum to 1, so this is exact up to floating point.
+        "residual_fold": abs(rec_counts - deposit_counts) / deposit_counts,
+    }
+
+    return {
+        "design": design,
+        "channel": "neutron_elastic_NR",
+        "rate_column": int(rate_column),
+        "broadening_applied": bool(broaden),
+        "broadening_default": ia_broadening.BROADENING_DEFAULT,
+        "omega_bar_eV": (_params.OMEGA_BAR_eV.value if omega_bar_eV is None
+                         else float(omega_bar_eV)),
+        "recoil_table": path,
+        "E_dep_centers_eV": E_dep_centers,
+        "E_dep_edges_eV": E_dep_edges,
+        "E_rec_centers_eV": E_rec_centers,
+        "E_rec_edges_eV": E_rec_edges,
+        "E_rec_median_of_Edep_eV": d["E_rec_median_non_paralyzable_eV"],
+        "P_trig_on_Edep": P,
+        "N_dep": N_dep,
+        "N_rec": N_rec,
+        "N_rec_trigger": N_rec_trig,
+        "dRdEdep": reb["dRdEdep"],
+        "dRdErec": dRdErec,
+        "dRdErec_trigger": dRdErec_trig,
+        "rebin": reb,
+        "leakage": leak,
+        "counts_budget": budget,
+    }
