@@ -1,0 +1,79 @@
+# QPD Phase-16 plan 16-01 -- VALD-12 SIGNAL-SIDE CHECK (restated 2026-07-22).
+# axis = RECOIL on every row.
+#
+# WHAT THE RESTATEMENT GIVES UP, written on the deliverable rather than dropped:
+#   Reproducing CONUS+'s S/B is NOT a coherent test for this pipeline -- they sit at
+#   7.4 m.w.e. behind a shield this project does not model, so matching their ratio
+#   would require inventing a model of their shield.  CONSEQUENCE: THE MILESTONE
+#   CARRIES NO EXTERNAL VALIDATION OF THE RATIO S/B_particle ITSELF, ONLY OF ITS
+#   NUMERATOR.  Their measured S/B ~ 0.03 is retained as CONTEXT for a shielded
+#   experiment and is explicitly NOT a gate and NOT a target.
+#
+# GEOMETRIC RESCALE, factors written out individually (fp-product-instead-of-factors):
+#   P_c = 3.6 GW_th, P_v = 3.0 GW_th  ->  P_c/P_v = 1.2000000000
+#   d_c = 20.7 m,  d_v = 25.0 m  ->  (d_v/d_c)^2 = 1.4586104693
+#   factor = 1.7503325632
+#   Assumes a point source, rate linear in thermal power, and the SAME antineutrino
+#   SPECTRAL SHAPE at both sites.  The fission-fraction difference between the 3 GW_th
+#   reference core and CONUS+'s Leibstadt core is a NAMED, UNQUANTIFIED systematic:
+#   this project holds nothing that could quantify it, and no guessed correction is folded in.
+#
+# CONUS+ SM EXPECTATION: 347 +/- 59 events in 327 kg.d
+#   as a rate: 347 / 327 counts/kg/day, uncertainty 59 / 327 = 1.0611620795 +/- 0.1804281346 counts/kg/day
+#   CONUS+ Collab., Nature 643, 1229 (2025), arXiv:2501.05206.  A CITATION: no CONUS+
+#   ancillary data exists to download.
+#
+# KINEMATIC SUPPORT of our dR/dT: the largest T with non-zero dR/dT is 3031.6858 eV_nr
+#   (the table runs to 3165.6057 eV_nr but carries exact zeros above the endpoint).
+#   A window above it records a ZERO rate with an above_kinematic_endpoint flag; it is
+#   never a silently truncated integral (fp-silent-endpoint-truncation), and no table
+#   was extended to make any window reachable.
+#
+# IA BROADENING IS OMITTED and its size is MEASURED, not asserted small.  CONUS+'s SM
+#   expectation contains no impulse-approximation kernel, so the like-for-like object is
+#   the unbroadened dR/dT.  sigma_E/E_R = sqrt(omega_bar/E_R) with the CONVENTIONS
+#   Section J locked omega_bar = 1.7859677040e-02 eV:
+#     at the pre-registered lower edge 2116.49 eV_nr: 2.904884e-03
+#     at the pre-registered upper edge 4742.51 eV_nr: 1.940585e-03
+#   Direction: a symmetric kernel on a falling spectrum near an endpoint moves counts
+#   BOTH ways across a window edge; at these fractional widths the effect is far below
+#   the decades the window choice moves, which is why it is not the story here.
+#
+# INDEPENDENT ROUTE (not an algebraic identity of this plan): cevns.conus_rescale_check
+#   compares our flagship flux model against Billard's independently normalized one at
+#   the CONUS+ geometry.  R_ours_at_conus = 1.185887e+02, R_billard_at_conus = 1.196293e+02,
+#   ratio = 0.991302.  The two routes AGREE on the absolute rate scale to 0.87%.
+#
+#   BUT THAT AGREEMENT DOES NOT REACH THE WINDOW, and saying so is the point of this
+#   block.  conus_rescale_check integrates from a 50 eV recoil floor and that integral
+#   is overwhelmingly low-T.  MEASURED, not assumed:
+#     rate above the 50 eV floor              = 67.760571 counts/kg/day
+#     fraction of it above the PRE-REGISTERED lower edge = 4.722893e-06
+#     fraction of it above the ALTERNATE lower edge      = 7.456330e-03
+#   So the 1%-level Billard agreement constrains the BULK normalization and says
+#   essentially NOTHING about the 2-5 keV_nr tail the pre-registered window probes.
+#   It is evidence that the chain's overall scale is sound; it is NOT evidence that
+#   the endpoint region is right, and it must not be read as the latter.
+#
+# VERDICT: VALD-12 (signal-side leg) = PARTIALLY CONFIRMED.
+#   pre-registered ratio 5.278664e-04 against the PRE-DECLARED factor 2.0;
+#   THE PRE-REGISTERED LEG ITSELF IS A FAIL: VALD-12's signal-side
+#   leg is NOT discharged on the window this project pre-registered.
+#   declared-alternate ratios 4.012535e-01, 8.333761e-01, 1.764657e+00; central-k alternate within the factor: True, whole bracket within the factor: False.
+#   THE VERDICT IS WINDOW-CONDITIONAL: the ratio spans 4.504 decades across
+#   candidates and this project's own documents disagree about which window is CONUS+'s.
+#   Reason: the ratio lies OUTSIDE the pre-declared factor on the pre-registered window, and that window is only partly inside the kinematic support, so the pre-registered leg FAILS; the declared alternate window lands inside the factor, which localizes the failure to the WINDOW rather than to the flux x cross-section x target chain.
+#
+# The pre-re-scope S/B expectation that once accompanied this check is WITHDRAWN by the
+#   2026-07-22 re-scope and no replacement expectation is asserted anywhere.
+#
+candidate,source,preregistered,axis,E_ee_lo_keVee,E_ee_hi_keVee,quenching_model,quenching_provenance,lindhard_k,bracket_position,quenching_bracket_lo,quenching_bracket_hi,E_nr_lo_keVnr,E_nr_hi_keVnr,Q_at_lo,Q_at_hi,support_edge_eV_nr,support_fraction,above_kinematic_endpoint,rate_ours_counts_kg_day,geometric_rescale_factor,rate_rescaled_counts_kg_day,conus_sm_rate_counts_kg_day,ratio,stated_factor,within_stated_factor,sigma_over_E_at_lo,sigma_over_E_at_hi
+preregistered_roadmap_requirements,ROADMAP.md Phase 16 anchor line + REQUIREMENTS.md VALD-12,False,RECOIL,0.4,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.13,bracket_low,0.13,0.2,2.4264507522873284,5.415858697616814,0.16484983246535467,0.18464292660368672,3031.6857665,0.20245982658815884,False,3.348828137138376e-05,1.7503325631870055,5.861562936950179e-05,1.0611620795107033,5.523720692745558e-05,2.0,False,0.002713007910018575,0.0018159468706055995
+preregistered_roadmap_requirements,ROADMAP.md Phase 16 anchor line + REQUIREMENTS.md VALD-12,True,RECOIL,0.4,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.157,bracket_central,0.13,0.2,2.1164886505078933,4.742511305611007,0.1889922726039717,0.21085874878503086,3031.6857665,0.3485107465518688,False,0.000320025911192179,1.7503325631870055,0.0005601517734232636,1.0611620795107033,0.0005278663686150063,2.0,False,0.0029048842282277682,0.001940584745472133
+preregistered_roadmap_requirements,ROADMAP.md Phase 16 anchor line + REQUIREMENTS.md VALD-12,False,RECOIL,0.4,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.2,bracket_high,0.13,0.2,1.7857234923283078,4.022830033754298,0.22399884512829124,0.2485812205858352,3031.6857665,0.5569525863428406,False,0.003250349781621265,1.7503325631870055,0.005689193064519473,1.0611620795107033,0.005361285683279158,2.0,False,0.0031624938858930062,0.002107031162055278
+alternate_literature_survey,GPD/literature/SUMMARY.md limiting case at 160 eV_ee / 7.4 m.w.e.,False,RECOIL,0.16,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.13,bracket_low,0.13,0.2,1.0846816608708272,5.415858697616814,0.14750871686310743,0.18464292660368672,3031.6857665,0.4495323301519804,False,0.24326517422249125,1.7503325631870055,0.42579495593098654,1.0611620795107033,0.4012534599119095,2.0,False,0.004057753414575531,0.0018159468706055995
+alternate_literature_survey,GPD/literature/SUMMARY.md limiting case at 160 eV_ee / 7.4 m.w.e.,False,RECOIL,0.16,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.157,bracket_central,0.13,0.2,0.9430458884192658,4.742511305611007,0.1696630057612489,0.21085874878503086,3031.6857665,0.5497194075329915,False,0.5052452115402407,1.7503325631870055,0.8843471461531903,1.0611620795107033,0.8333761290838423,2.0,True,0.004351814627637795,0.001940584745472133
+alternate_literature_survey,GPD/literature/SUMMARY.md limiting case at 160 eV_ee / 7.4 m.w.e.,False,RECOIL,0.16,1.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.2,bracket_high,0.13,0.2,0.7920532611356399,4.022830033754298,0.20200661729565156,0.2485812205858352,3031.6857665,0.6932179667582108,False,1.069846485350421,1.7503325631870055,1.8725871409200117,1.0611620795107033,1.7646570463424895,2.0,True,0.0047485346060937685,0.002107031162055278
+kinematic_probe_above_endpoint,kinematic probe declared in plan 16-01; NOT a CONUS+ window,False,RECOIL,1.0,2.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.13,bracket_low,0.13,0.2,5.415858697616814,9.91471927766382,0.18464292660368672,0.20172028516285478,3031.6857665,0.0,True,0.0,1.7503325631870055,0.0,1.0611620795107033,0.0,2.0,False,0.0018159468706055995,0.0013421361975271533
+kinematic_probe_above_endpoint,kinematic probe declared in plan 16-01; NOT a CONUS+ window,False,RECOIL,1.0,2.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.157,bracket_central,0.13,0.2,4.742511305611007,8.712763125368163,0.21085874878503086,0.22954830416274963,3031.6857665,0.0,True,0.0,1.7503325631870055,0.0,1.0611620795107033,0.0,2.0,False,0.001940584745472133,0.001431722490119226
+kinematic_probe_above_endpoint,kinematic probe declared in plan 16-01; NOT a CONUS+ window,False,RECOIL,1.0,2.0,"Lindhard-Robinson k-parameterized, germanium Z=32",BRACKETED,0.2,bracket_high,0.13,0.2,4.022830033754298,7.425791277497783,0.2485812205858352,0.2693315668675683,3031.6857665,0.0,True,0.0,1.7503325631870055,0.0,1.0611620795107033,0.0,2.0,False,0.002107031162055278,0.0015508344207122717

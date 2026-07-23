@@ -371,10 +371,13 @@ def test_inventory_closure_grep_hits_equal_inventory_rows():
     # after plan 14-01 registered the three sites in capture_channel.py (the ACE
     # MT=102 capture evaluation and the two thresholded MT=51..91 inelastic maps,
     # both of which pass left=0.0 explicitly because an inelastic partial is exactly
-    # zero below its own level threshold).
+    # zero below its own level threshold); 45 after plan 16-01 registered the single
+    # site in conus_check.py (the two CONUS+ analysis-window EDGE values of the
+    # committed recoil-axis dR/dT, so a window integral starts and ends at its own
+    # converted boundary rather than at the nearest tabulated knot).
     # Bumping this number is the ONLY sanctioned response to a new hit, and it must
     # come with an inventory row.
-    assert len(hits) == 44, f"grep hit count changed: {len(hits)}"
+    assert len(hits) == 45, f"grep hit count changed: {len(hits)}"
     rows = [ln for ln in text.splitlines()
             if ln.startswith("| `src/") and ln.count("|") >= 6]
     assert len(rows) == len(hits), (
