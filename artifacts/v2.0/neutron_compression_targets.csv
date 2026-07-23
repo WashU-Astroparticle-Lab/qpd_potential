@@ -1,0 +1,118 @@
+# QPD Phase-13 -- Ge NEUTRON ELASTIC nuclear-recoil channel.
+# accuracy_label = order_of_magnitude   <-- inherited at the point of definition from
+#   09-02-NEUTRON-DECLARATION.md Section 3.4. The ONLY independent
+#   cross-check the input flux owns is a SINGLE >10 MeV integral agreeing to
+#   -8.77% UNTUNED; nothing validates its eV-keV differential shape, which is
+#   exactly the band that sets this rate. No quantity here may be quoted to
+#   better than this label (fp-precision-inflation).
+#
+# AXIS TAG: E_n is INCIDENT NEUTRON KINETIC ENERGY; T is NUCLEAR RECOIL
+#   energy. A 1 MeV neutron does not deposit 1 MeV. Recoil axis is keV_nr on
+#   the unified phonon scale, NO Lindhard and NO quenching (CONVENTIONS B).
+#
+# flux_column = phi_default (outdoor, == phi_hi); phi_lo NOT USED.
+#   phi_lo = phi_default/5 is the INDOOR leg, a configuration question and not
+#   an error bar for an unshielded surface wafer (09-02 Section 4). Requesting
+#   it RAISES in neutron_recoil.neutron_flux_cm2_s_MeV.
+# NOT applied, under any name: shield attenuation, post-shield fluence,
+#   overburden, buildup factor -- all NOT applied. Veto credit and
+#   multiplicity credit are NOT applied; veto credit is exactly 1.0 by
+#   construction.
+#
+# f = T_max/E_n = 0.0536 (natural Ge, abundance weighted)
+#   PROVENANCE: parsed from data/endf_nGe_elastic_v1.1.csv header line
+#   'T_max/E_n natural (abundance-weighted, AS COMPUTED) = 0.0536'. Not transcribed from prose (fp-quote-from-prose).
+#   per isotope 4A/(1+A)^2: 70Ge=0.0555, 72Ge=0.054, 73Ge=0.0533, 74Ge=0.0526, 76Ge=0.0513
+# N_Ge = 8.291565e+24 atoms/kg, DERIVED as 4.4136e+22 atoms/cm^3 / 5.323 g/cm^3 x 1000 g/kg
+#   from the frozen table's own header (CONVENTIONS D quotes 8.29e24; agree
+#   to better than 0.05%).
+# sigma_el source = ENDF/B-VIII.0 + LANL Lib80x, 23155-point union grid, 293.6 K,
+#   validity 1.031e-05 eV -> 2e+07 eV; resonance peak 669.1 b at 102.59 eV.
+#   frozen-table git_sha = f742c63
+# truncation_energy_upper_eV = 2e+07  (the ENDF ceiling; sigma_el is NEVER extrapolated above it)
+# truncation_energy_lower_eV = 5  (the sub-5 eV seam)
+# flux source = pinned PARMA v4.10 / Sato 2015 driver, commit 6ff37cacb8cf003e2fc269963f9a08f812407264,
+#   anchor scalar k = 1.0961 applied uniformly (Gordon 2004 >10 MeV integral only).
+#   The driver is evaluated DIRECTLY at every quadrature node, which is how
+#   the 1 eV - 10.14 eV gap between the two committed flux tables is closed;
+#   neither committed table is interpolated or extrapolated across it.
+# git_sha = f3839b5
+#
+# ================== WHAT THIS TABLE ADJUDICATES ====================
+# ROADMAP Phase 13 SC4 asserts that Ge's ~2.5x larger T_max/E_n makes it the
+#   WORSE neutron target. SC4's own wording is 'exhibited, not asserted', so
+#   the ratio 0.0536/0.021505 is the INPUT to the criterion and never its
+#   output (fp-assert-compression).
+#
+# THE KINEMATIC FACTOR CANCELS. For phi = C/E and sigma constant,
+#   INT_{T/f}^inf (C/E) sigma/(f E) dE = C sigma / T, independent of f.
+#   More generally, substituting E = (T/f) x gives
+#   dR/dT = n (C/T) INT_1^inf sigma((T/f) x) x^-2 dx: the 1/f prefactor
+#   cancels against the lower limit for ANY sigma, and f survives only inside
+#   sigma's ARGUMENT. So f selects WHICH PART of sigma(E_n) a given recoil T
+#   samples -- it moves resonance features along T -- and it does not scale
+#   the rate at all.
+#   MEASURED: spread across f in (0.0215, 0.0536, 0.0952, 0.2215) under a pure 1/E flux
+#   = 4.200e-08; deviation from the closed form 4.651e-08.
+# The real flux is flat in lethargy to a factor 1.3901
+#   over 1 - 10000 eV (recomputed here from the
+#   pinned driver; 09-02 Section 5 records 1.390), i.e. close to the limit in
+#   which f provably has no effect.
+#
+# ==================== LEG QUALITY, STATED ==========================
+# This repository owns a resonance-resolved sigma_el for GERMANIUM ALONE.
+#   Every ratio leg below therefore uses a COMMON CONSTANT sigma = 1 b for
+#   EVERY target INCLUDING Ge. Its value cancels identically from any
+#   target-to-target ratio. Holding it common is deliberate: comparing a
+#   resonance-resolved Ge against a smooth W would produce 'Ge has more
+#   structure' BY CONSTRUCTION. The size of Ge's own resonance-structure term
+#   is reported separately in the ge_resonance_structure column and enters NO
+#   ratio. THE CONSEQUENCE, STATED: these legs settle the MECHANISM, not the
+#   absolute direction, because real sigma_el is element dependent and this
+#   project holds no cross section for W, Ca or O.
+#
+# ==================== ATOMS PER KG =================================
+# Each material uses its OWN atoms/kg, never germanium's. N_A = 6.0220e+23 from CONVENTIONS.md Section D's test-value line;
+#   Ge cross-check: 1000/72.63 x N_A = 8.291340e+24 against the frozen-table derivation 8.291565e+24 (0.003%).
+# Mass numbers are the dominant natural isotope's, and they reproduce the
+#   ROADMAP's own kinematic factors: 4A/(1+A)^2 = 0.021505 (A=184, W), 0.095181 (A=40, Ca), 0.221453 (A=16, O).
+#
+# columns: target, T_eV_nr, molar_mass_g_mol, atoms_per_kg,
+#   f_effective (atom-count-weighted for a compound),
+#   ratio_pure_1overE   Ge/target under a synthetic phi = C/E  [f cancels]
+#   ratio_real_flux     Ge/target under the operative outdoor flux
+#   atoms_per_kg_ratio  Ge/target, pure target number density
+#   residual_after_atoms_per_kg, flux_shape_part, kinematic_part
+#   ge_resonance_structure  Ge real sigma_el / the common constant sigma
+# reproduce: PYTHONPATH=src /opt/anaconda3/bin/python3 -c "from qpd_potential import neutron_recoil as n; n.write_compression_table()"
+target,T_eV_nr,molar_mass_g_mol,atoms_per_kg,f_effective,ratio_pure_1overE,ratio_real_flux,atoms_per_kg_ratio,residual_after_atoms_per_kg,flux_shape_part,kinematic_part,ge_resonance_structure,accuracy_label
+Ge,1.0000000000e-01,72.63,8.291340e+24,0.053600,1.00000000e+00,1.00000000e+00,1.00000000e+00,+0.000000e+00,+0.000000e+00,+0.000000e+00,8.884804e+00,order_of_magnitude
+Ge,1.0000000000e+00,72.63,8.291340e+24,0.053600,1.00000000e+00,1.00000000e+00,1.00000000e+00,+0.000000e+00,+0.000000e+00,+0.000000e+00,1.214475e+01,order_of_magnitude
+Ge,1.0000000000e+01,72.63,8.291340e+24,0.053600,1.00000000e+00,1.00000000e+00,1.00000000e+00,+0.000000e+00,+0.000000e+00,+0.000000e+00,1.123112e+01,order_of_magnitude
+Ge,3.1600000000e+01,72.63,8.291340e+24,0.053600,1.00000000e+00,1.00000000e+00,1.00000000e+00,+0.000000e+00,+0.000000e+00,+0.000000e+00,9.540532e+00,order_of_magnitude
+Ge,1.0000000000e+02,72.63,8.291340e+24,0.053600,1.00000000e+00,1.00000000e+00,1.00000000e+00,+0.000000e+00,+0.000000e+00,+0.000000e+00,1.082832e+01,order_of_magnitude
+Ge,1.0000000000e+03,72.63,8.291340e+24,0.053600,1.00000000e+00,1.00000000e+00,1.00000000e+00,+0.000000e+00,+0.000000e+00,+0.000000e+00,7.789413e+00,order_of_magnitude
+W,1.0000000000e-01,184,3.272826e+24,0.021505,2.53338876e+00,2.46368289e+00,2.53338841e+00,-2.751474e-02,-2.751487e-02,+1.392232e-07,8.884804e+00,order_of_magnitude
+W,1.0000000000e+00,184,3.272826e+24,0.021505,2.53339193e+00,2.49272262e+00,2.53338841e+00,-1.605193e-02,-1.605330e-02,+1.392235e-06,1.214475e+01,order_of_magnitude
+W,1.0000000000e+01,184,3.272826e+24,0.021505,2.53342368e+00,2.45543205e+00,2.53338841e+00,-3.077158e-02,-3.078507e-02,+1.392264e-05,1.123112e+01,order_of_magnitude
+W,3.1600000000e+01,184,3.272826e+24,0.021505,2.53349987e+00,2.39728712e+00,2.53338841e+00,-5.372303e-02,-5.376466e-02,+4.399777e-05,9.540532e+00,order_of_magnitude
+W,1.0000000000e+02,184,3.272826e+24,0.021505,2.53374120e+00,2.29415527e+00,2.53338841e+00,-9.443208e-02,-9.455817e-02,+1.392556e-04,1.082832e+01,order_of_magnitude
+W,1.0000000000e+03,184,3.272826e+24,0.021505,2.53692369e+00,1.99252516e+00,2.53338841e+00,-2.134940e-01,-2.145900e-01,+1.395477e-03,7.789413e+00,order_of_magnitude
+Ca,1.0000000000e-01,40,1.505500e+25,0.095181,5.50736588e-01,5.66403623e-01,5.50736610e-01,+2.844738e-02,+2.844742e-02,-4.075234e-08,8.884804e+00,order_of_magnitude
+Ca,1.0000000000e+00,40,1.505500e+25,0.095181,5.50736386e-01,5.56461411e-01,5.50736610e-01,+1.039481e-02,+1.039522e-02,-4.075235e-07,1.214475e+01,order_of_magnitude
+Ca,1.0000000000e+01,40,1.505500e+25,0.095181,5.50734366e-01,5.58688569e-01,5.50736610e-01,+1.443877e-02,+1.444290e-02,-4.075255e-06,1.123112e+01,order_of_magnitude
+Ca,3.1600000000e+01,40,1.505500e+25,0.095181,5.50729518e-01,5.63937799e-01,5.50736610e-01,+2.397006e-02,+2.398325e-02,-1.287795e-05,9.540532e+00,order_of_magnitude
+Ca,1.0000000000e+02,40,1.505500e+25,0.095181,5.50714165e-01,5.74725287e-01,5.50736610e-01,+4.355744e-02,+4.359997e-02,-4.075447e-05,1.082832e+01,order_of_magnitude
+Ca,1.0000000000e+03,40,1.505500e+25,0.095181,5.50512054e-01,6.21766994e-01,5.50736610e-01,+1.289734e-01,+1.294339e-01,-4.077375e-04,7.789413e+00,order_of_magnitude
+O,1.0000000000e-01,16,3.763750e+25,0.221453,2.20294629e-01,2.43715006e-01,2.20294644e-01,+1.063138e-01,+1.063139e-01,-7.070546e-08,8.884804e+00,order_of_magnitude
+O,1.0000000000e+00,16,3.763750e+25,0.221453,2.20294488e-01,2.26579404e-01,2.20294644e-01,+2.852888e-02,+2.852961e-02,-7.070547e-07,1.214475e+01,order_of_magnitude
+O,1.0000000000e+01,16,3.763750e+25,0.221453,2.20293086e-01,2.27313220e-01,2.20294644e-01,+3.185995e-02,+3.186724e-02,-7.070562e-06,1.123112e+01,order_of_magnitude
+O,3.1600000000e+01,16,3.763750e+25,0.221453,2.20289722e-01,2.31340886e-01,2.20294644e-01,+5.014303e-02,+5.016650e-02,-2.234308e-05,9.540532e+00,order_of_magnitude
+O,1.0000000000e+02,16,3.763750e+25,0.221453,2.20279068e-01,2.40155581e-01,2.20294644e-01,+9.015624e-02,+9.023333e-02,-7.070705e-05,1.082832e+01,order_of_magnitude
+O,1.0000000000e+03,16,3.763750e+25,0.221453,2.20138849e-01,2.84789341e-01,2.20294644e-01,+2.927656e-01,+2.936805e-01,-7.072142e-04,7.789413e+00,order_of_magnitude
+CaWO4,1.0000000000e-01,288,1.254583e+25,0.167083,6.60883912e-01,7.06041980e-01,6.60883932e-01,+6.832977e-02,+6.832980e-02,-3.072516e-08,8.884804e+00,order_of_magnitude
+CaWO4,1.0000000000e+00,288,1.254583e+25,0.167083,6.60883729e-01,6.72646765e-01,6.60883932e-01,+1.779864e-02,+1.779895e-02,-3.072518e-07,1.214475e+01,order_of_magnitude
+CaWO4,1.0000000000e+01,288,1.254583e+25,0.167083,6.60881902e-01,6.72768347e-01,6.60883932e-01,+1.798260e-02,+1.798573e-02,-3.072535e-06,1.123112e+01,order_of_magnitude
+CaWO4,3.1600000000e+01,288,1.254583e+25,0.167083,6.60877516e-01,6.78715016e-01,6.60883932e-01,+2.698066e-02,+2.699063e-02,-9.709342e-06,9.540532e+00,order_of_magnitude
+CaWO4,1.0000000000e+02,288,1.254583e+25,0.167083,6.60863625e-01,6.91815119e-01,6.60883932e-01,+4.680275e-02,+4.683492e-02,-3.072708e-05,1.082832e+01,order_of_magnitude
+CaWO4,1.0000000000e+03,288,1.254583e+25,0.167083,6.60680748e-01,7.55102001e-01,6.60883932e-01,+1.425637e-01,+1.429151e-01,-3.074439e-04,7.789413e+00,order_of_magnitude

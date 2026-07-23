@@ -276,6 +276,21 @@ def test_closure_not_rerun():
                    "tests/test_veto_credit.py"}
     added_here = {"src/qpd_potential/cevns_subev.py",
                   "tests/test_cevns_subev_regression.py"}
+    # ADDED BY PLAN 13-02, and recorded explicitly rather than allow-listed by
+    # pattern. ROADMAP Phase 13 SC4 requires the Ge-vs-CaWO4 kinematic-compression
+    # statement to be EXHIBITED, so neutron_recoil.py computes CaWO4's own atom
+    # fractions and kinematic factors FROM FIRST PRINCIPLES -- its own atoms/kg,
+    # its own 4A/(1+A)^2 per species, the same incident neutron flux. No NUCLEUS
+    # CaWO4 measured rate, residual, Table-5 entry or target-swap rescale enters,
+    # which is what fp-mass-scaled-target actually forbids; that is separately
+    # asserted by tests/test_neutron_kinematics.py::
+    # test_no_mass_scaled_nucleus_residual_anywhere. This is the NEUTRON channel,
+    # not the CEvNS closure, and nothing here re-runs or rescales that closure.
+    phase13_neutron_target_comparison = {
+        "src/qpd_potential/neutron_recoil.py",
+        "tests/test_neutron_kinematics.py",
+    }
+    added_here = added_here | phase13_neutron_target_comparison
     assert set(out) <= preexisting | added_here, (
         f"a CaWO4/Al2O3 model was added: {sorted(set(out) - preexisting - added_here)}")
     # ...and what those two files contain is arithmetic and prose, not a target model

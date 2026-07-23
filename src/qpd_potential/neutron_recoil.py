@@ -1289,3 +1289,575 @@ def read_dRdT_table(path: str = DRDT_CSV) -> dict:
     a = _numeric_rows(path, ncol=4)
     return {"T_eV": a[:, 0], "dRdT": a[:, 1], "dRdT_smoothed_control": a[:, 2],
             "dRdT_sub5eV_truncated": a[:, 3]}
+
+
+# =========================================================================== #
+# Plan 13-02: target comparison (ROADMAP SC4) and the high-energy omission     #
+# bound (ROADMAP SC5, second half).                                           #
+#                                                                             #
+# Everything below is APPENDED. Nothing above it moved: the Phase-10           #
+# interpolator inventory is keyed by ``file:line`` and the Phase-12 summary     #
+# records that shifting line numbers in a scanned module is itself a defect.    #
+# =========================================================================== #
+
+#: Avogadro's number, quoted with its source: the CONVENTIONS.md Section D test
+#: value line, "1000 g / 72.63 g/mol x 6.022e23 = 8.29e24 Ge atoms/kg".  Using it
+#: with M = 72.63 reproduces the frozen table's own N_Ge/rho derivation to 0.003%.
+AVOGADRO = 6.022e23
+
+
+@dataclass(frozen=True)
+class ComparisonTarget:
+    """A neutron-elastic comparison target, per kg of ITSELF.
+
+    ``species`` is [(mass_number, count_per_formula_unit), ...].  The per-kg atom
+    density of each species is computed from the compound's OWN molar mass, never
+    from germanium's -- conflating them is the arithmetic that would manufacture a
+    target comparison out of nothing.
+    """
+    name: str
+    species: tuple
+    note: str = ""
+
+    @property
+    def molar_mass_g_mol(self) -> float:
+        return float(sum(A * n for A, n in self.species))
+
+    @property
+    def formula_units_per_kg(self) -> float:
+        return 1.0e3 * AVOGADRO / self.molar_mass_g_mol
+
+    def atoms_per_kg(self) -> dict:
+        fu = self.formula_units_per_kg
+        return {A: fu * n for A, n in self.species}
+
+    def total_atoms_per_kg(self) -> float:
+        return sum(self.atoms_per_kg().values())
+
+    def atom_fractions(self) -> dict:
+        tot = float(sum(n for _, n in self.species))
+        return {A: n / tot for A, n in self.species}
+
+    def kinematic_factors(self) -> dict:
+        return {A: kinematic_factor(A) for A, _ in self.species}
+
+
+#: Mass numbers are the DOMINANT NATURAL ISOTOPE's, and they are what reproduce
+#: the ROADMAP's own quoted kinematic factors: 4A/(1+A)^2 gives 0.021505 for
+#: A = 184 (W), 0.095181 for A = 40 (Ca) and 0.221453 for A = 16 (O), against the
+#: roadmap's 0.0215, 0.0952 and 0.2215.  Germanium uses the frozen table's own
+#: abundance-weighted f, not a single mass number.
+COMPARISON_TARGETS = {
+    "Ge": ComparisonTarget("Ge", ((72.63, 1),),
+                           "molar mass from the frozen elastic table header"),
+    "W": ComparisonTarget("W", ((184, 1),), "dominant natural isotope 184W"),
+    "Ca": ComparisonTarget("Ca", ((40, 1),), "dominant natural isotope 40Ca"),
+    "O": ComparisonTarget("O", ((16, 1),), "dominant natural isotope 16O"),
+    "CaWO4": ComparisonTarget("CaWO4", ((40, 1), (184, 1), (16, 4)),
+                              "the target the ROADMAP statement is actually about"),
+}
+
+#: The common constant cross section used for EVERY target in the ratio legs.
+#: Its VALUE is irrelevant -- it cancels identically from any target-to-target
+#: ratio -- and that is the point: this repository owns a resonance-resolved
+#: sigma_el for germanium ALONE, so a leg that used the real Ge sigma against a
+#: constant for the others would manufacture "Ge has more structure" BY
+#: CONSTRUCTION.  Holding sigma common removes that artefact and isolates the two
+#: mechanisms that CAN be computed here: the kinematic factor and atoms/kg.
+COMPARISON_SIGMA_B = 1.0
+
+
+def _const_sigma(sigma_b: float):
+    def _s(e):
+        return np.full_like(np.atleast_1d(np.asarray(e, dtype=float)), float(sigma_b))
+    return _s
+
+
+def pure_epithermal_flux(C_cm2_s: float = 2.24e-4):
+    """A synthetic phi(E) = C/E, in the same units the driver returns (per MeV)."""
+    def _phi(e_eV):
+        return C_cm2_s / (np.asarray(e_eV, dtype=float) / EV_PER_MEV)
+    return _phi
+
+
+def target_dRdT(target, T_eV, *, sigma_b: float = COMPARISON_SIGMA_B,
+                flux_fn=None, per_decade: int = 200,
+                f_override: float | None = None) -> np.ndarray:
+    """dR/dT per kg of ``target``, summed over its species' flat boxes.
+
+    Germanium uses the frozen table's abundance-weighted f unless ``f_override``
+    says otherwise; every other species uses its own 4A/(1+A)^2.
+    """
+    if isinstance(target, str):
+        target = COMPARISON_TARGETS[target]
+    T = np.atleast_1d(np.asarray(T_eV, dtype=float))
+    total = np.zeros_like(T)
+    npk = target.atoms_per_kg()
+    for A, n in npk.items():
+        if f_override is not None:
+            f = f_override
+        elif target.name == "Ge":
+            f = f_natural()
+        else:
+            f = kinematic_factor(A)
+        total = total + fold_dRdT(T, f=f, n_per_kg=n,
+                                  sigma_b_fn=_const_sigma(sigma_b),
+                                  flux_fn=flux_fn, per_decade=per_decade)
+    return total
+
+
+def lethargy_flatness(lo_eV: float = 1.0, hi_eV: float = 1.0e4,
+                      n: int = 4001) -> dict:
+    """max/min of E*phi over a band -- how close the real flux is to 1/E.
+
+    09-02-NEUTRON-DECLARATION.md Section 5 records 1.390 over 1 eV - 10 keV.
+    Recomputing it here from the driver is an independent check on that record,
+    and it is the number that sizes the ONLY departure from the exact epithermal
+    cancellation.
+    """
+    E = np.logspace(np.log10(lo_eV), np.log10(hi_eV), int(n))
+    leth = E * neutron_flux_cm2_s_MeV(E)
+    return {"lo_eV": lo_eV, "hi_eV": hi_eV,
+            "min": float(leth.min()), "max": float(leth.max()),
+            "flatness_factor": float(leth.max() / leth.min())}
+
+
+def f_cancellation_residual(T_eV=(0.1, 10.0, 1000.0),
+                            f_values=(0.0215, 0.0536, 0.0952, 0.2215),
+                            *, C_cm2_s: float = 2.24e-4,
+                            sigma_b: float = 8.9) -> dict:
+    """Relative spread of dR/dT across kinematic factors under a pure 1/E flux.
+
+    Analytically ZERO. Any nonzero value is a numerical artefact and bounds the
+    resolution of every target comparison built on the same quadrature.
+    """
+    T = np.atleast_1d(np.asarray(T_eV, dtype=float))
+    vals = np.array([fold_synthetic_epithermal(T, f=f, C_cm2_s=C_cm2_s,
+                                               sigma_b=sigma_b)
+                     for f in f_values])
+    exact = epithermal_oracle_dRdT(T, C_cm2_s=C_cm2_s, sigma_b=sigma_b)
+    return {"T_eV": T, "f_values": tuple(f_values), "values": vals,
+            "max_spread": float(np.max(np.abs(vals / vals[0] - 1.0))),
+            "max_dev_from_closed_form": float(np.max(np.abs(vals / exact - 1.0)))}
+
+
+def target_comparison(T_eV=(0.1, 1.0, 10.0, 31.6, 100.0, 1000.0),
+                      *, per_decade: int = 200) -> dict:
+    """Matched-T Ge-to-target ratios with the attribution SC4 actually asks for.
+
+    Three legs, all with the SAME incident flux and each material's OWN atoms/kg:
+      * ``pure``  -- synthetic phi = C/E: the exact-cancellation control, in which
+        the ratio must equal the atoms/kg ratio to quadrature precision;
+      * ``real``  -- the operative outdoor sea-level flux;
+      * ``ge_structure`` -- germanium's real resonance-resolved sigma_el against
+        the same constant sigma, which sizes the resonance-structure term for the
+        ONE target this repository owns a cross section for.  It enters no ratio.
+    """
+    T = np.atleast_1d(np.asarray(T_eV, dtype=float))
+    pure = pure_epithermal_flux()
+    ge = COMPARISON_TARGETS["Ge"]
+    n_ge = ge.total_atoms_per_kg()
+    out = {"T_eV": T, "sigma_b_common": COMPARISON_SIGMA_B,
+           "n_ge_per_kg": n_ge, "targets": {}}
+    y = {k: {"real": target_dRdT(k, T, per_decade=per_decade),
+             "pure": target_dRdT(k, T, flux_fn=pure, per_decade=per_decade)}
+         for k in COMPARISON_TARGETS}
+    for k, tgt in COMPARISON_TARGETS.items():
+        n_t = tgt.total_atoms_per_kg()
+        ratio_real = y["Ge"]["real"] / y[k]["real"]
+        ratio_pure = y["Ge"]["pure"] / y[k]["pure"]
+        n_ratio = n_ge / n_t
+        out["targets"][k] = {
+            "molar_mass_g_mol": tgt.molar_mass_g_mol,
+            "atoms_per_kg": n_t,
+            "atom_fractions": tgt.atom_fractions(),
+            "kinematic_factors": tgt.kinematic_factors(),
+            "atoms_per_kg_ratio_Ge_over_target": n_ratio,
+            "ratio_pure_1overE": ratio_pure,
+            "ratio_real_flux": ratio_real,
+            # attribution: what is left after atoms/kg is taken out
+            "residual_after_atoms_per_kg": ratio_real / n_ratio - 1.0,
+            # ...and how much of THAT is the flux shape rather than f
+            "flux_shape_part": ratio_real / ratio_pure - 1.0,
+            "kinematic_part": (ratio_pure / n_ratio - 1.0),
+        }
+    ge_real = fold_dRdT(T, per_decade=per_decade)
+    out["ge_resonance_structure_factor"] = ge_real / y["Ge"]["real"]
+    out["lethargy_flatness_1eV_10keV"] = lethargy_flatness()
+    out["f_cancellation"] = f_cancellation_residual()
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# The >20 MeV omission bound                                                    #
+# --------------------------------------------------------------------------- #
+def sigma_slope_at_ceiling(decades: float = 1.0) -> dict:
+    """Sign and magnitude of d(sigma_el)/dE over the top ``decades`` of the table.
+
+    A flat continuation bounds from ABOVE only if sigma_el is non-increasing there.
+    That is the Phase-12(c) METHOD, and the conclusion is re-measured rather than
+    carried over (fp-unchecked-continuation).
+    """
+    E, S, _ = elastic_table()
+    top = float(E[-1])
+    lo = top / (10.0 ** decades)
+    m = (E >= lo) & (E <= top)
+    x = E[m] / EV_PER_MEV
+    y = S[m]
+    A = np.vstack([x, np.ones_like(x)]).T
+    slope, intercept = np.linalg.lstsq(A, y, rcond=None)[0]
+    # the last half-decade, where the trend that a continuation extrapolates lives
+    m2 = (E >= top / 2.0) & (E <= top)
+    x2, y2 = E[m2] / EV_PER_MEV, S[m2]
+    slope2 = np.linalg.lstsq(np.vstack([x2, np.ones_like(x2)]).T, y2,
+                             rcond=None)[0][0]
+    return {
+        "band_lo_eV": lo, "band_hi_eV": top, "n_points": int(m.sum()),
+        "sigma_lo_b": float(y[0]), "sigma_hi_b": float(y[-1]),
+        "sigma_max_in_band_b": float(y.max()),
+        "E_of_max_eV": float(E[m][int(np.argmax(y))]),
+        "ols_slope_b_per_MeV": float(slope),
+        "ols_slope_last_half_decade_b_per_MeV": float(slope2),
+        "monotone_non_increasing": bool(np.all(np.diff(y) <= 0.0)),
+        "fraction_increasing_steps": float((np.diff(y) > 0).mean()),
+        "sigma_at_ceiling_is_band_max": bool(y[-1] >= y.max() * (1 - 1e-12)),
+    }
+
+
+def high_energy_omission_bound(*, e_hi_eV: float = DRIVER_TOP_eV,
+                               per_decade: int = 400,
+                               T_eV=None) -> dict:
+    """Bound the E_n > 20 MeV omission, in-RoI and total-rate, SEPARATELY.
+
+    The flat-box height falls as 1/E_n, so a neutron far above the ceiling spreads
+    its recoil over a correspondingly wider box and contributes little INSIDE a
+    narrow RoI while contributing its full cross section to the TOTAL rate.  The
+    two fractions therefore differ by orders of magnitude and are reported
+    separately (fp-single-omission-number).
+
+    Two continuations are reported:
+      ``flat_at_ceiling``  -- sigma_el frozen at its value at 20 MeV, justified by
+                              the MEASURED decreasing trend approaching the ceiling;
+      ``flat_at_band_max`` -- sigma_el frozen at the largest value anywhere in the
+                              top decade, which bounds from above even if the trend
+                              reversed above the ceiling.
+    """
+    E, S, _ = elastic_table()
+    ceiling = float(E[-1])
+    slope = sigma_slope_at_ceiling()
+    if T_eV is None:
+        _, T_eV = native_recoil_axis()
+    T = np.asarray(T_eV, dtype=float)
+    y = fold_dRdT(T, per_decade=200)
+    r_roi = band_integrated_rate(T, y, ROI_LO_eV, ROI_HI_eV)
+    r_tot = band_integrated_rate(T, y, float(T[0]), float(T[-1]))
+
+    f = f_natural()
+    n_per_kg = n_ge_per_kg()
+    n_nodes = int(round(np.log10(e_hi_eV / ceiling) * per_decade)) + 1
+    nodes = np.logspace(np.log10(ceiling), np.log10(e_hi_eV), n_nodes)
+    phi = neutron_flux_cm2_s_MeV(nodes)
+    flux_above = float(parma.integral_flux(ceiling / EV_PER_MEV,
+                                           e_hi_eV / EV_PER_MEV,
+                                           per_decade=per_decade))
+
+    out = {
+        "ceiling_eV": ceiling, "driver_top_eV": e_hi_eV,
+        "flux_above_ceiling_cm2_s": flux_above,
+        "sigma_slope": slope,
+        "baseline_in_roi_counts_kg_day": r_roi,
+        "baseline_total_counts_kg_day": r_tot,
+        "roi_lo_eV": ROI_LO_eV, "roi_hi_eV": ROI_HI_eV,
+        "T_max_from_above_ceiling_eV": f * e_hi_eV,
+        "elastic_only": True,
+        "elastic_only_direction": "flatters_SB",
+        "continuations": {},
+    }
+    for label, sig_b in (("flat_at_ceiling", float(S[-1])),
+                         ("flat_at_band_max", float(slope["sigma_max_in_band_b"]))):
+        integrand = (phi / EV_PER_MEV) * (sig_b * BARN_TO_CM2) / (f * nodes)
+        d_dRdT = (n_per_kg * loglog_segment_integrals(nodes, integrand).sum()
+                  * SECONDS_PER_DAY * EV_PER_KEV)
+        add_roi = d_dRdT * (ROI_HI_eV - ROI_LO_eV) / EV_PER_KEV
+        # Each incident neutron deposits its full cross section somewhere on the
+        # recoil axis, since INT_0^{f E} dT / (f E) = 1 for the flat box.
+        add_total = n_per_kg * sig_b * BARN_TO_CM2 * flux_above * SECONDS_PER_DAY
+        out["continuations"][label] = {
+            "sigma_b": sig_b,
+            "delta_dRdT_counts_kg_day_keV": d_dRdT,
+            "added_in_roi_counts_kg_day": add_roi,
+            "omission_fraction_in_roi": add_roi / r_roi,
+            "added_total_counts_kg_day": add_total,
+            "omission_fraction_total": add_total / r_tot,
+        }
+    return out
+
+
+def ceiling_subsumption() -> dict:
+    """Relation between the two declared omissions of 09-02 Section 6.
+
+    Every neutron above the ~197 MeV committed-flux-table ceiling is also above the
+    20 MeV sigma_el ceiling, so the two are not independent additive omissions.
+    Stated with the numbers rather than assumed either way.
+    """
+    v11 = read_flux_v11()
+    table_top = float(v11["E_hi_eV"].max())
+    ceiling = endf_ceiling_eV()
+    phi = {
+        "above_sigma_ceiling": float(parma.integral_flux(
+            ceiling / EV_PER_MEV, DRIVER_TOP_eV / EV_PER_MEV, per_decade=400)),
+        "above_flux_table_ceiling": float(parma.integral_flux(
+            table_top / EV_PER_MEV, DRIVER_TOP_eV / EV_PER_MEV, per_decade=400)),
+        "above_10MeV": float(parma.integral_flux(
+            10.0, DRIVER_TOP_eV / EV_PER_MEV, per_decade=400)),
+    }
+    return {
+        "sigma_el_ceiling_eV": ceiling,
+        "flux_table_top_edge_eV": table_top,
+        "subsumed": table_top > ceiling,
+        "integral_flux_cm2_s": phi,
+        "fraction_of_gt10MeV_above_flux_table_ceiling":
+            phi["above_flux_table_ceiling"] / phi["above_10MeV"],
+        "fraction_of_gt_sigma_ceiling_that_is_also_above_flux_table_ceiling":
+            phi["above_flux_table_ceiling"] / phi["above_sigma_ceiling"],
+        "flux_ceiling_is_an_independent_omission_here": False,
+        "why": ("this channel never reads the committed flux table for the fold; "
+                "the pinned PARMA driver is evaluated directly at every quadrature "
+                "node and reaches 10 GeV, so the ~197 MeV table ceiling constrains "
+                "nothing here. What remains is the single 20 MeV sigma_el ceiling, "
+                "which SUBSUMES it: every neutron above 197 MeV is also above "
+                "20 MeV."),
+    }
+
+
+# --------------------------------------------------------------------------- #
+# Plan 13-02 artifacts                                                          #
+# --------------------------------------------------------------------------- #
+COMPRESSION_CSV = os.path.join(ARTIFACT_DIR, "neutron_compression_targets.csv")
+OMISSION_CSV = os.path.join(ARTIFACT_DIR, "neutron_highE_omission_bound.csv")
+
+#: The channel's own accuracy label expressed as a numeric factor, for the
+#: CALC-24 branch test.  "order of magnitude" is read here as a factor ~3, the
+#: same reading Plan 13-01's escalation rule used.
+ORDER_OF_MAGNITUDE_FACTOR = 3.0
+
+
+def write_compression_table(path: str = COMPRESSION_CSV, *,
+                            T_eV=(0.1, 1.0, 10.0, 31.6, 100.0, 1000.0)) -> str:
+    """Emit artifacts/v2.0/neutron_compression_targets.csv (SC4 evidence)."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    c = target_comparison(T_eV)
+    fc = c["f_cancellation"]
+    lf = c["lethargy_flatness_1eV_10keV"]
+    ge = COMPARISON_TARGETS["Ge"]
+    hdr = _provenance_header([
+        "#",
+        "# ================== WHAT THIS TABLE ADJUDICATES ====================",
+        "# ROADMAP Phase 13 SC4 asserts that Ge's ~2.5x larger T_max/E_n makes it the",
+        "#   WORSE neutron target. SC4's own wording is 'exhibited, not asserted', so",
+        "#   the ratio 0.0536/0.021505 is the INPUT to the criterion and never its",
+        "#   output (fp-assert-compression).",
+        "#",
+        "# THE KINEMATIC FACTOR CANCELS. For phi = C/E and sigma constant,",
+        "#   INT_{T/f}^inf (C/E) sigma/(f E) dE = C sigma / T, independent of f.",
+        "#   More generally, substituting E = (T/f) x gives",
+        "#   dR/dT = n (C/T) INT_1^inf sigma((T/f) x) x^-2 dx: the 1/f prefactor",
+        "#   cancels against the lower limit for ANY sigma, and f survives only inside",
+        "#   sigma's ARGUMENT. So f selects WHICH PART of sigma(E_n) a given recoil T",
+        "#   samples -- it moves resonance features along T -- and it does not scale",
+        "#   the rate at all.",
+        f"#   MEASURED: spread across f in {fc['f_values']} under a pure 1/E flux",
+        f"#   = {fc['max_spread']:.3e}; deviation from the closed form "
+        f"{fc['max_dev_from_closed_form']:.3e}.",
+        f"# The real flux is flat in lethargy to a factor {lf['flatness_factor']:.4f}",
+        f"#   over {lf['lo_eV']:.6g} - {lf['hi_eV']:.6g} eV (recomputed here from the",
+        "#   pinned driver; 09-02 Section 5 records 1.390), i.e. close to the limit in",
+        "#   which f provably has no effect.",
+        "#",
+        "# ==================== LEG QUALITY, STATED ==========================",
+        "# This repository owns a resonance-resolved sigma_el for GERMANIUM ALONE.",
+        f"#   Every ratio leg below therefore uses a COMMON CONSTANT sigma = "
+        f"{COMPARISON_SIGMA_B:.6g} b for",
+        "#   EVERY target INCLUDING Ge. Its value cancels identically from any",
+        "#   target-to-target ratio. Holding it common is deliberate: comparing a",
+        "#   resonance-resolved Ge against a smooth W would produce 'Ge has more",
+        "#   structure' BY CONSTRUCTION. The size of Ge's own resonance-structure term",
+        "#   is reported separately in the ge_resonance_structure column and enters NO",
+        "#   ratio. THE CONSEQUENCE, STATED: these legs settle the MECHANISM, not the",
+        "#   absolute direction, because real sigma_el is element dependent and this",
+        "#   project holds no cross section for W, Ca or O.",
+        "#",
+        "# ==================== ATOMS PER KG =================================",
+        "# Each material uses its OWN atoms/kg, never germanium's. N_A = "
+        f"{AVOGADRO:.4e} from CONVENTIONS.md Section D's test-value line;",
+        f"#   Ge cross-check: 1000/{ge.molar_mass_g_mol} x N_A = "
+        f"{ge.total_atoms_per_kg():.6e} against the frozen-table derivation "
+        f"{n_ge_per_kg():.6e} (0.003%).",
+        "# Mass numbers are the dominant natural isotope's, and they reproduce the",
+        "#   ROADMAP's own kinematic factors: 4A/(1+A)^2 = "
+        f"{kinematic_factor(184):.6f} (A=184, W), {kinematic_factor(40):.6f} (A=40, Ca), "
+        f"{kinematic_factor(16):.6f} (A=16, O).",
+        "#",
+        "# columns: target, T_eV_nr, molar_mass_g_mol, atoms_per_kg,",
+        "#   f_effective (atom-count-weighted for a compound),",
+        "#   ratio_pure_1overE   Ge/target under a synthetic phi = C/E  [f cancels]",
+        "#   ratio_real_flux     Ge/target under the operative outdoor flux",
+        "#   atoms_per_kg_ratio  Ge/target, pure target number density",
+        "#   residual_after_atoms_per_kg, flux_shape_part, kinematic_part",
+        "#   ge_resonance_structure  Ge real sigma_el / the common constant sigma",
+        "# reproduce: PYTHONPATH=src /opt/anaconda3/bin/python3 -c \"from "
+        "qpd_potential import neutron_recoil as n; n.write_compression_table()\"",
+    ])
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(hdr) + "\n")
+        fh.write("target,T_eV_nr,molar_mass_g_mol,atoms_per_kg,f_effective,"
+                 "ratio_pure_1overE,ratio_real_flux,atoms_per_kg_ratio,"
+                 "residual_after_atoms_per_kg,flux_shape_part,kinematic_part,"
+                 "ge_resonance_structure,accuracy_label\n")
+        T = c["T_eV"]
+        for name, v in c["targets"].items():
+            tgt = COMPARISON_TARGETS[name]
+            fr = tgt.atom_fractions()
+            kf = tgt.kinematic_factors()
+            f_eff = (f_natural() if name == "Ge"
+                     else sum(fr[A] * kf[A] for A in fr))
+            for i, t in enumerate(T):
+                fh.write(
+                    f"{name},{t:.10e},{v['molar_mass_g_mol']:.6g},"
+                    f"{v['atoms_per_kg']:.6e},{f_eff:.6f},"
+                    f"{v['ratio_pure_1overE'][i]:.8e},{v['ratio_real_flux'][i]:.8e},"
+                    f"{v['atoms_per_kg_ratio_Ge_over_target']:.8e},"
+                    f"{v['residual_after_atoms_per_kg'][i]:+.6e},"
+                    f"{v['flux_shape_part'][i]:+.6e},{v['kinematic_part'][i]:+.6e},"
+                    f"{c['ge_resonance_structure_factor'][i]:.6e},"
+                    f"{ACCURACY_LABEL}\n")
+    return path
+
+
+def write_omission_table(path: str = OMISSION_CSV) -> str:
+    """Emit artifacts/v2.0/neutron_highE_omission_bound.csv (SC5 second half)."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    b = high_energy_omission_bound()
+    s = b["sigma_slope"]
+    sub = ceiling_subsumption()
+    hdr = _provenance_header([
+        "#",
+        "# ============== THE >20 MeV OMISSION, BOUNDED AT THE SURFACE =======",
+        "# The frozen sigma_el stops at the ENDF/B-VIII.0 ceiling and is NEVER",
+        "#   extrapolated above it. This table bounds what that omits.",
+        "#",
+        "# CONSERVATISM OF THE CONTINUATION -- MEASURED BEFORE IT WAS USED",
+        "#   (fp-unchecked-continuation; the Phase-12(c) METHOD is reused, its",
+        "#   CONCLUSION is re-measured):",
+        f"#   over the top decade {s['band_lo_eV']:.4g} - {s['band_hi_eV']:.4g} eV, "
+        f"{s['n_points']} points,",
+        f"#   sigma_el runs {s['sigma_lo_b']:.6f} b -> {s['sigma_hi_b']:.6f} b with an OLS "
+        f"slope of {s['ols_slope_b_per_MeV']:+.6e} b/MeV;",
+        f"#   over the last half-decade the slope is "
+        f"{s['ols_slope_last_half_decade_b_per_MeV']:+.6e} b/MeV.",
+        f"#   THE TREND APPROACHING THE CEILING IS DECREASING. But the band is NOT",
+        f"#   monotone: sigma_el peaks at {s['sigma_max_in_band_b']:.6f} b at "
+        f"{s['E_of_max_eV']:.4g} eV before falling,",
+        f"#   and {s['fraction_increasing_steps']:.1%} of the steps in the decade rise.",
+        "#   TWO continuations are therefore reported rather than one:",
+        "#     flat_at_ceiling  -- sigma frozen at its 20 MeV value; justified by the",
+        "#                         measured decreasing trend at the ceiling;",
+        "#     flat_at_band_max -- sigma frozen at the top-decade maximum, which bounds",
+        "#                         from above even if the trend reversed above 20 MeV.",
+        "#",
+        "# ELASTIC ONLY -- AN UNDERSTATEMENT, DECLARED",
+        "#   The frozen set is MF=3 MT=2 elastic. Above ~20 MeV nonelastic and",
+        "#   spallation channels are comparable to or larger than elastic AND produce",
+        "#   larger recoils per interaction, so this bound UNDERSTATES the true >20 MeV",
+        "#   impact. direction = flatters_SB, in the 09-02 Section 7 schema. It is NOT",
+        "#   netted against the channel's penalizes_SB central value (fp-net-omissions).",
+        "#",
+        "# TWO FRACTIONS, NOT ONE (fp-single-omission-number)",
+        "#   The flat-box height falls as 1/E_n, so a neutron far above the ceiling",
+        "#   spreads its recoil over a proportionally wider box and contributes almost",
+        "#   nothing inside a 90 eV-wide RoI while contributing its full cross section",
+        f"#   to the T-integrated total. baseline in-RoI "
+        f"{b['baseline_in_roi_counts_kg_day']:.6e} counts/kg/day over "
+        f"{b['roi_lo_eV']:.6g}-{b['roi_hi_eV']:.6g} eV;",
+        f"#   baseline total {b['baseline_total_counts_kg_day']:.6e} counts/kg/day.",
+        f"#   Neutrons above the ceiling reach recoils up to "
+        f"{b['T_max_from_above_ceiling_eV']:.4g} eV, far above the emitted axis.",
+        "#",
+        "# THE TWO DECLARED OMISSIONS OF 09-02 SECTION 6, RESOLVED AGAINST EACH OTHER",
+        f"#   sigma_el ceiling {sub['sigma_el_ceiling_eV']:.4g} eV; committed flux-table "
+        f"top edge {sub['flux_table_top_edge_eV']:.4g} eV.",
+        f"#   SUBSUMED = {sub['subsumed']}: every neutron above the flux-table ceiling is",
+        "#   also above the sigma_el ceiling, so they are NOT two additive omissions.",
+        f"#   {sub['fraction_of_gt10MeV_above_flux_table_ceiling']:.4%} of the >10 MeV "
+        "flux lies above the flux-table ceiling (09-02 records 21%),",
+        f"#   and that is {sub['fraction_of_gt_sigma_ceiling_that_is_also_above_flux_table_ceiling']:.4%}"
+        " of what lies above the sigma_el ceiling.",
+        "#   The flux-table ceiling is NOT an independent omission here at all: this",
+        "#   channel never reads that table for the fold. The pinned PARMA driver is",
+        "#   evaluated directly at every quadrature node and reaches "
+        f"{b['driver_top_eV']:.4g} eV.",
+        "#",
+        "# columns: continuation, sigma_b_used, flux_above_ceiling_cm2_s,",
+        "#   delta_dRdT_counts_kg_day_keV (flat in T below the ceiling's own T_max),",
+        "#   added_in_roi_counts_kg_day, omission_fraction_in_roi,",
+        "#   added_total_counts_kg_day, omission_fraction_total,",
+        "#   sigma_slope_top_decade_b_per_MeV, elastic_only, direction",
+        "# reproduce: PYTHONPATH=src /opt/anaconda3/bin/python3 -c \"from "
+        "qpd_potential import neutron_recoil as n; n.write_omission_table()\"",
+    ])
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(hdr) + "\n")
+        fh.write("continuation,sigma_b_used,flux_above_ceiling_cm2_s,"
+                 "delta_dRdT_counts_kg_day_keV,added_in_roi_counts_kg_day,"
+                 "omission_fraction_in_roi,added_total_counts_kg_day,"
+                 "omission_fraction_total,sigma_slope_top_decade_b_per_MeV,"
+                 "elastic_only,direction,accuracy_label\n")
+        for label, v in b["continuations"].items():
+            fh.write(
+                f"{label},{v['sigma_b']:.6f},{b['flux_above_ceiling_cm2_s']:.6e},"
+                f"{v['delta_dRdT_counts_kg_day_keV']:.6e},"
+                f"{v['added_in_roi_counts_kg_day']:.6e},"
+                f"{v['omission_fraction_in_roi']:.6e},"
+                f"{v['added_total_counts_kg_day']:.6e},"
+                f"{v['omission_fraction_total']:.6e},"
+                f"{s['ols_slope_b_per_MeV']:+.6e},true,flatters_SB,"
+                f"{ACCURACY_LABEL}\n")
+    return path
+
+
+def calc24_disposition() -> dict:
+    """Decide CALC-24 AGAINST THE MEASURED BOUND, not against an inherited premise.
+
+    The Phase-7 deferral rationale is recorded VOID at the surface (09-02 Section
+    6.2).  It rested on shield attenuation -- NOT applied here, and VOID because
+    there is no shield -- of the >10 MeV tail.  It is NOT re-used as a
+    justification (fp-inherit-void-rationale).  What decides the disposition is
+    the measured bound.
+    """
+    b = high_energy_omission_bound()
+    worst_roi = max(v["omission_fraction_in_roi"]
+                    for v in b["continuations"].values())
+    worst_tot = max(v["omission_fraction_total"]
+                    for v in b["continuations"].values())
+    label = ORDER_OF_MAGNITUDE_FACTOR - 1.0   # a factor ~3 == a 200% excursion
+    inside = worst_tot <= label
+    return {
+        "worst_in_roi_fraction": worst_roi,
+        "worst_total_fraction": worst_tot,
+        "label_as_fraction": label,
+        "inside_label": bool(inside),
+        "branch": ("deferral_sustained_on_the_measured_bound" if inside
+                   else "escalate_to_user"),
+        "multiplier_needed_to_break_it": label / worst_tot,
+        "void_rationale": ("Phase-7 deferral rested on shield attenuation, NOT applied "
+                          "here and VOID at the surface per 09-02 Section 6.2, of "
+                          "the >10 MeV tail. It is recorded ONLY as void and is "
+                          "never used as a justification."),
+        "replacement_rationale": (
+            "The omission is bounded at {roi:.3e} of the in-RoI integrated rate and "
+            "{tot:.4f} of the T-integrated total rate under an upper continuation, "
+            "both inside the channel's own order-of-magnitude label; the elastic-only "
+            "restriction would have to understate the bound by more than {mult:.1f}x "
+            "for the total-rate omission to reach that label."
+        ).format(roi=worst_roi, tot=worst_tot, mult=label / worst_tot),
+    }
