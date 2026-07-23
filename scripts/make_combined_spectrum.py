@@ -106,18 +106,25 @@ SUBEV = 1.0e-3                       # below 1 eV, P_trig is the reported observ
 CAPTURE_BOUND = 4399.78              # counts/kg/day, Phase 14, in-RoI, rigorous
 
 # ---------------------------------------------------------------------------
-# ASSUMED per-channel suppression, set to NUCLEUS's published factors
-# (user decision 2026-07-23). This deliberately OVERRIDES the locked Phase-8
-# decision: NUCLEUS's ~5/~50/>99.8% are event-rate reductions IN CaWO4 (they
-# embed a target response that is not germanium's) and most come from the COV/MV
-# active veto the wafer does NOT geometrically fit. The user accepts both: the
-# premise is "a real experiment will build shielding of similar performance".
-#   muon    /500  = MV+COV reject >99.8% of muon-induced backgrounds (EPJC 86,29 sec.5.2.1)
-#   compton /50   = 5 cm Pb, factor ~50 reduction (sec.5.2.1)
-#   neutron /25   = 4 cm B4C (~5) x COV anti-coincidence (~5) (sec.5.2.1)
-# The neutron factor is applied to all THREE neutron-driven channels (elastic,
-# prompt (n,gamma) capture, 71Ge EC) since they share the incident fluence.
-SUPP = {"cevns": 1.0, "muon": 500.0, "compton": 50.0, "neutron": 25.0}
+# ASSUMED per-channel suppression, set to NUCLEUS's COMBINED shield+veto factors
+# (user decision 2026-07-23). NUCLEUS achieves each reduction with BOTH passive
+# shielding AND active vetoes stacked (their Fig. 8), so the per-channel numbers
+# are the total, not the veto alone:
+#   muon    /500  = MV + COV reject >99.8% of muon-induced backgrounds (sec.5.2.1)
+#   neutron /100  = passive shield (Pb + borated HDPE + 4 cm B4C) x COV anti-
+#                   coincidence -- the paper's "total rejection power of more than
+#                   two orders of magnitude, residual dominated by neutrons"
+#                   (sec.5.3 / Fig. 8). (An earlier version used veto-only /25 and
+#                   forgot the passive shield -- corrected per user 2026-07-23.)
+#   compton /100  = 5 cm Pb (~50, explicit) x COV gamma veto ("essential role",
+#                   unquantified; rounded to match the overall two-orders budget).
+#                   Gamma is negligible in the RoI at any factor >= 50.
+# This deliberately OVERRIDES the locked Phase-8 no-inherited-veto decision: the
+# factors are CaWO4 event-rate reductions and most need the COV/MV veto the wafer
+# does not geometrically fit. Premise: a real experiment builds similar shielding.
+# The neutron factor also drives the prompt-capture and 71Ge-EC bounds (shared
+# incident fluence).
+SUPP = {"cevns": 1.0, "muon": 500.0, "compton": 100.0, "neutron": 100.0}
 # ---------------------------------------------------------------------------
 
 
@@ -259,11 +266,11 @@ _supp_suffix = "NUCLEUS-equivalent suppression: muon ÷{:.0f}, γ ÷{:.0f}, n ÷
 fig.suptitle(r"QPD Ge wafer, 3 GW$_{\rm th}$ at 25 m — surface backgrounds with ASSUMED " + _supp_suffix,
              fontsize=11.5, y=0.986)
 fig.text(0.5, 0.050,
-         "Per-channel factors are NUCLEUS's own published values (>99.8% muon-induced, Pb ÷50, "
-         "B$_4$C×COV ÷25), ASSUMED achievable by a future shield/veto — NOT rigorous credit:",
+         "Per-channel factors are NUCLEUS's COMBINED shield+veto reductions (Fig. 8: >99.8% muon, "
+         "~2 orders of magnitude for the neutron-dominated residual), ASSUMED achievable by a future shield/veto",
          ha="center", fontsize=8.4, style="italic")
 fig.text(0.5, 0.032,
-         "they are CaWO$_4$ event-rate reductions and most need the COV/MV veto the wafer does not geometrically fit (Phase 8).",
+         "— NOT rigorous credit: they are CaWO$_4$ event-rate reductions and most need the COV/MV veto the wafer does not geometrically fit (Phase 8).",
          ha="center", fontsize=8.4, style="italic")
 fig.text(0.5, 0.014,
          "Dotted = the intrinsic spectrum: linear $E_{\\rm rec}$ = 0.497 $E_{\\rm dep}$, NO saturation and NO trigger. The solid-to-dotted gap is the trigger rolloff below ~1 eV and saturation above the onset. "
