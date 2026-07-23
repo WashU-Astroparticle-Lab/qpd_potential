@@ -7,17 +7,17 @@ See: GPD/PROJECT.md
 **Machine-readable scoping contract:** `GPD/state.json` field `project_contract`
 
 **Core research question:** Reactor-CEvNS, cosmic-muon, environmental-gamma Compton, and rough sea-level neutron spectra in reconstructed energy for an UNSHIELDED SURFACE 4"x4"x2mm single-sided Ge wafer read out by QPDs (Ta->Al and Al->Hf designs), at the paper's 3 GW_th / 25 m scenario.
-**Current focus:** Phase 8 COMPLETE (5/5 plans) and verified - VALD-09 gate discharged NO FIT. Milestone re-scoped 2026-07-22 to an unshielded surface wafer at the paper's 3 GW_th / 25 m scenario. Phases 10 and 11 are untouched and site-independent. Next: plan Phases 9 and 10 in parallel.
+**Current focus:** Milestone v2.0 COMPLETE, all 9 phases (8-16). Headline S/B_particle = 1.33e-2 (estimates) / 7.29e-3 (lower bound incl. bounds) for Ta->Al and 1.32e-2 / 7.27e-3 for Al->Hf, in the 10-100 eV reconstructed RoI at veto credit 1.0 by construction. Suite 861 passed, 0 failed.
 
 ## Current Position
 
-**Current Phase:** 8
-**Current Phase Name:** Veto-Envelope Geometry Gate (P-VETO)
+**Current Phase:** 16
+**Current Phase Name:** S/B_particle Assembly, LEE Overlay, and the Signal-Side CONUS+ Check (P-SB)
 **Total Phases:** 9
 **Current Plan:** none
-**Total Plans in Phase:** 5
-**Status:** Verified
-**Last Activity:** 2026-07-22
+**Total Plans in Phase:** 3
+**Status:** Milestone complete
+**Last Activity:** 2026-07-23
 
 **Progress:** [██████████] 100%
 
@@ -40,6 +40,13 @@ None yet.
 - [Re-scope] Which sea-level neutron flux source? Gordon et al. 2004 / ICRU-class parametrizations are CANDIDATES TO SOURCE AND VERIFY in Phase 9, not adopted numbers.
 - [Re-scope] Does Phase 11's IA broadening apply to Phase 15's channels at all? sigma_E = sqrt(E_R*omega_bar) is a NUCLEAR-recoil width, while Compton and muon deposits are ELECTRON recoils. Phase 15 must determine this in-phase, not assume it.
 - [Re-scope] REQUIREMENTS.md cited a CONVENTIONS Sect. D VNS scenario lock that was never actually applied. Struck in place; CONVENTIONS.md itself needs no edit.
+- [Phase 16, BLOCKING for any S/B claim] The CONUS+ analysis window is an internal contradiction: ROADMAP.md and REQUIREMENTS.md say 0.4-1 keV_ee, GPD/literature/SUMMARY.md says 160 eV_ee, and the VALD-12 ratio spans 4.504 decades between them. 0.4-1 keV_ee was pre-registered as the authoritative-document reading and FAILED by 3.28 decades. The verdict is window-set and the ROADMAP backtracking trigger is LIVE.
+- [Phase 15, bears on the v1.0 MANUSCRIPT] The Landau-Vavilov validity floor is 4111.8 eV, indicting 209 of 584 bins the v1.0 paper already published (35.79%). Nothing was tuned to avoid this.
+- [Phase 16] No germanium ionization-quenching model is frozen locally; VALD-12's verdict depends on one and is labelled BRACKETED, not SOURCED.
+- [Phase 16] SC4's wording in ROADMAP.md and REQUIREMENTS.md describes a quantity that does not exist. Flagged, not edited.
+- [Phase 16] Stale REQUIREMENTS.md texts still describing the void VNS premise: CALC-11, CALC-18, CALC-19, CALC-20, CALC-21, CALC-22, CALC-23, CALC-25, VALD-12; plus a cited CONVENTIONS section-D VNS lock that was never applied.
+- [Phase 12/16] The 407.7 dru CaWO4 closure has NO reproducible artifact -- GPD prose only. With VALD-11 deleted there is NO background-side target-swap validation at all.
+- [Phase 16] The trigger-k discharge covers muon and Compton only; the neutron channel dominates the sub-eV denominator and has no committed reconstructed-axis k-scan, so the emitted spread is a LOWER BOUND.
 
 ## Performance Metrics
 
@@ -134,6 +141,7 @@ None yet.
 - [Phase 0]: v2.0 roadmap finalized: 9 phases (8-16), 18/18 requirements mapped; project_contract synced to v2.0 and re-validated authoritative — Phases 8-16. Critical path 8->10->11->13->14->16; waves [8]->[9,10]->[11,15]->[12,13]->[14]->[16]. Phase 8 (VALD-09 veto-envelope geometry) is a GATING STOP-CONDITION: if the 110 g wafer does not fit the COV/IV envelope, STOP and re-scope with the user -- no reduced veto credit, no invented veto (user decision 2026-07-22). VALD-11 two-band neutron-ratio calibration blocks Phase 13. CALC-14 (omega_bar + Debye-Waller) pinned as plan 11-01 ahead of CALC-15. VALD-12 (CONUS+ ~0.03) is criterion 1 of the terminal Phase 16. No OpenMC/Geant4/G4CMP dependency anywhere (synthesis overrode METHODS.md on OpenMC: unbuildable on osx-arm64). ADDED CALC-25 after the roadmapper correctly flagged the headline signal deliverable owned no requirement ID; orchestrator's brief had also miscounted 16 vs the actual 17 primary requirements (now 18 with CALC-25). CONTRACT SYNC: state.json project_contract was still the v1.0 scenario (3 GWth/25 m, neutron backgrounds out of scope) while reporting authoritative. Rewrote scope/context_intake, added claim-background + claim-sb with observables, deliverables, acceptance tests and links, and 6 new forbidden proxies. First sync attempt FAILED validation (three proxies targeted nonexistent claims) -- caught by the gate, fixed, re-validated: valid=True, authoritative=True, decisive targets 12 -> 18. Backup at GPD/state.json.v1.0-contract-backup.
 - [Phase 08-veto-envelope-geometry-gate-p-veto]: VALD-09 DISCHARGED NO FIT. A face-parallel 10.16 cm wafer needs a covering circle of sqrt(2)*a = 14.3684 cm; the published COV cap crystal is 10.0 cm OD (arXiv:2508.02488v1 Sect. 2). Clearance -4.3684 cm, cap 30.4% smaller than required, sign-robust to every published rounding interval but CONDITIONAL ON A FACE-PARALLEL MOUNTING PREMISE (the orientation-invariant floor is only -0.1620 cm and is NOT sign-robust). Neither leg is simultaneously premise-free and sign-robust. — Independently verified: 21/24 contract targets, 8/8 physics checks re-derived rather than accepted (10.0 cm re-grepped from the frozen source with SHA-256 matching MANIFEST; mass closure reproduced at 1045.17 g for rho_Ge=5.323; orientation minima re-derived by multistart Nelder-Mead, attaining min b2 = 7.325626 cm and min projected diameter = 10.161968 cm exactly). The milestone-void argument does NOT rest on the contested cap diameter: it rests on the 45.88x payload footprint change (103.2256 cm2 wafer vs the published 2.25 cm2 array-crystal footprint), which forces a Cu-support and B4C-liner redesign however the coverage comparison resolves. OPEN AND NOT EXCLUDED: assembly-level coverage by the four rectangular COV crystals needs only 24.6858 cm2 of non-cap projection at 2.1842 cm radial reach, and no published source constrains their lateral dimensions, placement, or mass.
 - [Phase 08-veto-envelope-geometry-gate-p-veto]: RE-SCOPE (user decision 2026-07-22, verbatim: 'Just take the approximation as was done in the paper. I don't need a very accurate result.'): backgrounds revert to the paper's UNSHIELDED SURFACE treatment; the paper's 3 GW_th / 25 m scenario (int-Phi = 7.5e12, frozen reactor_flux_v1.0.csv) is the PRIMARY normalization; the NUCLEUS VNS survives only as a labelled scalar rescale (0.28) of the finished result. — Veto credit stays exactly 1.0 -- i.e. none -- so the locked forbidden proxies hold: no reduced credit is assumed and no resized veto is invented. An earlier draft of this re-scope wrongly asserted a frozen VNS flux table existed; it does not (data/flux/ holds only the 3 GW_th/25 m table) and CONVENTIONS Sect. D's 25 m lock stands unchanged, so the paper's scenario is also the only internally coherent primary. Making the VNS primary would additionally have created a physically un-realizable hybrid, since the VNS sits under 2.92 m.w.e. while this pipeline models an unshielded surface. ORPHANED BY DESIGN: CALC-12 (post-shield fluence by regularized inversion) and VALD-11 (the two-band CaWO4/Al2O3 ratio gate). NEUTRONS ARE NOT DROPPED: they were ~91% of NUCLEUS's RoI budget and the paper omitted them, so a rough sea-level estimate is carried, explicitly labelled order-of-magnitude.
+- [Phase 16-s-b-particle-assembly]: MILESTONE v2.0 TERMINAL RESULT: S/B_particle = 1.33e-2 (estimates only) / 7.29e-3 (estimates+bounds, a LOWER bound) for Ta->Al; 1.32e-2 / 7.27e-3 for Al->Hf. RoI 10-100 eV reconstructed, trigger applied, veto credit exactly 1.0 BY CONSTRUCTION, order_of_magnitude label. The two designs are NOT distinguishable at that label. — Denominator is dominated by neutron elastic 5430.29 (54.3%) and prompt (n,gamma) capture <=4399.78 (44.0%), against a COMPUTED in-RoI CEvNS signal of 72.9214/73.1441 counts/kg/day. VALD-12 is PARTIALLY CONFIRMED and WINDOW-CONDITIONAL: the pre-registered 0.4-1 keV_ee leg FAILS by 3.28 decades while the declared 160 eV_ee alternate gives 0.833 -- a 4.504-decade spread -- because only 34.85% of the pre-registered window lies inside our kinematic support. SC4 was SUPERSEDED BY MEASUREMENT: its 'LEE amplitude at which S/B_particle = 1' does not exist, since d(S/B_particle)/dA = 0 by definition and S-B is negative; replacements shipped under their own names. S/B_particle has external validation of its NUMERATOR ONLY and none of the ratio.
 
 ### Active Approximations
 
@@ -184,7 +192,7 @@ None
 ## Session Continuity
 
 **Last session:** 2026-07-22T21:17:33.628326+00:00
-**Stopped at:** Phase 8 complete and verified (NO FIT). Milestone re-scoped 2026-07-22 to an unshielded surface wafer at the paper's 3 GW_th / 25 m scenario. Phases 10 and 11 are untouched and site-independent. Next: plan Phases 9 and 10 in parallel.
+**Stopped at:** Milestone v2.0 complete, all 9 phases (8-16) executed and recorded. Terminal S/B_particle delivered. Outstanding: the CONUS+ window decision that sets VALD-12's verdict, and the stale REQUIREMENTS texts.
 **Resume file:** GPD/ROADMAP.md
 **Last result ID:** none
 **Hostname:** mac.wusm-wifi.wucon.wustl.edu
