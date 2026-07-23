@@ -195,7 +195,14 @@ Plans:
 - ~~SC4: φ_post(E_n) recovery by regularized (Tikhonov/TV) differentiation through the flat-box recoil kernel, with the CaWO₄/Al₂O₃ over-determination test.~~ **Removed on two independent grounds:** there is no shield, so there is no post-shield fluence to recover; and regularized inversion is explicitly excluded by the lowered accuracy expectation. **CALC-12 is orphaned by this removal.**
 - ~~SC5: the VALD-11 two-band gate (CaWO₄/Al₂O₃ neutron ratios 1.81 and 1.20 from one normalization).~~ **Removed:** its purpose was to license swapping NUCLEUS's published two-target residuals onto Ge. Those residuals are no longer used at all, so the gate has nothing to license. **VALD-11 is orphaned by this removal.** *(The physics it was protecting — kinematic compression, the reason a Ge target spreads the same incident flux ~2.5× wider than W — is **not** lost: it is retained as an explicit Phase-13 success criterion, where it belongs as target physics.)*
 
-**Plans:** TBD (run `gpd:plan-phase 9` to break down)
+**Plans:** 3 plans
+
+Plans:
+- [ ] 09-01-PLAN.md -- Re-declare the v1.0 muon and environmental-gamma inputs as numerically identical, verified by direct comparison against the frozen artifacts, with each channel's accuracy direction recorded
+- [ ] 09-02-PLAN.md -- Freeze the PARMA source at its pinned commit, commit a driver that reproduces both Gordon-anchored integrals and the committed flux table (closing Phase-7 gap D2), and emit the named thermal component Phi_th or a named gap
+- [ ] 09-03-PLAN.md -- Assemble the frozen three-channel surface environment set, execute the no-shielded-quantity scan and the directional-bias audit, and take the researcher checkpoint
+
+> **Anchor-line correction (2026-07-22):** this section's anchor line says the sea-level neutron flux "has no anchor yet and none is asserted here". That is true of the milestone anchor registry but NOT of the repository: `data/ambient_neutron_flux_v1.1.csv` already exists from Phase 7 Plan 07-01 (PARMA v4.10 / Sato 2015 shape from official source at pinned commit `6ff37cac`, Gordon-2004 integral anchor k = 1.09610 giving Phi(>10 MeV) = 3.55e-3 cm^-2 s^-1, with a recorded user decision of 2026-07-22 switching off the paywalled Gordon/JEDEC coefficients). Phase 9 therefore ADOPTS AND VERIFIES rather than re-sourcing. What is genuinely open is Phase-7 gap D2: no PARMA driver was ever committed, so the decisive integrals have never been recomputed.
 
 ### Phase 10: Sub-eV Grid Extension and the Trigger Observable (P-GRID)
 

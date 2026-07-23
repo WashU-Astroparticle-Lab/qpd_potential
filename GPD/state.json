@@ -7,38 +7,30 @@
   "project_contract": {
     "schema_version": 1,
     "scope": {
-      "question": "What are the reactor-CEvNS signal and the full in-band particle-background budget, in reconstructed energy down to 100 meV, for a 4 inch x 4 inch x 2 mm (~110 g) single-sided Ge wafer read out by QPDs (Ta->Al and Al->Hf trapping designs) deployed at the NUCLEUS Chooz Very-Near-Site behind the NUCLEUS shielding - and what signal-to-background does that give?",
+      "question": "What are the reactor-CEvNS signal and the full in-band particle-background budget, in reconstructed energy down to 100 meV, for an UNSHIELDED SURFACE 4 inch x 4 inch x 2 mm (~110 g) single-sided Ge wafer read out by QPDs (Ta->Al and Al->Hf trapping designs) at the paper's 3 GW_th / 25 m scenario - and what signal-to-background does that give? [RE-SCOPED 2026-07-22: the original question assumed deployment at the NUCLEUS Chooz Very-Near-Site behind the NUCLEUS shielding. Phase 8's VALD-09 geometry gate returned NO FIT, voiding that premise; per the user's decision the project reverts to the paper's unshielded-surface treatment.]",
       "in_scope": [
-        "Reactor CEvNS spectrum in reconstructed energy at the Chooz Very-Near-Site: two Chooz-B cores, 4.25 GWth each, at 72 m and 102 m, integral flux 2.1e12 nubar/cm2/s, 80% operating duty",
-        "Residual particle backgrounds behind the NUCLEUS shielding (5 cm plastic-scintillator muon veto + 5 cm low-activity Pb + 20 cm 5%-borated HDPE external; internal Pb/PE + ~4pi 4 cm B4C + cold muon veto; HPGe cryogenic outer veto at 1 keVee; Si inner veto), with their measured normalizations and attenuations adopted and the target response re-folded for germanium",
-        "All spectra extended down to 100 meV, two decades below the v1.0 10.14 eV grid floor, below the per-sensor saturation onsets (~1.27 eV Ta->Al, ~0.77 eV Al->Hf)",
-        "Impulse-approximation quantum broadening of the nuclear recoil (sigma_E = sqrt(E_R * omega_bar)) applied before the response chain",
-        "A trigger-probability curve as the reported observable below ~1 eV deposit: sigmoid with its 50% point at 0.5 eV, multiplying all other efficiencies including eps ~= 0.5",
-        "Ge-only thermal-capture channels that CaWO4/Al2O3 are structurally blind to: prompt (n,gamma) cascade recoils and the 71Ge EC M-shell line at ~159 eV",
-        "Cosmic-ray muon and environmental-gamma Compton channels re-driven at the VNS overburden (2.92 m.w.e., attenuation 1.41) and the measured VNS gamma ambience (5.03 cm-2 s-1)",
-        "Low-energy excess carried as an explicitly parameterized overlay band, never folded into a headline number, with the LEE amplitude at which S/B = 1 reported as the falsifiable deliverable",
-        "Detector geometry: 4 inch x 4 inch x 2 mm Ge wafer (~110 g), single instrumented face, ~10300 QPD sensors at 1/mm2",
-        "Both trapping designs: Ta absorber to Al trap/junction and Al absorber to Hf trap/junction"
+        "Reactor CEvNS spectrum in reconstructed energy at the paper's scenario: a single 3 GW_th core at 25 m, integral flux 7.5e12 nubar/cm2/s, from the frozen data/flux/reactor_flux_v1.0.csv unmodified. The NUCLEUS VNS normalization is reported only as an optional labelled scalar rescale (2.1e12/7.5e12 = 0.28) applied to the finished primary result.",
+        "Particle backgrounds for an UNSHIELDED SURFACE wafer, as treated in the paper: sea-level Gaisser-Guan muons folded through the ray-box chord distribution, and the radiogenic environmental-gamma Compton continuum. No overburden, no passive shielding, no veto credit (exactly 1.0 by construction).",
+        "A ROUGH ORDER-OF-MAGNITUDE sea-level neutron channel, folded through germanium's own kinematics with the frozen flat-box recoil kernel (T_max/E_n = 0.0536). The paper omitted neutrons entirely, but they were ~91% of the NUCLEUS RoI budget, so omitting them silently would flatter the result. This channel is a bound, not a derived result.",
+        "All spectra extended down to 100 meV, two decades below the v1.0 10.14 eV grid floor, below the per-sensor saturation onsets (~1.27 eV Ta->Al, ~0.77 eV Al->Hf), with the sub-eV observable reported as a trigger-probability curve rather than a differential rate.",
+        "Impulse-approximation quantum broadening of the nuclear-recoil spectrum, with omega_bar and the Debye-Waller convention pinned from the real Ge vibrational density of states."
       ],
       "out_of_scope": [
-        "Full Geant4 transport of the NUCLEUS geometry (their p.21 reports tens, even hundreds, millions of hours of computing time and states variance reduction will be required) - explicit user decision",
-        "Scaling the NUCLEUS CaWO4/Al2O3 residual backgrounds to germanium by a mass argument - discards the target dependence their own paper emphasizes; explicit user decision",
-        "Coherent-crystal S(q,omega) modelling backbone - the crystal-coherent regime lies below ~21 meV, under the 100 meV floor; NCrystal/DarkELF retained only as a bounded justification and for the sub-5 eV neutron kernel",
-        "OpenMC for any transport step - unbuildable on osx-arm64; any transport fallback must be hand-rolled (SIMU-05, follow-up)",
-        "Extending the reactor antineutrino flux table below 100 keV - the truncation bound is <= 0.81% at 100 meV and exactly zero above 0.29 eV; reporting the bound is the deliverable",
-        "Splicing TENDL-2023 n-Ge elastic above the 20 MeV ENDF ceiling (CALC-24, deferred to follow-up)",
-        "G4CMP phonon-transport detector response (deferred project-wide since v1.0)",
-        "Dark-matter sensitivity projections (later milestone)",
-        "Imperfect quasiparticle-tunneling identification and readout-noise modeling",
-        "Detector geometry / sensor-layout optimization - note VALD-09 may show the fixed geometry is incompatible with the adopted veto envelope, which is a stop-condition rather than an optimization trigger"
+        "Any transfer of NUCLEUS shielding attenuation, post-shield fluence, veto credit, or multiplicity credit. Phase 8 established the wafer does not fit their veto envelope (VALD-09, NO FIT). Locked user decision 2026-07-22: no reduced veto credit assumed, no resized veto invented.",
+        "Recovering a post-shield neutron fluence by regularized inversion of the NUCLEUS deposit spectra (former CALC-12), and the VALD-11 two-band CaWO4/Al2O3 ratio gate. Both are orphaned by design by the 2026-07-22 re-scope: they validated a post-shield transfer that no longer occurs.",
+        "Building a second pipeline run, a second flux table, or a second spectral shape for the NUCLEUS VNS normalization. The VNS is a scalar multiplication of the finished result or it is not reported.",
+        "Full Geant4 transport - explicit user decision; the NUCLEUS paper itself reports tens to hundreds of millions of CPU hours and states variance reduction would be required.",
+        "Scaling the NUCLEUS CaWO4/Al2O3 residual backgrounds to germanium by a mass argument - discards the target dependence their own paper emphasizes; explicit user decision.",
+        "Coherent-crystal S(q,omega) modelling backbone - the crystal-coherent regime lies below ~21 meV, under the 100 meV floor; NCrystal/DarkELF retained only as a bounded justification and for the sub-5 eV neutron kernel.",
+        "OpenMC for any transport step - unbuildable on osx-arm64; any transport fallback must be hand-rolled.",
+        "Redesigning the wafer format to fit a veto envelope. REQUIREMENTS.md places this out of scope: VALD-09 is a stop-condition, not an optimization trigger."
       ],
       "unresolved_questions": [
-        "GATING STOP-CONDITION: does a 4 inch x 4 inch x 2 mm ~110 g Ge wafer fit the NUCLEUS COV/IV veto envelope, dimensioned for 6.8 g CaWO4 and 4.5 g Al2O3 3x3 arrays (103 cm2 vs ~9 cm2, and monolithic so no multiplicity handle)? If not, STOP and re-scope with the user - nothing transfers.",
-        "Are the NUCLEUS Figs. 8-11 deposit spectra pre- or post-veto? Determines whether the inverted quantity is a fluence or a veto-survival-weighted fluence.",
-        "What value of omega_bar and which Debye-Waller convention (2W = q^2<u_x^2> vs q^2<u^2>/3)? The <u^2>-derived 12-21 meV and the 37 meV optical phonon differ by 2-3x, and both 2W and sigma_E scale linearly with it.",
-        "Can the in-shield thermal neutron flux phi_th be obtained? NUCLEUS does not publish it and it gates the Ge-only capture channel; a quantified gap is acceptable, zero is not.",
-        "What LEE amplitude and spectral shape should be carried? Design-dependent for a QPD (Al-film dislocation relaxation scaling with film area, ~10300 films), so neither inheritable nor shieldable.",
-        "Does E_rec ~= 0.5*E_dep survive at 100 meV, where the down-conversion cascade truncates near optical-phonon energies and the deposit is only ~3 phonon quanta? No literature addresses this."
+        "[RESOLVED Phase 8, 2026-07-22] Does the wafer fit the NUCLEUS COV/IV veto envelope? NO. A face-parallel 10.16 cm wafer needs a covering circle of 14.3684 cm against a published 10.0 cm COV cap crystal; clearance -4.3684 cm. Verdict verified independently (8/8 physics checks re-derived). The milestone premise is void and the project re-scoped to an unshielded surface wafer.",
+        "[Phase 8, OPEN] Assembly-level COV coverage is disclosed and quantified but NOT excluded: it needs only 24.6858 cm2 of non-cap projection at 2.1842 cm radial reach, and no published source constrains the rectangular COV crystals' lateral dimensions, placement, or mass. Only the Goupy 2024 thesis could settle it. Does not affect the re-scoped project.",
+        "What value of omega_bar and which Debye-Waller convention (2W = q^2<u_x^2> vs q^2<u^2>/3)? The <u^2>-derived 12-21 meV and the 37 meV optical phonon differ by 2-3x, and both 2W and sigma_E scale linearly with it. Phase 11 must close this by an argued choice, not carry it as a range.",
+        "Which sea-level neutron flux normalization? A PARMA/Sato-2015 shape with a Gordon-2004 integral anchor already exists at data/ambient_neutron_flux_v1.1.csv from Phase 7, but Phase-7 gap D2 records that no driver was ever committed, so the decisive integrals have never been recomputed. Phase 9 closes this.",
+        "Does Phase 11's IA broadening apply to the muon and Compton channels at all? sigma_E = sqrt(E_R*omega_bar) is a NUCLEAR-recoil width and those deposits are ELECTRON recoils. Phase 15 must determine this in-phase rather than assume it."
       ]
     },
     "context_intake": {
