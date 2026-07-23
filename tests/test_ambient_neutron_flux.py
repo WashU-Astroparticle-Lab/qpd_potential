@@ -287,13 +287,20 @@ def test_thermal_table_header_and_grid():
     assert len(rows) > 100
     assert all(ln.endswith(",order_of_magnitude") for ln in rows)
 
-    # the grid really is not shared_energy_grid()
+    # The grid really is not shared_energy_grid(), for EITHER version.  Checked by
+    # SPACING rather than by span: Phase 10 (Plan 10-03) extended the shared axis
+    # two decades downward, so "below the shared floor" is no longer a valid test
+    # of independence -- but the spacing still is.  This table is 100 nodes/decade
+    # (ratio 10^(1/100)); the shared grid is ~79.99 bins/decade.
     from qpd_potential import muon_deposit as md
     e_kev = np.array([float(ln.split(",")[0]) for ln in rows])
-    shared = md.shared_energy_grid()
-    assert e_kev.max() < shared[0], (
-        "the sub-eV table must sit entirely BELOW the shared grid floor -- "
-        "Phase 10 owns the grid extension and runs in parallel")
+    ratio = e_kev[1] / e_kev[0]
+    assert ratio == pytest.approx(10.0 ** (1.0 / 100.0), rel=1e-9)
+    for version in md.GRID_VERSIONS:
+        shared = md.shared_energy_grid(version=version)
+        assert not np.isclose(ratio, shared[1] / shared[0], rtol=1e-6), (
+            f"the sub-eV table shares the {version} grid spacing -- Phase 10 owns "
+            "the shared-grid extension and runs in parallel with Phase 9")
 
 
 @requires_parma

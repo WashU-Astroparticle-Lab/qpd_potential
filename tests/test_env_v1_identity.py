@@ -131,6 +131,8 @@ NOT_APPLIED_MARKERS: tuple[str, ...] = (
     "must NOT be applied",
     "audit machinery",
     "not an error bar",
+    "not a shield",
+    "is VOID",
     "no NUCLEUS",
     "no post-shield",
     "no buildup",
@@ -183,9 +185,31 @@ def scan_paths(paths, tokens=SHIELDED_TOKENS) -> list[tuple[str, int, str, str]]
     return out
 
 
+#: WHOLE-FILE exemptions.  Reserved for modules whose PURPOSE is to catalogue the
+#: forbidden quantities so that they cannot be applied -- naming a shielded
+#: statement in order to refuse it is not applying it.  Every such module must
+#: separately be shown to return exactly 1.0 for every credit it exposes; for
+#: veto_credit.py that is
+#: tests/test_surface_environment.py::test_veto_credit_unity (all 19 catalogued
+#: rows) plus the pre-existing repository guard in tests/test_veto_credit.py.
+SHIELDED_FILE_ALLOWLIST: tuple[tuple[str, str], ...] = (
+    (
+        "src/qpd_potential/veto_credit.py",
+        "Phase-8 NUCLEUS rejection/attenuation TAXONOMY. Its entire job is to "
+        "name every shielded statement and fix its transferable credit at "
+        "exactly 1.0 -- i.e. 'the background is unchanged'. The tokens appear "
+        "here as CATALOGUE ENTRIES, never as applied factors. Removing this "
+        "module would not remove a shielded quantity; it would remove the "
+        "record that refuses one.",
+    ),
+)
+
+
 def is_allowlisted(path: str, line: str) -> bool:
     """True if this exact hit line carries a recorded, justified exemption."""
     norm = path.replace(os.sep, "/")
+    if any(norm.endswith(suffix) for suffix, _why in SHIELDED_FILE_ALLOWLIST):
+        return True
     return any(
         norm.endswith(suffix) and needle in line
         for suffix, needle, _why in SHIELDED_ALLOWLIST
@@ -299,10 +323,16 @@ def test_muon_grid_floor_matches_shared_grid():
     """The frozen table is ON the project grid, not silently off it.
 
     The committed first tabulated energy 1.014497e-02 keV is the first log-bin
-    CENTRE of shared_energy_grid() (whose first EDGE is exactly 1.0e-2 keV); the
-    whole E_dep column must reproduce sqrt(edges[:-1]*edges[1:]).
+    CENTRE of the **v1.0** shared grid (whose first EDGE is exactly 1.0e-2 keV);
+    the whole E_dep column must reproduce sqrt(edges[:-1]*edges[1:]).
+
+    The version is pinned EXPLICITLY.  Phase 10 (Plan 10-03) extended the shared
+    axis two decades downward and made "v2.0-ext" the default, so an unpinned
+    call would silently compare a frozen v1.0 artifact against a different axis.
+    The frozen v1.0 muon and gamma tables live on the v1.0 grid, and that is what
+    this identity check must assert.
     """
-    edges = md.shared_energy_grid()
+    edges = md.shared_energy_grid(version="v1.0")
     assert edges[0] == pytest.approx(1.0e-2, rel=1e-12)
     centers = np.sqrt(edges[:-1] * edges[1:])
     assert centers[0] == pytest.approx(MUON_FIRST_E_KEV, rel=1e-6)
@@ -374,8 +404,11 @@ def test_no_photopeak_above_edge():
     e_edge_max = max(_compton_edge(ln.energy_keV) for ln in lines)
     assert e_edge_max == pytest.approx(COMPTON_EDGES_KEV["Tl208"], abs=0.5)
 
-    edges = md.shared_energy_grid()
+    # v1.0 grid pinned: the frozen Compton table has 584 bins on the v1.0 axis;
+    # Phase 10 made the extended "v2.0-ext" axis (744 bins) the default.
+    edges = md.shared_energy_grid(version="v1.0")
     e, r = _table(COMPTON_CSV)
+    assert len(edges) == len(r) + 1
     lo = edges[:-1]
     # A bin whose LOWER edge already exceeds the kinematic edge cannot be fed by
     # single scattering.  (The one bin that STRADDLES the edge legitimately
