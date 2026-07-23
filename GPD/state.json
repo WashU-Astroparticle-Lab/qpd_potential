@@ -134,9 +134,9 @@
       },
       {
         "id": "obs-background-spectrum",
-        "name": "Residual particle-background spectrum for Ge at the VNS",
+        "name": "Residual particle-background spectrum for an unshielded surface Ge wafer",
         "kind": "curve",
-        "definition": "Differential residual particle-background rate versus reconstructed energy for the Ge wafer behind the NUCLEUS shielding, summed over atmospheric neutrons, environmental gammas, atmospheric muons and material radioactivity",
+        "definition": "Differential residual particle-background rate versus reconstructed energy for an unshielded surface Ge wafer, summed over sea-level muons, the environmental-gamma Compton continuum, and a rough order-of-magnitude sea-level neutron estimate. No shielding attenuation and no veto credit are applied.",
         "regime": "10-100 eV region of interest and below, to 100 meV",
         "units": "counts/kg/day/keV"
       },
@@ -144,7 +144,7 @@
         "id": "obs-sb",
         "name": "Particle signal-to-background ratio",
         "kind": "scalar",
-        "definition": "S/B_particle in the 10-100 eV region of interest, reported with and without inherited veto credit, alongside the LEE amplitude at which S/B = 1",
+        "definition": "S/B_particle in the 10-100 eV region of interest for an unshielded surface wafer, with veto credit exactly 1.0 by construction (the only baseline), alongside the LEE amplitude at which S/B = 1",
         "regime": "10-100 eV region of interest",
         "units": "dimensionless"
       }
@@ -152,7 +152,7 @@
     "claims": [
       {
         "id": "claim-cevns",
-        "statement": "The reactor CEvNS spectrum in reconstructed energy is computed for both trapping designs at the NUCLEUS Chooz Very-Near-Site normalization (2.1e12 nubar/cm2/s, 80% duty) down to 100 meV, with impulse-approximation broadening and the 0.5 eV trigger curve applied, and is anchored to NUCLEUS Table 5 at 100% duty",
+        "statement": "The reactor CEvNS spectrum in reconstructed energy is computed for both trapping designs at the PAPER'S SURFACE SCENARIO normalization (3 GW_th at 25 m, int-Phi = 7.5e12 nubar/cm2/s, from the frozen reactor_flux_v1.0.csv unmodified) down to 100 meV, with impulse-approximation broadening and the 0.5 eV trigger curve applied; the NUCLEUS VNS normalization is reported only as an optional labelled scalar rescale (2.1e12/7.5e12 = 0.28) applied to the finished primary result, never as a second pipeline run. [RE-SCOPED 2026-07-22 after the Phase-8 VALD-09 gate returned NO FIT.]",
         "claim_kind": "result",
         "observables": [
           "obs-cevns-spectrum",
@@ -178,7 +178,7 @@
       },
       {
         "id": "claim-muon",
-        "statement": "The muon spectrum in reconstructed energy is computed for both designs at the VNS overburden (2.92 m.w.e., attenuation 1.41) with chord-length geometry and the bandwidth-saturation regime made explicit",
+        "statement": "The muon spectrum in reconstructed energy is computed for both designs for an UNSHIELDED SURFACE wafer (sea-level Gaisser-Guan flux, NO overburden and NO shielding attenuation, as in the paper) with chord-length geometry and the bandwidth-saturation regime made explicit. [RE-SCOPED 2026-07-22: the VNS overburden 2.92 m.w.e. / attenuation 1.41 no longer applies.]",
         "claim_kind": "result",
         "observables": [
           "obs-muon-spectrum",
@@ -202,7 +202,7 @@
       },
       {
         "id": "claim-compton",
-        "statement": "The Compton electron-recoil spectrum is computed in reconstructed energy from the MEASURED VNS gamma ambience (5.03 cm-2 s-1; 40K 59.6, 232Th 3.28, 238U 5.65 Bq/kg), replacing the v1.0 Heusser factor-2 band",
+        "statement": "The Compton electron-recoil spectrum is computed in reconstructed energy from the SURFACE environmental-gamma continuum as treated in the paper (v1.0 Heusser-based band with its stated factor-2 site-dependent uncertainty retained), for an unshielded wafer. [RE-SCOPED 2026-07-22: the measured VNS gamma ambience no longer applies, since the wafer is not behind NUCLEUS's shielding.]",
         "claim_kind": "result",
         "observables": [
           "obs-compton-spectrum",
@@ -252,7 +252,7 @@
       },
       {
         "id": "claim-background",
-        "statement": "The residual particle-background spectrum for a Ge wafer behind the NUCLEUS shielding is computed by adopting their measured environment and attenuations and re-folding the target response through germanium cross sections and kinematics, never by mass-scaling their CaWO4/Al2O3 residuals",
+        "statement": "The residual particle-background spectrum for an UNSHIELDED SURFACE Ge wafer is computed by folding surface-level fields through germanium's own cross sections and kinematics -- sea-level muons, the environmental-gamma Compton continuum, and a ROUGH ORDER-OF-MAGNITUDE sea-level neutron estimate (sourced sea-level spectrum through the frozen flat-box recoil kernel, T_max/E_n = 0.0536) -- never by mass-scaling NUCLEUS's CaWO4/Al2O3 residuals and never by inheriting any shielding attenuation. The neutron channel is explicitly a bound, not a derived result. [RE-SCOPED 2026-07-22: post-shield fluence recovery by regularized inversion is deleted.]",
         "claim_kind": "result",
         "observables": [
           "obs-background-spectrum"
@@ -275,7 +275,7 @@
       },
       {
         "id": "claim-sb",
-        "statement": "The particle signal-to-background ratio for the Ge wafer at the VNS is assembled in the 10-100 eV region of interest with the trigger curve applied, reported alongside a zero-inherited-veto-credit baseline and an explicit LEE overlay band, and is gated on reproducing CONUS+ as a limiting case",
+        "statement": "The particle signal-to-background ratio for an unshielded surface Ge wafer is assembled in the 10-100 eV region of interest with the trigger curve applied, with veto credit exactly 1.0 BY CONSTRUCTION as the only baseline -- described as NUCLEUS's-shielding-absent and NEVER as 'conservative', since it is a different and worse configuration rather than a conservative subset -- and with an explicit LEE overlay band. External validation covers the SIGNAL side only. [RE-SCOPED 2026-07-22.]",
         "claim_kind": "result",
         "observables": [
           "obs-sb",
@@ -344,10 +344,11 @@
       {
         "id": "deliv-fig-background",
         "kind": "figure",
-        "path": "artifacts/stage2/vns_background_budget.pdf",
-        "description": "Residual background spectrum for Ge at the VNS, component-resolved, with the LEE overlay band",
+        "path": "artifacts/stage2/surface_background_budget.pdf",
+        "description": "Residual background spectrum for an unshielded surface Ge wafer, component-resolved, with the LEE overlay band",
         "must_contain": [
-          "all four particle components",
+          "all modelled particle components (muons, environmental gammas, rough sea-level neutrons)",
+          "the neutron channel labelled order-of-magnitude, not derived",
           "LEE band shown separately, never summed in",
           "both trapping designs"
         ]
@@ -356,10 +357,10 @@
         "id": "deliv-sb-report",
         "kind": "note",
         "path": "artifacts/stage2/SB-BUDGET.md",
-        "description": "S/B_particle budget with the L2-off baseline, the CONUS+ limiting-case reproduction, and the LEE erasure amplitude",
+        "description": "S/B_particle budget at veto credit 1.0 by construction, the signal-side CONUS+ rate check, and the LEE erasure amplitude",
         "must_contain": [
-          "L2-off (zero inherited veto credit) baseline",
-          "CONUS+ reproduction",
+          "veto credit 1.0 by construction, described as NUCLEUS's-shielding-absent and never as 'conservative'",
+          "signal-side CONUS+ rate check, with the explicit statement that the S/B RATIO has no external validation",
           "LEE amplitude at which S/B = 1"
         ]
       }
@@ -416,8 +417,8 @@
         "id": "test-neutron-ratio",
         "subject": "claim-background",
         "kind": "benchmark",
-        "procedure": "Reproduce both published CaWO4/Al2O3 neutron rate ratios from a single normalization: 1.81 in 10-100 eV and 1.20 in 0.1-1 keV",
-        "pass_condition": "Both ratios reproduced from one normalization before any Ge neutron number is trusted",
+        "procedure": "Sanity-bound the rough sea-level neutron channel: confirm the adopted sea-level neutron flux is traceable to a named, verified published source; confirm the Ge recoil fold reproduces the frozen flat-box kernel identity and the T_max/E_n = 0.0536 kinematic limit; and confirm the resulting RoI rate is reported as an order-of-magnitude bound with its direction of uncertainty stated.",
+        "pass_condition": "Neutron flux source named and verified (not asserted); kernel identity and kinematic limit reproduced; RoI rate carries an explicit order-of-magnitude label. [RE-SCOPED 2026-07-22: the former VALD-11 two-band CaWO4/Al2O3 ratio gate (1.81 / 1.20) is DELETED -- it validated a post-shield transfer that no longer occurs.]",
         "evidence_required": [
           "deliv-fig-background",
           "ref-nucleus-bkg"
@@ -427,9 +428,9 @@
       {
         "id": "test-conus-plus",
         "subject": "claim-sb",
-        "kind": "limiting_case",
-        "procedure": "Rescale the pipeline to the CONUS+ configuration (3.6 GWth, 20.7 m, 7.4 m.w.e.) and reproduce its measured signal-to-background",
-        "pass_condition": "CONUS+ S/B ~0.03 reproduced within a factor ~2; no headline S/B claimed until this passes",
+        "kind": "benchmark",
+        "procedure": "SIGNAL-SIDE ONLY: rescale the CEvNS pipeline to the CONUS+ reactor configuration (3.6 GW_th, 20.7 m) and reproduce their reported Standard-Model CEvNS rate. Do NOT attempt to reproduce their signal-to-background ratio: CONUS+ is a shielded experiment at 7.4 m.w.e. and this pipeline models an unshielded surface wafer, so reproducing their S/B would require inventing a model of their shield.",
+        "pass_condition": "CONUS+ SM CEvNS rate reproduced within a factor ~2. The deliverable must state plainly that S/B_particle now has external validation of its NUMERATOR only, and no external validation of the ratio. [RE-SCOPED 2026-07-22: VALD-12 restated to its signal-side leg.]",
         "evidence_required": [
           "deliv-sb-report",
           "ref-conus-plus"
@@ -679,7 +680,7 @@
         "id": "fp-veto-credit-transfer",
         "subject": "claim-background",
         "proxy": "Inheriting NUCLEUS gram-scale veto rejection factors (COV factor ~5, MV+COV > 99.8%, 3x3 multiplicity) for a 110 g monolithic wafer",
-        "reason": "Those factors are payload-coupled and geometry-specific. The wafer has ~11x the footprint and no multiplicity handle at all."
+        "reason": "Those factors are payload-coupled and geometry-specific. The wafer has 45.9x the footprint on the published 2.25 cm2 array-crystal basis (11.5x on the project's own ~9 cm2 holder estimate, which is NOT a NUCLEUS number) and no multiplicity handle at all."
       },
       {
         "id": "fp-mass-scaled-target",
@@ -698,6 +699,18 @@
         "subject": "claim-response",
         "proxy": "Quoting the emergent Poisson counting floor as the detector energy resolution",
         "reason": "The project has no resolution model. The counting floor (15.9%/14.2% at 0.5 eV) omits baseline, amplifier, collection, position and readout noise, and the comparable unmodelled IA broadening (15.5-20.5% at 0.5 eV)."
+      },
+      {
+        "id": "fp-second-vns-run",
+        "subject": "claim-cevns",
+        "proxy": "Building a second pipeline run, a second flux table, or a second spectral shape for the NUCLEUS VNS normalization",
+        "reason": "The VNS premise failed the Phase-8 geometry gate. The VNS is a labelled scalar multiplication (0.28) applied to the finished primary result, or it is not reported. Re-deriving a VNS pipeline would resurrect a void premise and produce a physically un-realizable hybrid, since the VNS sits under 2.92 m.w.e. while this pipeline models an unshielded surface."
+      },
+      {
+        "id": "fp-inherited-shielding",
+        "subject": "claim-background",
+        "proxy": "Inheriting any NUCLEUS shielding attenuation, post-shield fluence, veto credit, or multiplicity credit for the unshielded surface wafer",
+        "reason": "Phase 8 established the wafer does not fit the NUCLEUS veto envelope (VALD-09, NO FIT). Veto credit is exactly 1.0 by construction. Locked user decision 2026-07-22: no reduced veto credit may be assumed and no resized veto may be invented."
       }
     ],
     "links": [
@@ -1274,8 +1287,8 @@
     }
   },
   "contract_alignment": {
-    "confirmed_at": "2026-07-22T22:52:07.009003+00:00",
-    "confirmed_contract_hash": "sha256:4d6168726d550d7ca2899587c8f13d3094fbcba7f5e211e6a72f94f87bc60018",
+    "confirmed_at": "2026-07-23T01:43:58.382183+00:00",
+    "confirmed_contract_hash": "sha256:906fef6638912994dddfff7ab52ca6e7231edcdb33f747b12920263df59e36a9",
     "confirmed_context_hash": "sha256:123819c9d80cc71c77ab6ec308453de2a60c6e521f9bbd30bc85ca7090841ee4"
   },
   "_version": 1,
