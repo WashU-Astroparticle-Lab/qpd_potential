@@ -45,7 +45,7 @@
       "known_good_baselines": [
         "NUCLEUS Collab., Eur. Phys. J. C 86, 29 (2026), arXiv:2509.03559, Table 5 at 100% duty: CaWO4 residual 144 mcpd (235 counts/kg/day/keV) and CEvNS 218.2 mcpd (356.5); Al2O3 52 mcpd (128) and 8.4 mcpd (20.7), 10-100 eV RoI. ANCHOR ON THE TABLE, NOT the Sect. 2 prose 280 (that is the 80%-duty value).",
         "NUCLEUS Collab., Eur. Phys. J. C 79, 1018 (2019), arXiv:1905.10258, Fig. 1 Ge CEvNS curve - reproduced to 5% by the VALD-02 anchor (tests/test_cevns_nucleus.py).",
-        "Our own CaWO4 closure fold: 407.7 counts/kg/day/keV, ratio 1.14 to their Table 5 - the SIGNAL-side target-swap closure test has already passed at 14%.",
+        "[DOWNGRADED 2026-07-23 by Phases 12 and 16] The CaWO4 closure fold 407.7 counts/kg/day/keV (ratio 1.14) has NO REPRODUCIBLE ARTIFACT anywhere in the repository -- a word-bounded grep returns GPD prose only, and no code, test, notebook or artifact reproduces it. It was folded at the NUCLEUS/VNS normalization, so it must be neither re-run nor rescaled. It is NOT a known-good baseline in the verifiable sense. With VALD-11 deleted by the 2026-07-22 re-scope there is NO background-side target-swap validation at all, and S/B_particle therefore has external validation of its NUMERATOR ONLY.",
         "CONUS+ Collab., Nature 643, 1229 (2025), arXiv:2501.05206: the only measured Ge-at-a-reactor S/B, ~0.03 in 0.4-1 keVee at 7.4 m.w.e. (395 +/- 106 events in 327 kg.d, 3.7 sigma). Hard gate on any v2.0 S/B claim.",
         "J. Billard et al., J. Phys. G 44, 105101 (2017), arXiv:1612.09035, Table 1 (0.76/0.51/0.26 counts/kg/day above 50/100/200 eV_nr) - reproduced to 2.4% in v1.0."
       ],
@@ -784,7 +784,7 @@
   "position": {
     "current_phase": "16",
     "current_phase_name": "S/B_particle Assembly, LEE Overlay, and the Signal-Side CONUS+ Check (P-SB)",
-    "total_phases": 9,
+    "total_phases": 16,
     "current_plan": null,
     "total_plans_in_phase": 3,
     "status": "Milestone complete",

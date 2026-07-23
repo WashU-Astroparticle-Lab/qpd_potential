@@ -13,7 +13,7 @@ See: GPD/PROJECT.md
 
 **Current Phase:** 16
 **Current Phase Name:** S/B_particle Assembly, LEE Overlay, and the Signal-Side CONUS+ Check (P-SB)
-**Total Phases:** 9
+**Total Phases:** 16
 **Current Plan:** none
 **Total Plans in Phase:** 3
 **Status:** Milestone complete
