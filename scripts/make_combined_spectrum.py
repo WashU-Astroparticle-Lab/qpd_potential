@@ -20,7 +20,8 @@ the background budget:
 
 Solid curves are the TRIGGER-WEIGHTED dR/dE_rec -- the actual observable. The faint dotted
 ghost behind each is the untriggered spectrum, so the sub-eV trigger-efficiency rolloff is
-visible as the gap between them (P_trig = 0.092 at 0.12 eV, 0.36 at 0.21 eV, ~1 above 2 eV).
+visible as the gap between them. The dotted is the intrinsic spectrum (linear response,
+no saturation, no trigger); the solid has both applied.
 The 50%% point sits near 0.25 eV RECONSTRUCTED because E50 = 0.5 eV is defined on the DEPOSIT
 axis and the deposit->reconstructed slope is ~0.5.
 """
@@ -67,23 +68,22 @@ def _c(rows, name):
 
 
 def unsaturated(channel, design):
-    """The spectrum the SAME deposits would give with NO bandwidth saturation.
+    """The INTRINSIC spectrum: linear response, no saturation, no analysis efficiency.
 
-    The unsaturated limit is the linear response E_rec = C * E_dep, with C read
-    from the response matrix's own low-energy behaviour (0.4972 Ta->Al) rather
-    than assumed. dR/dE_rec = (dR/dE_dep)/C, both already per keV.
+    The linear-response limit is E_rec = C * E_dep, with C read from the response
+    matrix's own low-energy behaviour (0.4972 Ta->Al) rather than assumed.
+    dR/dE_rec = (dR/dE_dep)/C, both already per keV.
 
-    The SAME trigger weighting is applied as to the solid curve, so the only
-    difference between solid and dotted is saturation -- which is the point.
-    Above the saturation onset the solid curve piles up while this one keeps
-    going, out past 100 keV.
+    The trigger (analysis-efficiency) weighting is DELIBERATELY NOT applied here
+    (user request 2026-07-23). So the dotted curve is the underlying physical
+    spectrum, and the gap to the solid shows BOTH instrumental effects: the
+    trigger rolloff below ~1 eV and bandwidth saturation above the onset.
     """
     z = np.load(os.path.join(ART, f"response_matrix_{design}_ext.npz"), allow_pickle=True)
     Ed_m, med = z["E_dep_centers_eV"], z["E_rec_median_non_paralyzable_eV"]
     C = float(np.interp(1.0, Ed_m, med)) / 1.0
     E, dRdE = _deposit(channel)
-    P = np.asarray(trigger.P_trig(E), float)
-    return E * C, dRdE * P / C
+    return E * C, dRdE / C
 
 
 def sat_marks(design):
@@ -165,8 +165,9 @@ def panel(ax, design, title):
     for ch in continua(design):
         f = N_SUPPRESSION if ch.get("sup") else 1.0
         E, y = ch["d"]; y = y / f
-        # dotted ghost = the SAME deposits with NO saturation (linear response).
-        # The gap to the solid curve is therefore the bandwidth-saturation cost.
+        # dotted = the INTRINSIC spectrum: linear response, no saturation, no trigger.
+        # The gap to the solid shows both instrumental effects -- trigger rolloff
+        # below ~1 eV and bandwidth saturation above the onset.
         Er, yr = unsaturated(ch["key"], design); yr = yr / f
         mr = yr > 0
         if mr.any():
@@ -239,7 +240,7 @@ axes[0].set_ylabel(r"$dR/dE_{\rm rec}$   [counts kg$^{-1}$ day$^{-1}$ keV$^{-1}$
 from matplotlib.lines import Line2D  # noqa: E402
 _h, _l = axes[0].get_legend_handles_labels()
 _h.append(Line2D([0], [0], color="0.35", ls=":", lw=1.4))
-_l.append("same channel, NO saturation\n(linear $E_{\\rm rec}$ = 0.497 $E_{\\rm dep}$)")
+_l.append("intrinsic: no saturation, no trigger\n(linear $E_{\\rm rec}$ = 0.497 $E_{\\rm dep}$)")
 axes[0].legend(_h, _l, loc="lower left", fontsize=8.0, framealpha=0.94)
 
 axes[1].text(0.985, 0.02,
@@ -260,7 +261,7 @@ fig.text(0.5, 0.032,
          "whose ~5 and ~50 are event-rate reductions in CaWO$_4$ that embed a target response which is not Ge's.",
          ha="center", fontsize=8.4, style="italic")
 fig.text(0.5, 0.014,
-         "Dotted = the SAME deposits with NO bandwidth saturation (linear $E_{\\rm rec}$ = 0.497 $E_{\\rm dep}$, trigger applied); solid minus dotted IS the saturation cost. "
+         "Dotted = the intrinsic spectrum: linear $E_{\\rm rec}$ = 0.497 $E_{\\rm dep}$, NO saturation and NO trigger. The solid-to-dotted gap is the trigger rolloff below ~1 eV and saturation above the onset. "
          "Dotted curves are spikier because $R$ smooths the deposit spectra's MC noise -- that is sampling scatter, not structure.",
          ha="center", fontsize=8.4, style="italic")
 
