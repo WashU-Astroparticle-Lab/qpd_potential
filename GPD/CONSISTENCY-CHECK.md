@@ -92,7 +92,7 @@ The 03-02 plan text guessed a 20–25% low-recoil flux band; the rigorous rate-w
 
 ### F4 — CEvNS sub-10 eV data retained vs user 10 eV plot-floor (severity: INFO; display advisory)
 
-Phase 6 correctly **retains** the CEvNS 5–10.14 eV low edge in the data CSV (7.27 counts/kg/day, mapped E_rec≈2.5–5.0 eV; `fp-drop-lowE-cevns` guarded). This is below the user's "never display below 10 eV" plot-floor memory. Data retention is correct; whether the deliverable figure `reconstructed_energy_spectra.pdf` floors the **displayed** axis at 10 eV could not be verified from artifact metadata alone. Advisory for the plot-floor convention only — the CEvNS peak (~42 eV) sits well above the floor, and this is not a cross-phase physics inconsistency.
+Phase 6 correctly **retains** the CEvNS 5–10.14 eV low edge in the data CSV (7.27 counts/kg/day, mapped E_rec≈2.5–5.0 eV; `fp-drop-lowE-cevns` guarded). This is below the user's then-standing "never display below 10 eV" plot-floor memory — **that memory was RETRACTED on 2026-07-22 (ROADMAP Phase 10); the sentence is retained here as history, not as a live rule.** Data retention is correct; whether the deliverable figure `reconstructed_energy_spectra.pdf` floors the **displayed** axis at 10 eV could not be verified from artifact metadata alone. Advisory for the plot-floor convention only — the CEvNS peak (~42 eV) sits well above the floor, and this is not a cross-phase physics inconsistency.
 
 ---
 

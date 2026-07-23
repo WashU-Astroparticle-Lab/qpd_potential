@@ -455,7 +455,7 @@ symptoms:
   the resonance region, and inside the regime where (b) applies.
 
 **(d) Grid-floor and binding artifacts.** The project already carries a memory rule: **never
-display QPD spectra below 10 eV** — grid-floor / binding-artifact territory. v2.0 explicitly asks
+display QPD spectra below 10 eV** — grid-floor / binding-artifact territory. **[RETRACTED 2026-07-22 by user decision; recorded here as history, not as a live rule — spectra now run to 100 meV, and below 1 eV deposit the reported observable is a trigger-probability curve. See CONVENTIONS §I and GPD/phases/10-.../10-05-COUNTING-FLOOR.md.]** v2.0 explicitly asks
 for 100 meV, i.e. **two decades inside the region that rule was written to exclude.** The rule must
 be consciously superseded with an argument, not silently overridden.
 

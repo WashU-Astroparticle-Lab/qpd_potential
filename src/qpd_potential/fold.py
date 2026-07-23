@@ -621,12 +621,20 @@ def make_spectra_figure(
 
     # ---- Panels A/B: spectra per design ------------------------------------ #
     ymin, ymax = 1e-3, 1e9
-    # Do NOT display anything below 10 eV: the sub-10-eV region is grid-floor /
-    # electron-binding-artifact territory (Compton S(q,Z) roll-off, CEvNS sub-floor
-    # 0.5*E_dep extension) and is not trustworthy for presentation (user directive).
-    # 10 eV floor on the low end; the high end is extended to ~300 MeV so the
-    # deposited (true) muon spectrum, which reaches the ~197 MeV endpoint, is
-    # visible alongside the reconstructed spectra (10 eV floor is the display rule).
+    # RETRACTED 2026-07-22 (user decision; ROADMAP Phase 10, plan 10-05). The former
+    # project rule -- "never display below 10 eV" -- is HISTORY, not physics, and must
+    # not be restated as a live rule. Spectra now run down to 100 meV.
+    #
+    # The 1e-2 keV low limit BELOW IS NOT THAT RULE. It is the support floor of the
+    # V1.0 ARTIFACTS this v1.0 figure draws: artifacts/stage1/reconstructed_spectra_*.csv
+    # and the frozen response matrices have no data below 10.14 eV, and plotting below a
+    # table's own floor is silent extrapolation (plan 10-05 disposition register,
+    # fp-silent-carry). Phases 12-15 own the v2.0 figures on the extended axis; below
+    # trigger.SUBEV_REGIME_BOUNDARY_eV = 1 eV the reported observable there is the
+    # trigger probability, not dR/dE_rec.
+    #
+    # The high end is extended to ~300 MeV so the deposited (true) muon spectrum, which
+    # reaches the ~197 MeV endpoint, is visible alongside the reconstructed spectra.
     xmin, xmax = 1e-2, 3e5  # keV
     for col, d in enumerate(designs):
         ax = axes[col]

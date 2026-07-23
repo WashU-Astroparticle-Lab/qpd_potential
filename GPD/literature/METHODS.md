@@ -21,7 +21,7 @@ itself — that is irreducibly a scenario input, not a computable quantity.
 > (3) the 100 meV extension, (4) LEE parameterization.
 
 > **Convention conflict to resolve before any plotting.** The user auto-memory records "never display
-> QPD spectra/energy axes below 10 eV (grid-floor/binding-artifact territory)". The v2.0 milestone
+> QPD spectra/energy axes below 10 eV (grid-floor/binding-artifact territory)". **[RETRACTED 2026-07-22; quoted as history, not as a live rule.]** The v2.0 milestone
 > explicitly retracts that floor (`STATE.md`, 2026-07-22). Methods below are written for the retracted
 > floor, but Section 3 identifies *physics* reasons the 10 eV guidance was partly right. This must be
 > reconciled in CONVENTIONS, not silently.
