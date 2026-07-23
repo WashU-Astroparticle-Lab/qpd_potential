@@ -525,6 +525,83 @@ TRIGGER_SHARPNESS_RANGE = (1.0, 12.0)
 
 
 # --------------------------------------------------------------------------- #
+# Phonon energy scale and Debye-Waller convention (CONVENTIONS Section J;      #
+# Phase 11 / CALC-14, plan 11-01)                                              #
+# --------------------------------------------------------------------------- #
+# DERIVED, not decided: every scalar below is reproduced by
+#   /opt/anaconda3/bin/python3 -c "import sys; sys.path.insert(0,'src'); \
+#       from qpd_potential import phonon_scale as ps; print(ps.derive('ncrystal'))"
+# from the frozen measured Ge VDOS in data/external/ge_vdos/ at T -> 0.  They are
+# mirrored here so downstream plans import rather than restate literals, in the
+# discipline trigger.SUBEV_REGIME_BOUNDARY_eV established in Phase 10.
+#
+# 2W = q^2 <u_x^2> with the 1-D MSD.  q^2 <u^2>/3 is REJECTED (double-counted
+# isotropic projection).  The rate is NEVER multiplied by exp(-2W).
+
+U_X_SQ_ANGSTROM2 = Param(
+    1.6096194483e-3,
+    "angstrom^2",
+    "1-D mean-square displacement of Ge at T->0, from the measured VDOS "
+    "(NCrystal Ge_sg227.ncmat; Nelin & Nilsson, PRB 5, 3151 (1972)); "
+    "CONVENTIONS Section J",
+    "MEDIUM",
+    note="VDOS-derived, not Debye-model. Sits 1.203x above the Debye T->0 value "
+    "1.3380e-3 angstrom^2 at theta_D = 374 K, inside the ROADMAP SC2 factor-1.5 "
+    "window. Cross-checked against the DarkELF Ge_pDoS digitization: 1.5787e-3, "
+    "i.e. -1.92% -- reported, never averaged. MEDIUM because it rests on a single "
+    "1972 measurement propagated through two digitizations, and because the "
+    "natural-Ge mass averaging carries a 0.10% ambiguity (which cancels out of "
+    "omega_bar and 2W entirely).",
+)
+OMEGA_BAR_eV = Param(
+    1.7859677040e-2,
+    "eV",
+    "Effective phonon energy omega_bar = hbar^2/(2 m_N <u_x^2>) = 17.8597 meV; "
+    "CONVENTIONS Section J",
+    "MEDIUM",
+    note="Equal to the HARMONIC mean of the measured VDOS, and MASS-FREE: m_N "
+    "cancels between the definition and the MSD quadrature. Inside the survey's "
+    "12-21 meV band, so that band SURVIVES contact with the measured VDOS. Not to "
+    "be confused with the 37 meV zone-centre optical phonon, which is a different "
+    "quantity wearing the same symbol. The VDOS ARITHMETIC mean is 24.1955 meV; "
+    "the ratio <w><1/w> = 1.3548 is the moment mismatch that plan 11-02 must "
+    "carry into sigma_E.",
+)
+OMEGA_BAR_ARITHMETIC_eV = Param(
+    2.4195526e-2,
+    "eV",
+    "Arithmetic mean of the measured Ge VDOS, <w> = 24.1955 meV; CONVENTIONS Section J",
+    "MEDIUM",
+    note="NOT the locked omega_bar. Recorded because <u_x^2> is governed by the "
+    "HARMONIC mean while <p_x^2> -- which sets the impulse-approximation Gaussian "
+    "width -- is governed by the ARITHMETIC mean. They coincide only for a single "
+    "mode. sqrt(<w><1/w>) = 1.1639 is the factor by which a single-frequency "
+    "sigma_E = sqrt(E_R omega_bar) understates the true IA width for real Ge "
+    "(the Debye value of that factor is sqrt(9/8) = 1.0607).",
+)
+DEBYE_WALLER_B_ANGSTROM2 = Param(
+    0.1270904575,
+    "angstrom^2",
+    "Crystallographic B factor B = 8 pi^2 <u_x^2> at T->0; CONVENTIONS Section J",
+    "MEDIUM",
+    note="T->0 zero-point value. The same quadrature at 300 K gives B = 0.5580 "
+    "angstrom^2, which is the regime in which room-temperature diffraction B "
+    "factors are measured -- they are NOT the same quantity as this one.",
+)
+GE_THETA_D_K = Param(
+    374.0,
+    "K",
+    "Ge Debye temperature, used ONLY as input to the analytic oracle "
+    "<u^2>_3D = 9 hbar^2/(4 m_N k_B theta_D); CONVENTIONS Section J",
+    "LOW",
+    note="A COMPARISON BASELINE, never a source of omega_bar (forbidden proxy "
+    "fp-debye-substitute). NCrystal's own VDOS-fitted Debye temperature for the "
+    "same spectrum is 295.35 K; the two are different estimators and the "
+    "disagreement is expected, not an error.",
+)
+
+
+# --------------------------------------------------------------------------- #
 # Convenience accessors                                                        #
 # --------------------------------------------------------------------------- #
 

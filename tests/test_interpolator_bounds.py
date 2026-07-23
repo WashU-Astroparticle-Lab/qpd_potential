@@ -362,7 +362,10 @@ def test_inventory_closure_grep_hits_equal_inventory_rows():
     assert os.path.exists(_INVENTORY), "the interpolator inventory is missing"
     text = open(_INVENTORY).read()
     hits = _grep_hits()
-    assert len(hits) == 33, f"grep hit count changed: {len(hits)}"
+    # 33 at the close of Phase 10; 34 after plan 11-01 registered
+    # phonon_scale.vdos_weight_quantile_meV. Bumping this number is the ONLY
+    # sanctioned response to a new hit, and it must come with an inventory row.
+    assert len(hits) == 34, f"grep hit count changed: {len(hits)}"
     rows = [ln for ln in text.splitlines()
             if ln.startswith("| `src/") and ln.count("|") >= 6]
     assert len(rows) == len(hits), (
