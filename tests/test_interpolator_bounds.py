@@ -364,10 +364,13 @@ def test_inventory_closure_grep_hits_equal_inventory_rows():
     hits = _grep_hits()
     # 33 at the close of Phase 10; 34 after plan 11-01 registered
     # phonon_scale.vdos_weight_quantile_meV; 35 after plan 11-03 registered the
-    # analytic one-phonon add-back in impulse_limit.structure_factor. Bumping this
-    # number is the ONLY sanctioned response to a new hit, and it must come with an
-    # inventory row.
-    assert len(hits) == 35, f"grep hit count changed: {len(hits)}"
+    # analytic one-phonon add-back in impulse_limit.structure_factor; 41 after plan
+    # 13-01 registered the six sites in neutron_recoil.py (the frozen ENDF sigma_el
+    # evaluation, the two ln-E maps of the smoothed-sigma control, the control's own
+    # node evaluation, the per-isotope cross-check fold and the a1 diagnostic).
+    # Bumping this number is the ONLY sanctioned response to a new hit, and it must
+    # come with an inventory row.
+    assert len(hits) == 41, f"grep hit count changed: {len(hits)}"
     rows = [ln for ln in text.splitlines()
             if ln.startswith("| `src/") and ln.count("|") >= 6]
     assert len(rows) == len(hits), (
