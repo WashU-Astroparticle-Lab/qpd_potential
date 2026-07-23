@@ -226,3 +226,13 @@ GPD/state.json.lock
 # with per-file sha256 recorded in the frozen CSV provenance headers.
 data/endf/ace/
 GPD/state.json.v1.0-contract-backup
+
+# PARMA source cache (Plan 09-02): the pinned-commit tarball and its extracted
+# tree are third-party bulk, exactly reproducible via
+# data/external/parma/fetch_parma.sh with the SHA-256 recorded in
+# data/external/parma/MANIFEST.md.  The neutron COEFFICIENT files (the part the
+# Sato-2015 article does not tabulate) ARE committed under
+# data/external/parma/neutro_coefficients/.
+data/external/parma/PARMA-*.tar.gz
+data/external/parma/src/
+data/external/parma/build_parma_neutron

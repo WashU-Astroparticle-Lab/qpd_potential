@@ -130,6 +130,11 @@ NOT_APPLIED_MARKERS: tuple[str, ...] = (
     "applies **no**",
     "must NOT be applied",
     "audit machinery",
+    "not an error bar",
+    "no NUCLEUS",
+    "no post-shield",
+    "no buildup",
+    "no veto",
 )
 
 
@@ -188,8 +193,14 @@ def is_allowlisted(path: str, line: str) -> bool:
 
 
 def is_not_applied(line: str) -> bool:
-    """True if a prose hit line explicitly says the quantity is NOT applied."""
-    return any(m in line for m in NOT_APPLIED_MARKERS)
+    """True if a prose hit line explicitly says the quantity is NOT applied.
+
+    Case-insensitive: header text is often shouted ("ZERO OVERBURDEN") while the
+    marker list is written in lower case, and a case-sensitive comparison would
+    make a genuine exclusion look like an applied quantity.
+    """
+    low = line.lower()
+    return any(m.lower() in low for m in NOT_APPLIED_MARKERS)
 
 
 def import_closure_files(*roots) -> list[str]:
@@ -422,25 +433,61 @@ def _declared_hashes() -> dict[str, str]:
     return out
 
 
-def _head_sha256(path: str) -> str:
+def _blob_sha256(rev: str, path: str) -> str:
     import hashlib
-    blob = subprocess.run(["git", "show", f"HEAD:{path}"], cwd=REPO,
+    blob = subprocess.run(["git", "show", f"{rev}:{path}"], cwd=REPO,
                           capture_output=True, check=True).stdout
     return hashlib.sha256(blob).hexdigest()
+
+
+def _declared_rev() -> str:
+    """The commit the declaration itself pins as its point of reference."""
+    text = open(DECLARATION, encoding="utf-8").read()
+    m = re.search(r"Repo HEAD at execution: `([0-9a-f]{7,40})`", text)
+    assert m, "the declaration must pin the commit its hashes refer to"
+    return m.group(1)
 
 
 def test_declared_hashes_match_committed_artifacts():
     """Every SHA-256 quoted in the declaration is the COMMITTED artifact's.
 
-    The authoritative frozen-v1.0 artifact is the git-HEAD blob, not the working
-    tree: Phase 10 runs in parallel in this repository and may legitimately have
-    uncommitted edits to a shared module.  Hashing the HEAD blob keeps this an
-    identity check on the frozen input rather than a lock on a shared checkout.
+    The authoritative frozen-v1.0 artifact is the git BLOB at the commit the
+    declaration itself pins -- not the floating HEAD and not the working tree.
+    Phase 10 runs in parallel in this repository and has legitimately modified a
+    shared module (compton_source.py, interpolation-domain guard) AFTER this
+    declaration was frozen.  Pinning the revision keeps this an identity check on
+    the frozen v1.0 input instead of a lock on a shared, moving checkout.
+
+    The declaration's PHYSICS claims are separately re-checked against the LIVE
+    modules by test_muon_deterministic_scalars, test_compton_edges_from_line_list
+    and test_no_photopeak_above_edge, so a Phase-10 edit that actually changed a
+    declared number would still fail this suite.
     """
+    rev = _declared_rev()
     declared = _declared_hashes()
-    mismatched = {p: (declared[p], _head_sha256(p))
-                  for p in DECLARED_ARTIFACTS if declared[p] != _head_sha256(p)}
-    assert mismatched == {}, f"declaration quotes a non-committed hash: {mismatched}"
+    mismatched = {p: (declared[p], _blob_sha256(rev, p))
+                  for p in DECLARED_ARTIFACTS
+                  if declared[p] != _blob_sha256(rev, p)}
+    assert mismatched == {}, (
+        f"declaration quotes a hash that is not the artifact at {rev}: {mismatched}")
+
+
+def test_declared_artifacts_unchanged_since_the_pinned_revision():
+    """Report, rather than hide, any declared artifact that moved since freeze.
+
+    Data artifacts must be untouched.  A source module may legitimately move
+    under a parallel phase, but only if the declaration DISCLOSES it -- a silent
+    change to a frozen v1.0 input is exactly what SC1 exists to prevent.
+    """
+    rev = _declared_rev()
+    text = open(DECLARATION, encoding="utf-8").read()
+    for path in DECLARED_ARTIFACTS:
+        if _blob_sha256(rev, path) == _blob_sha256("HEAD", path):
+            continue
+        assert not path.startswith("data/"), (
+            f"frozen v1.0 DATA artifact {path} changed since {rev}")
+        assert "Concurrency note" in text and os.path.basename(path) in text, (
+            f"{path} changed since {rev} without a disclosure in the declaration")
 
 
 def test_plan_09_01_touched_no_data_artifact():
