@@ -374,7 +374,21 @@ Plans:
 - ~~SC4's bounding argument "its impact is bounded at the VNS, where the building plus shield cut the >10 MeV flux by ~5–7× relative to v1.1's surface premise".~~ **Removed and inverted:** that attenuation was the stated reason CALC-24 was safe to defer, and it does not exist for an unshielded surface wafer. The >20 MeV omission is therefore a **larger** fraction of this channel than it was under the void premise. It is still bounded rather than closed, because the lowered accuracy expectation does not warrant the splice — but **CALC-24's deferral rationale is void and is flagged for the orchestrator.**
 - ~~SC5's licensing clause "licensed by the Phase-9 VALD-11 pass".~~ **Removed** with the gate. The provenance check that no CaWO₄/Al₂O₃ residual is rescaled to Ge is now trivially satisfied — no NUCLEUS residual enters the pipeline at all — so it is demoted from a success criterion to the standing `fp-mass-scaled-target` prohibition above.
 
-**Plans:** TBD (run `gpd:plan-phase 13` to break down)
+**Plans:** 3 plans, 3 waves
+
+Plans:
+- [ ] 13-01-PLAN.md -- Anchored flat-box fold to native dR/dT; SC3 resonance imprint with a smoothed-sigma control that MUST fail; SC5 sub-5 eV disposition; the 1 eV - 10.14 eV flux gap closed with the pinned PARMA driver
+- [ ] 13-02-PLAN.md -- SC4 kinematic compression adjudicated BY MEASUREMENT; >20 MeV omission bounded at the surface; CALC-24 disposition decided against the number
+- [ ] 13-03-PLAN.md -- Neutron-only extended fold to dR/dE_rec both designs, broadening once, trigger composed; SC2 error budget; SC1-SC5 verdicts and labelled hand-off
+
+> **Planning findings (2026-07-22), one MEASURED during planning.**
+> (a) **SC4's compression direction is UNDER TEST, not adopted.** For phi ~ 1/E and constant sigma, the fold gives C*sigma/T -- the kinematic factor f **cancels exactly**, confirmed numerically to 2e-7 for f in {0.0215, 0.0536, 0.2215}. Phase 9 measured the sea-level spectrum flat in lethargy to a factor 1.390 over 1 eV - 10 keV, i.e. near that limit over the band feeding the RoI. **SC4's stated mechanism may have no leading-order effect at all**, and any real target dependence must then be attributed to resonance structure, flux-shape departure, or atoms/kg. This would be the FIFTH roadmap clause of the milestone to fall under measurement. `fp-assert-compression` blocks quoting the 2.49 ratio back as the exhibition.
+> (b) **NEW GAP, not recorded anywhere: the two committed flux tables do not join.** `ambient_neutron_thermal_v2.0.csv` stops at 1 eV; `ambient_neutron_flux_v1.1.csv` starts at a 10 eV bin edge. Recoils below T = 0.0536 x 10.14 eV ~ **0.54 eV** are fed ENTIRELY from that uncovered band -- precisely the sub-eV region this milestone exists to reach.
+> (c) **SC1's "count conservation <= 1e-3" does not name a budget and cannot hold as literally read.** Phase 11 measured 48.98% kernel leakage below the floor at 100 meV, so retained-only conservation MUST miss. Discharged on retained+leaked; a retained-only residual that closes would itself be evidence of a hidden rescale.
+> (d) **The two declared omissions may not be independent.** Every neutron above 197 MeV is also above 20 MeV, and the Phase-9 driver reaches 10 GeV, so the flux ceiling may be entirely subsumed by the sigma_el ceiling. Must be stated, not assumed either way.
+> (e) **CaWO4 is not W.** SC4 supplies tungsten's kinematic factor, but oxygen dominates CaWO4's atom count (4 O per formula unit) at f ~ 0.22, FOUR TIMES Ge's. The substitution and its directional consequence are a required output.
+>
+> **CALC-24:** Phase 13 BOUNDS, does not close -- but the deferral is made conditional on the measured bound, not inherited. The Phase-7 rationale (shield attenuation of the >10 MeV tail) is recorded VOID at the surface and `fp-inherit-void-rationale` blocks its re-use.
 
 ### Phase 14: Ge-Only Thermal-Capture Channels (P-GEONLY)
 
