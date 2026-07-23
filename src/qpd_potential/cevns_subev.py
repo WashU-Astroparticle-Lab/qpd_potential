@@ -1252,8 +1252,13 @@ def closure_provenance_search(needle: str = "407.7") -> dict:
     cmd = f"git grep -lE '(^|[^0-9.]){pattern}([^0-9]|$)' | sort"
     out = subprocess.run(["bash", "-c", cmd],
                          cwd=_PROJECT_ROOT, capture_output=True, text=True).stdout.split()
-    # this module itself carries the search string as a default argument
-    out = [p for p in out if not p.endswith("cevns_subev.py")]
+    # THE SEARCH'S OWN MACHINERY is excluded: this module carries the string as a
+    # default argument and its guard test carries it in an assertion message. Neither
+    # is a source for the figure, and counting them would let the search close its own
+    # provenance gap.
+    _self = ("src/qpd_potential/cevns_subev.py",
+             "tests/test_cevns_subev_regression.py")
+    out = [p for p in out if p not in _self]
     prose = [p for p in out if p.startswith("GPD/")]
     reproducible = [p for p in out
                     if p.endswith((".py", ".ipynb", ".csv", ".npz", ".json"))
