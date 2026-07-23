@@ -351,6 +351,22 @@ Plans:
 
 ### Phase 13: Ge Neutron Fold from the Sea-Level Flux (P-TGT)
 
+**Status:** COMPLETE 2026-07-22. **RoI-band neutron rate (E_rec 10-100 eV, untriggered): Ta->Al 5430.29, Al->Hf 5485.15 counts/kg/day.** Recoil-axis in-RoI 4418.96. Sub-eV (E_rec < 1 eV): 5121.3/5126.2 untriggered, 2852.0/2856.9 triggered. Whole channel labelled **order_of_magnitude**.
+
+**SC4: SUPERSEDED BY MEASUREMENT (mechanism); direction REVERSES against CaWO4.** The substitution E = (T/f)x gives dR/dT = n(C/T) * integral, in which the 1/f prefactor cancels against the T/f lower limit **for any sigma**; f survives only INSIDE sigma's argument, where it moves resonance features along T and never scales the rate. Measured spread across f in {0.0215, 0.0536, 0.0952, 0.2215}: **4.1997e-8**. The Ge/W ratio of 2.29-2.46 per kg is accounted for **entirely by atoms/kg (2.53339)**; flux shape supplies -3% to -9%; the kinematic part is <=1.4e-4. `f_Ge/f_W = 2.4925` and `n_Ge/n_W = 2.5334` agree to 1.6% because **both track A_W/A_Ge** -- SC4's ~2.5x was right for the wrong reason. **Ge/CaWO4 = 0.673-0.692: Ge is the BETTER target per kg by ~1.45x**, because O is 66.67% of CaWO4's atom count. Conditional on common-constant-sigma legs (only Ge has a resonance-resolved sigma here) -- stated, not buried.
+
+**1 eV - 10.14 eV flux gap: CLOSED** by evaluating the pinned PARMA driver directly at every quadrature node; neither table is interpolated across it. Driver vs v1.1 median -3.876e-6 (the known k-rounding), vs thermal -3.885e-12.
+
+**>20 MeV bound / CALC-24:** slope measured FIRST (-2.667e-3 b/MeV over the top decade) but the decade is **not monotone** (peak 2.317 b at 8 MeV), so a single flat continuation is NOT an upper bound and a second continuation was added. Bound 1.35-2.55e-5 in-RoI vs 8.91-16.87% of the T-integrated total -- a factor ~6600 apart. **CALC-24 deferral SUSTAINED on the measured bound**, margin 11.85x, with its own falsifier attached; the void Phase-7 rationale appears only as a record.
+
+> **SC3 washout -- the finding that most constrains downstream claims.** The resonance imprint is 32.160 vs a smoothed-sigma control of 1.143 (threshold 5.0) on the RECOIL axis, and survives broadening (6.531) and the deposit rebin (6.113) -- but **WASHES OUT on the reported reconstructed axis: 3.383/3.598, below its own threshold**. Quantified at 9.5x/8.9x on the statistic and 1.6x on amplitude contrast (54.5% -> 33-35%), attributed to IA sigma_E/E = 5.70% and 12.202%-wide reconstructed binning against a 1.87%-wide feature. **Anyone quoting the resonance as a discriminating handle in reconstructed energy would be over-reading it.** No band narrowed, no threshold lowered.
+>
+> **Other findings against expectation:** the kinematic edge is NOT a +/-4% isotope-smeared band -- 73-Ge carries 98.84% of the 669.1 b peak alone (physical edge 5.4705 eV; single-f misplaces it +0.52%). One acceptance test's escalation criterion **cannot fire** (the in-RoI fraction is exactly zero by kinematics) and was answered on its terms then supplemented. The executor also **corrected its own overclaim** mid-phase: "four orders of magnitude above CEvNS" was a cross-axis comparison; on the shared reconstructed axis it is 3.07e3 at the bottom bin and ~1e2 inside the RoI.
+>
+> **Weakest anchor:** the Ge-vs-CaWO4 reversal is conditional on a common-constant-sigma assumption. This repo owns a resonance-resolved sigma_el for **Ge only**; an element-resolved sigma for W/Ca/O could revert the direction.
+
+**SC verdicts:** SC1 PARTIALLY CONFIRMED (retained+leaked residual 5.969e-5; retained-only misses by -7.663e-3, matching measured leakage to 0.79%), SC2 CONFIRMED, SC3 PARTIALLY CONFIRMED, SC4 SUPERSEDED, SC5 CONFIRMED.
+
 > **Re-scoped 2026-07-22.** The input changes from a recovered post-shield fluence φ_post to the **rough sea-level neutron flux** of Phase 9, and the whole channel is labelled **order-of-magnitude**. The VALD-11 gate dependency is dropped with the gate. What is deliberately **kept** is the target physics: the resonance imprint and the kinematic compression that makes Ge worse than CaWO₄ are properties of germanium, not of the site, and they survive the re-scope untouched.
 
 **Goal:** The neutron nuclear-recoil channel — omitted entirely from the v1.0 paper, and ~91% of NUCLEUS's shielded RoI budget — exists as an order-of-magnitude Ge recoil spectrum in reconstructed energy, folded from the sea-level flux through Ge's own kinematics and resonance structure, so that the background that dominates every comparable experiment cannot vanish silently from this one's budget.
@@ -377,9 +393,9 @@ Plans:
 **Plans:** 3 plans, 3 waves
 
 Plans:
-- [ ] 13-01-PLAN.md -- Anchored flat-box fold to native dR/dT; SC3 resonance imprint with a smoothed-sigma control that MUST fail; SC5 sub-5 eV disposition; the 1 eV - 10.14 eV flux gap closed with the pinned PARMA driver
-- [ ] 13-02-PLAN.md -- SC4 kinematic compression adjudicated BY MEASUREMENT; >20 MeV omission bounded at the surface; CALC-24 disposition decided against the number
-- [ ] 13-03-PLAN.md -- Neutron-only extended fold to dR/dE_rec both designs, broadening once, trigger composed; SC2 error budget; SC1-SC5 verdicts and labelled hand-off
+- [x] 13-01-PLAN.md -- Anchored flat-box fold to native dR/dT; SC3 resonance imprint with a smoothed-sigma control that MUST fail; SC5 sub-5 eV disposition; the 1 eV - 10.14 eV flux gap closed with the pinned PARMA driver
+- [x] 13-02-PLAN.md -- SC4 kinematic compression adjudicated BY MEASUREMENT; >20 MeV omission bounded at the surface; CALC-24 disposition decided against the number
+- [x] 13-03-PLAN.md -- Neutron-only extended fold to dR/dE_rec both designs, broadening once, trigger composed; SC2 error budget; SC1-SC5 verdicts and labelled hand-off
 
 > **Planning findings (2026-07-22), one MEASURED during planning.**
 > (a) **SC4's compression direction is UNDER TEST, not adopted.** For phi ~ 1/E and constant sigma, the fold gives C*sigma/T -- the kinematic factor f **cancels exactly**, confirmed numerically to 2e-7 for f in {0.0215, 0.0536, 0.2215}. Phase 9 measured the sea-level spectrum flat in lethargy to a factor 1.390 over 1 eV - 10 keV, i.e. near that limit over the band feeding the RoI. **SC4's stated mechanism may have no leading-order effect at all**, and any real target dependence must then be attributed to resonance structure, flux-shape departure, or atoms/kg. This would be the FIFTH roadmap clause of the milestone to fall under measurement. `fp-assert-compression` blocks quoting the 2.49 ratio back as the exhibition.
