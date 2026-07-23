@@ -435,6 +435,16 @@ Plans:
 
 ### Phase 15: v1.0 Muon and Gamma Channels on the Extended Grid (P-EM)
 
+**Status:** COMPLETE 2026-07-22. **RoI rates (E_rec 10-100 eV, counts/kg/day):** muon 7.4656 (Ta->Al) / 7.7231 (Al->Hf); Compton 34.2484 / 35.8616.
+
+**IA-applicability verdict: `does_not_apply`, BOTH channels -- established with a number, not by assertion.** The electron-side analogue was DERIVED from the same IA decomposition (T = q^2/2m + p.q/m -> sigma_T = sqrt(T*omega_bar_e), omega_bar_e = 2*sigma_pz^2/m_e) rather than dismissed. Its rigorous LOWER bound, from the uncertainty principle over the Ge covalent bond a*sqrt(3)/4 = 2.449986 A (derived from the committed lattice constant alone), is **omega_bar_e >= 0.634740 eV = 35.540x omega_bar**, so transplanting the nuclear kernel would understate the width by 5.96x (up to 362.98x on the core-inclusive envelope). **One declared disconfirming observation FIRED:** that width is 252% of the deposit at 100 meV, ~86 extended grid bins, so the "too small to resolve" argument would have been FALSE. The exclusion rests instead on the analogue's own validity criterion, 2W_e = T/omega_bar_e = 0.1574 < 1. Muon is additionally excluded on double-counting: Landau-Vavilov IS the fluctuation, and xi = 0.072069 MeV exceeds any candidate IA width by six decades.
+
+> **THE FINDING WITH THE WIDEST REACH: the Landau-Vavilov validity floor is 4111.8165 eV (l* = 9.712913 um), which indicts 209 of 584 PUBLISHED v1.0 bins (35.79%).** Varying I over 300-400 eV gives 204-213; the stricter xi/I >= 10 reading puts the floor at 49.18 keV. **Nothing was tuned.** The chord for a 100 meV MPV deposit is 1.0574 nm = 1.869 lattice constants. This bears on the v1.0 manuscript, not just this milestone.
+>
+> **Other findings against expectation:** (1) The recomputed pile-up occupancy is **6.533538e-05, exactly 2x the v1.0 ~3e-5** -- the v1.0 figure is the 20 us SAMPLING occupancy (3.266768e-05), not the 40 us resolving-time one; CONVENTIONS section F names that conflation by row. (2) The v1.0 phrasing that muons land ABOVE the CEvNS band is measurably too strong: the muon channel carries ~10% of the CEvNS rate (72.92/73.14) INSIDE the band -- subdominant within it, not absent. (3) The **frozen v1.0 CSVs ARE regenerable** -- 584/584 bins bit-identical at their own %.6e precision, so the re-grid took the exact-redrive route with no N reduction and no statistical penalty. (4) The muon sub-eV region is a **bounded absence**: zero bins reach adequate MC support, median relative error 0.868, 35 bins NaN, all 160 below the validity floor.
+
+**In-band dominance: CONFIRMED on the ordering, REFINED on the muon.** Compton exceeds muon by 4.587x / 4.643x, as v1.0 concluded. Against Phase-13 neutron (5430.29/5485.15) and Phase-12 CEvNS (118.73 total): **neutron >> CEvNS > Compton > muon**. Nothing here bounds the TOTAL background.
+
 > **Re-scoped 2026-07-22 — the phase's premise inverts.** It was *"re-drive the two v1.0-solved channels from the VNS environment rather than the surface"*. The answer under the re-scope is that **the v1.0 surface treatment stands**: the relocation is cancelled, so there is nothing to re-drive it *from*. What remains is genuinely valuable and is **not** cancelled — the grid extension and the sub-eV response physics. The phase reduces to carrying the v1.0 muon and Compton channels onto Phase 10's 0.1 eV grid with Phase 11's sub-eV physics applied where it applies.
 
 **Goal:** The two channels the v1.0 manuscript already solved and defended reach 100 meV with the sub-eV machinery of Phases 10–11 applied and **nothing else changed** — so that every difference from the published v1.0 spectra is attributable to the grid extension and the sub-eV response physics alone, and never to a change of site.
@@ -463,10 +473,10 @@ Plans:
 **Plans:** 4 plans, 4 waves
 
 Plans:
-- [ ] 15-01-PLAN.md -- IA broadening applicability DETERMINATION for the electron-recoil channels, and the computed low-energy validity floors of both v1.0 deposit models (SC3)
-- [ ] 15-02-PLAN.md -- Both deposited-energy spectra on the 744-bin extended axis, re-grid route decided BY MEASUREMENT, SC1 invariants reproduced (SC1)
-- [ ] 15-03-PLAN.md -- Electron-recoil extended fold to dR/dE_rec, both designs, trigger observable with k-sensitivity, counts conserved, saturation preserved (SC2)
-- [ ] 15-04-PLAN.md -- Re-scope call-graph audit, accuracy labels carried forward unnarrowed, in-band dominance re-checked, phase closure (SC4, SC5)
+- [x] 15-01-PLAN.md -- IA broadening applicability DETERMINATION for the electron-recoil channels, and the computed low-energy validity floors of both v1.0 deposit models (SC3)
+- [x] 15-02-PLAN.md -- Both deposited-energy spectra on the 744-bin extended axis, re-grid route decided BY MEASUREMENT, SC1 invariants reproduced (SC1)
+- [x] 15-03-PLAN.md -- Electron-recoil extended fold to dR/dE_rec, both designs, trigger observable with k-sensitivity, counts conserved, saturation preserved (SC2)
+- [x] 15-04-PLAN.md -- Re-scope call-graph audit, accuracy labels carried forward unnarrowed, in-band dominance re-checked, phase closure (SC4, SC5)
 
 > **Planning findings (2026-07-22), computed against committed code and handed to execution as QUESTIONS, not findings.**
 > (a) **The open physics question this phase must settle:** sigma_E = sqrt(E_R*omega_bar) is a NUCLEAR-recoil width from the target nucleus's zero-point momentum, while muon ionization and Compton deposits are ELECTRON recoils. Phase 11 did not answer whether the kernel applies and Phase 13's nuclear-recoil argument does not settle it; both handed it here. The plan **forbids the lazily-correct answer**: "these are electron recoils so the nuclear kernel does not apply" is probably right, but reaching it without evaluating the one mechanism that could make it wrong -- the **Compton profile**, the same IA formalism with the bound-electron momentum distribution replacing the nucleus's -- is the confirmation-pressure failure mode. An unexamined "no" FAILS even if the final verdict is correct.
