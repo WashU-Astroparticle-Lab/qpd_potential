@@ -222,7 +222,18 @@ Plans:
 4. The trigger-probability sigmoid has its **50% point exactly at 0.5 eV** and is **multiplied on top of all other efficiencies including ε ≈ 0.5**, verified by a unit test on the composed efficiency chain showing it does not replace ε. Below ~1 eV deposit, this curve — not dR/dE_rec — is the reported observable, and the regime boundary is labelled on every sub-eV deliverable.
 5. The emergent counting-statistics floor is documented as a **best case with no noise sources** (15.9% / 14.2% at 0.5 eV from N_obs = 39.4 / 49.9; 35.6% / 31.6% at 0.1 eV; 3.6% / 3.2% at 10 eV; 1.2% / 1.1% at 100 eV) and is explicitly *not* presented as the detector's resolution — the project has no resolution parameter, and the comparable unmodelled IA broadening arrives in Phase 11.
 
-**Plans:** TBD (run `gpd:plan-phase 10` to break down)
+**Plans:** 5 plans, 4 waves
+
+Plans:
+- [ ] 10-01-PLAN.md -- interpolator boundary discipline: every tabulated-input interpolator raises outside its declared domain (SC3)
+- [ ] 10-02-PLAN.md -- trigger-probability curve, 50% point exactly 0.5 eV, multiplying eps ~ 0.5 (SC4)
+- [ ] 10-03-PLAN.md -- 744-bin extended axis preserving the v1.0 edge set EXACTLY; caller version pins; energy-keyed sub-seed (SC1)
+- [ ] 10-04-PLAN.md -- regenerate R for both designs, count conservation <=1e-3, sub-eV diagnostics, anchor re-run and count audit (SC1)
+- [ ] 10-05-PLAN.md -- archived-artifact disposition register, counting-statistics floor as best case, sub-eV regime labelling (SC2, SC5)
+
+> **Planning finding (2026-07-22), load-bearing for SC2:** the obvious extension `shared_energy_grid(e_lo_kev=1e-4)` yields the right bin count (744) but a different spacing -- `log10(2e9)/744` versus v1.0's `log10(2e7)/584` -- so overlapping edges drift by up to 5.102e-4 relative and **every archived v1.x spectrum placed on it would be silently reinterpolated**, violating SC2. Prepending **160 bins at the v1.0 spacing** instead gives 744 bins, floor 0.0999350 eV, and `np.array_equal(new[160:], old) == True`. 159 bins would floor at 0.10285 eV and fail SC1, so 160 is unique. Plans therefore require `np.array_equal`, not `np.allclose`.
+>
+> **Anchor-count caveat:** the "24 v1.0/v1.1 anchors" figure cited in SC1 is unsourced -- `notebooks/paper_calculations.ipynb` has 22 literal `check(...)` sites with loop expansion, and the number 24 appears only as prose in `MILESTONES.md` and the v1.0 audit, with no enumerated list. Plan 10-04 counts and reconciles it.
 
 ### Phase 11: Phonon-Scale Conventions and IA Quantum Broadening (P-CONV)
 
