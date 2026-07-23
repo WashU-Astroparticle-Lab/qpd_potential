@@ -51,8 +51,9 @@ from typing import Optional
 
 import numpy as np
 
-from . import response_matrix as rm
+from . import ia_broadening
 from . import interp_guard as ig
+from . import response_matrix as rm
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.abspath(os.path.join(_HERE, "..", ".."))
@@ -146,10 +147,23 @@ def _loglog_segment_integral(
         yb = y1 + slope * (b - T1)
         return 0.5 * (ya + yb) * (b - a)
     p = np.log(y2 / y1) / np.log(T2 / T1)
-    A = y1 / (T1 ** p)
-    if abs(p + 1.0) < 1e-9:
-        return A * np.log(b / a)
-    return A * (b ** (p + 1.0) - a ** (p + 1.0)) / (p + 1.0)
+    with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
+        A = y1 / (T1 ** p)
+        if abs(p + 1.0) < 1e-9:
+            return A * np.log(b / a)
+        val = A * (b ** (p + 1.0) - a ** (p + 1.0)) / (p + 1.0)
+    if not np.isfinite(val):
+        # NUMERICAL FALLBACK, added by plan 11-04. A power law cannot represent a
+        # GAUSSIAN tail: past a spectrum's kinematic endpoint the IA-broadened rate
+        # falls super-exponentially, giving |p| ~ 400 and T1**p under/overflowing, so
+        # A becomes inf and inf*0 becomes nan. Fall back to the same linear rule this
+        # function already uses for non-positive endpoints. Unreachable for every
+        # segment of the unbroadened v1.0 table -- switch-off bit-identity is tested.
+        slope = (y2 - y1) / (T2 - T1)
+        ya = y1 + slope * (a - T1)
+        yb = y1 + slope * (b - T1)
+        return 0.5 * (ya + yb) * (b - a)
+    return val
 
 
 def rebin_counts(T: np.ndarray, y: np.ndarray, edges: np.ndarray) -> np.ndarray:
@@ -183,7 +197,8 @@ def rebin_counts(T: np.ndarray, y: np.ndarray, edges: np.ndarray) -> np.ndarray:
 
 
 def rebin_cevns_to_edep_grid(
-    E_dep_edges_eV: np.ndarray, path: str = CEVNS_CSV
+    E_dep_edges_eV: np.ndarray, path: str = CEVNS_CSV, *,
+    broaden: bool | None = None, omega_bar_eV: float | None = None
 ) -> dict:
     """Rebin CEvNS dR/dT onto the shared E_dep grid, conserving counts, and split
     off the sub-floor 5 - E_dep_edges_eV[0] low edge (reconstructed via
@@ -202,6 +217,27 @@ def rebin_cevns_to_edep_grid(
     c = read_cevns(path)
     T, y, band = c["T_eV"], c["dRdT_total"], c["dRdT_band_1sigma"]
     floor = float(E_dep_edges_eV[0])
+
+    # ------------------------------------------------------------------ #
+    # Plan 11-04 (CALC-15): impulse-approximation quantum broadening.     #
+    # Applied HERE, on the RECOIL axis, strictly upstream of every        #
+    # rebin_counts call below and therefore upstream of the deposit grid  #
+    # and of R(E_rec|E_dep).  The IA width is a property of the nuclear   #
+    # recoil, not of the sensor; applying it downstream would double-count#
+    # the response and mislabel a nuclear effect as a detector effect     #
+    # (fp-broadening-after-response).                                     #
+    #                                                                     #
+    # DEFAULT OFF (ia_broadening.BROADENING_DEFAULT), following the       #
+    # Phase-10 precedent that left shared_energy_grid defaulting to v1.0. #
+    # With broaden=False this function is bit-identical to v1.0.          #
+    # Nothing here multiplies the rate by exp(-2W) (fp-dw-suppression).   #
+    # ------------------------------------------------------------------ #
+    if broaden is None:
+        broaden = ia_broadening.BROADENING_DEFAULT
+    broadening_leakage = None
+    if broaden:
+        T, y, band, broadening_leakage = ia_broadening.broaden_native_spectrum(
+            T, y, band, omega_bar_eV=omega_bar_eV)
 
     counts = rebin_counts(T, y, E_dep_edges_eV)
     counts_band = rebin_counts(T, band, E_dep_edges_eV)
@@ -226,6 +262,8 @@ def rebin_cevns_to_edep_grid(
         "low_counts": low_counts,
         "low_band": low_band,
         "low_Erec_eV": low_Erec,
+        "broadening_applied": bool(broaden),
+        "broadening_leakage": broadening_leakage,
         "floor_eV": floor,
         "T_min_eV": float(T[0]),
         "T_max_eV": float(T[-1]),

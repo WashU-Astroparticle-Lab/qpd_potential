@@ -223,3 +223,137 @@ def quadrature_with_counting_floor(frac_width: float, design: str,
 
 quadrature_with_counting_floor.__doc__ = (
     quadrature_with_counting_floor.__doc__ % COUNTING_FLOOR_CAVEAT)
+
+
+# --------------------------------------------------------------------------- #
+# Plan 11-04: applying the convolution to dR/dE_R BEFORE the response chain    #
+# --------------------------------------------------------------------------- #
+#: Recorded default of the broadening switch, for Phase 12 to consume.
+#: OFF, following the Phase-10 precedent that left ``shared_energy_grid`` defaulting
+#: to ``v1.0``: a fail-safe default makes a silent change of physics impossible, and
+#: turning the broadening on becomes a deliberate Phase-12 act rather than something
+#: every existing call site inherits.  Flipping it is a Phase-12 decision, not a
+#: refactor.
+BROADENING_DEFAULT = False
+
+
+def _normal_cdf(z):
+    from scipy.special import ndtr
+    return ndtr(z)
+
+
+def broaden_counts(edges_eV, counts, *, omega_bar_eV=None, floor_eV=None):
+    """Energy-dependent Gaussian convolution of a COUNTS histogram on ``edges_eV``.
+
+    Works in counts (rate x bin width), not in the differential rate, so that
+    conservation is a sum rather than a quadrature artefact.
+
+    Each source bin i, centred at the geometric mean ``E_i`` of its edges, is spread
+    over a Gaussian of width ``sigma_E(E_i) = sqrt(E_i * omega_bar)`` (plan 11-02).
+    The mass delivered to target bin j is the exact CDF difference
+    ``Phi((e_{j+1}-E_i)/sigma_i) - Phi((e_j-E_i)/sigma_i)``, so the redistribution
+    of each source bin telescopes to exactly 1 across
+    ``(-inf, e_0) u [e_0, e_N] u (e_N, +inf)``.
+
+    Returns ``(out_counts, leakage)``.  ``leakage`` carries ``below_floor``,
+    ``below_zero`` (a SUBSET of below_floor), ``above_top``, and the per-source-bin
+    breakdowns.  **Nothing is rescaled after the convolution.**  The mass that lands
+    below the axis floor and below zero is REPORTED, because at 100 meV the fractional
+    width is 42 % and roughly half a bottom-bin kernel genuinely falls off the axis
+    (plan 11-03 predicts 48.6-49.9 % analytically).  Rescaling to make the retained
+    grid sum to the input would manufacture counts the physics does not produce and
+    would hide the one place the symmetric Gaussian is known to fail
+    (``fp-rescale-to-conserve``).
+
+    Strict linearity in the input amplitude is a consequence and is unit-tested: the
+    redistribution matrix does not depend on the counts.
+    """
+    if omega_bar_eV is None:
+        omega_bar_eV = params.OMEGA_BAR_eV.value
+    edges = np.asarray(edges_eV, float)
+    counts = np.asarray(counts, float)
+    if edges.size != counts.size + 1:
+        raise ValueError(f"{edges.size} edges for {counts.size} bins")
+    if floor_eV is None:
+        floor_eV = float(edges[0])
+
+    zero = {"below_floor": 0.0, "below_zero": 0.0, "above_top": 0.0,
+            "below_floor_per_bin": np.zeros_like(counts),
+            "below_zero_per_bin": np.zeros_like(counts),
+            "above_top_per_bin": np.zeros_like(counts),
+            "sigma_eV": np.zeros_like(counts)}
+    if omega_bar_eV == 0.0:
+        # EXACT identity at zero width -- returned bit-for-bit, not as a limit.
+        return counts.copy(), zero
+
+    centres = np.sqrt(edges[:-1] * edges[1:])
+    sigma = np.sqrt(centres * omega_bar_eV)
+    z = (edges[None, :] - centres[:, None]) / sigma[:, None]
+    cdf = _normal_cdf(z)                                   # (n_src, n_edges)
+
+    frac = cdf[:, 1:] - cdf[:, :-1]                        # (n_src, n_tgt)
+    out = counts @ frac
+
+    below = counts * cdf[:, 0]
+    above = counts * (1.0 - cdf[:, -1])
+    below_zero = counts * _normal_cdf((0.0 - centres) / sigma)
+
+    leak = {
+        "below_floor": float(below.sum()),
+        "below_zero": float(below_zero.sum()),
+        "above_top": float(above.sum()),
+        "below_floor_per_bin": below,
+        "below_zero_per_bin": below_zero,
+        "above_top_per_bin": above,
+        "sigma_eV": sigma,
+    }
+    return out, leak
+
+
+def native_edges(T_eV):
+    """Bin edges around a set of tabulated recoil knots, geometric midpoints."""
+    T = np.asarray(T_eV, float)
+    inner = np.sqrt(T[:-1] * T[1:])
+    return np.concatenate([[T[0] ** 2 / inner[0]], inner, [T[-1] ** 2 / inner[-1]]])
+
+
+def broaden_native_spectrum(T_eV, dRdT, band=None, *, omega_bar_eV=None,
+                            floor_eV=None, require_floor_coverage=False):
+    """Broaden a dR/dT spectrum on its OWN tabulated recoil knots.
+
+    This is the shipped entry point, and it acts on the RECOIL axis strictly upstream
+    of ``fold.rebin_cevns_to_edep_grid`` and therefore upstream of ``R(E_rec|E_dep)``
+    (``fp-broadening-after-response``).  The IA width is a property of the nuclear
+    recoil, not of the sensor.
+
+    ``require_floor_coverage=True`` asserts that the table's own support reaches down
+    to ``floor_eV``.  It RAISES when it does not -- deliberately, and in the same
+    spirit as ``interp_guard``: the frozen v1.0 CEvNS table starts at 5 eV and carries
+    no data below it, so producing a broadened spectrum down to the 0.0999350 eV
+    extended-grid floor from that table would be pure extrapolation into a region the
+    table never covered.  There is no try/except and no clamp anywhere on this path;
+    the sub-eV spectrum is RECOMPUTED from ``cevns.differential_rate`` instead.
+
+    Returns ``(T_eV, dRdT_broadened, band_broadened_or_None, leakage)``.
+    """
+    T = np.asarray(T_eV, float)
+    if require_floor_coverage:
+        if floor_eV is None:
+            raise ValueError("require_floor_coverage=True needs an explicit floor_eV")
+        if T[0] > floor_eV:
+            raise ValueError(
+                f"recoil table support starts at {T[0]!r} eV but the kernel was asked "
+                f"to reach {floor_eV!r} eV. This table carries NO DATA below its floor; "
+                "broadening into that region would be extrapolation, not convolution. "
+                "Recompute dR/dT there instead of clamping or zero-filling.")
+    edges = native_edges(T)
+    dE_keV = np.diff(edges) / 1.0e3
+    out, leak = broaden_counts(edges, np.asarray(dRdT, float) * dE_keV,
+                               omega_bar_eV=omega_bar_eV, floor_eV=floor_eV)
+    y = out / dE_keV
+    b = None
+    if band is not None:
+        ob, _ = broaden_counts(edges, np.asarray(band, float) * dE_keV,
+                               omega_bar_eV=omega_bar_eV, floor_eV=floor_eV)
+        b = ob / dE_keV
+    return T, y, b, leak

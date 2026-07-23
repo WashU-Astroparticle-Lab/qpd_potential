@@ -216,6 +216,10 @@ tests/test_compton_channel.py:153:    assert np.array_equal(_SPEC.edges_kev, sha
 | `tests/test_energy_grid_extension.py:201` | source-level pin check | n/a | Greps the four Phase-4 producers for the literal `shared_energy_grid("v1.0")`. |
 | `tests/test_surface_environment.py:147` | Phase-9 surface-environment test | **v1.0**, explicit | PHASE 9 FILE, not edited by this plan. Comment in that file states 'frozen v1.0 artifacts live here'. |
 | `tests/test_compton_channel.py:153` | asserts the frozen Compton spectrum's axis | **v1.0**, explicit | The frozen Compton spectrum is a v1.0 product and must keep matching the v1.0 axis. UPDATED BY THIS PLAN from a bare call. |
+| `tests/test_ia_broadening.py:292` | switch-off bit-identity check | **v1.0**, explicit | ADDED BY PLAN 11-04. Compares the broadening-OFF fold against the pre-existing v1.0 chain, so it MUST use the v1.0 axis; a v2.0-ext axis would make the comparison meaningless rather than merely different. |
+| `tests/test_ia_broadening.py:372` | order-of-operations check | **v1.0**, explicit | ADDED BY PLAN 11-04. Shows broaden-then-rebin differs from rebin-then-broaden. Pinned to v1.0 because the frozen comparison object is a v1.0 product; the ordering result is axis-independent. |
+| `tests/test_ia_broadening.py:393` | no-exp(-2W)-factor check | **v1.0**, explicit | ADDED BY PLAN 11-04. Verifies the integrated rate above 10 eV is unchanged by broadening. Pinned to v1.0 because the >10 eV region is exactly the v1.0 support. |
+| `tests/test_ia_broadening.py:447` | v1.0 regression (ROADMAP SC4) | **v1.0**, explicit | ADDED BY PLAN 11-04. THE regression target itself. Pinned to v1.0 by definition -- it compares against the frozen v1.0 spectrum on the preserved overlapping edge set. |
 
 **Files edited by this plan to add a pin:** `muon_deposit.py`,
 `compton_deposit.py`, `deposited_spectra.py`, `parse_endf_nGe.py`,
