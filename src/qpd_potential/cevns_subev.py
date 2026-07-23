@@ -551,6 +551,471 @@ def write_plateau_table(path: Optional[str] = None, n: int = 240,
     return path
 
 
+# =========================================================================== #
+# PLAN 12-02 (CALC-25): the decisive signal deliverable                        #
+# =========================================================================== #
+#
+# The extended-axis UNBROADENED recoil table, the folded dR/dE_rec for both
+# designs, the sub-eV trigger observable with its k-sensitivity, and the figure.
+#
+# SWITCHES TURNED ON DELIBERATELY HERE, AND RECORDED:
+#   * the IA broadening, via ``broaden=True`` at the Phase-12 call site in
+#     ``fold.run_cevns_fold_extended``.  ``ia_broadening.BROADENING_DEFAULT`` stays
+#     ``False``; the global default is NOT flipped.
+#   * the Phase-10 extended axis, via the ``_ext.npz`` response matrices.
+#     ``muon_deposit.shared_energy_grid`` still defaults to ``v1.0``.
+#
+# THE CAVEATS THAT TRAVEL WITH EVERY 100 meV NUMBER (written into artifact headers,
+# not only into prose) are collected in ``BOTTOM_BIN_CAVEAT`` below.
+
+#: Phase-11 measured bottom-bin leakage and lineshape facts, plus the model-specific
+#: licence to multiply R by the trigger curve.  Emitted verbatim into every artifact
+#: header this plan writes: a caveat that lives only in a phase report does not travel
+#: with the data.
+BOTTOM_BIN_CAVEAT = (
+    "# BOTTOM-BIN CAVEATS (Phase 11; they travel with this data, they are not asides).\n"
+    "#   * 48.98% of the 100 meV bin's kernel falls BELOW the 0.0999350 eV grid floor\n"
+    "#     and 0.87% lands at unphysical T < 0. This is physics plus axis truncation.\n"
+    "#     It is ACCOUNTED and REPORTED and is NEVER renormalized away\n"
+    "#     (fp-renormalize-leakage): the retained-only sum MUST miss.\n"
+    "#   * The shipped kernel is a SYMMETRIC Gaussian against a true lineshape with\n"
+    "#     skewness 0.590 and excess kurtosis 0.381, and 2W is only 5.60 at the floor,\n"
+    "#     so the impulse approximation is satisfied but not comfortably.\n"
+    "#     DO NOT QUOTE THE 100 meV BIN TO BETTER THAN ONE SIGNIFICANT FIGURE.\n"
+    "#   * MODEL-SPECIFIC LICENCE: multiplying R(E_rec|E_dep) by the trigger curve is\n"
+    "#     licensed ONLY for this yield model. Phase 10 measured P(no counts\n"
+    "#     registered) = 2.0e-4 at 0.1 eV and exactly 0 at 0.5/1 eV against 1 - P_trig\n"
+    "#     of 0.998/0.512/0.056, so the two do not double-count -- but that follows\n"
+    "#     from a LINEAR yield assigning 0.018 quasiparticles to a sensor holding\n"
+    "#     6.89 ueV against a ~190 ueV gap. A THRESHOLD yield model would INVERT the\n"
+    "#     verdict and the two would then double-count.\n"
+    "#   * The Phase-10 counting floor is a BEST CASE WITH NO NOISE SOURCES, not a\n"
+    "#     resolution model; this project has no resolution parameter at all\n"
+    "#     (fp-poisson-as-resolution).\n"
+    "#   * The trigger sharpness k is fixed by NO project artifact. Every sub-eV number\n"
+    "#     ships with its k-sensitivity over [1, 12] (CONVENTIONS Section I).\n"
+)
+
+_NORMALIZATION_HEADER = (
+    "# Normalization: data/flux/reactor_flux_v1.0.csv, 3 GW_th at 25 m, surface,\n"
+    "#   unshielded, used UNMODIFIED. NO rescale of any kind is applied here -- not a\n"
+    "#   VNS rescale, not a duty cycle, not a shielding or overburden credit\n"
+    "#   (fp-second-vns-run, fp-inherited-shielding). CONVENTIONS Section D unchanged.\n"
+)
+
+#: The Phase-11 480-bin recoil construction, reused so that the leakage boundary this
+#: phase sees is the extended-grid floor itself.
+EXT_RECOIL_BINS = 480
+
+
+def ext_recoil_edges_eV(n: int = EXT_RECOIL_BINS) -> np.ndarray:
+    """Recoil bin EDGES whose bottom edge is exactly the extended-grid floor."""
+    return np.logspace(np.log10(EXT_GRID_FLOOR_eV), np.log10(RECOIL_TOP_eV), n + 1)
+
+
+def ext_recoil_centres_eV(n: int = EXT_RECOIL_BINS) -> np.ndarray:
+    """Geometric bin centres of :func:`ext_recoil_edges_eV`.
+
+    These are the knots the table is tabulated on.  ``ia_broadening.native_edges``
+    of these centres reproduces the edges EXACTLY (geometric midpoints of geometric
+    centres of a constant-ratio grid), so the kernel's floor is the extended-grid
+    floor and not something one half-bin away from it.
+    """
+    e = ext_recoil_edges_eV(n)
+    return np.sqrt(e[:-1] * e[1:])
+
+
+_EXT_DRDT_COLUMNS = (["T_eV_nr"]
+                     + [f"dRdT_{iso.name}" for iso in params.GE_ISOTOPES]
+                     + ["dRdT_total", "dRdT_band_1sigma"])
+
+
+def write_ext_dRdT_table(path: Optional[str] = None, n: int = EXT_RECOIL_BINS,
+                         flux: Optional[cevns.ReactorFlux] = None) -> str:
+    """Emit ``artifacts/v2.0/cevns_dRdT_ext.csv`` -- UNBROADENED, 8-column layout.
+
+    ``fold.read_cevns`` reads columns 0, 6 and 7 POSITIONALLY, so the layout must match
+    the frozen `artifacts/stage1/cevns_dRdT.csv` exactly or the wiring silently reads
+    the wrong column.
+
+    ``dR/dT`` is RECOMPUTED from ``cevns.differential_rate_per_isotope`` and
+    ``cevns.differential_rate_band`` at each knot, never extrapolated downward from the
+    5 eV-floored frozen table (``fp-silent-carry``).
+    """
+    if path is None:
+        path = os.path.join(ARTIFACT_DIR_V2, "cevns_dRdT_ext.csv")
+    if flux is None:
+        flux = cevns.ReactorFlux()
+    T = ext_recoil_centres_eV(n)
+    edges = ext_recoil_edges_eV(n)
+
+    rows = []
+    for t in T:
+        t_keV = t * 1.0e-3
+        per = cevns.differential_rate_per_isotope(t_keV, flux, use_form_factor=True)
+        total = sum(per.values())
+        band = cevns.differential_rate_band(t_keV, flux)
+        rows.append([t] + [per[iso.name] for iso in params.GE_ISOTOPES] + [total, band])
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        fh.write(
+            "# QPD Phase-12 plan 12-02 (CALC-25) -- EXTENDED-AXIS CEvNS dR/dT.\n"
+            "# THIS TABLE IS UNBROADENED. The IA Gaussian kernel is applied DOWNSTREAM,\n"
+            "#   exactly once, inside fold.rebin_cevns_to_edep_grid(broaden=True) on the\n"
+            "#   recoil axis and upstream of R(E_rec|E_dep). Feeding\n"
+            "#   artifacts/v2.0/cevns_dRdT_broadened.csv to that call instead would apply\n"
+            "#   the kernel TWICE, widening the bottom bin by sqrt(2), and nothing in the\n"
+            "#   existing wiring would raise (fp-double-broadening).\n"
+            f"# {n} log bins; bottom bin EDGE exactly {EXT_GRID_FLOOR_eV} eV (the Phase-10\n"
+            f"#   extended-grid floor), top edge {RECOIL_TOP_eV} eV. Knots are the geometric\n"
+            "#   bin centres, so ia_broadening.native_edges reproduces these edges exactly.\n"
+            "# dR/dT is RECOMPUTED from cevns.differential_rate_per_isotope with the Helm\n"
+            "#   form factor ON, and the 1-sigma band from cevns.differential_rate_band.\n"
+            "#   Nothing is extrapolated from the 5 eV-floored artifacts/stage1/cevns_dRdT.csv.\n"
+            "# Column layout is the FROZEN 8-column layout: fold.read_cevns reads columns\n"
+            "#   0, 6 and 7 positionally.\n"
+            "# Recoil energy on the unified phonon scale, NO quenching, never keVee.\n"
+            "# The rate is NEVER multiplied by exp(-2W) (fp-dw-suppression).\n"
+            + _NORMALIZATION_HEADER
+            + "# Units: T in eV_nr; rates in counts/kg/day/keV (CONVENTIONS Section A.1).\n"
+        )
+        fh.write(",".join(_EXT_DRDT_COLUMNS) + "\n")
+        for row in rows:
+            fh.write(",".join(f"{v:.10e}" for v in row) + "\n")
+    return path
+
+
+# --------------------------------------------------------------------------- #
+# The folded reconstructed-energy spectra                                      #
+# --------------------------------------------------------------------------- #
+_SPECTRA_COLUMNS = ["E_rec_keV", "dRdErec_central", "dRdErec_upper_width_onesided",
+                    "dRdErec_band_1sigma", "dRdErec_trigger_weighted",
+                    "P_trig_effective", "regime"]
+
+
+def _regime_flags(E_rec_eV: np.ndarray, boundary_Erec_eV: float) -> list:
+    from . import trigger
+    lo = "subev_P_trig_is_the_reported_observable"
+    hi = "dRdErec_is_the_reported_observable"
+    assert trigger.SUBEV_REGIME_BOUNDARY_eV > 0.0     # imported, never restated
+    return [lo if e < boundary_Erec_eV else hi for e in E_rec_eV]
+
+
+def run_extended_spectra(design: str, sharpness: Optional[float] = None) -> dict:
+    """Fold one design twice: central on the LOCKED harmonic omega_bar, and the
+    ONE-SIDED UPPER variant on the arithmetic VDOS mean.  Never averaged."""
+    from . import fold, trigger
+
+    central = fold.run_cevns_fold_extended(design, broaden=True, sharpness=sharpness)
+    upper = fold.run_cevns_fold_extended(
+        design, broaden=True, omega_bar_eV=params.OMEGA_BAR_ARITHMETIC_eV.value,
+        sharpness=sharpness)
+    boundary_Erec = fold.subev_boundary_Erec_eV(design)
+
+    # The EFFECTIVE trigger acceptance in each reconstructed bin, formed from the two
+    # spectra this fold actually produced: P_eff = triggered / untriggered.  It is not
+    # an interpolation of P_trig onto the E_rec axis -- that would need a mapping the
+    # response matrix does not provide below its first median, and clamping there is
+    # precisely the silent-extrapolation failure the Phase-10 guards exist against.
+    # P_eff is exact where the untriggered rate is non-zero and 0 where it is not.
+    E_rec = central["E_rec_centers_eV"]
+    assert trigger.SUBEV_REGIME_BOUNDARY_eV > 0.0
+    with np.errstate(divide="ignore", invalid="ignore"):
+        P_eff = np.where(central["dRdErec"] > 0.0,
+                         central["dRdErec_trigger"] / central["dRdErec"], 0.0)
+    return {
+        "central": central, "upper": upper,
+        "boundary_Erec_eV": boundary_Erec,
+        "P_trig_effective": P_eff,
+        "regime": _regime_flags(E_rec, boundary_Erec),
+    }
+
+
+def write_extended_spectrum(design: str, res: Optional[dict] = None,
+                            path: Optional[str] = None,
+                            sharpness: Optional[float] = None) -> str:
+    """Emit ``artifacts/v2.0/cevns_dRdErec_ext_{TaAl,AlHf}.csv``."""
+    from . import fold, params as P, trigger
+
+    if res is None:
+        res = run_extended_spectra(design, sharpness=sharpness)
+    if path is None:
+        path = os.path.join(ARTIFACT_DIR_V2, fold.EXT_RECON_FILE[design])
+
+    c, u = res["central"], res["upper"]
+    b = res["boundary_Erec_eV"]
+    bud = c["counts_budget"]
+    # bin 0 of the E_rec axis is the [0, 1e-3 eV) underflow catch-bin -- not a physical
+    # differential bin.  Dropped from the spectrum exactly as the v1.0 writer does.
+    sl = slice(1, None)
+    E_rec_keV = c["E_rec_centers_eV"][sl] / 1.0e3
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        fh.write(
+            f"# QPD Phase-12 plan 12-02 (CALC-25) -- dR/dE_rec, design {design}.\n"
+            "# THE MILESTONE'S DECISIVE SIGNAL DELIVERABLE, from 100 meV upward.\n"
+            f"# Response: artifacts/v2.0/{fold.EXT_DESIGN_FILE[design]}, key\n"
+            "#   R_non_paralyzable, 161 E_rec x 744 E_dep (Phase-10 EXTENDED axis; the\n"
+            "#   v1.0 584-column matrix would truncate the spectrum at 10.14 eV).\n"
+            "# Pipeline order (not negotiable): IA Gaussian broadening on the RECOIL axis\n"
+            "#   -> rebin onto the extended deposit grid -> R(E_rec|E_dep) -> the trigger\n"
+            "#   curve as an ANALYSIS efficiency on top of eps.\n"
+            f"# Broadening: APPLIED, broaden=True at the Phase-12 call site. The global\n"
+            f"#   ia_broadening.BROADENING_DEFAULT is still {c['broadening_default']}.\n"
+            f"# Central column: the LOCKED harmonic VDOS mean omega_bar = "
+            f"{c['omega_bar_eV']:.10e} eV\n"
+            "#   (CONVENTIONS Section J), so 2W = E_R/omega_bar and sigma_E = sqrt(E_R omega_bar)\n"
+            "#   stay exact.\n"
+            f"# dRdErec_upper_width_onesided: the ONE-SIDED UPPER moment systematic, built on\n"
+            f"#   the ARITHMETIC VDOS mean omega_bar_p = {u['omega_bar_eV']:.10e} eV, a x"
+            f"{np.sqrt(u['omega_bar_eV']/c['omega_bar_eV']):.6f} correction on the WIDTH.\n"
+            "#   'UPPER' refers to the WIDTH, not to the rate: a wider kernel moves MORE\n"
+            "#   mass off the bottom of the axis, so in the bottom decade this column sits\n"
+            "#   BELOW the central curve. It is a SEPARATE column: never absorbed into the\n"
+            "#   central curve and the two are never averaged (fp-absorb-systematic). There\n"
+            "#   is NO lower band -- Cauchy-Schwarz forces omega_bar_p >= omega_bar_u.\n"
+            "# P_trig_effective = dRdErec_trigger_weighted / dRdErec_central, exact where the\n"
+            "#   untriggered rate is non-zero and 0 where it is not. It is NOT an\n"
+            "#   interpolation of P_trig onto the reconstructed axis.\n"
+            "# dRdErec_trigger_weighted: R @ (P_trig(E_dep) * N_dep). P_trig is evaluated on\n"
+            "#   the DEPOSIT axis because CONVENTIONS Section I defines P_trig(E_dep) and\n"
+            "#   puts the regime boundary at 1.0 eV of DEPOSITED energy. It MULTIPLIES a\n"
+            "#   quantity that already contains eps through energy_scale.n_qp_yield and the\n"
+            "#   response.calibrate_C slope; it does NOT replace eps (fp-trigger-replaces-eps).\n"
+            f"# P_trig parameters: E50 = {P.TRIGGER_E50.value:g} eV exactly, k = "
+            f"{P.TRIGGER_SHARPNESS.value if sharpness is None else sharpness:g}, declared scan\n"
+            f"#   range {P.TRIGGER_SHARPNESS_RANGE}. k is fixed by NO project artifact; its\n"
+            "#   sensitivity is discharged in artifacts/v2.0/cevns_subev_trigger.csv.\n"
+            f"# Regime boundary: trigger.SUBEV_REGIME_BOUNDARY_eV = "
+            f"{trigger.SUBEV_REGIME_BOUNDARY_eV:g} eV DEPOSITED, imported from the module\n"
+            f"#   constant and never restated as a literal. Its image on this reconstructed\n"
+            f"#   axis, read off THIS matrix's own median mapping curve, is "
+            f"{b:.6e} eV.\n"
+            f"#   {trigger.REGIME_STATEMENT}\n"
+            "# COUNTS BUDGET (counts/kg/day), central curve:\n"
+            f"#   input recoil          {bud['input_counts']:.10e}\n"
+            f"#   leaked below floor    {bud['leaked_below_floor']:.10e}"
+            f"  ({bud['leaked_below_floor']/bud['input_counts']*100:.6f}%)\n"
+            f"#   of which at T < 0     {bud['leaked_below_zero']:.10e}"
+            f"  ({bud['leaked_below_zero']/bud['input_counts']*100:.6f}%)\n"
+            f"#   leaked above top      {bud['leaked_above_top']:.10e}\n"
+            f"#   on the deposit grid   {bud['deposit_counts']:.10e}\n"
+            f"#   after folding through R {bud['reconstructed_counts']:.10e}\n"
+            f"#   residual retained+leaked {bud['residual_retained_plus_leaked']:.6e}"
+            "  (target <= 1e-3)\n"
+            f"#   residual retained ONLY   {bud['residual_retained_only']:.6e}"
+            "  -- this MUST miss; a clean\n"
+            "#     retained-only closure would be positive evidence of a hidden rescale.\n"
+            f"#   residual across the fold {bud['residual_fold']:.6e}  (R columns sum to 1)\n"
+            "# The [0, 1e-3 eV) E_rec underflow catch-bin is omitted below, as in v1.0.\n"
+            + _NORMALIZATION_HEADER
+            + BOTTOM_BIN_CAVEAT
+            + "# Units: E_rec in keV; every rate in counts/kg/day/keV; P_trig dimensionless.\n"
+        )
+        fh.write(",".join(_SPECTRA_COLUMNS) + "\n")
+        for i in range(E_rec_keV.size):
+            j = i + 1
+            fh.write(
+                f"{E_rec_keV[i]:.10e},{c['dRdErec'][j]:.10e},{u['dRdErec'][j]:.10e},"
+                f"{c['dRdErec_band'][j]:.10e},{c['dRdErec_trigger'][j]:.10e},"
+                f"{res['P_trig_effective'][j]:.10e},{res['regime'][j]}\n")
+    return path
+
+
+# --------------------------------------------------------------------------- #
+# The sub-eV trigger observable and CONVENTIONS Section I's k-sensitivity       #
+# --------------------------------------------------------------------------- #
+K_SCAN = (1.0, 2.0, 4.0, 8.0, 12.0)
+
+_TRIGGER_COLUMNS = (["E_dep_eV"] + [f"P_trig_k{int(k)}" for k in K_SCAN])
+
+
+def trigger_k_sensitivity(designs: Sequence[str] = ("Ta->Al", "Al->Hf")) -> dict:
+    """Trigger-weighted CEvNS rate below the regime boundary for each k in the scan.
+
+    Discharges CONVENTIONS Section I's standing sensitivity obligation IN DATA.
+    Phase 12 is the first downstream result computed with this curve, so the
+    obligation lands here.
+    """
+    from . import fold, trigger
+
+    out = {"k_scan": list(K_SCAN), "designs": {}}
+    for design in designs:
+        per_k = {}
+        for k in K_SCAN:
+            r = fold.run_cevns_fold_extended(design, broaden=True, sharpness=k)
+            edges = r["E_rec_edges_eV"]
+            b = fold.subev_boundary_Erec_eV(design)
+            mask = edges[1:] <= b        # bins fully below the boundary image
+            per_k[k] = {
+                "rate_below_boundary": float(r["N_rec_trigger"][mask].sum()),
+                "untriggered_below_boundary": float(r["N_rec"][mask].sum()),
+                "rate_total": float(r["N_rec_trigger"].sum()),
+                "untriggered_total": float(r["N_rec"].sum()),
+            }
+        vals = np.array([per_k[k]["rate_below_boundary"] for k in K_SCAN])
+        out["designs"][design] = {
+            "per_k": per_k,
+            "boundary_Erec_eV": fold.subev_boundary_Erec_eV(design),
+            "spread_relative": float((vals.max() - vals.min()) / np.mean(vals)),
+            "untriggered_below_boundary": per_k[K_SCAN[0]]["untriggered_below_boundary"],
+        }
+    out["boundary_Edep_eV"] = trigger.SUBEV_REGIME_BOUNDARY_eV
+    return out
+
+
+def write_trigger_table(path: Optional[str] = None,
+                        designs: Sequence[str] = ("Ta->Al", "Al->Hf")) -> str:
+    """Emit ``artifacts/v2.0/cevns_subev_trigger.csv``."""
+    from . import fold, ia_broadening, params as P, trigger
+
+    if path is None:
+        path = os.path.join(ARTIFACT_DIR_V2, "cevns_subev_trigger.csv")
+    ks = trigger_k_sensitivity(designs)
+
+    d0 = fold.load_design_extended(designs[0])
+    E_dep = d0["E_dep_centers_eV"]
+    sub = E_dep[E_dep < trigger.SUBEV_REGIME_BOUNDARY_eV]
+
+    # The comparison the plan asks for: is the k spread larger than the combined
+    # IA-width + counting-floor smearing at 0.5 eV?
+    frac_w = float(ia_broadening.fractional_width(0.5))
+    quad = {d: ia_broadening.quadrature_with_counting_floor(frac_w, d)
+            for d in designs}
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as fh:
+        fh.write(
+            "# QPD Phase-12 plan 12-02 -- THE SUB-eV REPORTED OBSERVABLE and CONVENTIONS\n"
+            "#   Section I's standing k-sensitivity obligation, discharged IN DATA.\n"
+            f"# {trigger.REGIME_STATEMENT}\n"
+            f"# Regime boundary: trigger.SUBEV_REGIME_BOUNDARY_eV = "
+            f"{trigger.SUBEV_REGIME_BOUNDARY_eV:g} eV DEPOSITED (imported, not restated).\n"
+            f"# Hill form P(E) = 1/(1 + (E50/E)^k), E50 = {P.TRIGGER_E50.value:g} eV EXACTLY.\n"
+            "#   P(E50) = 1/2 for EVERY k -- structural, not tuned. P(0) = 0 exactly.\n"
+            f"# k is fixed by NO project artifact. Declared scan range "
+            f"{P.TRIGGER_SHARPNESS_RANGE}; default {P.TRIGGER_SHARPNESS.value:g}.\n"
+            f"#   Scanned here at k = {', '.join(f'{k:g}' for k in K_SCAN)}.\n"
+            "# TRIGGER-WEIGHTED CEvNS RATE BELOW THE BOUNDARY (counts/kg/day), by design:\n"
+        )
+        for d in designs:
+            e = ks["designs"][d]
+            fh.write(f"#   {d}: boundary image on E_rec = {e['boundary_Erec_eV']:.6e} eV; "
+                     f"UNtriggered {e['untriggered_below_boundary']:.6e}\n")
+            for k in K_SCAN:
+                v = e["per_k"][k]["rate_below_boundary"]
+                fh.write(f"#       k = {k:4g} -> {v:.6e}"
+                         f"  ({v/e['untriggered_below_boundary']*100:.4f}% of untriggered)\n")
+            fh.write(f"#     k-spread over [1, 12] = {e['spread_relative']*100:.4f}% "
+                     f"of the mean; IA width (+) counting floor in quadrature at 0.5 eV = "
+                     f"{quad[d]*100:.4f}%\n")
+            fh.write(f"#     => the k spread is "
+                     f"{'LARGER' if e['spread_relative'] > quad[d] else 'SMALLER'} than the "
+                     "combined IA-width/counting-floor smearing at 0.5 eV.\n")
+        fh.write(
+            f"# IA fractional width at 0.5 eV on the locked omega_bar: {frac_w*100:.4f}%.\n"
+            "# The Phase-10 counting floor used in that quadrature is a BEST CASE WITH NO\n"
+            "#   NOISE SOURCES, not a resolution model (fp-poisson-as-resolution).\n"
+            "# Rows below: P_trig(E_dep) on the extended deposit centres BELOW the boundary.\n"
+            + _NORMALIZATION_HEADER
+            + BOTTOM_BIN_CAVEAT
+            + "# Units: E_dep in eV; P_trig dimensionless in [0, 1].\n"
+        )
+        fh.write(",".join(_TRIGGER_COLUMNS) + "\n")
+        cols = [np.asarray(trigger.P_trig(sub, sharpness=k), float) for k in K_SCAN]
+        for i in range(sub.size):
+            fh.write(",".join([f"{sub[i]:.10e}"] + [f"{c[i]:.10e}" for c in cols]) + "\n")
+    return path
+
+
+# --------------------------------------------------------------------------- #
+# The figure                                                                   #
+# --------------------------------------------------------------------------- #
+def make_subev_spectra_figure(out_path: Optional[str] = None,
+                              designs: Sequence[str] = ("Ta->Al", "Al->Hf")) -> str:
+    """Render ``artifacts/v2.0/cevns_subev_spectra.pdf``."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    from . import trigger
+
+    if out_path is None:
+        out_path = os.path.join(ARTIFACT_DIR_V2, "cevns_subev_spectra.pdf")
+
+    res = {d: run_extended_spectra(d) for d in designs}
+    fig, axes = plt.subplots(1, len(designs), figsize=(11.4, 4.8), sharey=True)
+    if len(designs) == 1:
+        axes = [axes]
+
+    for col, d in enumerate(designs):
+        ax = axes[col]
+        r = res[d]
+        c, u = r["central"], r["upper"]
+        E = c["E_rec_centers_eV"][1:]        # drop the underflow catch-bin
+        y_c = c["dRdErec"][1:]
+        y_u = u["dRdErec"][1:]
+        y_t = c["dRdErec_trigger"][1:]
+        m = y_c > 0.0
+
+        # The bottom decade carries the ~49% leakage caveat -- marked, not hidden.
+        ax.axvspan(E[m].min(), 10.0 * E[m].min(), color="#fdece7", zorder=0)
+        ax.axvline(r["boundary_Erec_eV"], color="0.35", ls="-.", lw=1.2, zorder=1)
+
+        # The band is between the two width variants. 'Upper' is the WIDTH: in the
+        # bottom decade a wider kernel moves MORE mass off the axis, so the upper-width
+        # curve sits BELOW the central one there. Shading min..max keeps that honest
+        # instead of silently clipping the band to one side.
+        ax.fill_between(E[m], np.minimum(y_c[m], y_u[m]), np.maximum(y_c[m], y_u[m]),
+                        color="#1f77b4", alpha=0.28, lw=0, zorder=2,
+                        label=r"one-sided upper-WIDTH variant ($\bar\omega_p$, "
+                              r"$\times$1.164 on $\sigma_E$)")
+        ax.plot(E[m], y_c[m], color="#1f77b4", lw=1.9, zorder=4,
+                label=r"central ($\bar\omega$ locked, harmonic)")
+        mt = y_t > 0.0
+        ax.plot(E[mt], y_t[mt], color="#d62728", lw=1.5, ls="--", zorder=5,
+                label=r"trigger-weighted, $k=4$")
+
+        ax.set_xscale("log"); ax.set_yscale("log")
+        ax.set_xlim(0.04, 3.0e3)
+        ax.set_xlabel(r"reconstructed energy $E_{\rm rec}$  [eV]")
+        if col == 0:
+            ax.set_ylabel(r"$dR/dE_{\rm rec}$  [counts kg$^{-1}$ day$^{-1}$ keV$^{-1}$]")
+        ax.set_title(f"({'ab'[col]}) {d}", fontsize=11)
+        ax.grid(True, which="major", alpha=0.25)
+        ax.annotate(
+            f"$E_{{\\rm dep}} = {trigger.SUBEV_REGIME_BOUNDARY_eV:g}$ eV regime boundary\n"
+            r"(below: $P_{\rm trig}$ is the reported observable)",
+            xy=(r["boundary_Erec_eV"], 0.02), xycoords=("data", "axes fraction"),
+            xytext=(6, 6), textcoords="offset points", fontsize=7.4, color="0.25")
+        ax.annotate("bottom decade:\n~49% of the kernel\nleaves the axis\n"
+                    "(1 significant figure)",
+                    xy=(0.02, 0.97), xycoords="axes fraction", va="top",
+                    fontsize=7.4, color="#b03a2e")
+        if col == 0:
+            ax.legend(loc="lower left", fontsize=7.8, framealpha=0.92)
+
+    fig.suptitle("Reactor CEvNS from 100 meV — 3 GW$_{\\rm th}$ at 25 m, surface, "
+                 "unshielded (frozen reactor_flux_v1.0.csv, unmodified)", fontsize=10)
+    fig.tight_layout(rect=(0, 0, 1, 0.94))
+    fig.savefig(out_path)
+    plt.close(fig)
+    return out_path
+
+
 if __name__ == "__main__":  # pragma: no cover
-    print(write_truncation_table())
-    print(write_plateau_table())
+    import sys as _sys
+    which = _sys.argv[1] if len(_sys.argv) > 1 else "12-01"
+    if which == "12-01":
+        print(write_truncation_table())
+        print(write_plateau_table())
+    elif which == "12-02":
+        print(write_ext_dRdT_table())
+        for _d in ("Ta->Al", "Al->Hf"):
+            print(write_extended_spectrum(_d))
+        print(write_trigger_table())
+        print(make_subev_spectra_figure())
+    else:
+        raise SystemExit(f"unknown target {which!r}")

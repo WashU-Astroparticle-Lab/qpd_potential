@@ -807,6 +807,231 @@ def run_all(write: bool = True) -> dict:
     return {name: run_fold(name, write=write) for name in rm.DESIGN_FILE}
 
 
+# =========================================================================== #
+# Phase-12 (Plan 12-02, CALC-25): CEvNS-ONLY fold on the extended axis         #
+# =========================================================================== #
+#
+# WHY A SEPARATE ENTRY POINT.  ``run_fold`` above folds CEvNS **and** muon **and**
+# Compton, and it RAISES if the muon/Compton deposit grids do not match the
+# response matrix's E_dep centres.  Those two channels are still on the 584-bin
+# v1.0 axis; carrying them onto the 744-bin extended axis is **Phase 15's** job
+# and Phase 12 must not pre-empt it in either direction (``fp-electron-recoil-leak``).
+# So Phase 12 gets its own CEvNS-only path rather than a flag on ``run_fold``.
+#
+# WHAT IS SWITCHED ON HERE, DELIBERATELY.
+#   * ``broaden=True`` is passed AT THIS CALL SITE.  ``ia_broadening.BROADENING_DEFAULT``
+#     stays ``False`` -- a Phase-11 test asserts it, and that fail-safe is the reason
+#     turning the kernel on is an explicit act rather than something every existing
+#     call site inherits.
+#   * ``response_matrix_{TaAl,AlHf}_ext.npz`` (744 deposit columns) is loaded, NOT the
+#     v1.0 584-column matrices, which would truncate the spectrum at 10.14 eV.
+#   * ``shared_energy_grid``'s default stays ``v1.0``; the extended axis arrives here
+#     through the npz, not through a changed default.
+#
+# ORDER OF OPERATIONS (not negotiable).  IA broadening acts on the RECOIL axis inside
+# ``rebin_cevns_to_edep_grid``, strictly upstream of the deposit grid and of
+# R(E_rec|E_dep).  The trigger curve acts as an ANALYSIS efficiency on top of a
+# quantity that already carries eps through the response chain.
+#
+# WHERE THE TRIGGER IS EVALUATED, AND WHY.  CONVENTIONS Section I defines
+# ``P_trig(E_dep)`` and puts the regime boundary at 1.0 eV of **deposited** energy.
+# It is therefore evaluated on the DEPOSIT axis, and the trigger-weighted
+# reconstructed spectrum is ``R @ (P_trig(E_dep) * N_dep)`` -- i.e. exactly the
+# "multiply the response matrix by the trigger curve" operation whose licence Phase 10
+# established, and which is MODEL-SPECIFIC: P(no counts registered) = 2.0e-4 at 0.1 eV
+# and exactly 0 at 0.5/1 eV against 1 - P_trig of 0.998/0.512/0.056, so the two do not
+# double-count -- but that follows from a LINEAR yield assigning 0.018 quasiparticles
+# to a sensor holding 6.89 ueV against a ~190 ueV gap, and a THRESHOLD yield model
+# would invert the verdict.  Evaluating P_trig on the RECONSTRUCTED axis instead would
+# silently move the 0.5 eV 50% point by the ~0.47 response slope, i.e. change
+# CONVENTIONS Section I without amending it.  It is not done.
+
+EXT_ARTIFACT_DIR = os.path.join(_PROJECT_ROOT, "artifacts", "v2.0")
+
+EXT_DESIGN_FILE = {
+    "Ta->Al": "response_matrix_TaAl_ext.npz",
+    "Al->Hf": "response_matrix_AlHf_ext.npz",
+}
+
+#: The Phase-12 extended-axis UNBROADENED CEvNS recoil table (plan 12-02 Task 1).
+#: It must be fed UNBROADENED: ``artifacts/v2.0/cevns_dRdT_broadened.csv`` already has
+#: the kernel applied, and passing it here with ``broaden=True`` would apply the kernel
+#: TWICE, widening the bottom bin by sqrt(2), with no error raised anywhere
+#: (``fp-double-broadening``).
+CEVNS_EXT_CSV = os.path.join(EXT_ARTIFACT_DIR, "cevns_dRdT_ext.csv")
+
+EXT_RECON_FILE = {
+    "Ta->Al": "cevns_dRdErec_ext_TaAl.csv",
+    "Al->Hf": "cevns_dRdErec_ext_AlHf.csv",
+}
+
+
+def load_design_extended(design: str) -> dict:
+    """Load the Phase-10 744-column extended response matrix for one design."""
+    fn = os.path.join(EXT_ARTIFACT_DIR, EXT_DESIGN_FILE[design])
+    if not os.path.exists(fn):
+        raise FileNotFoundError(f"extended response matrix not built: {fn}")
+    return dict(np.load(fn, allow_pickle=True))
+
+
+def run_cevns_fold_extended(
+    design: str, *, path: str = CEVNS_EXT_CSV, broaden: bool = True,
+    omega_bar_eV: Optional[float] = None, sharpness: Optional[float] = None,
+    p_trig_override: Optional[np.ndarray] = None,
+) -> dict:
+    """Fold the CEvNS channel ALONE through the extended response matrix.
+
+    Parameters
+    ----------
+    design : "Ta->Al" or "Al->Hf".
+    path : the extended-axis **UNBROADENED** dR/dT table.
+    broaden : passed straight through to ``rebin_cevns_to_edep_grid``.  Phase 12 calls
+        with ``True``; the global ``BROADENING_DEFAULT`` is left ``False``.
+    omega_bar_eV : ``None`` -> the LOCKED harmonic VDOS mean (CONVENTIONS Section J).
+        Pass ``params.OMEGA_BAR_ARITHMETIC_eV.value`` for the one-sided UPPER band.
+    sharpness : trigger sharpness k; ``None`` -> ``params.TRIGGER_SHARPNESS``.
+    p_trig_override : an explicit P_trig array on the deposit grid.  Its only use is
+        the ``P_trig == 1`` bit-identity leg of the composition proof.
+
+    Returns a dict carrying the deposit and reconstructed axes, the untriggered and
+    trigger-weighted reconstructed spectra, the folded flux band, the broadening
+    leakage record, and the full counts budget.
+    """
+    from . import params as _params, trigger as _trigger
+
+    d = load_design_extended(design)
+    R = d["R_non_paralyzable"]
+    E_dep_edges = d["E_dep_edges_eV"]
+    E_dep_centers = d["E_dep_centers_eV"]
+    E_rec_edges = d["E_rec_edges_eV"]
+    E_rec_centers = d["E_rec_centers_eV"]
+    dE_rec_keV = np.diff(E_rec_edges) / 1.0e3
+
+    if R.shape[1] != E_dep_centers.size or E_dep_centers.size != 744:
+        raise ValueError(
+            f"{design}: expected the 744-column EXTENDED response matrix, got "
+            f"{R.shape}. The v1.0 584-column matrix would truncate at 10.14 eV.")
+
+    # --- recoil axis -> deposit grid, with the IA kernel applied ONCE, upstream --- #
+    reb = rebin_cevns_to_edep_grid(E_dep_edges, path,
+                                   broaden=broaden, omega_bar_eV=omega_bar_eV)
+
+    # FLOOR-COVERAGE CHECK, made explicit here rather than inherited.
+    # ``broaden_native_spectrum(require_floor_coverage=True)`` compares the table's
+    # first KNOT against the floor and would raise even for a table whose bottom bin
+    # EDGE is exactly the floor -- which is the case for the Phase-11 480-bin
+    # construction this plan reuses.  The physically correct statement is about the
+    # bottom EDGE, so it is asserted directly.
+    src = read_cevns(path)
+    native_lo = float(ia_broadening.native_edges(src["T_eV"])[0])
+    floor = float(E_dep_edges[0])
+    if native_lo > floor * (1.0 + 1.0e-9):
+        raise ValueError(
+            f"the recoil table {os.path.basename(path)} has its bottom bin edge at "
+            f"{native_lo!r} eV but the extended deposit grid floors at {floor!r} eV. "
+            "Its support does not reach the floor; folding it would report a "
+            "sub-eV spectrum the table never covered.")
+
+    N_dep = reb["counts"]
+    N_dep_band = reb["counts_band"]
+
+    # --- the trigger, on the DEPOSIT axis (CONVENTIONS Section I) ---------------- #
+    if p_trig_override is None:
+        P = np.asarray(_trigger.P_trig(E_dep_centers, sharpness=sharpness), float)
+    else:
+        P = np.asarray(p_trig_override, float)
+        if P.shape != E_dep_centers.shape:
+            raise ValueError("p_trig_override must live on the deposit centres")
+
+    # --- fold ------------------------------------------------------------------- #
+    N_rec = _add_low_edge(fold_counts(N_dep, R), reb["low_counts"],
+                          reb["low_Erec_eV"], E_rec_edges)
+    N_rec_band = _add_low_edge(fold_counts(N_dep_band, R), reb["low_band"],
+                               reb["low_Erec_eV"], E_rec_edges)
+    # Trigger-weighted: the analysis efficiency is a per-event property of the
+    # DEPOSIT, so it multiplies N_dep column-wise before R acts.  The low-edge band
+    # is weighted at its own deposit energies for the same reason.
+    low_P = np.asarray(_trigger.P_trig(reb["low_Erec_eV"] / LOW_E_SLOPE,
+                                       sharpness=sharpness), float) \
+        if p_trig_override is None else np.ones_like(reb["low_counts"])
+    N_rec_trig = _add_low_edge(fold_counts(N_dep * P, R),
+                               reb["low_counts"] * low_P,
+                               reb["low_Erec_eV"], E_rec_edges)
+
+    dRdErec = N_rec / dE_rec_keV
+    dRdErec_band = N_rec_band / dE_rec_keV
+    dRdErec_trig = N_rec_trig / dE_rec_keV
+
+    # --- counts budget ---------------------------------------------------------- #
+    T_src, y_src = src["T_eV"], src["dRdT_total"]
+    dE_src_keV = np.diff(ia_broadening.native_edges(T_src)) / 1.0e3
+    input_counts = float(np.sum(y_src * dE_src_keV))
+    leak = reb["broadening_leakage"]
+    leaked_below = float(leak["below_floor"]) if leak else 0.0
+    leaked_below_zero = float(leak["below_zero"]) if leak else 0.0
+    leaked_above = float(leak["above_top"]) if leak else 0.0
+    deposit_counts = float(N_dep.sum() + reb["low_counts"].sum())
+    rec_counts = float(N_rec.sum())
+
+    budget = {
+        "input_counts": input_counts,
+        "leaked_below_floor": leaked_below,
+        "leaked_below_zero": leaked_below_zero,   # a SUBSET of leaked_below_floor
+        "leaked_above_top": leaked_above,
+        "deposit_counts": deposit_counts,
+        "reconstructed_counts": rec_counts,
+        # The budget that must CLOSE:
+        "residual_retained_plus_leaked": abs(
+            deposit_counts + leaked_below + leaked_above - input_counts) / input_counts,
+        # The one that must MISS -- ~49% of the bottom bin genuinely leaves the axis,
+        # so a clean retained-only closure would be evidence of a hidden rescale.
+        "residual_retained_only": (deposit_counts - input_counts) / input_counts,
+        # R's columns sum to 1, so this is exact up to floating point.
+        "residual_fold": abs(rec_counts - deposit_counts) / deposit_counts,
+    }
+
+    return {
+        "design": design,
+        "broadening_applied": bool(broaden),
+        "broadening_default": ia_broadening.BROADENING_DEFAULT,
+        "omega_bar_eV": (_params.OMEGA_BAR_eV.value if omega_bar_eV is None
+                         else float(omega_bar_eV)),
+        "cevns_table": path,
+        "E_dep_centers_eV": E_dep_centers,
+        "E_dep_edges_eV": E_dep_edges,
+        "E_rec_centers_eV": E_rec_centers,
+        "E_rec_edges_eV": E_rec_edges,
+        "E_rec_median_of_Edep_eV": d["E_rec_median_non_paralyzable_eV"],
+        "P_trig_on_Edep": P,
+        "N_dep": N_dep,
+        "N_rec": N_rec,
+        "N_rec_trigger": N_rec_trig,
+        "dRdEdep": reb["dRdEdep"],
+        "dRdErec": dRdErec,
+        "dRdErec_band": dRdErec_band,
+        "dRdErec_trigger": dRdErec_trig,
+        "rebin": reb,
+        "leakage": leak,
+        "counts_budget": budget,
+    }
+
+
+def subev_boundary_Erec_eV(design: str) -> float:
+    """The E_rec image of the 1.0 eV DEPOSITED regime boundary, for labelling.
+
+    The boundary itself is a DEPOSIT energy, imported from
+    ``trigger.SUBEV_REGIME_BOUNDARY_eV`` and never restated as a literal.  Its image on
+    the reconstructed axis is read off the response matrix's OWN median mapping curve
+    rather than assumed to be ``0.5 x`` anything.
+    """
+    from . import trigger as _trigger
+    d = load_design_extended(design)
+    return float(_erec_of_edep(_trigger.SUBEV_REGIME_BOUNDARY_eV,
+                               d["E_dep_centers_eV"],
+                               d["E_rec_median_non_paralyzable_eV"],
+                               table=EXT_DESIGN_FILE[design] + " :: E_dep_centers_eV"))
+
+
 if __name__ == "__main__":  # pragma: no cover
     import json as _json
     res = run_all(write=True)
