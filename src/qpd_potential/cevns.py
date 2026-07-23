@@ -26,6 +26,7 @@ from scipy.interpolate import PchipInterpolator
 from scipy.special import spherical_jn
 
 from . import params
+from . import interp_guard as ig
 
 # Bare numeric values pulled once from the provenance-tagged registry.
 _G_F = params.G_F.value                              # GeV^-2
@@ -232,17 +233,57 @@ class ReactorFlux:
         if np.any(self.phi <= 0.0):
             raise ValueError("flux total column has non-positive entries; cannot log-interp")
         self._log_phi = PchipInterpolator(self.E, np.log(self.phi), extrapolate=False)
+        # Plan 10-01 bounds guard. The declared evaluation domain is exactly the
+        # tabulated E_nu span -- no extension, hence no witness needed. Recorded
+        # in MeV, the units of THIS abscissa (CONVENTIONS A.1).
+        self._domain = ig.Domain(
+            quantity=f"ReactorFlux Phi(E_nu) [{os.path.basename(csv_path)}]",
+            lo=self.E_min, hi=self.E_max, units="MeV",
+            table=csv_path, table_lo=self.E_min, table_hi=self.E_max,
+            note="PCHIP(log Phi) with extrapolate=False previously returned NaN "
+                 "outside the knots; NaN is not 'not extrapolating'.",
+        )
+        self._rel_domain = ig.Domain(
+            quantity=f"ReactorFlux rel_uncertainty(E_nu) [{os.path.basename(csv_path)}]",
+            lo=self.E_min, hi=self.E_max, units="MeV",
+            table=csv_path, table_lo=self.E_min, table_hi=self.E_max,
+            note="np.interp previously CLAMPED to the end values (0.25 below the "
+                 "floor, 0.05 above the ceiling for reactor_flux_v1.0.csv).",
+        )
+
+    def log_phi_guarded(self, E_nu_MeV):
+        """log Phi(E_nu) from the PCHIP, RAISING outside the tabulated span.
+
+        Plan 10-01: replaces the `extrapolate=False` NaN return with an
+        explicit ``InterpolationDomainError`` at the point of evaluation.
+        """
+        ig.check_domain(E_nu_MeV, self._domain)
+        return self._log_phi(E_nu_MeV)
 
     def flux(self, E_nu_MeV: float) -> float:
-        """Phi(E_nu) [nu cm^-2 s^-1 MeV^-1]; 0 outside the grid or below the cut."""
+        """Phi(E_nu) [nu cm^-2 s^-1 MeV^-1]; 0 outside the grid or below the cut.
+
+        THE ZERO OUTSIDE THE GRID IS A DECLARED TRUNCATION OF THE FLUX SUPPORT,
+        NOT A CLAMP OF THE INTERPOLATOR. It is applied BEFORE the interpolator
+        is reached, it is a v1.0 modelling choice (the CEvNS integrand is
+        negligible outside the tabulated 0.1-10 MeV window), and plan 10-01
+        deliberately leaves it alone -- changing it would move v1.0 physics.
+        What plan 10-01 changed is that the interpolator itself, reached via
+        ``log_phi_guarded``, now RAISES instead of returning NaN.
+        """
         if E_nu_MeV < self.E_min or E_nu_MeV > self.E_max:
             return 0.0
         if self.e_min_cut_MeV is not None and E_nu_MeV < self.e_min_cut_MeV:
             return 0.0
-        return self.scale * float(np.exp(self._log_phi(E_nu_MeV)))
+        return self.scale * float(np.exp(self.log_phi_guarded(E_nu_MeV)))
 
     def rel_uncertainty(self, E_nu_MeV: float) -> float:
-        """Fractional flux uncertainty at E_nu (linear interp of the split band)."""
+        """Fractional flux uncertainty at E_nu (linear interp of the split band).
+
+        Plan 10-01: raises outside the tabulated E_nu span instead of clamping
+        to the end values.
+        """
+        ig.check_domain(E_nu_MeV, self._rel_domain)
         return float(np.interp(E_nu_MeV, self.E, self.rel))
 
 
@@ -609,8 +650,25 @@ def load_nucleus_fig1():
     return np.asarray(E), np.asarray(R)
 
 
-def _interp_loglog(x, xs, ys):
-    """Log-log interpolation of a positive tabulated curve."""
+def _interp_loglog(x, xs, ys, *, table: str = "<digitized curve>",
+                   quantity: str = "log-log tabulated curve", units: str = "eV"):
+    """Log-log interpolation of a positive tabulated curve.
+
+    Plan 10-01: guarded. The declared evaluation domain is exactly the tabulated
+    span of ``xs`` -- this is a DIGITIZED figure, so there is nothing outside it
+    to extrapolate from and no witness could justify an extension. Previously
+    ``np.interp`` clamped to the end values (for the NUCLEUS Fig.1 digitization:
+    494.7631 below the 1.020494 eV floor and 0.5185263 above the 1578.476 eV
+    ceiling), i.e. it returned a plausible finite rate where the figure has no
+    data.
+    """
+    xs = np.asarray(xs, dtype=float)
+    ys = np.asarray(ys, dtype=float)
+    dom = ig.Domain(
+        quantity=quantity, lo=float(xs.min()), hi=float(xs.max()), units=units,
+        table=table, table_lo=float(xs.min()), table_hi=float(xs.max()),
+    )
+    ig.check_domain(x, dom)
     return 10.0 ** np.interp(np.log10(x), np.log10(xs), np.log10(ys))
 
 
@@ -657,7 +715,10 @@ def reproduce_nucleus_fig1(
     for T in T_eV:
         per_iso = differential_rate_per_isotope(T * 1e-3, flux, use_form_factor=True)
         ours = sum(per_iso.values())
-        theirs = float(_interp_loglog(T, E_fig, R_fig))
+        theirs = float(_interp_loglog(
+            T, E_fig, R_fig,
+            table=_NUCLEUS_FIG1_CSV,
+            quantity="NUCLEUS Fig.1 dR/dT(T)", units="eV"))
         rows.append({
             "T_eV": T,
             "ours": ours,

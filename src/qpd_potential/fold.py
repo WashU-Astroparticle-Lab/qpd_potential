@@ -52,6 +52,7 @@ from typing import Optional
 import numpy as np
 
 from . import response_matrix as rm
+from . import interp_guard as ig
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _PROJECT_ROOT = os.path.abspath(os.path.join(_HERE, "..", ".."))
@@ -520,11 +521,37 @@ def _read_recon_csv(design: str, art_dir: str = _ARTIFACT_DIR) -> dict:
     return {k: rows[:, i] for i, k in enumerate(keys)}
 
 
-def _erec_of_edep(E_dep_eV, E_dep_centers, E_rec_median):
+def _erec_of_edep(E_dep_eV, E_dep_centers, E_rec_median,
+                  table: str = "response matrix npz :: E_dep_centers_eV"):
     """Interpolate E_rec (eV) at a deposited energy via the Phase-5 median
-    non-paralyzable mapping curve, in log-log space."""
+    non-paralyzable mapping curve, in log-log space.
+
+    PLAN 10-01 -- THE LOAD-BEARING GUARD OF THE PHASE. The abscissa floor is the
+    response matrix's first deposit centre, 10.144970 eV for the archived v1.0
+    matrices. Before this guard, ``np.interp`` CLAMPED below that floor, so
+    asking for the reconstructed energy of a 0.1 eV deposit returned
+    **4.899066 eV** -- the E_rec of a 10.14 eV deposit -- a finite, plausible,
+    completely wrong answer overstating E_rec by a factor of ~49, with no error
+    and no NaN to notice. The same 4.899066 eV came back for 0.5 eV, 1 eV, and
+    every other sub-floor deposit: a flat, invented plateau exactly where plan
+    10-03 extends the axis. It now raises.
+
+    The declared evaluation domain is exactly the span of ``E_dep_centers``:
+    there is no witness for any extension, because no v1.0 anchor evaluates this
+    curve below 10.14 eV -- the retracted "nothing below 10 eV" display rule is
+    precisely why.
+    """
+    centers = np.asarray(E_dep_centers, float)
+    dom = ig.Domain(
+        quantity="E_rec(E_dep) Phase-5 median mapping curve",
+        lo=float(centers.min()), hi=float(centers.max()), units="eV",
+        table=table,
+        table_lo=float(centers.min()), table_hi=float(centers.max()),
+        note="np.interp previously clamped to E_rec(first centre) below the floor.",
+    )
+    ig.check_domain(E_dep_eV, dom)
     lx = np.log(np.asarray(E_dep_eV, float))
-    return np.exp(np.interp(lx, np.log(E_dep_centers), np.log(E_rec_median)))
+    return np.exp(np.interp(lx, np.log(centers), np.log(E_rec_median)))
 
 
 def _mask_pos(x, y):

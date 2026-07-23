@@ -95,6 +95,7 @@ from pathlib import Path
 import numpy as np
 
 from . import wafer_geometry as wg
+from . import interp_guard as ig
 
 #: numpy >= 2.0 renamed ``trapz`` to ``trapezoid``; support both.
 _trapz = getattr(np, "trapezoid", None) or np.trapz
@@ -299,8 +300,27 @@ def _tail_integral(e_cut_keV: float) -> float:
     exactly rather than snapped to the nearest grid node; without it the
     acceptance would be a step function of ``E_cut`` and the monotonicity check
     would be testing the grid, not the physics.
+
+    Plan 10-01: guarded. The declared evaluation domain is exactly the frozen
+    grid span [1.014497e-02, 1.97142e5] keV -- no witness exists for any
+    extension, because ``a_self_direct`` short-circuits to 1.0 at or below the
+    floor and 0.0 at or above the ceiling and therefore never reaches here out
+    of domain. What the guard stops is a DIRECT call: before it,
+    ``_tail_integral`` at 1e-4 keV returned 1073307.752 counts/kg/day against a
+    true full integral of 1073307.591 -- a finite, nearly-right, entirely
+    fabricated number built from the clamped floor rate of 16.01101 extended
+    over a decade of energy that carries no data. Above the ceiling it returned
+    exactly 0.0, which is a silent zero, not an error.
     """
     e_grid, rate = frozen_spectrum()
+    ig.check_domain(e_cut_keV, ig.Domain(
+        quantity="muon dR/dE_dep tail integral cut energy",
+        lo=float(e_grid[0]), hi=float(e_grid[-1]), units="keV",
+        table=str(MUON_CSV),
+        table_lo=float(e_grid[0]), table_hi=float(e_grid[-1]),
+        note="np.interp previously clamped the rate to 16.01101 below the floor "
+             "and 0.003293117 above the ceiling.",
+    ))
     idx = int(np.searchsorted(e_grid, e_cut_keV, side="right"))
     r_cut = float(np.interp(e_cut_keV, e_grid, rate))
     e_tail = np.concatenate(([e_cut_keV], e_grid[idx:]))
