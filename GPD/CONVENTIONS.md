@@ -241,6 +241,39 @@ no propagators, no spinors, and no gauge fields.
 
 ---
 
+## I. Sub-eV Trigger-Probability Curve — the reported observable below ~1 eV
+
+| Field | Value |
+| ----- | ----- |
+| **Convention** | Below the regime boundary the reported observable is a **trigger probability** P_trig(E_dep), **not** dR/dE_rec. |
+| **Functional form** | Hill / logistic-in-log-energy: **P(E) = 1 / (1 + (E50/E)^k)**, with P(0) := 0 by continuity. |
+| **50% point (DECIDED)** | **E50 = 0.5 eV exactly** (`params.TRIGGER_E50`). Structural, not tuned: P(E50) = 1/(1 + 1^k) = 1/2 for **every** k > 0. |
+| **Sharpness (EXPOSED, not measured)** | k, dimensionless (`params.TRIGGER_SHARPNESS`), default **4.0**, declared scan range **[1, 12]** (`params.TRIGGER_SHARPNESS_RANGE`). Fixed by **no** project artifact. |
+| **Regime boundary** | **1.0 eV** deposited energy, defined once at `trigger.SUBEV_REGIME_BOUNDARY_eV`; every sub-eV deliverable imports it rather than restating a literal. |
+| **Composition rule** | P_trig is an **ANALYSIS efficiency multiplied on top of** the un-triggered quantity: `composed = P_trig(E) × untriggered`. It **does NOT replace ε ≈ 0.5 in Section E** and **does not modify Section F**. ε remains inside the un-triggered quantity through `energy_scale.n_qp_yield` (N_qp = ε·E_sensor/Δ_tr) and the `response.calibrate_C` slope. Setting P_trig ≡ 1 reproduces the pre-existing chain bit-for-bit. |
+| **Status** | **PHENOMENOLOGICAL.** No trigger threshold has ever been measured for this device. Only the 50% point carries a project decision; the functional form is chosen and the width is unconstrained. |
+| **Introduced** | Phase 10 (Plan 10-02), from USER DECISION 2026-07-22. |
+| **Rationale** | Below ~1 eV, dR/dE_rec presupposes the lumped ε ≈ 0.5 deposited-to-signal collection efficiency, which is not defensible for a deposit of ~3 optical-phonon quanta in Ge. The user chose to replace the reported object rather than patch the efficiency. |
+
+> A logistic in **linear** energy, P = 1/(1 + exp(−(E − E50)/w)), was **rejected**: it gives
+> P(0) = 1/(1 + e^{E50/w}) > 0, i.e. a nonzero probability of triggering on nothing —
+> **6.6929 × 10⁻³ at w = 0.1 eV** — and a nonzero probability at negative energy. On an axis
+> spanning four decades from 0.1 eV that floor would sit under every sub-eV number in the
+> project. Derivation: `GPD/phases/10-.../10-02-TRIGGER-CURVE-DERIVATION.md`.
+
+**Test values (hand-checkable, in the style of Sections E and F).** At the default k = 4:
+
+- P(E50) = P(0.5 eV) = 1/(1 + 1⁴) = **1/2** — and this holds for every k, not just k = 4.
+- P(2·E50) = P(1.0 eV) = 1/(1 + (1/2)⁴) = 1/(1 + 1/16) = **16/17 = 0.941176…**
+- P(E50/2) = P(0.25 eV) = 1/(1 + 2⁴) = **1/17 = 0.058824…**
+- P(0) = **0 exactly**.
+
+**Sensitivity obligation.** Because k is fixed by no measurement, every downstream result
+computed with this curve must be reported together with its sensitivity to k over
+[1, 12]. A buried width would be a fabricated device property (`fp-hardcoded-width`).
+
+---
+
 ## Numerical Factor Registry
 
 Factors whose value depends on a convention choice; the consistency-checker uses these to verify
@@ -257,6 +290,7 @@ derivations.
 | Low-E reconstruction | E_rec ≈ 0.5·E_dep | E_rec = E_dep (no ε) | Sections B, E |
 | Resolving time | 40 µs (25 kHz Nyquist) | 20 µs (50 kHz sampling) conflated | Section F |
 | Recoil scale | keV_nr (phonon scale, no quenching) | keVee (Lindhard applied) → CEvNS ×5–7 too small | Section B |
+| Sub-eV trigger 50% point | E50 = 0.5 eV, exact for every k | a 50% point that holds only at one width | Section I |
 
 ---
 
@@ -299,3 +333,4 @@ now the single canonical convention for Phase 6 and downstream. No open conventi
 | ---- | ------ | --------- |
 | 2026-07-20 | Initial establishment (Phase 1, CONV-01). Sections A–H locked; C1 censoring switch left OPEN. | User-approved convention set from interactive-mode proposal. |
 | 2026-07-21 | Section F censoring switch RESOLVED → **non-paralyzable** project-wide. | User decision at Phase-5 review after both variants were computed; closes the last OPEN convention item. |
+| 2026-07-22 | **Section I added**: sub-eV trigger-probability curve, Hill form, 50% point fixed at 0.5 eV, exposed sharpness k (default 4, range 1–12), regime boundary 1.0 eV. Sections E and F unmodified. | Phase 10 / Plan 10-02, implementing USER DECISION 2026-07-22. The curve is an ANALYSIS efficiency multiplied on top of ε ≈ 0.5, never a replacement for it (ROADMAP Phase 10 success criterion 4; CALC-16). |

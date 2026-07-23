@@ -492,6 +492,39 @@ R_SPOT_RANGE = (1.0, 5.0)
 
 
 # --------------------------------------------------------------------------- #
+# Sub-eV trigger-probability curve (CONVENTIONS Section I; Phase 10 / CALC-16) #
+# The 50% point is DECIDED; the sharpness is fixed by NO project artifact and   #
+# is EXPOSED as a scannable parameter, in the F_PROMPT / R_SPOT style.          #
+# --------------------------------------------------------------------------- #
+
+TRIGGER_E50 = Param(
+    0.5,
+    "eV",
+    "Sub-eV trigger-probability 50% point; USER DECISION 2026-07-22 "
+    "(GPD/STATE.md Accumulated Context); CONVENTIONS Section I",
+    "MEDIUM",
+    note="The ONLY property of the trigger curve fixed by a project decision. "
+    "Exact by construction for the adopted Hill form: P(E50) = 1/(1 + 1^k) = 1/2 "
+    "for EVERY sharpness k > 0, so the 50% point never depends on the width. "
+    "MEDIUM rather than HIGH because it is a chosen analysis threshold, not a "
+    "measured device property -- no trigger threshold has been measured for this device.",
+)
+TRIGGER_SHARPNESS = Param(
+    4.0,
+    "",
+    "Hill sharpness k of the sub-eV trigger curve; fixed by NO project artifact",
+    "LOW",
+    note="EXPOSED PARAMETER, not a derived or measured value. Range 1-12. "
+    "A buried width would fabricate a device property (fp-hardcoded-width). "
+    "k = 4 gives a 10-90% rise spanning a factor of 81^(1/4) = 3.0 in deposited "
+    "energy, i.e. ~0.17-1.5 eV, which is a plausible-looking but ENTIRELY CHOSEN "
+    "turn-on width. Every downstream sub-eV result must be reported with its "
+    "sensitivity to k, because nothing constrains it.",
+)
+TRIGGER_SHARPNESS_RANGE = (1.0, 12.0)
+
+
+# --------------------------------------------------------------------------- #
 # Convenience accessors                                                        #
 # --------------------------------------------------------------------------- #
 
