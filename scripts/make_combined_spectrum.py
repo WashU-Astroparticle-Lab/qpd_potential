@@ -106,14 +106,18 @@ SUBEV = 1.0e-3                       # below 1 eV, P_trig is the reported observ
 CAPTURE_BOUND = 4399.78              # counts/kg/day, Phase 14, in-RoI, rigorous
 
 # ---------------------------------------------------------------------------
-# ASSUMED neutron suppression. NOT derived, NOT transferred from NUCLEUS.
-# A declared stage-one placeholder, user-set 2026-07-23. It is applied to ALL
-# THREE neutron-driven channels -- elastic, prompt (n,gamma) capture, and the
-# 71Ge EC line -- because all three scale with the same INCIDENT neutron
-# fluence: 71Ge is produced by 70Ge(n,gamma) from that same field.
-# NUCLEUS's published ~5 and ~50 are event-rate reductions IN CaWO4 and are
-# deliberately NOT used: they embed a target response that is not germanium's.
-N_SUPPRESSION = 100.0
+# ASSUMED per-channel suppression, set to NUCLEUS's published factors
+# (user decision 2026-07-23). This deliberately OVERRIDES the locked Phase-8
+# decision: NUCLEUS's ~5/~50/>99.8% are event-rate reductions IN CaWO4 (they
+# embed a target response that is not germanium's) and most come from the COV/MV
+# active veto the wafer does NOT geometrically fit. The user accepts both: the
+# premise is "a real experiment will build shielding of similar performance".
+#   muon    /500  = MV+COV reject >99.8% of muon-induced backgrounds (EPJC 86,29 sec.5.2.1)
+#   compton /50   = 5 cm Pb, factor ~50 reduction (sec.5.2.1)
+#   neutron /25   = 4 cm B4C (~5) x COV anti-coincidence (~5) (sec.5.2.1)
+# The neutron factor is applied to all THREE neutron-driven channels (elastic,
+# prompt (n,gamma) capture, 71Ge EC) since they share the incident fluence.
+SUPP = {"cevns": 1.0, "muon": 500.0, "compton": 50.0, "neutron": 25.0}
 # ---------------------------------------------------------------------------
 
 
@@ -131,15 +135,15 @@ def continua(design):
         dict(label="CEvNS signal", key="cevns", c="#1f77b4", lw=2.5, z=6,
              d=read(f"cevns_dRdErec_ext_{design}.csv", "E_rec_keV", "dRdErec_trigger_weighted"),
              raw=read(f"cevns_dRdErec_ext_{design}.csv", "E_rec_keV", "dRdErec_central")),
-        dict(label=f"Neutron elastic  /{N_SUPPRESSION:.0f} (ASSUMED)", key="neutron", c="#d62728", lw=1.9, z=5, sup=True,
+        dict(label=f"Neutron elastic  /{SUPP['neutron']:.0f}", key="neutron", c="#d62728", lw=1.9, z=5,
              d=read(f"neutron_dRdErec_ext_{design}.csv", "E_rec_keV", "dRdErec_trigger_weighted"),
              raw=read(f"neutron_dRdErec_ext_{design}.csv", "E_rec_keV", "dRdErec_central")),
-        dict(label="Compton ($\\gamma$ ambient)", key="compton", c="#2ca02c", lw=1.7, z=4,
+        dict(label=f"Compton ($\\gamma$ ambient)  /{SUPP['compton']:.0f}", key="compton", c="#2ca02c", lw=1.7, z=4,
              d=read(f"em_dRdErec_ext_{design}.csv", "E_rec_keV[keV]",
                     "compton_dRdErec_triggered[counts/kg/day/keV]"),
              raw=read(f"em_dRdErec_ext_{design}.csv", "E_rec_keV[keV]",
                       "compton_dRdErec_untriggered[counts/kg/day/keV]")),
-        dict(label="Cosmic muons", key="muon", c="#9467bd", lw=1.7, z=4,
+        dict(label=f"Cosmic muons  /{SUPP['muon']:.0f}", key="muon", c="#9467bd", lw=1.7, z=4,
              d=read(f"em_dRdErec_ext_{design}.csv", "E_rec_keV[keV]",
                     "muon_dRdErec_triggered[counts/kg/day/keV]"),
              raw=read(f"em_dRdErec_ext_{design}.csv", "E_rec_keV[keV]",
@@ -163,7 +167,7 @@ def bin_integrate(E, y, lo, hi):
 
 def panel(ax, design, title):
     for ch in continua(design):
-        f = N_SUPPRESSION if ch.get("sup") else 1.0
+        f = SUPP[ch["key"]]
         E, y = ch["d"]; y = y / f
         # dotted = the INTRINSIC spectrum: linear response, no saturation, no trigger.
         # The gap to the solid shows both instrumental effects -- trigger rolloff
@@ -184,14 +188,14 @@ def panel(ax, design, title):
     E, y = read(f"ge71_ec_dRdErec_{design}.csv", "E_rec_keV", "dRdErec_bound")
     m = y > 0
     if m.any():
-        ax.vlines(E[m] * 1e3, 1e-6, y[m] / N_SUPPRESSION, color="#8c564b", lw=2.6, zorder=7,
-                  label=f"$^{{71}}$Ge EC M line /{N_SUPPRESSION:.0f}  [BOUND, sat.]")
+        ax.vlines(E[m] * 1e3, 1e-6, y[m] / SUPP["neutron"], color="#8c564b", lw=2.6, zorder=7,
+                  label=f"$^{{71}}$Ge EC M line /{SUPP['neutron']:.0f}  [BOUND, sat.]")
 
     # prompt (n,gamma) capture -- integrated bound only, NO spectral shape exists
-    lvl = CAPTURE_BOUND / N_SUPPRESSION / (ROI_HI - ROI_LO)
+    lvl = CAPTURE_BOUND / SUPP["neutron"] / (ROI_HI - ROI_LO)
     ax.fill_between([ROI_LO * 1e3, ROI_HI * 1e3], lvl * 0.86, lvl * 1.16,
                     color="#ff7f0e", alpha=0.55, hatch="///", edgecolor="#ff7f0e",
-                    zorder=2, label=f"Prompt (n,$\\gamma$) capture /{N_SUPPRESSION:.0f}  [BOUND,\nno spectral shape derived]")
+                    zorder=2, label=f"Prompt (n,$\\gamma$) capture /{SUPP['neutron']:.0f}  [BOUND,\nno spectral shape derived]")
 
     # Vertical guide lines (grid floor, sub-eV boundary, saturation onset) and the
     # grey RoI window removed by user request 2026-07-23 to declutter. The pink
@@ -216,7 +220,7 @@ def sb(design):
     """S/B on the TRIGGER-WEIGHTED observable, with the assumed suppression applied."""
     sig = bg = 0.0
     for ch in continua(design):
-        f = N_SUPPRESSION if ch.get("sup") else 1.0
+        f = SUPP[ch["key"]]
         E, y = ch["d"]
         v = bin_integrate(E, y / f, ROI_LO, ROI_HI)
         if ch["label"].startswith("CEvNS"):
@@ -224,7 +228,7 @@ def sb(design):
         else:
             bg += v
     E, y = read(f"ge71_ec_dRdErec_{design}.csv", "E_rec_keV", "dRdErec_trigger_weighted")
-    bg_b = bin_integrate(E, y / N_SUPPRESSION, ROI_LO, ROI_HI) + CAPTURE_BOUND / N_SUPPRESSION
+    bg_b = bin_integrate(E, y / SUPP["neutron"], ROI_LO, ROI_HI) + CAPTURE_BOUND / SUPP["neutron"]
     return sig, bg, bg_b
 
 fig, axes = plt.subplots(1, 2, figsize=(14.2, 6.4), sharey=True)
@@ -250,15 +254,16 @@ axes[1].text(0.985, 0.02,
              transform=axes[1].transAxes, ha="right", va="bottom", fontsize=8,
              bbox=dict(fc="white", ec="0.7", alpha=0.92))
 
-fig.suptitle(f"QPD Ge wafer, 3 GW$_{{\\rm th}}$ at 25 m — surface backgrounds computed UNSHIELDED, then an "
-             f"ASSUMED {N_SUPPRESSION:.0f}× neutron suppression applied   (veto credit still 1.0)",
-             fontsize=12.0, y=0.986)
+_supp_suffix = "NUCLEUS-equivalent suppression: muon ÷{:.0f}, γ ÷{:.0f}, n ÷{:.0f}".format(
+    SUPP['muon'], SUPP['compton'], SUPP['neutron'])
+fig.suptitle(r"QPD Ge wafer, 3 GW$_{\rm th}$ at 25 m — surface backgrounds with ASSUMED " + _supp_suffix,
+             fontsize=11.5, y=0.986)
 fig.text(0.5, 0.050,
-         f"The {N_SUPPRESSION:.0f}\u00d7 suppression is an ASSUMED placeholder \u2014 not derived, and deliberately NOT "
-         "transferred from NUCLEUS,",
+         "Per-channel factors are NUCLEUS's own published values (>99.8% muon-induced, Pb ÷50, "
+         "B$_4$C×COV ÷25), ASSUMED achievable by a future shield/veto — NOT rigorous credit:",
          ha="center", fontsize=8.4, style="italic")
 fig.text(0.5, 0.032,
-         "whose ~5 and ~50 are event-rate reductions in CaWO$_4$ that embed a target response which is not Ge's.",
+         "they are CaWO$_4$ event-rate reductions and most need the COV/MV veto the wafer does not geometrically fit (Phase 8).",
          ha="center", fontsize=8.4, style="italic")
 fig.text(0.5, 0.014,
          "Dotted = the intrinsic spectrum: linear $E_{\\rm rec}$ = 0.497 $E_{\\rm dep}$, NO saturation and NO trigger. The solid-to-dotted gap is the trigger rolloff below ~1 eV and saturation above the onset. "
@@ -276,10 +281,11 @@ fig.savefig(os.path.join(ART, "combined_spectrum_v2.0.pdf"),
 print("wrote combined_spectrum_v2.0.png\n")
 
 for design in ("TaAl", "AlHf"):
-    print(f"{design}   10-100 eV RoI, TRIGGER-WEIGHTED, {N_SUPPRESSION:.0f}x neutron suppression applied")
+    print(f"{design}   10-100 eV RoI, TRIGGER-WEIGHTED, NUCLEUS per-channel suppression "
+          f"(muon/{SUPP['muon']:.0f}, gamma/{SUPP['compton']:.0f}, n/{SUPP['neutron']:.0f})")
     est = 0.0
     for ch in continua(design):
-        f = N_SUPPRESSION if ch.get("sup") else 1.0
+        f = SUPP[ch["key"]]
         E, y = ch["d"]
         v = bin_integrate(E, y / f, ROI_LO, ROI_HI)
         raw = bin_integrate(*ch["raw"], ROI_LO, ROI_HI)
@@ -289,9 +295,10 @@ for design in ("TaAl", "AlHf"):
             est += v
         print(f"   {ch['label']:<34s} {v:10.3f}   (untrig., unsupp. {raw:10.3f})")
     E, y = read(f"ge71_ec_dRdErec_{design}.csv", "E_rec_keV", "dRdErec_trigger_weighted")
-    m71 = bin_integrate(E, y / N_SUPPRESSION, ROI_LO, ROI_HI)
-    capt = CAPTURE_BOUND / N_SUPPRESSION
-    print(f"   {'71Ge EC M line [BOUND] /100':<34s} {m71:10.3f}")
-    print(f"   {'prompt (n,g) capture [BOUND] /100':<34s} {capt:10.3f}")
+    m71 = bin_integrate(E, y / SUPP["neutron"], ROI_LO, ROI_HI)
+    capt = CAPTURE_BOUND / SUPP["neutron"]
+    nf = SUPP["neutron"]
+    print("   {:<34s} {:10.3f}".format(f"71Ge EC M line [BOUND] /{nf:.0f}", m71))
+    print("   {:<34s} {:10.3f}".format(f"prompt (n,g) capture [BOUND] /{nf:.0f}", capt))
     print(f"   -> S/B estimates only          {sig/est:.4f}")
     print(f"   -> S/B incl. bounds (LOWER bd) {sig/(est+m71+capt):.4f}\n")
