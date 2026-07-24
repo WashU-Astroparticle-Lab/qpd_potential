@@ -236,3 +236,5 @@ GPD/state.json.v1.0-contract-backup
 data/external/parma/PARMA-*.tar.gz
 data/external/parma/src/
 data/external/parma/build_parma_neutron
+.DS_Store
+artifacts/.DS_Store
