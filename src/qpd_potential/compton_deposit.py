@@ -275,6 +275,145 @@ def run_compton_mc(n_per_line: int = 400_000, seed: int = 20260720,
     )
 
 
+# --------------------------------------------------------------------------- #
+# DETERMINISTIC (noise-free) assembly of the same spectrum                      #
+# --------------------------------------------------------------------------- #
+# WHY THIS EXISTS.  run_compton_mc samples cos(theta) by rejection and histograms
+# the resulting T_e, so every bin carries sampling scatter.  The scatter is
+# harmless where the spectrum is dense (rel. err ~1e-3 above 1 keV) but it
+# DOMINATES the low-recoil roll-off that the reconstructed-axis deliverable
+# actually plots: at 40e6 samples/line the 1-10 eV band holds ~9 entries/bin
+# (rel. err ~0.43) and below 1 eV there is ONE entry per bin.  That is the
+# visible jaggedness on the combined figure, and it is pure sampling noise, not
+# structure.
+#
+# The change of variable the MC deliberately avoids (see the module header:
+# "no error-prone closed-form dsigma/dT_e change of variables") is done here
+# EXPLICITLY and is validated against the MC rather than trusted:
+#
+#   u = 1 - cos(theta),   T = E*alpha*u/(1 + alpha*u),   alpha = E/m_e c^2
+#   => u(T) = T / (alpha (E - T)),   dT/du = E*alpha/(1 + alpha*u)^2
+#   => dsigma/dT = 2*pi * (dsigma_KN/dOmega)(cos) * S(x) * (1 + alpha*u)^2/(E*alpha)
+#
+# because dsigma/dT dT = 2*pi (dsigma/dOmega) S du = -2*pi (dsigma/dOmega) S dcos,
+# i.e. the SAME measure the MC samples.  The Compton edge is still not asserted:
+# u runs to exactly 2 at T = T_edge, so the edge falls out of u(T) as before, and
+# S(x) -> Z there, so the edge is unchanged.  At T -> 0, u -> 0 and S(0) = 0, so
+# dsigma/dT -> 0 with no integrable singularity to nurse.
+#
+# THIS IS NOT A SMOOTHING OF THE MC.  No MC output is filtered, fitted, or
+# reweighted.  It is the same physics (same S(x,Z) table, same per-line rates
+# R_i, same grid, same normalization sigma_incoh_atom) evaluated by quadrature,
+# so the result has NO statistical error at all.  tests/ asserts the two agree
+# within the MC's own error.
+_GAUSS_LEG_N = 24
+
+
+def dsigma_dT_incoh(e_gamma_kev: float, t_kev: np.ndarray) -> np.ndarray:
+    """Bound incoherent dsigma/dT_e [cm^2/keV] PER ATOM at electron recoil T_e.
+
+    Zero outside (0, T_edge]. Derived by change of variable from the SAME
+    dsigma_incoh/dOmega the Monte-Carlo path samples, so the two integrate to the
+    identical sigma_incoh_atom.
+    """
+    t = np.asarray(t_kev, dtype=float)
+    alpha = e_gamma_kev / M_E_KEV
+    t_edge = float(cs.compton_edge_kev(e_gamma_kev))
+    out = np.zeros_like(t)
+    ok = (t > 0.0) & (t <= t_edge)
+    if not np.any(ok):
+        return out
+    tt = t[ok]
+    u = tt / (alpha * (e_gamma_kev - tt))
+    cos_theta = np.clip(1.0 - u, -1.0, 1.0)
+    x = cs.momentum_transfer_x(e_gamma_kev, cos_theta)
+    jac = (1.0 + alpha * u) ** 2 / (e_gamma_kev * alpha)   # du/dT
+    out[ok] = (2.0 * np.pi * kn_dsigma_domega(e_gamma_kev, cos_theta)
+               * cs.incoherent_S(x) * jac)
+    return out
+
+
+def _bin_probabilities(e_gamma_kev: float, edges: np.ndarray) -> np.ndarray:
+    """Fraction of a line's scatters landing in each bin of `edges`.
+
+    Gauss-Legendre on each bin, clipped to the line's kinematic support (0,
+    T_edge], normalized by sigma_incoh_atom -- the SAME denominator the MC path
+    normalizes to implicitly by sampling that measure.
+    """
+    t_edge = float(cs.compton_edge_kev(e_gamma_kev))
+    lo = np.minimum(edges[:-1], t_edge)
+    hi = np.minimum(edges[1:], t_edge)
+    width = np.clip(hi - lo, 0.0, None)
+    xg, wg = np.polynomial.legendre.leggauss(_GAUSS_LEG_N)
+    # map [-1,1] -> [lo,hi] per bin: (nbins, N)
+    mid = 0.5 * (lo + hi)[:, None]
+    half = 0.5 * width[:, None]
+    nodes = mid + half * xg[None, :]
+    vals = dsigma_dT_incoh(e_gamma_kev, nodes.ravel()).reshape(nodes.shape)
+    integral = (vals * wg[None, :]).sum(axis=1) * half[:, 0]
+    return integral / sigma_incoh_atom(e_gamma_kev)
+
+
+def run_compton_analytic(grid_version: str = "v2.0-ext") -> ComptonSpectrum:
+    """Deterministic dR/dE_dep for the environmental-gamma Compton continuum.
+
+    Drop-in replacement for ``run_compton_mc`` returning the same
+    ``ComptonSpectrum``, with ``dRdE_err`` identically zero (there is no
+    sampling) and ``mc_entries`` set to -1 as a sentinel meaning "not a sampled
+    quantity" -- deliberately NOT 0, which downstream code reads as "no
+    estimator support in this bin".
+    """
+    lines = cs.load_gamma_lines()
+    edges = shared_energy_grid(grid_version)
+    centers = np.sqrt(edges[:-1] * edges[1:])
+    dwidth = np.diff(edges)
+    per_day = 86400.0 / cs.MASS_KG
+
+    sumw = np.zeros(centers.size)
+    e_g, e_edge, e_edge_s, r_line = [], [], [], []
+    total_rate = total_free = total_anchor = 0.0
+
+    for ln in lines:
+        R_free = line_interaction_rate_hz(ln.flux_cm2_s, ln.energy_keV)
+        f_bind = binding_suppression(ln.energy_keV)
+        R_i = R_free * f_bind
+        total_rate += R_i
+        total_free += R_free
+        total_anchor += line_rate_anchor_hz(ln.flux_cm2_s, ln.energy_keV)
+
+        sumw += R_i * per_day * _bin_probabilities(ln.energy_keV, edges)
+
+        t_edge = float(cs.compton_edge_kev(ln.energy_keV))
+        e_g.append(ln.energy_keV)
+        e_edge.append(t_edge)
+        # The MC reports the MAX SAMPLED T_e as a self-validation of the edge.
+        # There is no sampling here, so report the highest bin edge that carries
+        # non-zero probability -- the grid-resolved edge, which is the strongest
+        # statement this path can make. It must not be confused with t_edge.
+        nz = np.nonzero(_bin_probabilities(ln.energy_keV, edges) > 0)[0]
+        e_edge_s.append(float(edges[nz[-1] + 1]) if nz.size else 0.0)
+        r_line.append(R_i)
+
+    dRdE = sumw / dwidth
+    return ComptonSpectrum(
+        edges_kev=edges,
+        centers_kev=centers,
+        dRdE=dRdE,
+        dRdE_err=np.zeros_like(dRdE),
+        rate_hz=float(total_rate),
+        rate_free_hz=float(total_free),
+        rate_anchor_hz=float(total_anchor),
+        line_energies=np.asarray(e_g),
+        line_edges=np.asarray(e_edge),
+        line_edges_sampled=np.asarray(e_edge_s),
+        line_rates_hz=np.asarray(r_line),
+        n_per_line=0,
+        counts_per_kg_day=float((dRdE * dwidth).sum()),
+        mc_entries=np.full(centers.size, -1, dtype=np.int64),
+        grid_version=grid_version,
+    )
+
+
 def write_csv(spec: ComptonSpectrum, path: str) -> None:
     """Write dR/dE_dep to CSV: E_dep_keV, dRdEdep_cts_per_kg_day_keV, mc_err."""
     import csv as _csv

@@ -375,9 +375,16 @@ def test_inventory_closure_grep_hits_equal_inventory_rows():
     # site in conus_check.py (the two CONUS+ analysis-window EDGE values of the
     # committed recoil-axis dR/dT, so a window integral starts and ends at its own
     # converted boundary rather than at the nearest tabulated knot).
+    # committed recoil-axis dR/dT, so a window integral starts and ends at its own
+    # converted boundary rather than at the nearest tabulated knot); 46 after the
+    # 2026-07-23 curve-smoothing work registered the single site in muon_analytic.py
+    # (the standard-Landau CDF read FORWARDS at the deposit bin edges, which is the
+    # same cached table `sample_deposit` inverts -- clamping low to 0.0 is the true
+    # double-exponential limit, and the high end is served by the analytic 1/lambda
+    # tail before any clamp is reached).
     # Bumping this number is the ONLY sanctioned response to a new hit, and it must
     # come with an inventory row.
-    assert len(hits) == 45, f"grep hit count changed: {len(hits)}"
+    assert len(hits) == 46, f"grep hit count changed: {len(hits)}"
     rows = [ln for ln in text.splitlines()
             if ln.startswith("| `src/") and ln.count("|") >= 6]
     assert len(rows) == len(hits), (
