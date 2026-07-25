@@ -1,0 +1,495 @@
+{"status": "success", "paper_id": "2501.05206v3", "content": "## Direct observation of coherent elastic antineutrino-nucleus scattering \n\nN.
+Ackermann 1, H.
+Bonet1, A.
+Bonhomme 1,a, C.
+Buck 1*, K.
+F\u00a8ulber[2] , J.
+Hakenm\u00a8uller 1,b, J.
+Hempfling1, G.
+Heusser1, M.
+Lindner 1, W.
+Maneschg 1, K.
+Ni1, M.
+Rank3, T.
+Rink 1,c, E.
+S\u00b4anchez Garc\u00b4\u0131a 1, I.
+Stalder3, H.
+Strecker1, R.
+Wink2, J.
+Woenckhaus 3,d \n\n> 1MPIK Heidelberg, Saupfercheckweg 1, 69117 Heidelberg, Germany. \n\n> 2PreussenElektra GmbH, Kernkraftwerk Brokdorf, Osterende, 25576 Brokdorf, Germany. \n\n> 3Kernkraftwerk Leibstadt AG, 5325 Leibstadt, Switzerland. \n\n> a _Present address:_ IPHC, CNRS, 67037 Strasbourg, France. \n\n> b _Present address:_ Duke University, Durham, NC 27708, USA. \n\n> c _Present address:_ KIT, Hermann-von-Helmholtz-Platz 1, 76344 Eggenstein-Leopoldshafen, Germany. \n\n> d _Present address:_ PSI, Forschungsstrasse 111, 5232 Villigen, Switzerland. \n\n*Corresponding author(s).
+E-mail(s): christian.buck@mpi-hd.mpg.de; \n\n## **Abstract** \n\nNeutrinos are elementary particles that interact only very weakly with matter.
+Neutrino experiments are, therefore, usually big, with masses in the multi-tonne range.
+The thresholdless interaction of coherent elastic scattering of neutrinos on atomic nuclei leads to greatly enhanced interaction rates, which allows for much smaller detectors.
+The study of this process gives insights into physics beyond the Standard Model of particle physics.
+The CONUS+ experiment was designed to first detect elastic neutrino\u2013nucleus scattering in the fully coherent regime with low-energy neutrinos produced in nuclear reactors.
+For this purpose, semiconductor detectors based on high-purity germanium crystals with extremely low-energy thresholds were developed.
+Here we report the first observation of a neutrino signal with a statistical significance of 3.7 _**\u03c3**_ from the CONUS+ experiment, operated at the nuclear power plant in Leibstadt, Switzerland.
+In 119 days of reactor operation ( **395** _**\u00b1**_ **106** ) neutrinos were measured compared with a predicted number from calculations assuming Standard Model physics of ( **347** _**\u00b1**_ **59** ) \n\n1 \n\nevents.
+With increased precision, there is potential for fundamental discoveries in the future.
+The CONUS+ results in combination with other measurements of this interaction channel might therefore mark a starting point for a new era in neutrino physics. \n\n## **Introduction** \n\nNeutrinos are known for their tiny interaction rate with matter.
+This is why they are usually very hard to detect, despite their high abundance.
+The most common detection channels such as the inverse beta decay reaction or neutrino-electron scattering usually require target masses in the ton to kiloton scale.
+In the Standard Model (SM) of particle physics, neutrinos can couple to quarks by the exchange of a mediating Z boson.
+For small momentum exchanges, the possibility of coherent scattering of neutrinos on the sum of all nucleons of an atomic nucleus was predicted in 1974 [1].
+For this interaction the reaction rate (cross-section) is enhanced by few orders of magnitude as it scales approximately with the squared number of neutrons in the target nucleus.
+Therefore, it is in principle possible to construct neutrino detectors on the kilogram scale using this channel. \n\nIt took 43 years after its prediction until CE _\u03bd_ NS was first detected in 2017 by the COHERENT experiment in a scintillating crystal of cesium iodide [2].
+Later, COHERENT confirmed the measurement with argon [3] and germanium [4] as target materials.
+Here, the neutrinos are generated at a Spallation Neutron Source (SNS) when pions decay at rest.
+A complementary approach for CE _\u03bd_ NS detection is to use nuclear reactors as a source.
+An advantage is the lower neutrino energies as compared to the SNS source, which offers an enhanced sensitivity for several parameters in beyond the standard model (BSM) theories.
+At higher neutrino energies above approximately 10 MeV, there is a transition from the fully to the partially coherent regime, and uncertainties related to the nuclear structure become relevant.
+Measurements at reactor can be used to get a clean coherent scattering signal and set an anchor point for the cross-section.
+With this knowledge, experiments such as COHERENT can study the nuclear structure of the corresponding target isotope with higher-energy neutrinos.
+Nuclear reactors provide a very high flux of pure electron antineutrino, whereas the accelerator-based SNS source involves several types of neutrinos, including muon neutrinos and antineutrinos. \n\nThere is a long history of successful experiments using reactor antineutrinos as sources, including the first neutrino detection in 1956 [5].
+In recent years, reactor experiments allowed to study neutrino oscillation parameters [6\u20139] and constrain the existence of sterile neutrinos [10\u201313].
+Today, there is a worldwide effort to measure CE _\u03bd_ NS near nuclear reactors [14\u201323].
+In terms of neutrino oscillation studies, it is a complementary approach, since the CE _\u03bd_ NS process is sensitive to the three known neutrino flavors, whereas the inverse beta decay as a standard detection technique is only sensitive to electron antineutrinos.
+There is a wide range of studies that can be addressed in CE _\u03bd_ NS measurements.
+For example, they are highly relevant for probing nuclear structures, for astrophysical studies, and for present and future dark matter \n\n2 \n\nexperiments, which are limited in sensitivity by the CE _\u03bd_ NS rate of solar neutrinos.
+Recently, indications for a CE _\u03bd_ NS signal were found in dark matter experiments with xenon as target [24, 25].
+Moreover, Conus+ technology has the potential to use neutrinos for reactor monitoring and safeguard applications in the future. \n\n## **The CONUS and CONUS+ experiments** \n\nThe Conus experiment [18] began operating in 2018 at the nuclear power plant in Brokdorf (KBR), Germany, and took data until 2022.
+The experimental setup consisted of four high-purity germanium (HPGe) detectors.
+Each diode had a mass of about 1 kg leading to a total fiducial germanium mass of 3 _._ 73 _\u00b1_ 0 _._ 02 kg [26].
+As a final result of the measurement at KBR, the neutrino flux was constrained with 90% confidence level to a factor 1.6 above the signal expectation [27].
+This worldbest upper limit on the CE _\u03bd_ NS interaction rate at nuclear reactors so far allowed us to exclude significant deviations from the SM or to test the standard description of signal quenching due to dissipation effects in the germanium material in the energy region of interest. \n\nIn 2023, the Conus setup moved to another power plant in Leibstadt, Switzerland (KKL), since the reactor at KBR stopped operation.
+At KKL the experiment continued as Conus+.
+Here, antineutrinos are created in a boiling water reactor with a thermal power of 3.6 GW.
+The setup is placed at a distance of about 20.7 m from the center of the KKL reactor core.
+Before installation, the HPGe detectors called C2 _\u2212_ C5 were refurbished to improve the energy threshold and the detection efficiency at low energy.
+In this way, the sensitivity was improved despite a higher level of environmental radioactivity and a slightly lower nominal neutrino flux of 1 _._ 5 _\u00b7_ 10[13] antineutrinos/(cm[2] s) at the new site.
+The predicted rate of neutrino interactions increased almost an order of magnitude, mainly due to the improved energy threshold and trigger efficiency [28]. \n\nThe search for CE _\u03bd_ NS in nuclear reactors is a challenging task for various reasons.
+Since a high neutrino flux is required, positions close to the reactor core inside the reactor building are preferred.
+The environment inside this inner control zone is quite different from the working conditions in a common research laboratory.
+There are several constraints related to material restrictions, earthquake safety, access and data transfer.
+Appropriate solutions on all these topics were found in close cooperation with the KBR and KKL staff.
+In addition, there is limited protection against cosmic radiation, as the overburden at the CONUS+ site corresponds only to the equivalent 7.4 m water.
+In general, the radioactivity level has to be kept under control to perform successful rare event searches.
+For example, cosmic muons produce electromagnetic cascades and neutrons in the building structure and shield materials.
+These cascades can create event signatures similar to neutrinos in the HPGe detectors.
+Mitigation of detector signals created by such cosmic radiation or environmental radioactivity (background events) is achieved by using an effective shield structure around the detectors [28] as depicted in Fig.1.
+Furthermore, the energy of the nuclear recoils after neutrino scattering is very low.
+The unit used for the energy measured by the Ge detectors is given in eV (1 _._ 6 _\u00b7_ 10 _[\u2212]_[19] J) and should be interpreted as ionization energy. \n\n3 \n\nIt was a longstanding effort to reach the required threshold levels in the detectors.
+Our currently lowest threshold level of 160 eV is only two orders of magnitude above the typical semiconductor band gap, which defines the minimum energy to create one electron-hole pair. \n\n**Fig. 1** : **Configuration of the experimental setup.** The Conus+ shield with a weight of about 10 tons is installed inside the reactor building of the nuclear power plant in Leibstadt at a distance of 20.7 m from the reactor core.
+It is mechanically stabilized by a stainless steel (silver) frame to assure integrity of the setup in case of an earthquake.
+Layers of lead (black) reduce the impact from external gamma radiation, polyethylene (red) and boron-doped polyethylene (white) moderate and capture neutrons emitted from the reactor.
+Two layers of plastic scintillator plates are equipped with photo multipliers (blue) and are used as an active veto system discriminating background from cosmic muons.
+In the central detector chamber, four germanium diodes are operated inside radiopure copper cryostats and connected to electrically powered cryocoolers. \n\n## **Neutrino signal observation in CONUS+** \n\nThe basic concept of antineutrino detection in Conus+ is to measure an energy spectrum under stable conditions in phases for which the reactor is running or stopped (reactor on and off).
+Most events originate from cosmic radiation, which is fully independent of the reactor operation condition.
+During on-phases additional neutrino events are expected with a characteristic spectral shape.
+The reactor off-phases without neutrino signal are obtained in maintenance periods for refueling, which are typically once per year with a duration of approximately 1 month. \n\n4 \n\nThe energy spectrum during reactor on period is depicted in Fig.2, together with the expected background calculated using a well-validated GEANT4 framework [29].
+A good understanding of the background composition is mandatory for our neutrino analysis.
+Following the experience gained at KBR, the background spectra were adjusted to the new KKL site.
+The contributions of muon-induced, neutron and gamma components were validated in a dedicated measurement campaign with multiple detector technologies before installing the Conus+ setup [30].
+Uncorrelated background contributions, which are independent of the reactor thermal power condition, are measured in the reactor off-phase. \n\n**==> picture [194 x 8] intentionally omitted <==**\n\n**----- Start of picture text -----**<br>\na lonization energy (eV) b<br>**----- End of picture text -----**<br>\n\n\n**Fig. 2** : **Comparison of data and background model. a)** The plot shows the background spectrum from 0.4 keV, directly above the ionization energy range in which the neutrino signal is expected.
+The data (black line) is shown for the reactor on period and is based on the measurement of the detector with the lowest background in the Conus+ analysis (C5).
+This data is compared to the background model (red line) and found to be in good agreement. **b)** The high energy channel up to few hundred keV is shown. \n\nThe dominant background contributions, such as the muon-induced or neutron background, are identical for the three detectors used in the analysis.
+In addition to the neutrons, which are created by muons in the materials of the Conus+ shield, there is a relevant fraction of direct neutrons up to 100 MeV energy already produced in the atmosphere in cosmic ray air showers.
+The background during reactor off was lower since a vessel lid with a thickness of a few cm of steel was placed right above the Conus+ room during reactor outage providing additional overburden.
+According to simulations, this reduction was 3% for muons and 19% for direct cosmic neutrons.
+Other components contributing to the background spectrum are from metastable states in germanium and the radioactive noble gas radon.
+Variations in the radon level inside the detector chamber were corrected.
+Otherwise, no significant differences \n\n5 \n\nare observed during reactor on and off.
+The reactor correlated background events, in particular the ones from neutrons produced in the reactor, are thoroughly studied in [30] and found to be negligible. \n\nThe calculation of the signal prediction is based on a method proposed in [31].
+The neutrino flux depends on the fission fractions of the uranium and plutonium isotopes in the reactor:[235] U,[238] U,[239] Pu and[241] Pu, respectively.
+The average contribution of these isotopes to the flux during data collection with reactor on is 53%, 8%, 32% and 7%.
+In principle, there is no energy threshold for the CE _\u03bd_ NS interaction itself and therefore there is a potential to measure neutrinos even below the threshold for the inverse beta decay reaction of about 1.8 MeV.
+Beyond the reactor conditions and its thermal power, the neutrino rate measured in the detector strongly depends on dissipation processes in the germanium crystals.
+The ionization energy observed in the detector is reduced with respect to the deposited recoil energy, a characteristic known as quenching.
+There was a debate, if this quenching factor is enhanced at low energies as compared to the Lindhard theory [32, 33].
+From Conus data, there is no indication of any deviation from the Lindhard model [27, 34]. \n\nA significant contribution to the systematic uncertainty is related to the precision of the energy scale calibration.
+At very low energies close to the energy region of interest, X-rays emitted in radioactive decays inside the detector crystals are used for calibration purposes.
+There are prominent lines around 10.4 keV corresponding to the binding energies of the K-shells and around 1.3 keV from L-shells of Ge isotopes, as seen in the left plot of Fig.2.
+Toward the end of the first data collection period in Conus+, the detectors were irradiated with neutrons from a californium source outside the shield to increase the statistics in the corresponding lines and reduce the uncertainty of the energy scale to less than 5 eV.
+Small energy non-linearity effects close to the detection threshold induced by the data acquisition system [34] were measured with a pulse generator and corrected accordingly. \n\nThe energy threshold of the detectors is estimated for each of them individually [28].
+The lowest value for the C3 detector is only 160 eV.
+For the other two detectors used in the analysis, the thresholds after energy non-linearity correction were set slightly above, at 170 eV and 180 eV.
+One of the four detectors (C4) showed significant instabilities in the rate and was therefore removed from the data set.
+The thresholds were defined in a way to assure that contributions from electronic noise and microphonics are negligible in the region of interest.
+The trigger efficiency was determined for each detector using a pulse generator and was found to be close to 100% above the thresholds. \n\nAnother crucial requirement for detecting CE _\u03bd_ NS at a nuclear reactor is the stability of environmental parameters, electronic noise and background rates.
+For example, temperature fluctuations can induce cryocooler power variations, which might create microphonic events.
+Microphonic noise and rate correlations with room temperature were further reduced compared to previous analyses [18, 27] by an improved cooling system [28].
+The stability of the detector parameters such as energy resolution or trigger efficiency was regularly checked with the pulse generator.
+Variations of the noise peak were carefully monitored and data were only selected for the analysis in case they were below a defined level. \n\n6 \n\nThe data set used in the analysis reported here includes reactor on periods between November 2023 and July 2024 (327 kg d) and an off period during reactor outage in May 2024 (60 kg d).
+The data sets of the three detectors are fitted simultaneously in an energy window between 160 eV and 800 eV.
+The signal is extracted based on a profile likelihood ratio test.
+Systematic uncertainties are considered with Gaussian pull terms.
+The data acquisition system in principle allows for background rejection by studying the shape of digitized pulses [35].
+This option was not yet applied in the current analysis, but it is planned to be used in future analyses. \n\nFrom the combined fit, a neutrino signal of (395 _\u00b1_ 106) events in the reactor on data set was obtained.
+The significance of this event excess corresponds to 3 _._ 7 _\u03c3_ .
+The neutrino signal at low energies of the spectrum is illustrated in Fig.3.
+Fits using just single detectors independently give consistent results.
+The result was cross-checked in two implementations of the likelihood fit.
+Additional systematic uncertainties related to background model, non-linearity correction and fit systematics were studied independently and are included in the final result. \n\n## **Impact and outlook** \n\nThe Conus+ signal of (395 _\u00b1_ 106) measured neutrinos is fully consistent with the expectation of (347 _\u00b1_ 59) events.
+This implies agreement of the Conus+ data with the CE _\u03bd_ NS cross-section of the SM and the estimated antineutrino flux based on the thermal power of the reactor.
+Moreover, the detected rate is in very good agreement with the predicted Ge quenching using the Lindhard theory with a quenching parameter as measured in [34].
+The deviations from Lindhard theory claimed in [33] and the excess reported in [17], which is based on it, are both ruled out by this result.
+The claim was already disfavored before by the independent measurement of the quenching factor [34], previous Conus results [27] and theoretical considerations [36].
+In Table 1, the ratio of measured and predicted neutrino interactions is shown for the Conus+ result.
+This ratio is compared to the ratios measured in the COHERENT measurements at higher neutrino energies using multiple target nuclei and the results from coherent scattering of solar neutrinos.
+The use of different target nuclei allows to study the quadratic enhancement of the cross-section by the number of neutrons in the target.
+In the COHERENT data for Ge, the measured rate was found slightly below the predicted value, although not highly significant.
+Such a deficit was not confirmed in the Conus+ data.
+The combination of the CE _\u03bd_ NS result of Conus+ with results of the germanium target data of the COHERENT experiment can in principle be used to extract information about nuclear form factors in neutrino light. \n\nAfter the first detection of CE _\u03bd_ NS at a nuclear reactor, as reported in this article, the next step will be a more precise measurement of the CE _\u03bd_ NS cross-section.
+Higher precision can be achieved by increasing the target mass, lowering the energy threshold of the detectors and longer operation times, in particular in the reactor off phases.
+Therefore, 3 of the 4 Conus+ detectors were replaced in November 2024 by a newer generation.
+These new detectors have a larger mass of 2.4 kg each.
+First characterizations in the MPIK laboratory indicated even lower energy thresholds.
+The detector with the lowest energy threshold in the first Conus+ run (C3) was kept as \n\n7 \n\n**==> picture [200 x 121] intentionally omitted <==**\n\n**----- Start of picture text -----**<br>\na<br>*<br>= 20 = Data<br>= '<br>= 10}<br>= oF<br>om<br>-<br>b 950 400 450 onelonizationbaaenergyee a(e' 700 750 800 c<br>**----- End of picture text -----**<br>\n\n\n**Fig. 3** : **Neutrino signal. a)** The difference between data in the full reactor on time and the background model scaled to the total detector mass is shown.
+The vertical error bars represent the combined statistical uncertainties of data points and background model at 68% CL (1 _\u03c3_ ).
+At low energies the rise from the neutrino signal can be seen.
+The line shows the predicted signal shape for comparison including a 68% CL uncertainty band.
+The red vertical lines indicate the energy thresholds of the three detectors used in the analysis.
+In the first bin only C3 contributes, in the second C3+C5 and above 180 eV all three detectors.
+Residual systematic effects from energy non-linearity, background model uncertainties and the fit method are not incorporated in this plot. **b)** This graph illustrates the good agreement between the data and the background model above the signal region from 350 _\u2212_ 800 eV. **c)** This histogram shows the spread of the data points around the background model for the same energy interval as in b). \n\n8 \n\n**Table 1** :
+Comparison with other CE _\u03bd_ NS measurements. \n\n|Source|Target|_\u03bd_ energy [MeV]|fux [cm_\u2212_2s_\u2212_1]|data|data/SM prediction|\n|---|---|---|---|---|---|\n|Accelerator [37]|Cs|_\u223c_10_\u2212_50|5_\u00b7_107|306_\u00b1_20|0_._90_\u00b1_0_._15|\n|Accelerator [3]|Ar|_\u223c_10_\u2212_50|2_\u00b7_107|140_\u00b1_40|1_._22_\u00b1_0_._37|\n|Accelerator [4]|Ge|_\u223c_10_\u2212_50|5_\u00b7_107|21_\u00b1_7|0_._59_\u00b1_0_._21|\n|Sun [24]|Xe|_<_15|5_\u00b7_106|11_\u00b1_4|0_._90_\u00b1_0_._45|\n|Sun [25]|Xe|_<_15|5_\u00b7_106|4_\u00b1_1|1_._25_\u00b1_0_._52|\n|Reactor|Ge|_<_10|1_._5_\u00b7_1013|395_\u00b1_106|1_._14_\u00b1_0_._36|\n\n\n\na reference for a better comparison between the phases of the experiment.
+With this detector configuration it is planned to measure for another few years. \n\nA high-statistics CE _\u03bd_ NS measurement might open a new phase in fundamental physics and will allow to study physics within and beyond the SM [38].
+The measured CE _\u03bd_ NS rate can, for example, be affected by new mediator particles similar to the Z boson, electromagnetic properties of neutrinos, or non-standard interactions.
+Moreover, it is possible to study the Weinberg angle at low energies, the existence of sterile neutrinos, or supernovae astrophysics.
+With a precise CE _\u03bd_ NS measurement, more can be learned about neutrino sources as the Sun or nuclear reactors.
+The evolution of reactor thermal power and fissile isotope concentrations in fuel elements could be monitored with rather small and mobile neutrino detectors.
+In summary, there is a wide range of topics ranging from BSM theories, nuclear physics, and astrophysics that can be addressed with CE _\u03bd_ NS measurements at nuclear reactors.
+The Conus and Conus+ experiments are pioneering in this field. \n\n## **Acknowledgments** \n\nWe thank all divisions and workshops involved at the Max-Planck-Institut f\u00a8ur Kernphysik in Heidelberg to set up the CONUS+ experiment, in particular T.
+Apfel, M.
+Reissfelder, T.
+Frydlewicz and J.
+Schreiner.
+The authors also thank Mirion Technologies (Canberra) in Lingolsheim for the detector upgrades and their highly professional support.
+Our deepest gratitude goes to Kernkraftwerk Leibstadt AG for hosting and supporting the CONUS+ experiment with special thanks to P.
+Graf, P.
+Kaiser, L.
+Baumann, R.
+Meili and A.
+Ritter.
+All authors are members of the CONUS Collaboration. \n\n9 \n\n## **Supplemental material** \n\n## **Data taking** \n\nData from the Conus+ run 1 analysis presented in this publication correspond to the period from November 2023 to July 2024.
+Three of the four detectors, named C2, C3, and C5, are considered for analysis with a total active mass of 2.83 _\u00b1_ 0.02 kg [26].
+After selection cuts to remove time periods with unstable noise conditions, deficient radon flushing, and a few days with a strong contribution of microphonic events, the exposure considering the active mass is 327 kg days with reactor on and 60 kg days with the reactor off. \n\nThe evolution of the main environmental parameters during reactor on and off is shown in Extended Data Fig. 4 for the three detectors.
+The shape of the noise peak reconstructed in the lowest channels of the data acquisition system (DAQ) was found to follow a Gaussian distribution [28] and its width (FWHM) was monitored over time with variations below 2 eV _ee_ (electron equivalent energy).
+The data set was selected to ensure that the noise rate variations are below 20%. \n\nIn a dedicated study, we confirmed the correlation between noise rate and cryocooler power.
+Stability was improved compared to the CONUS setup in Brokdorf (KBR) by replacing the 2-fan ventilation system with a water-cooled chiller system for the pulse tube cryocoolers [28].
+Even at cryocooler power variations of up to 30 W no correlation was observed with the count rate in the region of interest above 160 eV _ee_ . \n\n## **Detector response and energy scale** \n\nThe trigger efficiency was determined by injecting artificial signals produced by a pulse generator with the same rise time as the physical signals.
+The pulses are injected through a specific circuit implemented in the HPGe preamplifier.
+A detailed scan allowed us to measure the detector response as a function of the energy. [28] The trigger efficiency remains over 90% down to 140 eV _ee_ for all detectors.
+The evolution of the trigger efficiency curve parameters during run 1 was studied with different measurements, remaining stable with differences of less than 2% throughout the run. \n\nThe energy was calibrated using the binding energies of the K-shell (10.37 keV) and L-shell (1.30 keV) from the decays of[68] Ge/[71] Ge inside the HPGe diodes, considering a linear behavior in this energy range.
+At shallow depth, the[68] Ge/[71] Ge radioisotopes are continuously produced by cosmic and muon-induced neutrons [28].
+Thus, it is possible to monitor the stability of the energy scale during the whole measurement of this in situ activation, observing variations below 2%.
+A specific[252] Cf irradiation was performed at the end of run 1, collecting in 45 d of the measurement more than 5000 (700) events from the K (L) shell in each detector.
+In this way, an energy calibration uncertainty below 5 eV _ee_ is achieved.
+The HPGe diode also produces 158 eV X-rays from the binding energy of the M-shell of the[68] Ge/[71] Ge decays.
+Using the ratio of the K and L-shells, a total of 100 events per detector was expected after irradiation with[252] Cf.
+Although an indication of such events is seen, no conclusive signal was yet observed due to the proximity to the noise edge and the lack of statistics. \n\n10 \n\n**==> picture [349 x 562] intentionally omitted <==**\n\n**----- Start of picture text -----**<br>\n220 to and<br>200 top<br>180<br>outage.<br>160<br>140 From<br>OFF<br>120 1. reactor<br>ON 10080 run consumption, of<br>60<br>40 power period<br>during<br>) 20<br>a) b c) d) Time since November 11th, 2023 / days the<br>48 46 25 20 110 100 90 1400 1200 1000 800 0<br>cryocooler<br>detectors<br>c) indicate<br>(right) lines<br>220<br>C4<br>200<br>preamplifier, dashed<br>180<br>and<br>160<br>blue<br>OFF 140120 detector and<br>100 (center), the<br>ON 80 C2 to<br>60<br>analysis,<br>40<br>) ) 20 (left), close the<br>a) b c) d Time since November 11th, 2023 / days<br>0<br>48 46 25 20 110 100 90 1400 1200 1000 800 C5 from<br>for<br>temperature<br>air excluded<br>220 parameters b)<br>were<br>200 of<br>180 peak,<br>areas<br>160<br>140 noise<br>OFF Red<br>120 Evolution of<br>100<br>rate.<br>ON 80<br>60<br>FWHM<br>40<br>Stability. a) trigger<br>) 20 :<br>a) b c) d) Time since November 11th, 2023 / days 4<br>48 46 25 20 110 100 90 1400 1200 1000 800 0 Fig. bottom: d)event<br>] eenoise FWHM [eV C]  \u00b0 temperature [ cryocooler power [W]  noise rate [Hz]<br>] eenoise FWHM [eV C]  \u00b0 temperature [ cryocooler power [W]  noise rate [Hz]<br>] eenoise FWHM [eV C]  \u00b0 temperature [ cryocooler power [W]  noise rate [Hz]<br>**----- End of picture text -----**<br>\n\n\n11 \n\n**Fig. 5** : **Energy non-linearity.** Deviations from a purely linear energy scale measured with a pulse generator for the three Conus+ detectors.
+The trend of the data points are described by the black line.
+The vertical bars on the data points (colored circles) represent the uncertainties at a 68% CL (1 _\u03c3_ ). \n\nThe linearity of the DAQ chain in the sub-keV _ee_ region was investigated using the pulse generator signals.
+The results are shown in Extended Data Fig. 5.
+Deviations from a pure linear behavior are observed below 250 eV _ee_ , where a few eV _ee_ variations have a strong impact on the CE _\u03bd_ NS signal.
+They were attributed to two DAQ related effects [34].
+The energy non-linearity was corrected in the CE _\u03bd_ NS analysis and was taken into account during the event energy reconstruction. \n\nThe energy resolution of the detectors at low energies was also evaluated with the pulse generator signals.
+For the C2 detector, a resolution of (48 _\u00b1_ 1) eV _ee_ (FWHM) was found, while the C5 and C3 detectors have a resolution of (47 _\u00b1_ 1) eV _ee_ (FWHM).
+An additional contribution to the total energy resolution comes from the statistical fluctuation of the number of electron-hole pairs produced in the Germanium crystals in the case of an event, which is \n\n**==> picture [227 x 13] intentionally omitted <==**\n\nwith _\u03f5_ = 2.96 eV, the average energy needed to create a single electron-hole pair in Germanium, and the fano factor _F_ = 0 _._ 1096. \n\n## **Selection cuts** \n\nSelection cuts are applied to reduce background events while keeping the CE _\u03bd_ NS signal.
+Four different selection cuts are applied to the data:
+First, the muon-veto system allows for efficient suppression of the impact of cosmic radiation, using a \n\n12 \n\n450 _\u00b5_ s anti-coincidence window between the veto and HPGe signals.
+The average rate detected in the muon veto during reactor ON is (274 _\u00b1_ 1) Hz and decreases to (214 _\u00b1_ 1) Hz in reactor off periods.
+The corresponding average dead times in both periods are 12.3% (reactor on) and 9.6% (reactor off).
+Second, inhibit signals are generated when the increasing baseline has reached saturation of the dynamic range of the transistor reset preamplifier (TRP) for each HPGe detector [28].
+An anti-coincidence window of 1 to 2.5 ms (depending on the detector) is applied to veto unwanted spurious HPGe detector signals generated shortly after the resets.
+This cut suppressed 30% events after the muon veto anti-coincidence at low energy, becoming negligible above 5 keV _ee_ .
+The dead time induced by this cut is calculated combined with the previously mentioned muon-veto dead time to avoid the overlapping of both veto windows.
+An additional dead time of 0.5-2.1% (depending on the detector) is estimated.
+Third, the time difference distribution (TDD) of events is studied in each channel as proposed in [26].
+Finally, an anti-coincidence cut is applied between different HPGe detectors with a 5 ms time window.
+The probability of a neutrino interacting with different detectors is negligible, while for other backgrounds, such as muon-induced neutrons created in the shield, simultaneous hits in several detectors at once can be expected. \n\nThe rejection efficiencies of these selection cuts are summarized in Extended Data Table 2 for the three detectors in different energy regions.
+The total dead time induced by the selection cuts is between 12.8% and 14.4% in the reactor on periods. \n\n## **Background model** \n\nThe background model used in the analysis of the Conus+ data is based on Monte Carlo simulations using the Geant4-based framework MaGe [39] following the approach taken in [29].
+A complete decomposition of the background in both reactor on and off data was achieved for all detectors used in the analysis.
+In the following, the main sources of background are described. \n\n## **Cosmogenic neutrons** \n\nAs described in [30], the impact of cosmogenic neutrons with energies up to 100 MeV was investigated by first propagating the expected neutron spectrum at the KKL location (based on [40],[41]) with a flux of (1 _._ 4 _\u00b1_ 0 _._ 2) _\u00b7_ 10 _[\u2212]_[2] neutrons s _[\u2212]_[1] cm _[\u2212]_[2] through a reactor building model.
+Then the resulting flux is tracked inside the Conus+ room.
+This flux was used as the basis for a next simulation, in which neutrons were started isotropically from a half-sphere around the Conus+ shield and their contribution to the Conus+ background was measured.
+The simulations show a contribution of (21 _._ 6 _\u00b1_ 3 _._ 1) counts d _[\u2212]_[1] kg _[\u2212]_[1] in each detector in the energy range between 0.4 keV _ee_ and 1 keV _ee_ , which corresponds to approximately half of the background counts in this region. \n\n## **Cosmogenic muons** \n\nFor the muon simulations [29] the expected flux and muon spectrum at an overburden of 7.4 m w.e. were calculated from those at Earth\u2019s surface ([42],[43]) and propagated through the shield.
+The resulting spectrum was validated by comparing it with the \n\n13 \n\n**Table 2** : **Selection cuts.** The efficiency of all the selection cuts applied during the data processing are listed.
+The efficiency of each cut is calculated with respect to the previous selection applied.
+Two energy ranges are considered between [0.4-1] keV _ee_ and [2-8] keV _ee_ to avoid the inclusion of background lines and the antineutrino signal.
+A combined efficiency of over 99% is achieved for all detectors. \n\nConus+ data without the applied muon veto cut.
+Good agreement was found.
+The muon veto cut was then applied by multiplying the simulation output by a factor of 0.01 for all energies greater than 2 keV _ee_ , corresponding to a muon veto efficiency of 99%. \n\nFor energies below 2 keV _ee_ a different approach was taken.
+Here, simulations show an inefficiency in the tagging ability of the muon veto system due to the setup of the shield.
+The outer muon veto is located under a layer of lead in the Conus+ shield.
+As such, it is possible for muons to pass through this outermost lead layer without hitting one of the muon veto layers.
+These muons can induce electromagnetic showers in the outer lead layer, which propagate through the shield and are registered in the Germanium detectors.
+However, because no muon passes through any muon veto layer in such an event, the energy deposition in the plastic scintillator plates will be much lower, resulting in a greatly reduced tagging efficiency of these events.
+Simulations show that at energies below 0.4 keV _ee_ up to 80% of all muon-induced background come from such events.
+Based on this simulation output, this inefficiency was modeled with a polynomial and accounted for in the final muon veto efficiency.
+The resulting \n\n14 \n\nefficiency drops towards lower energies with its minimum being 97% below 0.4 keV _ee_ .
+Using this approach, the overall background contribution of cosmic ray muons was found to be (17 _._ 4 _\u00b1_ 0 _._ 3) counts d _[\u2212]_[1] kg _[\u2212]_[1] in each detector in the energy range between 0.4 keV _ee_ and 1 keV _ee_ , which corresponds to approximately a third of the background counts in this region. \n\n## **Leakage test component** \n\nDuring the final run of the Conus experiment in at KBR an additional background component had to be introduced in the background model [27].
+This component was present after ventilation of the cryostats with argon gas to avoid mechanical deformation during a regular leakage test at KBR in July 2019 [29].
+Of the four detectors used in the Conus experiment, two (C2 and C3) are used for the analysis presented in this work and are affected by this additional background.
+Indeed, the simulations and the background model show that an additional component with the same shape is still present in the background of these two detectors but is absent in C5 which was not at KBR at the time.
+This additional background is constant during reactor on and off periods.
+Therefore, the leakage test component was again included in the background model of C2 and C3 by modeling it using a function with two parameters, as in [27].
+The resulting impact is below 10% in the energy region between 0.4 keV _ee_ and 1 keV _ee_ . \n\n## **Other background components** \n\nThe remaining background in each detector is made up of many different components, similar to the situation in KBR [29].
+There are no hints that the detector upgrades or the movement of the setup were introducing any contamination.
+The background model includes cosmogenically induced isotopes in the Copper parts ([57] Co,[60] Co, 54Mn) of the cryostat and the Germanium crystals (57Co, 68Ge, 68Ga, 65Zn, 3H), Radon inside the detector chamber,[210] Pb inside the cryostat and shield, metastable germanium states ([71] _[m]_ Ge,[73] _[m]_ Ge,[75] _[m]_ Ge) and inert gases coming from the reactor ([85] Kr,[135] Xe,[3] H).
+The results of the simulation of these components were scaled to be in accordance with either the rates of gamma lines produced by the decay of these isotopes in the spectrum (e.g. for radon) or with screening measurements performed prior to the installation.
+The listed contributions are typically very subdominant in the region of interest, with the decay of radon inside the detector chamber being the only exception.
+This contribution results in a background rate of (1 _._ 9 _\u00b1_ 0 _._ 1) counts d _[\u2212]_[1] kg _[\u2212]_[1] between 0.4 keV _ee_ and 1 keV _ee_ for the C5 detector (C2: (2 _._ 8 _\u00b1_ 0 _._ 1) counts d _[\u2212]_[1] kg _[\u2212]_[1] ;
+C3: (2 _._ 6 _\u00b1_ 0 _._ 1) counts d _[\u2212]_[1] kg _[\u2212]_[1] ).
+These values correspond to approximately 5% of the background in this energy region.
+Radon decays have a high impact on energies above 100 keV _ee_ , where they can contribute up to 60% of the measured background.
+Slow pulses arising from decays on the surface of the diode and in the transition layer are included in the model [29].
+Energy depositions from these events can be stopped within the transition layer and the released charge diffuses slowly into the active volume, resulting in long rise times and incomplete charge collection.
+Their impact is accounted for by registering the exact coordinates of an interaction in the germanium crystal.
+If the coordinates place it within the transition layer of the crystal, the energy \n\n15 \n\nof the event is shifted towards lower energies using a sigmoid-like function.
+Details on this procedure can be found in [26]. \n\n## **Model differences in reactor off data** \n\nThe background model accounts for the experimental differences during data collection with the reactor off.
+The first of these differences is induced by the fact that during a reactor outage, the drywell head from the containment structure surrounding the reactor core is placed directly above the Conus+ room.
+This drywell head is made of 3.8 cm steel and therefore increases the overburden of the experiment by approximately 0.3 m w.e. which results in a reduction of 19% in the flux of cosmogenic neutrons and a reduction of 3% in the flux of cosmic ray muons.
+As a result, these two background contributions are reduced accordingly.
+The second difference in the background model of the reactor off period comes from a more effective removal of radon in the detector chamber.
+During the course of run 1 shield tightness and radon free air flushing were improved.
+As a result, the radon contribution in reactor off time is reduced by approximately a factor of 4 to 6 compared to reactor on.
+The radon contributions are scaled to match the count rates in the gamma lines induced by the radon decay.
+In addition, reactor-correlated background components, such as reactor neutrons and high energy gammas, e.g. from[16] N, were investigated.
+Their impact was found to be negligible in all energy regions, including the region of interest.
+The resulting background model for all three detectors can be seen in Fig. 2 and Extended Data Fig. 6.
+The time-dependent contributions of the M-shell line of the[68] Ge/[71] Ge decays are included in the background model.
+The difference between the M-shell contribution in reactor on and off periods was estimated based on the measured K-shell count rates.
+This difference was found to be below 1% of the observed neutrino signal.
+In Extended Data Fig. 7, the reactor on and off data sets are compared with the background models.
+If the calculated difference between on and off phases is added to the reactor off data, good agreement with the measured on data is found above the signal region.
+For all detectors background models and data are fully consistent above 0.4 keV _ee_ ).
+Since the data in the reactor off phase is statistically limited, the background model still plays an important role in the analysis.
+Extended Data Fig. 8 shows the fractional contribution of the main components to the total background rate as predicted in the model. \n\n## **Quenching** \n\nThe ratio of the ionization energy released by nuclear recoil in a CE _\u03bd_ NS event and the ionization energy of electrons of the same energy is given by the quenching factor.
+In the Conus+ analysis, the energy dependent signal quenching is described by the Lindhard model [32] with a quenching parameter _k_ = (0 _._ 162 _\u00b1_ 0 _._ 004) as determined in [34].
+Alternative quenching descriptions are also tested as described in the supplemental material of [27] including a linear and cubic functional form to describe the increased quenching factor compared to Lindhard theory found in [33].
+It was shown that the Migdal effect is subdominant with respect to the CE _\u03bd_ NS signal in our region of interest [36]. \n\n16 \n\n**==> picture [194 x 179] intentionally omitted <==**\n\n**----- Start of picture text -----**<br>\na lonization energy (eV) b<br>8<br>7<br>= K-Shell<br>S 8\u00b0 _pata c3 \"Ge/\"'Ge<br>8 5 \u2014 Background model<br><<br>24<br>no}ag3<br>a L-Shell<br>Oo 24i 1 8Ge/\"'Ge<br>2000 4000 6000 8000 10000 12000 14000<br>c lonization energy (eV) d<br>**----- End of picture text -----**<br>\n\n\n**Fig. 6** : **Comparison of data and background model. a) and b)** Data and background model for the C2 and **c) and d)** C3 detectors, equivalent to figure 2.
+Good agreement is found between data and model. \n\nThe signal predictions for the different quenching descriptions are shown in Extended Data Fig. 9 together with the difference between the data in the reactor on phase and the background model.
+A signal rate of (2600 _\u00b1_ 300) events is expected for the linear function, while for the cubic function (550 _\u00b1_ 50) events are predicted.
+Both numbers are significantly higher than the neutrino rate extracted from the Conus+ data.
+The standard Lindhard model clearly provides the best description of the reactor-correlated excess at low energy.
+In Extended Data Fig. 9 we have included an additional data point at 200 eV _ee_ , which is obtained using the information shown in figure 4 of [17].
+There, a CE _\u03bd_ NS signal was approximated with an exponential using two parameters, the amplitude at 200 eV _ee_ (A0 _._ 2) and a decay constant.
+The favored value for A0 _._ 2 is shown within a 2 _\u03c3_ contour in a 2-dimensional plot of the \n\n17 \n\n**==> picture [192 x 8] intentionally omitted <==**\n\n**----- Start of picture text -----**<br>\na b<br>**----- End of picture text -----**<br>\n\n\n**Fig. 7** : **Data versus model in region of interest. a)** Reactor on and **b)** off count rates normalized to 1 kg day in comparison to the corresponding background models are shown in the region of interest.
+The signal excess in the reactor on data is seen at low energies below 250 eV _ee_ .
+The vertical bars represent the statistical uncertainties of the data in each 10 eV _ee_ bin at a 68% CL (1 _\u03c3_ ).
+Statistical fluctuations are significantly higher in the off than in the on data due to the shorter period of data collection.
+Due to the slightly different detector thresholds only one detector (C3) contributes to the lowest bin, the second includes two detectors (C3 and C5) and bins above 180 eV _ee_ are based on the summed spectra of of all three detectors.
+The difference between the two reactor on curves is shown in figure 3. \n\ntwo parameters.
+We scaled this A0 _._ 2 value to our exposure and corrected for the difference in neutrino flux.
+As expected, it matches the description of Lindhard with a linear increase added at low energies but is in clear conflict with the Conus+ data.
+The lower error bar corresponds to the smallest value of A0 _._ 2 in the 2 _\u03c3_ contour.
+This value is also clearly ruled out by the Conus+ data points. \n\n## **Likelihood fit and systematics treatment** \n\nA likelihood function is used to determine the CE _\u03bd_ NS signal in the Conus+ run 1 data. \n\n**==> picture [275 x 72] intentionally omitted <==**\n\n18 \n\n**Fig. 8** : **Fractional background contribution.** The energy dependent fractional contribution of the major background components is shown for one of the CONUS+ detectors (C5).
+The dominating part are events from cosmogenic origin, neutron and muon-induced background.
+At energies below 200 eV _ee_ the M-shell line of the 68Ge/71Ge decays becomes relevant. \n\n_L_ ON and _L_ OFF are the binned likelihood functions for reactor on and off periods.
+Gaussian pull terms for the systematic uncertainties are also included.
+Here, the first term represents the pull terms for correlated parameters, namely the trigger efficiency parameters, and the second term represents pull terms for uncorrelated parameters, like the active mass of the detectors, the reactor neutrino flux and the uncertainty on the energy scale calibration of the spectra.
+Parameters that were experimentally determined are pulled to their measured values.
+The background scaling factor _b_ , an additional fit parameter for the overall normalization of the background model, is also included and pulled to one.
+The binned likelihood functions assume a Poisson distribution and have the form \n\n**==> picture [280 x 29] intentionally omitted <==**\n\nwhere N is the number of bins in the region of interest, _ni_ is the bin content in the histograms of the measured data and _\u00b5i_ is the bin content of the model.
+For a single detector, the model _\u00b5_ for reactor on data is calculated from the sum of the background model _n[b]_ (scaled with _b_ ) and the predicted CE _\u03bd_ NS spectrum _n[s]_ (scaled with the signal parameter _s_ ) by taking into account the live time of the experiment ( _tON_ and _tOF F_ ), the active volume of the detector ( _mact_ ), the dead time correction ( _cdt_ ), the fission \n\n19 \n\n**Fig. 9** : **Alternative predictions.** Difference between the data in the reactor on phase and the background model normalized to the total detector mass.
+The blue bland shows the predicted signal shape assuming the standard Lindhard model with a quenching factor of _k_ = (0 _._ 162 _\u00b1_ 0 _._ 004) [34].
+The green and red bands depict the signal predictions for the modified Lindhard model based on [33], using a linear and a cubic function at lower energies respectively.
+The red vertical lines indicate the energy thresholds of the three detectors used in the analysis.
+The error bars on the black data points represent uncertainties at a 68% CL (1 _\u03c3_ ).
+The additional red data point at 200 eV _ee_ indicates the favored value found in [17] with a larger error bar reflecting the 2 _\u03c3_ contour also presented in [17]. \n\nflux ( _\u03b8_ 2) and a multiplication factor ( _\u03b8_ 3), summarizing uncertainties of the detector response.
+In total: \n\n**==> picture [363 x 23] intentionally omitted <==**\n\nThe combined fit minimizes _\u2212_ log _L_ ON and _\u2212_ log _L_ OFF for all three detectors simultaneously while the signal parameter _s_ , which indicates the number of CE _\u03bd_ NS counts, is shared among detectors. \n\nFits using just single detectors independently give consistent results as shown in Extended Data Table 3.
+To cross-check the result, fits were performed by two independent likelihoods with different approaches concerning the uncertainty on the quenching model.
+Likelihood A applied a predicted CE _\u03bd_ NS spectrum with a fixed k parameter ( _k_ = 0 _._ 162) while introducing a fourth order polynomial to vary the shape of the signal spectrum applying Gaussian pull terms on each parameter.
+In likelihood \n\n20 \n\n**Table 3** : **Single detector results.** Energy thresholds ( _Eth_ ), reactor on live time and signal events of data and predictions are listed for the individual detectors and the combined fit.
+In the combined fit result, additional systematic uncertainties mainly from the non-linearity correction and background model are included.
+The calculated number of neutrino events in the region of interest and the ratio of prediction to data are given for 327 kg days of reactor on time. \n\n**Table 4** : **Prediction uncertainties.** Overview of uncertainties on signal prediction and on the CE _\u03bd_ NS result. \n\nB, the k value of the Lindhard model is a fit parameter with a pull term.
+Moreover, there are some differences in the treatment of the non-linearity corrections and the minimization algorithms between the two likelihood fits.
+The results of both likelihood implementations agree within 2%. \n\nFor the signal prediction, we choose the Helm parameterization of the nuclear form factor [44, 45] and a reactor antineutrino spectrum based on the data-driven approach of [31].
+The given antineutrino spectra are adjusted to the fission fraction of the Leibstadt reactor and augmented with measured antineutrino spectra at energies above 8 MeV [46] and simulation data below 1.8 MeV (the threshold of inverse beta \n\n21 \n\n**Fig. 10** : **Antineutrino spectrum.** The fractional contribution of different energy bins in the antineutrino spectrum to the predicted Conus+ signal events is shown for a threshold of 160 eV _ee_ .
+The red line indicates the antineutrino spectrum above 3 MeV as emitted from the reactor. \n\ndecay) [47].
+We assume no uncertainty on the nuclear form factor, but account for a 2% uncertainty on the weak mixing angle [48] leading to an overall uncertainty of 3.2% on the CE _\u03bd_ NS cross section.
+The shape of the applied antineutrino spectra, the thermal power of the reactor, fission fractions and energy releases per fission of the relevant fission isotopes contribute a combined 4.6% error to the expected event rate.
+Further uncertainties on quenching, detector active mass, trigger efficiency and the energy threshold are taken into account and listed in Extended Data Table 4.
+All contributions lead to an overall uncertainty of 17% on the signal prediction.
+To be conservative, we assume prediction uncertainties are fully correlated between single detectors.
+Currently, the dominant uncertainty is from the energy calibration.
+Future extended calibrations will allow us to reduce this uncertainty from 5 eV _ee_ to 3 eV _ee_ . \n\nThe likelihood fit itself gives a result of (395 _\u00b1_ 86) CE _\u03bd_ NS counts in the combined fit of the three detectors.
+Additional systematic uncertainties not implemented as pull terms are evaluated in a second step and added in quadrature, giving the final uncertainty of _\u00b1_ 106 signal counts, as shown in the Extended Data Table 4.
+The non-linearity term was obtained by varying the correction parameters and checking the impact on the likelihood result.
+The uncertainties of the calibration points in Extended Data Fig. 5 were used to generate the parameter variations.
+A Gaussian fit was performed on the distribution of the central values of the new likelihood results, where its 1 _\u03c3_ value was taken as additional systematic uncertainty.
+The term related to the background model was studied in the same way by varying muon flux, neutron \n\n22 \n\nflux, and the leakage component.
+The variations were 14% (taken from [40]), 6% (based on [43]) and 10%, respectively.
+Additionally, the systematic uncertainty of the fit method was estimated by the difference between likelihood A and B. \n\nThe fractional contribution from antineutrinos of different energies to the signal expectation is quantified in Extended Data Fig. 10.
+At the current detector threshold, we are sensitive to antineutrino energies above 5 MeV.
+With lower detection thresholds, the steep rise in antineutrino flux toward low energies will result in significantly higher signal expectations [28]. \n\n## **References** \n\n- [1] Freedman, D.Z.:
+Coherent Neutrino Nucleus Scattering as a Probe of the Weak Neutral Current.
+Phys.
+Rev.
+D **9** , 1389\u20131392 (1974) https://doi.org/10.1103/ PhysRevD.9.1389 \n\n- [2] Akimov, D., _et al._ :
+Observation of Coherent Elastic Neutrino-Nucleus Scattering.
+Science **357** (6356), 1123\u20131126 (2017) https://doi.org/10.1126/science.aao0990 arXiv:1708.01294 [nucl-ex] \n\n- [3] Akimov, D., _et al._ :
+First Measurement of Coherent Elastic Neutrino-Nucleus Scattering on Argon.
+Phys.
+Rev.
+Lett. **126** (1), 012002 (2021) https://doi.org/10. 1103/PhysRevLett.126.012002 arXiv:2003.10630 [nucl-ex] \n\n- [4] Adamski, S., _et al._ :
+Evidence of Coherent Elastic Neutrino-Nucleus Scattering with COHERENT\u2019s Germanium Array.
+Phys.
+Rev.
+Lett. **134** (23), 231801 (2025) https://doi.org/10.1103/PhysRevLett.134.231801 \n\n- [5] Cowan, C.L., Reines, F., Harrison, F.B., Kruse, H.W., McGuire, A.D.:
+Detection of the free neutrino:
+A Confirmation.
+Science **124** , 103\u2013104 (1956) https://doi. org/10.1126/science.124.3212.103 \n\n- [6] Abe, S., _et al._ :
+Precision Measurement of Neutrino Oscillation Parameters with KamLAND.
+Phys.
+Rev.
+Lett. **100** , 221803 (2008) https://doi.org/10.1103/ PhysRevLett.100.221803 arXiv:0801.4589 [hep-ex] \n\n- [7] An, F.P., _et al._ :
+Precision Measurement of Reactor Antineutrino Oscillation at Kilometer-Scale Baselines by Daya Bay.
+Phys.
+Rev.
+Lett. **130** (16), 161802 (2023) https://doi.org/10.1103/PhysRevLett.130.161802 arXiv:2211.14988 [hep-ex] \n\n- [8] Kerret, H., _et al._ :
+Double Chooz _\u03b8_ 13 measurement via total neutron capture detection.
+Nature Phys. **16** (5), 558\u2013564 (2020) https://doi.org/10.1038/ s41567-020-0831-y arXiv:1901.09445 [hep-ex] \n\n- [9] Bak, G., _et al._ :
+Measurement of Reactor Antineutrino Oscillation Amplitude and Frequency at RENO.
+Phys.
+Rev.
+Lett. **121** (20), 201801 (2018) https://doi.org/ 10.1103/PhysRevLett.121.201801 arXiv:1806.00248 [hep-ex] \n\n23 \n\n- [10] Almaz\u00b4an, H., _et al._ :
+STEREO neutrino spectrum of[235] U fission rejects sterile neutrino hypothesis.
+Nature **613** (7943), 257\u2013261 (2023) https://doi.org/10.1038/ s41586-022-05568-2 arXiv:2210.07664 [hep-ex] \n\n- [11] Andriamirado, M., _et al._ :
+Improved short-baseline neutrino oscillation search and energy spectrum measurement with the PROSPECT experiment at HFIR.
+Phys.
+Rev.
+D **103** (3), 032001 (2021) https://doi.org/10.1103/PhysRevD.103.032001 arXiv:2006.11210 [hep-ex] \n\n- [12] Alekseev, I., _et al._ :
+Search for sterile neutrinos at the DANSS experiment.
+Phys.
+Lett.
+B **787** , 56\u201363 (2018) https://doi.org/10.1016/j.physletb.2018.10.038 arXiv:1804.04046 [hep-ex] \n\n- [13] Atif, Z., _et al._ :
+Search for sterile neutrino oscillations using RENO and NEOS data.
+Phys.
+Rev.
+D **105** (11), 111101 (2022) https://doi.org/10.1103/PhysRevD. 105.L111101 arXiv:2011.00896 [hep-ex] \n\n- [14] Aguilar-Arevalo, A., _et al._ :
+Search for coherent elastic neutrino-nucleus scattering at a nuclear reactor with CONNIE 2019 data.
+JHEP **05** , 017 (2022) https://doi. org/10.1007/JHEP05(2022)017 arXiv:2110.13033 [hep-ex] \n\n- [15] Alekseev, I., _et al._ :
+First results of the _\u03bd_ GeN experiment on coherent elastic neutrino-nucleus scattering.
+Phys.
+Rev.
+D **106** (5), 051101 (2022) https://doi.org/ 10.1103/PhysRevD.106.L051101 arXiv:2205.04305 [nucl-ex] \n\n- [16] Angloher, G., _et al._ :
+Exploring CE _\u03bd_ NS with NUCLEUS at the Chooz nuclear power plant.
+Eur.
+Phys.
+J.
+C **79** (12), 1018 (2019) https://doi.org/10.1140/epjc/ s10052-019-7454-4 arXiv:1905.10258 [physics.ins-det] \n\n- [17] Colaresi, J., Collar, J.I., Hossbach, T.W., Lewis, C.M., Yocum, K.M.:
+Measurement of Coherent Elastic Neutrino-Nucleus Scattering from Reactor Antineutrinos.
+Phys.
+Rev.
+Lett. **129** (21), 211802 (2022) https://doi.org/10.1103/ PhysRevLett.129.211802 arXiv:2202.09672 [hep-ex] \n\n- [18] Bonet, H., _et al._ :
+Constraints on elastic neutrino nucleus scattering in the fully coherent regime from the CONUS experiment.
+Phys.
+Rev.
+Lett. **126** (4), 041804 (2021) https://doi.org/10.1103/PhysRevLett.126.041804 arXiv:2011.00210 [hepex] \n\n- [19] Augier, C., _et al._ :
+Ricochet Progress and Status.
+J.
+Low Temp.
+Phys. **212** , 127\u2013137 (2023) https://doi.org/10.1007/s10909-023-02971-5 arXiv:2111.06745 [physics.ins-det] \n\n- [20] Kerman, S., Sharma, V., Deniz, M., Wong, H.T., Chen, J.-W., Li, H.B., Lin, S.T., Liu, C.-P., Yue, Q.:
+Coherency in Neutrino-Nucleus Elastic Scattering.
+Phys.
+Rev.
+D **93** (11), 113006 (2016) https://doi.org/10.1103/PhysRevD.93.113006 arXiv:1603.08786 [hep-ph] \n\n24 \n\n- [21] Choi, J.J., _et al._ :
+Exploring coherent elastic neutrino-nucleus scattering using reactor electron antineutrinos in the NEON experiment.
+Eur.
+Phys.
+J.
+C **83** (3), 226 (2023) https://doi.org/10.1140/epjc/s10052-023-11352-x arXiv:2204.06318 [hep-ex] \n\n- [22] Yang, L.T., Liang, Y.F., Yue, Q.:
+RECODE program for reactor neutrino CEvNS detection with PPC Germanium detector.
+PoS **TAUP2023** , 296 (2024) https: //doi.org/10.22323/1.441.0296 \n\n- [23] Akimov, D.Y., _et al._ :
+First constraints on the coherent elastic scattering of reactor antineutrinos off xenon nuclei.
+Phys.
+Rev.
+D **111** (7), 072012 (2025) https://doi. org/10.1103/PhysRevD.111.072012 arXiv:2411.18641 [hep-ex] \n\n- [24] Aprile, E., _et al._ :
+First Indication of Solar B8 Neutrinos via Coherent Elastic Neutrino-Nucleus Scattering with XENONnT.
+Phys.
+Rev.
+Lett. **133** (19), 191002 (2024) https://doi.org/10.1103/PhysRevLett.133.191002 arXiv:2408.02877 [nuclex] \n\n- [25] Bo, Z., _et al._ :
+First Indication of Solar B8 Neutrinos through Coherent Elastic Neutrino-Nucleus Scattering in PandaX-4T.
+Phys.
+Rev.
+Lett. **133** (19), 191001 (2024) https://doi.org/10.1103/PhysRevLett.133.191001 arXiv:2407.10892 [hepex] \n\n- [26] Bonet, H., _et al._ :
+Large-size sub-keV sensitive germanium detectors for the CONUS experiment.
+Eur.
+Phys.
+J.
+C **81** (3), 267 (2021) https://doi.org/10.1140/ epjc/s10052-021-09038-3 arXiv:2010.11241 [physics.ins-det] \n\n- [27] Ackermann, N., _et al._ :
+Final CONUS Results on Coherent Elastic NeutrinoNucleus Scattering at the Brokdorf Reactor.
+Phys.
+Rev.
+Lett. **133** (25), 251802 (2024) https://doi.org/10.1103/PhysRevLett.133.251802 arXiv:2401.07684 [hepex] \n\n- [28] Ackermann, N., _et al._ :
+CONUS+ Experiment.
+Eur.
+Phys.
+J.
+C **84** (12), 1265 (2024) https://doi.org/10.1140/epjc/s10052-024-13551-6 arXiv:2407.11912 [hep-ex] \n\n- [29] Bonet, H., _et al._ :
+Full background decomposition of the CONUS experiment.
+Eur.
+Phys.
+J.
+C **83** (3), 195 (2023) https://doi.org/10.1140/epjc/s10052-023-11240-4 arXiv:2112.09585 [physics.ins-det] \n\n- [30] Sanchez Garcia, E., _et al._ :
+Background characterization of the CONUS+ experimental location.
+Eur.
+Phys.
+J.
+C **85** (4), 465 (2025) https://doi.org/10.1140/epjc/ s10052-025-14160-7 arXiv:2412.13707 [physics.ins-det] \n\n- [31] An, F.P., _et al._ :
+Antineutrino energy spectrum unfolding based on the Daya Bay measurement and its applications.
+Chin.
+Phys.
+C **45** (7), 073001 (2021) https: //doi.org/10.1088/1674-1137/abfc38 arXiv:2102.04614 [hep-ex] \n\n25 \n\n- [32] Lindhard, J., Scharff, M., Schi\u00f8tt, H.E.:
+Range Concepts and Heavy Ion Ranges.
+Matematisk-fysiske meddelelser.
+Munksgaard (1963). https://books.google.de/ books?id=M2yrnQEACAAJ \n\n- [33] Collar, J.I., Kavner, A.R.L., Lewis, C.M.:
+Germanium response to subkeV nuclear recoils: a multipronged experimental characterization.
+Phys.
+Rev.
+D **103** (12), 122003 (2021) https://doi.org/10.1103/PhysRevD.103.122003 arXiv:2102.10089 [nucl-ex] \n\n- [34] Bonhomme, A., _et al._ :
+Direct measurement of the ionization quenching factor of nuclear recoils in germanium in the keV energy range.
+Eur.
+Phys.
+J.
+C **82** (9), 815 (2022) https://doi.org/10.1140/epjc/s10052-022-10768-1 arXiv:2202.03754 [physics.ins-det] \n\n- [35] Bonet, H., _et al._ :
+Pulse shape discrimination for the CONUS experiment in the keV and sub-keV regime.
+Eur.
+Phys.
+J.
+C **84** (2), 139 (2024) https://doi.org/10. 1140/epjc/s10052-024-12470-w arXiv:2308.12105 [physics.ins-det] \n\n- [36] Atzori Corona, M., Cadeddu, M., Cargioli, N., Dordei, F., Giunti, C.:
+On the impact of the Migdal effect in reactor CE _\u03bd_ NS experiments.
+Phys.
+Lett.
+B **852** , 138627 (2024) https://doi.org/10.1016/j.physletb.2024.138627 arXiv:2307.12911 [hep-ph] \n\n- [37] Akimov, D., _et al._ :
+Measurement of the Coherent Elastic Neutrino-Nucleus Scattering Cross Section on CsI by COHERENT.
+Phys.
+Rev.
+Lett. **129** (8), 081801 (2022) https://doi.org/10.1103/PhysRevLett.129.081801 arXiv:2110.07730 [hepex] \n\n- [38] Lindner, M., Rink, T., Sen, M.:
+Light vector bosons and the weak mixing angle in the light of future germanium-based reactor CE _\u03bd_ NS experiments.
+JHEP **08** , 171 (2024) https://doi.org/10.1007/JHEP08(2024)171 arXiv:2401.13025 [hep-ph] \n\n- [39] Boswell, M., _et al._ :
+MaGe-a Geant4-based Monte Carlo Application Framework for Low-background Germanium Experiments.
+IEEE Trans.
+Nucl.
+Sci. **58** , 1212\u2013 1220 (2011) https://doi.org/10.1109/TNS.2011.2144619 arXiv:1011.3827 [nuclex] \n\n- [40] Goldhagen, P., Clem, J.M., Wilson, J.W.:
+The energy spectrum of cosmic-ray induced neutrons measured on an airplane over a wide range of altitude and latitude.
+Radiation Protection Dosimetry **110** (1-4), 387\u2013392 (2004) https://doi. org/10.1093/rpd/nch216 \n\n- [41] Gordon, M.S., Goldhagen, P., Rodbell, K.P., Zabel, T.H., Tang, H.H.K., Clem, J.M., Bailey, P.:
+Measurement of the flux and energy spectrum of cosmic-ray induced neutrons on the ground.
+IEEE Transactions on Nuclear Science **51** (6), 3427\u20133434 (2004) https://doi.org/10.1109/TNS.2004.839134 \n\n26 \n\n- [42] Bugaev, E.V., Misaki, A., Naumov, V.A., Sinegovskaya, T.S., Sinegovsky, S.I., Takahashi, N.:
+Atmospheric muon flux at sea level, underground, and underwater.
+Phys.
+Rev.
+D **58** , 054001 (1998) https://doi.org/10.1103/PhysRevD.58.054001 \n\n- [43] Reyna, D.:
+A simple parameterization of the cosmic-ray muon momentum spectra at the surface as a function of zenith angle (2006) arXiv:hep-ph/0604145 [hep-ph] \n\n- [44] Engel, J.:
+Nuclear form-factors for the scattering of weakly interacting massive particles.
+Phys.
+Lett.
+B **264** , 114\u2013119 (1991) https://doi.org/10.1016/ 0370-2693(91)90712-Y \n\n- [45] Silk, J., _et al._ :
+Particle Dark Matter:
+Observations, Models and Searches.
+Cambridge Univ.
+Press, Cambridge (2010). https://doi.org/10.1017/ CBO9780511770739 \n\n- [46] An, F.P., _et al._ :
+First Measurement of High-Energy Reactor Antineutrinos at Daya Bay.
+Phys.
+Rev.
+Lett. **129** (4), 041801 (2022) https://doi.org/10.1103/ PhysRevLett.129.041801 arXiv:2203.06686 [hep-ex] \n\n- [47] Estienne, M., _et al._ :
+Updated Summation Model:
+An Improved Agreement with the Daya Bay Antineutrino Fluxes.
+Phys.
+Rev.
+Lett. **123** (2), 022502 (2019) https: //doi.org/10.1103/PhysRevLett.123.022502 arXiv:1904.09358 [nucl-ex] \n\n- [48] Cadeddu, M., Dordei, F., Giunti, C., Li, Y.F., Zhang, Y.Y.:
+Neutrino, electroweak, and nuclear physics from COHERENT elastic neutrino-nucleus scattering with refined quenching factor.
+Phys.
+Rev.
+D **101** (3), 033004 (2020) https: //doi.org/10.1103/PhysRevD.101.033004 arXiv:1908.06045 [hep-ph] \n\n27 \n\n"}

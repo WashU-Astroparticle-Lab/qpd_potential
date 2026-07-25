@@ -238,3 +238,6 @@ data/external/parma/src/
 data/external/parma/build_parma_neutron
 .DS_Store
 artifacts/.DS_Store
+
+# Large external source PDF (extracted .txt is committed; see data/external/biffl/MANIFEST.md)
+data/external/biffl/*.pdf

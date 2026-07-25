@@ -795,7 +795,7 @@ flux/uncertainty transcription owned by **P-ENV**.
 
 **Supporting:**
 - *The relative interfacial thermal contraction as a possible origin of the low-energy excess in cryogenic calorimeters*, arXiv:**2605.30194** — surface/interface origin hypothesis (basis for the adverse surface-to-mass scaling argument).
-- Zhang et al., *Neutron capture-induced nuclear recoils as background for CEνNS measurements at reactors*, arXiv:**2212.14148** — capture recoils "strongly overlap the CEνNS signal for recoils ≲ 100 eV" in Si/Ge.
+- Biffl, Gevorgian, Harris & Villano, *Neutron capture-induced nuclear recoils as background for CEνNS measurements at reactors*, **PRD 107, 092011 (2023)**, arXiv:**2212.14148** — capture recoils "strongly overlap the CEνNS signal for recoils ≲ 100 eV" in Si/Ge. (Authorship corrected from "Zhang et al." 2026-07-23 against the frozen PDF `data/external/biffl/`; it computes the recoil spectrum with nrCascadeSim.)
 - Campbell-Deem, Knapen, Lin & Villarama, *Dark matter direct detection from the single phonon to the nuclear recoil regime*, **PRD 106, 036019 (2022)**, arXiv:**2205.02250**; Campbell-Deem, Cox, Knapen, Lin & Melia, **PRD 101, 036006 (2020)** — multiphonon → free-nuclear-recoil bridge; basis for the ~0.4 eV impulse-approximation boundary.
 - Double Chooz, *Rate-Only analysis with reactor-off data*, arXiv:**1305.2734** — reactor-off residual-rate uncertainties at a multi-core site.
 - Gordon et al., **IEEE Trans. Nucl. Sci. 51, 3427 (2004)** — sea-level cosmic-ray neutron spectrum (NUCLEUS's neutron normalization; conventionally presented per unit lethargy).
