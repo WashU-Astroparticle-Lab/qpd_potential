@@ -301,6 +301,19 @@ def test_closure_not_rerun():
     # is what fp-mass-scaled-target actually forbids -- asserted immediately below.
     phase16_lee_band_edge_label = {"src/qpd_potential/lee_overlay.py"}
     added_here = added_here | phase16_lee_band_edge_label
+    # ADDED 2026-07-25 (Ge-intrinsic cosmogenic floor), recorded explicitly on the
+    # same precedent. cosmogenic_intrinsic.py mentions CaWO4/Al2O3 ONLY in prose --
+    # noting that those targets structurally cannot make 3H/68Ge/65Zn, which is why
+    # this Ge-specific floor exists. There is no CaWO4/Al2O3 target model, fold,
+    # rate, Table-5 entry or closure rescale in it (asserted below); it models Ge
+    # decays only. The test file is its adversarial check.
+    ge_intrinsic_prose = {"src/qpd_potential/cosmogenic_intrinsic.py",
+                          "tests/test_cosmogenic_intrinsic.py"}
+    added_here = added_here | ge_intrinsic_prose
+    cos = open(os.path.join(_ROOT, "src", "qpd_potential",
+                            "cosmogenic_intrinsic.py")).read().lower()
+    assert "def cawo4" not in cos and "def al2o3" not in cos
+    assert "table 5" not in cos and "table-5" not in cos and "407.7" not in cos
     lee = open(os.path.join(_ROOT, "src", "qpd_potential", "lee_overlay.py")).read()
     low = lee.lower()
     assert "def cawo4" not in low and "def calcium" not in low
