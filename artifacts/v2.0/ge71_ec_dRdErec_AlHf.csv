@@ -6,13 +6,13 @@
 # =========================== DEPOSIT vs RECONSTRUCTED ========================
 # The line is a 158.7 eV DEPOSIT. Its RECONSTRUCTED image is measured here:
 #   deposit bin 256, centre 160.849678 eV
-#   matrix's own unbinned E_rec mean for that column = 62.963872 eV
-#     median 62.970641, p16 62.424624, p84 63.491303, rel_spread 0.008470
-#   MAPPING SLOPE E_rec/E_dep at this line = 0.396748
-#   binned peak bin centre = 59.566214 eV, over 2 populated reconstructed bin(s)
+#   matrix's own unbinned E_rec mean for that column = 125.927745 eV
+#     median 125.941282, p16 124.849248, p84 126.982605, rel_spread 0.008470
+#   MAPPING SLOPE E_rec/E_dep at this line = 0.793496
+#   binned peak bin centre = 133.352143 eV, over 2 populated reconstructed bin(s)
 #   one reconstructed bin here is 11.519% wide, against a response rel_spread of 0.847% -- THE IMAGE IS
 #   NARROWER THAN ONE BIN, so its apparent width is the BINNING and not the physics.
-#   in-RoI fraction over E_rec [10, 100] eV = 1.000000
+#   in-RoI fraction over E_rec [10, 100] eV = 0.000000
 #   sub-eV (E_rec < 1 eV) fraction = 0.000000
 #   QUOTING 158.7 eV AS THE POSITION ON THIS AXIS WOULD BE fp-deposit-as-reconstructed.
 #
@@ -44,7 +44,7 @@
 # P_trig at the line's deposit bin = 0.999999998506 -- essentially 1, as
 # expected 2.5 decades above E50.
 #
-# git_sha = 7301ff9
+# git_sha = 4e71093
 # reproduce = PYTHONPATH=src /opt/anaconda3/bin/python3 -c "from qpd_potential import capture_channel as c; c.write_ge71_ec_erec_csv('Al->Hf')"
 # columns: E_rec_keV, dRdErec_bound, dRdErec_trigger_weighted, P_trig_effective, regime, accuracy_label
 E_rec_keV,dRdErec_bound,dRdErec_trigger_weighted,P_trig_effective,regime,accuracy_label
@@ -143,14 +143,14 @@ E_rec_keV,dRdErec_bound,dRdErec_trigger_weighted,P_trig_effective,regime,accurac
 4.216965034e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 4.731512590e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 5.308844442e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
-5.956621435e-02,1.130582e+04,1.130582e+04,0.999999999,dRdErec,order_of_magnitude
-6.683439176e-02,6.915792e+03,6.915792e+03,0.999999999,dRdErec,order_of_magnitude
+5.956621435e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+6.683439176e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 7.498942093e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 8.413951416e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 9.440608763e-02,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 1.059253725e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
-1.188502227e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
-1.333521432e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
+1.188502227e-01,4.571289e+03,4.571289e+03,0.999999999,dRdErec,order_of_magnitude
+1.333521432e-01,4.442067e+03,4.442067e+03,0.999999999,dRdErec,order_of_magnitude
 1.496235656e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 1.678804018e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude
 1.883649089e-01,0.000000e+00,0.000000e+00,1.000000000,dRdErec,order_of_magnitude

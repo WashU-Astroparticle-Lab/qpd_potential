@@ -2,7 +2,7 @@
 
 **Project:** QPD Particle-Physics Potential — Stage-1 Reconstructed-Energy Spectra
 **Created:** 2026-07-20
-**Last updated:** 2026-07-20 (Phase 1)
+**Last updated:** 2026-07-25 (Section E.1, energy-scale calibration slope — USER DECISION)
 **Authoritative lock:** `GPD/state.json` -> `convention_lock`
 **Projection status:** synced
 
@@ -76,14 +76,18 @@ ONLY inside the cross-section evaluation and are converted back to cm² before a
   NR-only correction, and is **ZERO for muons and Compton (electron-recoil) deposits**.
 - **E_dep** — deposited energy delivered to the lattice (full recoil/ionization energy; no quenching).
 - **E_rec** — reconstructed energy, the output of the QPD estimator and the project's observable axis.
-  Low-energy limit: **E_rec ≈ 0.5·E_dep**.
+  It is an **estimator of E_dep**, not the collected signal. Low-energy limit:
+  **E_rec ≈ E_dep** (unit calibration slope, §E.1, revised 2026-07-25; was 0.5·E_dep).
+  Above the saturation onset E_rec is genuinely sub-linear and is never unfolded back.
 
 **FORBIDDEN (guarded proxies):**
 - Any mixing of keVee / keVnr scales.
 - Applying Lindhard or any ionization/quenching factor on this phonon scale.
 
 **Test value:** A 1 keV nuclear recoil and a 1 keV electron recoil land at the SAME E_dep.
-In the low-energy limit, E_rec(1 keV E_dep) = 0.5 keV for both.
+In the low-energy (unsaturated) limit, E_rec(E_dep) = E_dep for both — e.g. a 10 eV deposit
+reconstructs at ~10 eV. (A 1 keV deposit is already past the 32 eV saturation onset and lands
+lower; the unit slope is a statement about the *linear* regime only. See §E.1.)
 
 ---
 
@@ -151,7 +155,7 @@ Wafer: 10.16 cm × 10.16 cm × 0.2 cm = 20.65 cm³; × 5.323 g/cm³ = 109.9 g �
 
 | Field            | Value                                                                                   |
 | ---------------- | --------------------------------------------------------------------------------------- |
-| **Convention**   | ε ≈ 0.5 deposited-to-signal efficiency, imposed as a forward-model definition            |
+| **Convention**   | ε ≈ 0.5 deposited-to-signal efficiency, imposed as a forward-model definition. **ε is a PHYSICAL conversion fraction, not the energy scale — see §E.1 (revised 2026-07-25).** |
 | **Design dependence** | SAME baseline value (0.5) for both designs, carrying a ±10–20% design-dependent band |
 | **Refinement**   | Ta→Al and Al→Hf MAY be refined to distinct per-design numbers in Phase 5 if the tunneling-parameter mapping warrants |
 | **Cross-reference** | The paper's physical estimate η_ce ≈ 0.3 (f_loss ~ 0.35) is documented as an INDEPENDENT cross-reference, NOT the baseline |
@@ -163,8 +167,41 @@ Wafer: 10.16 cm × 10.16 cm × 0.2 cm = 20.65 cm³; × 5.323 g/cm³ = 109.9 g �
 > from the same ε ≈ 0.5 baseline carrying a ±10–20% design-dependent band, and MAY diverge to
 > distinct per-design values in Phase 5. The band, not a single shared number, is the binding object.
 
-**Test value:** E_rec(low-E) ≈ ε · E_dep = 0.5 · E_dep, i.e. a 1 keV deposit → ~0.5 keV
-reconstructed in the linear regime.
+### E.1 Energy-scale calibration slope — ε is NOT the energy scale (REVISED 2026-07-25)
+
+| Field            | Value                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| **Convention**   | `params.CALIB_SLOPE` = **1.0** = dE_rec/dE_dep in the **linear** regime                  |
+| **Supersedes**   | The Phase-1 calibration slope = ε = 0.5, and the former §E test value "a 1 keV deposit → ~0.5 keV reconstructed" |
+| **Introduced**   | **USER DECISION 2026-07-25**                                                             |
+| **Applies at**   | `response.calibrate_C` (the single global count→energy constant C), `energy_scale.E_rec_estimator` |
+| **Rationale**    | E_rec is an **estimator of the deposited energy**, not the collected signal. ε is the *physical* deposit→quasiparticle conversion fraction; a real detector is calibrated on a known line, and that calibration **absorbs ε into C**. A 10 eV deposit must reconstruct at 10 eV. |
+| **What ε still does** | ε keeps its full physical role in the forward chain: `energy_scale.n_qp_yield`, `saturation_onset_energy`, and the trigger all still use `params.EPSILON` = 0.5. Only the *energy scale* is decoupled from it. |
+| **Guard**        | `fp-unfold-saturation` — the slope corrects the **scale only**. The sub-linear response **above** the saturation onset is genuine information loss and is **NEVER** unfolded away. Calibration makes the linear regime 1:1; it does not make E_rec = E_dep everywhere. |
+
+**Test value:** E_rec(low-E) ≈ `CALIB_SLOPE` · E_dep = E_dep, i.e. a 1 keV deposit → ~1 keV
+reconstructed **in the linear regime** (Al→Hf saturation onset = 32.1 eV_dep, so a 1 keV deposit is
+already saturated and lands lower — the unit slope is asserted at low E, where no sensor saturates).
+
+> **Consequence for frozen v2.0 artifacts.** Every E_rec-axis deliverable built before 2026-07-25
+> carries the old ε=0.5 scale and is superseded: `artifacts/v2.0/response_matrix_*_ext.npz` and the
+> `*_dRdErec_*` CSVs were rebuilt. `artifacts/stage1/` v1.0 matrices are **not** rebuilt — they are
+> the frozen comparison baseline (`fp-overwrite-v1-matrices`). Milestone-record E_rec numbers in
+> ROADMAP/STATE (RoI rates, band edges) were quoted on the old axis; see §E.2.
+
+### E.2 What moved, measured
+
+| Quantity | old axis (ε=0.5) | new axis (unit slope) |
+| --- | --- | --- |
+| 10 eV deposit reconstructs at | 4.76 eV | ~9.5 eV (5% of the shift is real onset roll-in, not calibration) |
+| ⁷³Ge 102.59 eV resonance kinematic edge (5.50 eV_dep) | 2.67 eV_rec | ~5.35 eV_rec |
+| ⁶⁸Ge K EC line (10.368 keV_dep) | 2.39 keV_rec | ~4.79 keV_rec (the residual factor ~2.2 is **real saturation**) |
+| "10–100 eV reconstructed RoI" in deposit terms | 20–200 eV_dep | 10–100 eV_dep |
+
+The last row is the substantive one: the project's RoI is natively a **deposit** window
+(`neutron_recoil.ROI_LO_eV/ROI_HI_eV` = 10/100 eV on the recoil axis, GPD/PROJECT "the 10–100 eV
+RoI"), and under the old scale applying it to E_rec silently selected a 20–200 eV deposit band. The
+two windows now agree.
 
 ---
 
@@ -342,7 +379,8 @@ derivations.
 | Proton coupling | 1 − 4 sin²θ_W = 0.0452 | using ≈0 or wrong sin²θ_W | Section C |
 | Reactor power | 3 GW_th | GW_e (×~3 too small) | Section D |
 | Efficiency | ε ≈ 0.5 (baseline) | η_ce ≈ 0.3 used as baseline | Section E |
-| Low-E reconstruction | E_rec ≈ 0.5·E_dep | E_rec = E_dep (no ε) | Sections B, E |
+| Low-E reconstruction | E_rec ≈ E_dep (unit calibration slope, from 2026-07-25; was 0.5·E_dep) | putting ε on the energy axis — E_rec ≈ 0.5·E_dep makes a known 10 eV line land at 5 eV | Section E.1 |
+| Saturation | above the onset E_rec is genuinely sub-linear and stays that way | "calibrating" it back to E_rec = E_dep everywhere (`fp-unfold-saturation`) | Sections E.1, F |
 | Resolving time | 40 µs (25 kHz Nyquist) | 20 µs (50 kHz sampling) conflated | Section F |
 | Recoil scale | keV_nr (phonon scale, no quenching) | keVee (Lindhard applied) → CEvNS ×5–7 too small | Section B |
 | Sub-eV trigger 50% point | E50 = 1.0 eV (from 2026-07-23; was 0.5 eV), exact for every k | a 50% point that holds only at one width | Section I |
@@ -371,7 +409,7 @@ Verified interacting pairs (all within the detector/rate domain; no QFT pairs ap
 
 | Convention A | Convention B | Required relation | Status |
 | ------------ | ------------ | ----------------- | ------ |
-| Unified phonon scale (B) | Efficiency ε (E) | E_rec ≈ ε·E_dep = 0.5·E_dep at low E; both NR and ER deposits use the same map | ✓ consistent |
+| Unified phonon scale (B) | Efficiency ε (E) | E_rec ≈ E_dep at low E (unit calibration slope, §E.1); ε survives as the physical deposit→QP conversion fraction inside the forward chain, not on the energy axis; both NR and ER deposits use the same map | ✓ consistent |
 | Natural units internal (A.2) | CEvNS prefactor /4π (C) | σ in GeV⁻² → ×(ħc)² → cm²; dimensionally σ_tot = G_F²Q_W²E_ν²/4π · (ħc)² | ✓ consistent |
 | sin²θ_W = 0.2387 (C) | Q_W = N − (1−4sin²θ_W)Z (C) | 1 − 4×0.2387 = 0.0452 | ✓ consistent |
 | Per-kg normalization (D) | 110 g wafer geometry (D) | rates quoted per-kg for benchmark, physical detector is 110 g | ✓ consistent (dual bookkeeping, explicitly documented) |

@@ -127,16 +127,25 @@ def test_realized_matches_analytic_unsaturated(name, variant):
 @pytest.mark.parametrize("name", DESIGN_NAMES)
 @pytest.mark.parametrize("variant", VARIANTS)
 def test_low_e_linear_calibration_consistency(name, variant):
-    """E_rec/E_dep = 0.5 well below onset. LABEL: calibration-consistency (Pitfall 2).
+    """E_rec/E_dep = 1.0 well below onset. LABEL: calibration-consistency (Pitfall 2).
 
     C is fixed by the low-E slope, so this passes BY CONSTRUCTION; it is a
     consistency check, not independent validation. The genuine tests are the
     saturation onset and the plateau level (below).
+
+    The slope is params.CALIB_SLOPE = 1.0, NOT params.EPSILON (user decision
+    2026-07-25): E_rec ESTIMATES the deposit, and on-detector calibration absorbs
+    the physical deposit->QP conversion fraction eps into C. A 10 eV deposit
+    reconstructs at 10 eV. Asserted against the param so the two cannot drift.
     """
     C = R.calibrate_C(name, variant)
     for E_dep in (0.02, 0.05, 0.1):  # deeply linear (peak Gamma_in << 25 kHz)
         ratio = R.E_rec(E_dep, name, variant, C=C) / E_dep
-        assert ratio == pytest.approx(0.5, rel=0.01)
+        assert ratio == pytest.approx(params.CALIB_SLOPE.value, rel=0.01)
+    assert params.CALIB_SLOPE.value == 1.0, "the energy scale is unit-slope by calibration"
+    assert params.CALIB_SLOPE.value != params.EPSILON.value, (
+        "the calibration slope must stay DECOUPLED from the physical eps "
+        "(putting eps on the energy axis makes a known 10 eV line land at 5 eV)")
 
 
 @pytest.mark.parametrize("name", DESIGN_NAMES)
@@ -166,7 +175,7 @@ def test_high_e_plateau_non_paralyzable(name):
     # (a) monotone non-decreasing (bounded plateau, never turns over)
     assert np.all(np.diff(E_rec) >= -1e-9 * E_rec.max())
     # (b) NOT the linear 0.5*E_dep line at the muon tail (guards fp-no-saturation)
-    assert E_rec[-1] < 1e-3 * (0.5 * E_dep[-1])
+    assert E_rec[-1] < 1e-3 * (params.CALIB_SLOPE.value * E_dep[-1])
     # (c) genuinely plateaued: <2x change over the top decade of E_dep
     top = E_dep >= E_dep[-1] / 10.0
     assert E_rec[top].max() / E_rec[top].min() < 2.0
@@ -180,7 +189,7 @@ def test_high_e_plateau_paralyzable_rollover(name):
     s = _sweep(name, "paralyzable")
     E_dep, E_rec = s["E_dep"], s["E_rec"]
     # (a) NOT linear at the muon tail (guards fp-no-saturation)
-    assert E_rec[-1] < 1e-3 * (0.5 * E_dep[-1])
+    assert E_rec[-1] < 1e-3 * (params.CALIB_SLOPE.value * E_dep[-1])
     # (b) genuine rollover: the peak E_rec occurs BELOW the muon tail and the
     #     tail value is below that peak.
     i_peak = int(np.argmax(E_rec))
@@ -216,7 +225,7 @@ def test_stop_condition_plateau_present(name, variant):
     peak_tail = s["peak_gamma_on"][-1]
     assert peak_tail > 1e4 * CEILING              # far beyond the ceiling
     # saturation present: E_rec at the tail is >3 orders below the linear line
-    assert s["E_rec"][-1] < 1e-3 * (0.5 * s["E_dep"][-1])
+    assert s["E_rec"][-1] < 1e-3 * (params.CALIB_SLOPE.value * s["E_dep"][-1])
 
 
 @pytest.mark.parametrize("name", DESIGN_NAMES)
@@ -224,7 +233,8 @@ def test_stop_condition_has_teeth(name):
     """WITHOUT censoring there is NO plateau -- confirms the plateau is real.
 
     Scratch check (Task-2 verify): an uncensored count-integral is exactly
-    linear (E_rec = 0.5*E_dep at all energies), so it would FAIL the plateau
+    linear (E_rec = E_dep at all energies, unit calibration slope), so it would
+    FAIL the plateau
     assertion. The plateau in the censored estimator is therefore genuinely due
     to bandwidth censoring, not an artifact.
     """
@@ -237,8 +247,8 @@ def test_stop_condition_has_teeth(name):
     ec_off = R.expected_event_count(fc.N_qp_off, d)
     uncensored_total = fc.n_spot * ec_on + fc.n_off * ec_off
     E_rec_uncensored = C * uncensored_total
-    # Uncensored tracks the linear 0.5*E_dep line (no plateau) -> would fail plateau.
-    assert E_rec_uncensored == pytest.approx(0.5 * E_dep, rel=1e-3)
+    # Uncensored tracks the linear E_dep line (no plateau) -> would fail plateau.
+    assert E_rec_uncensored == pytest.approx(params.CALIB_SLOPE.value * E_dep, rel=1e-3)
     # Censored E_rec is >1000x smaller -> the plateau assertion has teeth.
     assert R.E_rec(E_dep, name, "non_paralyzable", C=C) < 1e-3 * E_rec_uncensored
 
@@ -333,4 +343,5 @@ def test_phase1_stub_left_intact():
     """The Phase-1 E_rec_estimator stub is unchanged (real estimator is in response.py)."""
     with pytest.raises(NotImplementedError):
         es.E_rec_estimator(1.0)
-    assert es.E_rec_estimator(1.0, linear_placeholder=True) == pytest.approx(0.5)
+    assert es.E_rec_estimator(1.0, linear_placeholder=True) == pytest.approx(
+        params.CALIB_SLOPE.value)

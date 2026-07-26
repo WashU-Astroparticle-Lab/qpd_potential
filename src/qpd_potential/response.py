@@ -30,8 +30,11 @@
 #     0.008 Hf). Feeding N_qp mis-scales the whole saturation.
 #   * PITFALL 2 (fp-calib-as-validation): the count-integral constant C is a
 #     SINGLE global per-design constant fixed by the low-E slope dE_rec/dE_dep =
-#     eps = 0.5. The low-E linearity is therefore a CALIBRATION-CONSISTENCY
-#     check, not independent validation.
+#     params.CALIB_SLOPE = 1.0. The low-E linearity is therefore a
+#     CALIBRATION-CONSISTENCY check, not independent validation.
+#     (USER DECISION 2026-07-25: the slope is 1.0, not eps = 0.5. E_rec estimates
+#     the DEPOSIT; on-detector calibration absorbs the physical deposit->QP
+#     conversion fraction eps into C. Saturation is still never unfolded.)
 #   * The saturated-regime PLATEAU of the count-integral IS the modeled
 #     saturation (fp-no-saturation): non_paralyzable censoring caps the observed
 #     count (E_rec plateaus, ~10-20 keV whole-array scale), paralyzable rolls it
@@ -377,13 +380,23 @@ def calibrate_C(
     """Solve the SINGLE global count->energy constant C [eV/event] per design.
 
     C is fixed once, on a low-E deposit where NO sensor saturates, by requiring
-    the linear slope dE_rec/dE_dep = eps = 0.5 (params.EPSILON). Because the
+    the linear slope dE_rec/dE_dep = params.CALIB_SLOPE = 1.0. Because the
     linear-regime summed count is exactly proportional to E_dep, one point fixes
     C:  C = slope * E_dep_cal / total_N_obs(E_dep_cal). No per-bin tuning
     (Pitfall 2 / fp-calib-as-validation).
+
+    THE SLOPE IS 1.0, NOT params.EPSILON (USER DECISION 2026-07-25).  E_rec is an
+    ESTIMATOR of the deposited energy, not the collected signal.  A real detector
+    is calibrated on a known line, and that calibration absorbs the physical
+    deposit->quasiparticle conversion fraction EPSILON into C; a 10 eV deposit
+    reconstructs at 10 eV.  EPSILON keeps its physical role everywhere else in the
+    forward chain (energy_scale.n_qp_yield, the saturation onset, the trigger) --
+    it is simply not the energy scale.  What calibration does NOT undo, and what
+    this slope must never be used to undo, is the sub-linear SATURATION above the
+    onset: that is genuine information loss (fp-unfold-saturation).
     """
     if slope is None:
-        slope = params.EPSILON.value
+        slope = params.CALIB_SLOPE.value
     fc = forward_counts(
         E_dep_cal_eV, design, variant,
         f_prompt=f_prompt, r=r, n_sensors=n_sensors, t_grid=t_grid,
@@ -411,7 +424,7 @@ def E_rec(
     """Reconstructed energy E_rec = C * sum_i N_obs,i [eV] (count-integral estimator).
 
     Replaces the Phase-1 `energy_scale.E_rec_estimator` STUB with the real
-    calibrated estimator. Low-E: E_rec ~= 0.5*E_dep (by calibration). High-E:
+    calibrated estimator. Low-E: E_rec ~= E_dep (by calibration). High-E:
     PLATEAU (non_paralyzable) or ROLLOVER (paralyzable) -- the modeled
     saturation (fp-no-saturation), never a linear extrapolation into the MeV
     range. C is calibrated once if not supplied.
