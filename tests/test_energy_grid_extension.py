@@ -329,6 +329,11 @@ _CALIB_REBUILD_2026_07_25 = (
     "artifacts/v2.0/ge71_ec_dRdErec_AlHf.csv",
     "artifacts/v2.0/ge71_ec_dRdErec_TaAl.csv",
     "artifacts/v2.0/al_hf_spectrum_AlHf.png",
+    # regenerated in the follow-up pass by the newly-committed emitters
+    # (fold.write_em_ext_spectrum, fold.write_em_dominance_table):
+    "artifacts/v2.0/em_dRdErec_ext_AlHf.csv",
+    "artifacts/v2.0/em_dRdErec_ext_TaAl.csv",
+    "artifacts/v2.0/em_inband_dominance.csv",
 )
 
 

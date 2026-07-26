@@ -313,12 +313,19 @@ def test_trigger_curve_is_not_folded_into_the_matrix():
 # --------------------------------------------------------------------------- #
 # claim-anchors: the 197 MeV endpoint recomputed from the NEW matrices          #
 # --------------------------------------------------------------------------- #
-@pytest.mark.parametrize("design,paper_keV", [("Ta->Al", 34.8), ("Al->Hf", 26.8)])
+# EXPECTED VALUES REVISED 2026-07-25 for the unit calibration slope
+# (params.CALIB_SLOPE = 1.0, CONVENTIONS Section E.1). The reconstructed axis is
+# now full-scale (E_rec estimates the deposit), so the 197 MeV endpoint plateau
+# doubled from the paper's old-axis 34.8 / 26.8 keV to 69.53 / 53.69 keV. The
+# paper (paper/sections/results.tex) still quotes the old values and its update is
+# pending (follow-up todo); these are the CORRECT current-axis numbers.
+@pytest.mark.parametrize("design,paper_keV", [("Ta->Al", 69.53), ("Al->Hf", 53.69)])
 def test_197MeV_endpoint_anchor_from_the_v2_matrices(design, paper_keV):
     """The anchor notebook loads the FROZEN v1.0 matrices, so its run proves the
     grid work did not break v1.0. This recomputes the same anchor from the NEW
     artifacts/v2.0/ matrices -- the one that actually tests the regeneration.
-    Notebook tolerance is tol_pct = 3."""
+    Tolerance tol_pct = 3. The expected value is the corrected unit-slope endpoint
+    (69.53 / 53.69 keV), which SUPERSEDES the paper's old-axis 34.8 / 26.8 keV."""
     z = _ext(design)
     erec_end_keV = float(z[f"E_rec_median_{CANONICAL}_eV"][-1]) / 1.0e3
     diff_pct = 100.0 * (erec_end_keV - paper_keV) / paper_keV

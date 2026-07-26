@@ -349,8 +349,11 @@ def test_regime_boundary_labelled(spectra):
         assert set(s["regime"]) == {"subev_P_trig_is_the_reported_observable",
                                     "dRdErec_is_the_reported_observable"}
         # the boundary is a DEPOSIT energy; its E_rec image comes from THIS matrix's
-        # own median mapping curve, not from an assumed 0.5x factor
-        assert 0.3 < b < 0.7
+        # own median mapping curve, not from an assumed factor. Under the unit
+        # calibration slope (params.CALIB_SLOPE = 1.0, CONVENTIONS Section E.1) the
+        # 1 eV deposit boundary images NEAR 1 eV_rec -- a consequence of the
+        # calibration, not an assumption (it was ~0.5 on the former eps=0.5 axis).
+        assert 0.7 < b < 1.3
 
 
 def test_e50_structural():

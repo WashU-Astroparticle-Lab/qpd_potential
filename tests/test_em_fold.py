@@ -328,9 +328,15 @@ def test_saturation_peak():
         med = float(np.exp(np.interp(np.log(dep_peak),
                                      np.log(d["E_dep_centers_eV"]),
                                      np.log(d["E_rec_median_non_paralyzable_eV"]))))
-        assert dep_peak / med > 50.0, "saturation lost in the re-grid"
-        # a linear eps ~ 0.5 map would have put it at ~0.5 * dep_peak; it does not
-        assert peak < 0.5 * dep_peak / 20.0
+        # >30x compression below the LINEAR (unit-slope) placement. The raw ratio
+        # was ~77x on the former eps=0.5 half-scale axis; it is ~38x now only
+        # because the reconstructed axis is full-scale (params.CALIB_SLOPE = 1.0),
+        # not because the saturation changed -- dep_peak is identical, med doubled.
+        assert dep_peak / med > 30.0, "saturation lost in the re-grid"
+        # a LINEAR map would put the peak at dep_peak itself (unit calibration
+        # slope, params.CALIB_SLOPE = 1.0, CONVENTIONS Section E.1 -- no longer the
+        # former eps ~ 0.5 half-scale); the saturated peak sits >20x below that.
+        assert peak < dep_peak / 20.0
 
 
 def test_pileup_occupancy_is_recomputed_not_quoted():

@@ -230,14 +230,17 @@ def test_line_placement_measured():
     bound = a_sat * cc.ge71_branching_disposition()["M"]["upper_bound"]
     for d in DESIGNS:
         r = cc.fold_monochromatic_line(d, cc.GE71_M_LINE_eV, bound)
-        # the reconstructed image is NOT at the deposit energy
-        assert r["matrix_Erec_mean_eV"] < 0.6 * cc.GE71_M_LINE_eV
-        assert 0.3 < r["matrix_mapping_slope_vs_line"] < 0.6
-        assert 0.0 <= r["in_roi_fraction"] <= 1.0
-        # measured, and inside the RoI on the RECONSTRUCTED axis
-        assert ROI[0] <= r["matrix_Erec_mean_eV"] <= ROI[1]
-        # ... while the deposit energy is OUTSIDE it, which is why the clause is
-        # a cross-axis assertion and had to be adjudicated by measurement
+        # CORRECTED AXIS (params.CALIB_SLOPE = 1.0, CONVENTIONS Section E.1): E_rec
+        # ESTIMATES the deposit, so the 158.7 eV line images NEAR its own energy,
+        # only mildly compressed by saturation -- NOT halved to ~79 eV as the former
+        # eps = 0.5 axis did. The reconstructed image is a bit below the deposit...
+        assert 0.7 < r["matrix_mapping_slope_vs_line"] < 0.9
+        assert 0.6 * cc.GE71_M_LINE_eV < r["matrix_Erec_mean_eV"] < cc.GE71_M_LINE_eV
+        # ...and it lands ABOVE the 100 eV RoI top, so the line does NOT contaminate
+        # the signal RoI. The former "inside the RoI" reading was the eps=0.5 artifact.
+        assert r["matrix_Erec_mean_eV"] > ROI[1]
+        assert r["in_roi_fraction"] == pytest.approx(0.0, abs=1e-9)
+        # the deposit energy is also outside the RoI, as it always was
         assert cc.GE71_M_LINE_eV > ROI[1]
 
     txt = _text(REPORT)
@@ -292,15 +295,26 @@ def test_trigger_composition_ec():
         # 2.5 decades above E50, it should be essentially 1
         assert r["P_trig_at_line"] > 0.99
 
-    rates = {}
+    # k-sensitivity of the TRIGGERED line rate. On the corrected axis (unit
+    # calibration slope) the 158.7 eV line images near 130 eV, ABOVE the 10-100 eV
+    # RoI, so its in-RoI content is identically ZERO for every k -- a RoI-restricted
+    # spread would be 0/0. The line sits 2.5 decades above E50 = 1 eV where P_trig ~ 1
+    # for every k, so the meaningful, non-degenerate statement is that the WHOLE
+    # triggered line rate is k-insensitive. Measured over the full reconstructed axis.
     for k in (SHARPNESS_RANGE[0], params.TRIGGER_SHARPNESS.value, SHARPNESS_RANGE[1]):
         rk = cc.fold_monochromatic_line("Ta->Al", cc.GE71_M_LINE_eV, 1000.0,
                                         sharpness=k)
         E = rk["E_rec_centers_eV"]
-        m = (E >= ROI[0]) & (E <= ROI[1])
-        rates[k] = float(rk["N_rec_trigger"][m].sum())
+        # the line has left the RoI: no triggered counts inside 10-100 eV, any k
+        assert float(rk["N_rec_trigger"][(E >= ROI[0]) & (E <= ROI[1])].sum()) == \
+            pytest.approx(0.0, abs=1e-9)
+    rates = {}
+    for k in (SHARPNESS_RANGE[0], params.TRIGGER_SHARPNESS.value, SHARPNESS_RANGE[1]):
+        rk = cc.fold_monochromatic_line("Ta->Al", cc.GE71_M_LINE_eV, 1000.0,
+                                        sharpness=k)
+        rates[k] = float(np.asarray(rk["N_rec_trigger"]).sum())
     spread = (max(rates.values()) - min(rates.values())) / max(rates.values())
-    assert spread < 0.05, f"k-sensitivity on the in-RoI rate is {spread}"
+    assert spread < 0.05, f"k-sensitivity on the total triggered line rate is {spread}"
     assert f"{spread*100:.2f}" in _text(REPORT) or "k-sensitivity" in _text(REPORT)
 
 
