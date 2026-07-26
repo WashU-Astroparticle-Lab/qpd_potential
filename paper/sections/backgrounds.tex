@@ -1,12 +1,33 @@
-Two irreducible ambient radiation fields dominate the deposited-energy
-budget of an unshielded surface wafer: through-going cosmic-ray muons and
-the radiogenic environmental-gamma continuum. We compute each deposited
+A surface germanium wafer sits in several ambient radiation fields. Two
+are electron-recoil continua from external radiation---through-going
+cosmic-ray muons and the radiogenic environmental-gamma continuum---and a
+third is the nuclear-recoil field of ambient fast neutrons, which
+elastically scatter off germanium and are the background most dangerous to
+a CEvNS search because they mimic its very signature. A fourth field is
+internal: cosmogenic activation during surface exposure seeds the crystal
+with the radioisotopes $^{3}$H, $^{68}$Ge, and $^{65}$Zn, whose decays
+deposit energy from \emph{inside} the target. We compute each deposited
 spectrum $dR/dE_{\rm dep}$ on the unified phonon scale (no ionization
-quenching; both channels are electron recoils), and we anchor each to a
-published benchmark so that the downstream reconstructed spectra rest on
-validated inputs rather than assumed shapes. Neither channel involves new
-physics; the care lies entirely in the thin-wafer geometry, the
-straggling statistics, and the single-scatter kinematics.
+quenching), and we anchor each to a published benchmark or evaluated data
+library so that the downstream reconstructed spectra rest on validated
+inputs rather than assumed shapes.
+
+The four fields differ in how they respond to shielding, and this
+organizes the scenario we present. The external muon, gamma, and neutron
+fields can be attenuated by a passive shield and active veto; we adopt the
+performance demonstrated by NUCLEUS~\cite{nucleus} as a concrete assumed
+shield---muon rejection $\gtrsim10^{3}$, neutron $\gtrsim10^{2}$, gamma
+$\gtrsim10^{2}$, with a boron-loaded moderator that also removes the
+ambient thermal-neutron flux and hence the in-situ $(n,\gamma)$ capture
+and $^{71}$Ge channels it would otherwise drive. The internal cosmogenic
+decays, by contrast, occur within the crystal and \emph{no external shield
+reaches them}: they are the irreducible floor. The reconstructed
+background budget of Sec.~\ref{sec:results} is therefore the shielded
+ambient channels stacked on the unsuppressed Ge-intrinsic floor. We
+present the per-channel forward model at its unshielded rate below and
+apply the assumed suppression only at the point of assembly, so that the
+suppression factors remain explicit, separable modeling inputs rather than
+buried assumptions.
 
 \subsection{Cosmic muons}
 
@@ -151,9 +172,92 @@ rather than a directly measured line intensity, and a different
 deployment site would rescale the overall rate --- but not the edge
 structure --- accordingly.
 
-Both deposited spectra are computed on the shared phonon energy grid, so
-they are directly co-added and folded through the detector response of
-Sec.~\ref{sec:response} to yield the reconstructed background spectra of
-Fig.~\ref{fig:spectra}. There the gamma continuum populates the sub-keV
-to few-keV reconstructed region, while the muon high-deposit tail is the
-agent of readout saturation.
+\subsection{Ambient neutron elastic recoils}
+\label{sec:neutrons}
+
+Fast neutrons are the background most dangerous to a CEvNS search: they
+scatter elastically off germanium nuclei and produce exactly the low-energy
+nuclear recoils the signal consists of, on the same phonon scale and with no
+discriminating handle. We take the sea-level ambient neutron field from the
+PARMA/EXPACS analytical model~\cite{sato2015}, evaluated at a representative
+mid-latitude, sea-level, ground-level point, and normalize it to the
+$>10$~MeV integral flux measured by Gordon~\emph{et~al.}~\cite{gordon2004},
+$\Phi(>10~{\rm MeV})=3.55\times10^{-3}$~cm$^{-2}$s$^{-1}$; the un-normalized
+PARMA prediction already agrees with that anchor to $\sim$9\%. Only this
+single integral is externally validated, and we attach an
+order-of-magnitude accuracy label to the entire channel accordingly---the
+eV--keV differential shape that actually sets the in-band recoil rate is not
+independently benchmarked, and the local low-energy flux is moreover
+sensitive to the moderating and reflecting material around the detector at
+the tens-of-percent level.
+
+The deposited recoil spectrum is the elastic fold
+\begin{equation}
+\frac{dR}{dT}=N_{\rm Ge}\!\int_{E_{\min}(T)}^{E_{\rm top}}
+\phi(E_n)\,\frac{\sigma_{\rm el}(E_n)}{f\,E_n}\,dE_n,
+\qquad E_{\min}=\frac{T}{f},
+\label{eq:neutronfold}
+\end{equation}
+with $\sigma_{\rm el}$ the natural-germanium elastic cross section from
+ENDF/B-VIII.0~\cite{endfb8}, $N_{\rm Ge}$ the target density, and
+$f=\langle 4A/(1+A)^2\rangle=0.0536$ the abundance-weighted kinematic
+factor relating a recoil $T$ to the incident neutron energy. Because the
+epithermal flux is nearly $\phi\propto1/E_n$, the integrand behaves as
+$1/E_n^2$ and is peaked at its lower limit $E_{\min}(T)$, so the recoil rate
+in the $10$--$100$~eV region of interest is set by the neutron flux at
+$E_{\min}=T/f\approx0.19$--$1.9$~keV---the epithermal band, precisely the
+part of the spectrum most sensitive to the local environment. The resolved
+$^{73}$Ge resonance at $E_n=102.59$~eV imprints a kinematic edge at
+$T=f\,E_n\simeq5.5$~eV$_{\rm dep}$ (reconstructing to $\sim$5.3~eV): a
+neutron on that resonance can transfer at most $5.5$~eV, so the resonance's
+large contribution switches off sharply above it. Folded through the
+response, the \emph{unshielded} channel integrates to $4.78\times10^{3}$
+(Ta$\to$Al) and $4.83\times10^{3}$ counts~kg$^{-1}$day$^{-1}$ in the
+reconstructed $10$--$100$~eV RoI. This is the largest background in the
+band by nearly two orders of magnitude, and it remains the dominant term
+even after the assumed neutron shielding of $\gtrsim10^{2}$; reactor-%
+correlated neutrons, which we do not model, would add to it.
+
+\subsection{Ge-intrinsic cosmogenic activation}
+\label{sec:cosmogenic}
+
+Cosmic-ray spallation during above-ground exposure activates the germanium
+itself, seeding it with radioisotopes that then decay from \emph{inside} the
+crystal. Three dominate the sub-keV budget: $^{3}$H, $^{68}$Ge (decaying
+through $^{68}$Ga), and $^{65}$Zn. We take their sea-level production rates
+from the SuperCDMS/CDMSlite~\cite{amman2019} and EDELWEISS-III~%
+\cite{edelweiss2017} measurements and evaluate the as-deployed activity for
+a fixed one-year surface-exposure scenario with no cool-down (a
+continuously operating surface run, where activation keeps building), giving
+$4.05$, $18.22$, and $10.98$ decays~kg$^{-1}$day$^{-1}$ for
+$^{3}$H, $^{68}$Ge, and $^{65}$Zn respectively; the longer exposures allowed
+by the production-rate band raise these by up to $\sim$3$\times$. Because
+these deposits are born inside the target, they carry no quenching and
+\emph{no external shield attenuates them}---they are the irreducible floor
+of the shielded scenario.
+
+The $^{3}$H decay is a $\beta^-$ continuum with an $18.6$~keV endpoint; we
+use the allowed spectral shape with the non-relativistic Fermi function, so
+its deposited spectrum is a smooth continuum from threshold to $18.6$~keV,
+of which the fraction falling in the RoI is small but nonzero. The $^{68}$Ge
+and $^{65}$Zn decays proceed by electron capture, depositing the full
+atomic de-excitation energy (X-ray plus Auger cascade) of the daughter shell
+vacancy as discrete lines: the K, L, and M shells of the $^{68}$Ga daughter
+at $10.37$~keV, $1.30$~keV, and $158.7$~eV, and of the $^{65}$Cu daughter at
+$8.98$~keV, $1.10$~keV, and $120$~eV. On the calibrated reconstructed axis
+these lines image near their deposited energies, only mildly compressed by
+saturation above the onset: the $^{68}$Ga M line at $158.7$~eV reconstructs
+to $\sim$124~eV and its L line to $\sim$0.87~keV, so the sub-keV EC lines sit
+in the \emph{shoulder} just above the $100$~eV RoI rather than inside it.
+Only the low-energy tail of the $^{3}$H continuum and the M-shell lines
+approach the band, but as an unshielded internal floor they set the ultimate
+reach of the scenario once the ambient channels are suppressed.
+
+All background spectra are computed on the shared phonon energy grid, so
+they are co-added---the ambient muon, gamma, and neutron channels under the
+assumed shield suppression, the Ge-intrinsic $^{3}$H/$^{68}$Ge/$^{65}$Zn
+floor unsuppressed---and folded through the detector response of
+Sec.~\ref{sec:response} to yield the reconstructed background budget of
+Fig.~\ref{fig:spectra}. There the neutron-elastic channel dominates the
+RoI, the muon high-deposit tail is the agent of readout saturation, and the
+cosmogenic floor sets the residual once the shield is applied.
