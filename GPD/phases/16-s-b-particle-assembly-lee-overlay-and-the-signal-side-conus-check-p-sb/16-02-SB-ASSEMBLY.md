@@ -9,15 +9,22 @@
 
 ## 1. The headline
 
+> **REVISED 2026-07-25 — unit calibration slope (CONVENTIONS §E.1).** `params.CALIB_SLOPE`
+> moved 0.5 → 1.0 so that E_rec ESTIMATES the deposit. Two things changed in the RoI: the
+> signal numerator moved (CEvNS in-RoI 72.92 → 62.63), and the ⁷¹Ge EC M-line left the RoI
+> (it images at ~130 eV, above 100 eV) so it no longer enters the denominator. The headline
+> stays **of order 10⁻²**. Old-axis values, for the record: 1.33 / 1.32 × 10⁻² (est-only),
+> 7.29 / 7.27 × 10⁻³ (est+bounds).
+
 `S/B_particle`, trigger applied, veto credit exactly 1.0 by construction, at the
 paper's 3 GW_th / 25 m surface scenario:
 
 | design | band | estimates only | estimates + bounds (a **LOWER bound**) |
 |---|---|---|---|
-| **Ta→Al** | RoI 10–100 eV | **1.33 × 10⁻²** | **7.29 × 10⁻³** |
-| **Al→Hf** | RoI 10–100 eV | **1.32 × 10⁻²** | **7.27 × 10⁻³** |
-| Ta→Al | sub-eV (E_rec ≤ 1 eV) | 1.05 × 10⁻³ | 4.11 × 10⁻⁴ |
-| Al→Hf | sub-eV (E_rec ≤ 1 eV) | 1.05 × 10⁻³ | 4.12 × 10⁻⁴ |
+| **Ta→Al** | RoI 10–100 eV | **1.31 × 10⁻²** | **6.81 × 10⁻³** |
+| **Al→Hf** | RoI 10–100 eV | **1.31 × 10⁻²** | **6.88 × 10⁻³** |
+| Ta→Al | sub-eV (E_rec ≤ 1 eV) | 8.89 × 10⁻⁴ | 6.47 × 10⁻⁵ |
+| Al→Hf | sub-eV (E_rec ≤ 1 eV) | 8.96 × 10⁻⁴ | 6.53 × 10⁻⁵ |
 
 **The assembled accuracy label is `order_of_magnitude`**, inherited from the neutron
 and capture channels, which together are 98 % of the RoI denominator. The propagation
@@ -49,10 +56,10 @@ that does not reproduce is **BLOCKED**, not admitted with a note.
 | channel | band | reproduced | published | residual (rel) |
 |---|---|---|---|---|
 | CEvNS | whole axis TOTAL | 118.728595 / 118.729156 | 118.73 | 1.18e-05 / 7.11e-06 |
-| CEvNS | RoI 10–100 eV | 72.921435 / 73.144065 | 72.9214 / 73.1441 | 4.7e-07 / 4.8e-07 |
-| neutron elastic | RoI 10–100 eV | 5430.286621 / 5485.151456 | 5430.287 / 5485.152 | 7.0e-08 / 9.9e-08 |
-| Compton | RoI 10–100 eV | 34.248436 / 35.861630 | 34.2484 / 35.8616 | 1.1e-06 / 8.3e-07 |
-| muon | RoI 10–100 eV | 7.465639 / 7.723080 | 7.4656 / 7.7231 | 5.3e-06 / 2.5e-06 |
+| CEvNS | RoI 10–100 eV | 62.628919 / 63.622585 | 62.6289 / 63.6226 | 3.0e-07 / 2.4e-07 |
+| neutron elastic | RoI 10–100 eV | 4780.352188 / 4832.425330 | 4780.352 / 4832.425 | 3.9e-08 / 6.8e-08 |
+| Compton | RoI 10–100 eV | 11.933969 / 12.568430 | 11.934 / 12.5684 | 2.6e-06 / 2.4e-06 |
+| muon | RoI 10–100 eV | 3.527499 / 3.632413 | 3.5275 / 3.6324 | 4.2e-07 / 3.6e-06 |
 
 Tolerance 1e-4 relative, declared as a module constant before use. **Blocked channels:
 none.**
@@ -93,16 +100,16 @@ with a measured reason.
 
 | channel | class | RoI (Ta→Al) | RoI (Al→Hf) | sub-eV (Ta→Al) | label | in sum |
 |---|---|---|---|---|---|:-:|
-| **CEvNS signal** | ESTIMATE | **72.9214** | **73.1441** | 2.9812 | factor_two | numerator |
-| neutron elastic | ESTIMATE | 5430.2865 | 5485.1513 | 2851.998 | **order_of_magnitude** | yes |
+| **CEvNS signal** | ESTIMATE | **62.6289** | **63.6226** | 0.3072 | factor_two | numerator |
+| neutron elastic | ESTIMATE | 4780.3522 | 4832.4253 | 345.536 | **order_of_magnitude** | yes |
 | prompt (n,γ) capture | **BOUND** | ≤ 4399.777 | ≤ 4399.777 | ≤ 4399.777 | **order_of_magnitude** | yes |
-| ⁷¹Ge EC M line | **BOUND** | ≤ 130.8197 | ≤ 130.8196 | 0.0000 | order_of_magnitude | yes |
-| Compton γ | ESTIMATE | 34.2484 | 35.8616 | 0.0120 | factor_two | yes |
-| muon ionization | ESTIMATE | 7.4656 | 7.7231 | 0.0169 | factor_two | yes |
+| ⁷¹Ge EC M line | **BOUND (shoulder)** | 0.0 | 0.0 | 0.0 | order_of_magnitude | in sum @ 0 |
+| Compton γ | ESTIMATE | 11.9340 | 12.5684 | 0.0121 | factor_two | yes |
+| muon ionization | ESTIMATE | 3.5275 | 3.6324 | 0.0170 | factor_two | yes |
 | Ge discrete inelastic | BOUND | ≤ 2666.833 | ≤ 2666.833 | ≤ 2666.833 | order_of_magnitude | **EXCLUDED** |
 
 **The CEvNS numerator is COMPUTED, not substituted.** 118.73 is the whole-axis
-**TOTAL**; the in-RoI signal is 72.9214 / 73.1441, a factor 1.63 smaller. In the
+**TOTAL**; the in-RoI signal is 62.6289 / 63.6226, a factor 1.90 smaller. In the
 emitted artifacts 118.73 appears only in fields explicitly labelled TOTAL, and a test
 asserts that.
 
@@ -111,12 +118,15 @@ non-thermal 1034.241. The non-thermal part is **23.51 %** of the channel and is 
 **~8.7× the entire CEvNS total**. Reading Phase 14's title literally and folding the
 thermal component alone would understate this channel by **1.31×**.
 
-**The ⁷¹Ge M line sits at its RECONSTRUCTED image, not at its deposit energy.** 158.7 eV
-is a **deposited** energy; the reconstructed image is at **65.0 / 63.0 eV** (mapping
-slope 0.4099 / 0.3967). It is **100 % in-RoI and exactly 0 % sub-eV**, which the
-leave-one-out sweep independently confirms. It is a **bound with a scenario** and both
-scenarios travel together: **130.8197 at saturation** against **7.697512 at t = 1 d**, a
-**17.0× spread** that a bare number would hide. Saturation is used in the headline layer
+**The ⁷¹Ge M line has LEFT the RoI on the corrected axis (2026-07-25).** 158.7 eV is a
+**deposited** energy; its reconstructed image is at **130.1 / 125.9 eV** (mapping slope
+0.8198 / 0.7935), **above** the 100 eV RoI top. It is therefore **0 % in-RoI** and
+contributes **0** to the RoI denominator — a shoulder line, not an in-band background.
+(On the former ε = 0.5 half-scale it imaged at 65 / 63 eV, 100 % in-RoI; that reading was
+the artifact this correction removes.) The 130.8197 saturation figure survives as a
+**whole-axis (shoulder) total**, with a **17.0× scenario spread** — 130.8197 at
+saturation against 7.697512 at t = 1 d — but none of it lands in the RoI. Saturation is
+used in the headline layer
 because it is the larger, non-flattering choice; the exposure history is not a physics
 input this project owns.
 
@@ -188,8 +198,8 @@ Two of the six background channels arrive as **upper bounds**, not rate estimate
 
 | layer | channels | RoI B (Ta→Al) | direction |
 |---|---|---|---|
-| `estimates_only` | neutron + Compton + muon | 5472.001 | an **estimate** |
-| `estimates_plus_bounds` | + capture bound + M-line bound | 10002.597 | `S/B_particle` is a **LOWER bound** |
+| `estimates_only` | neutron + Compton + muon | 4795.771 | an **estimate** |
+| `estimates_plus_bounds` | + capture bound (M-line now 0, out of RoI) | 9195.548 | `S/B_particle` is a **LOWER bound** |
 
 **Summing upper bounds into the denominator makes `S/B_particle` a LOWER bound.** That
 direction is part of the result, not a caveat on it. The two layers are never collapsed
@@ -222,18 +232,19 @@ In `estimates_only` the neutron removal gives ×131.2 — the channel is 99.2 % 
 layer.
 
 **One measured exception, separated rather than swept up.** The ⁷¹Ge M line contributes
-**exactly zero** in the sub-eV band: it is a monochromatic line whose reconstructed
-image is at 65.0 / 63.0 eV, 100 % inside the RoI and 0 % below 1 eV. Removing a zero
-cannot raise a ratio, so demanding a strict increase there would be demanding the wrong
-thing. Those two rows carry `monotonicity_check = EXACT_NO_OP_REQUIRED` and are checked
-for an **exact** no-op instead — which is a real check on where that line was placed,
-not a waiver.
+**exactly zero** in the RoI **and** the sub-eV band on the corrected axis: it is a
+monochromatic line whose reconstructed image is at 130.1 / 125.9 eV — **above** the RoI
+top, and far above 1 eV. Removing a zero cannot raise a ratio, so demanding a strict
+increase there would be demanding the wrong thing. Those rows carry
+`monotonicity_check = EXACT_NO_OP_REQUIRED` and are checked for an **exact** no-op
+instead — which is a real check on where that line was placed (now above the RoI), not a
+waiver.
 
 ### 7.2 The inelastic exclusion, justified by measurement
 
 Adding the ≤ 2666.833 counts kg⁻¹ day⁻¹ inelastic bound to the RoI
-`estimates_plus_bounds` denominator moves `S/B_particle` by **-21.049 %** (ratio
-0.789506); in the sub-eV band by -26.887 %. Meanwhile the nuclear recoils that bound
+`estimates_plus_bounds` denominator moves `S/B_particle` by **-22.481 %** (ratio
+0.775186); in the sub-eV band by a larger fraction. Meanwhile the nuclear recoils that bound
 describes sit at **2.271606e+05 eV = 227 keV**, **3.356 decades above** the 100 eV RoI
 top.
 
@@ -358,11 +369,12 @@ genuine blocker arises. The checkpoint's content is recorded here **in full** an
 default was taken. **No approval was given and none is fabricated** — the precedent of
 12-03 §6, 13-03 and 14-02 §8.
 
-> **`S/B_particle` = 1.33 × 10⁻² (estimates-only) / 7.29 × 10⁻³
+> **`S/B_particle` = 1.31 × 10⁻² (estimates-only) / 6.81 × 10⁻³
 > (estimates-plus-bounds), Ta→Al, RoI 10–100 eV, at `order_of_magnitude`**
-> (Al→Hf: 1.32 × 10⁻² / 7.27 × 10⁻³). Denominator ranked by leave-one-out: neutron
-> elastic (×2.19) > prompt (n,γ) capture (×1.79) > ⁷¹Ge M line (×1.013) > Compton
-> (×1.0034) > muon (×1.0007). The estimates-plus-bounds layer is a **lower bound** on
+> (Al→Hf: 1.31 × 10⁻² / 6.88 × 10⁻³) — corrected unit-slope axis, 2026-07-25.
+> Denominator ranked by leave-one-out: neutron elastic (×2.08) > prompt (n,γ) capture
+> (×1.92) > Compton (×1.0013) > muon (×1.0004) > ⁷¹Ge M line (×1.000, out of RoI). The
+> estimates-plus-bounds layer is a **lower bound** on
 > `S/B_particle`. Six caveats attached. The three things most worth a physicist's own
 > judgement, in order: **(1)** the two-layer bound structure — is summing upper bounds
 > into the denominator the right presentation, or should the bounded channels be

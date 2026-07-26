@@ -39,7 +39,31 @@ loss and is **not** unfolded (`fp-unfold-saturation`).
   notebook now carries TWO scales.
 - Slope assertions in `tests/test_response_chain.py`, `test_response_matrix.py`, `test_energy_scale.py`.
 
-### NOT done — this todo
+### Done in the follow-up pass (branch claude/erec-recalibration-milestone-record)
+
+- **Emitters written & committed** (they never existed): `fold.write_em_ext_spectrum`,
+  `fold.write_em_dominance_table`. `em_dRdErec_ext_*` and `em_inband_dominance.csv` regenerated
+  on the unit-slope axis. **sb_assembly is no longer mixing scales** — every channel CSV is now
+  new-axis.
+- **M line leaves the RoI (result change).** 158.7 eV_dep images at ~126–130 eV, above the RoI;
+  in-RoI fraction 0. SC3's "M line inside the RoI" is REFUTED on the corrected axis. `14-02`
+  §2/§2.1/§3 + SC3 row updated; `PHASE13_ELASTIC_INROI` → 4780.35 / 4832.43.
+- **Endpoint anchor** test updated 34.8/26.8 → 69.53/53.69 keV. ge71 + em + regime-boundary +
+  dominance-ratio tests updated around the corrected physics. Frozen-artifact exempt list updated.
+
+### NOT done — needs a decision (below), then the headline work
+
+- **S/B_particle headline.** Two coupled changes: (a) the signal numerator itself moved with the
+  axis — CEvNS in-RoI 72.92 → 62.63; (b) `sb_assembly` still adds the ⁷¹Ge M-line's TOTAL bound
+  (130.82) to the RoI denominator, but the line no longer lands in the RoI — **decision needed**:
+  an out-of-RoI bound should contribute 0 to the RoI background. Once resolved: regenerate
+  `sb_particle.csv` / `sb_leave_one_out.csv` / `channel_inventory.csv`, update the Phase-16 report
+  numbers, ROADMAP/STATE headline S/B, and `test_sb_assembly` (5 tests).
+- **v1.0-baseline comparisons** (`test_overlap_vs_archived` ×2, `test_cevns_subev_regression` ×2) —
+  decision needed (re-anchor in deposit space vs rebuild stage1/).
+- **The paper** — still on the old axis (`response.tex`, `results.tex`).
+
+### Original enumeration (for reference)
 
 **18 tests fail (891 pass), every one a real downstream consequence, none a code defect.**
 

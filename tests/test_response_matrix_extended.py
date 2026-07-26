@@ -190,30 +190,42 @@ def test_overlap_bitwise_against_a_same_code_v1_range_rebuild():
 
 @pytest.mark.parametrize("design", DESIGNS)
 def test_overlap_vs_archived_is_consistent_with_monte_carlo_noise(design):
-    """test-overlap-vs-archived. STATISTICAL, never bitwise.
+    """test-overlap-vs-archived. STATISTICAL, in DEPOSIT space where the energy
+    scale cancels.
 
-    Differences are normalised by the ABSOLUTE per-cell MC error stored in the
-    archived npz (R_arch * err_arch). Restricted to WELL-POPULATED cells, where
-    a Gaussian 3-sigma criterion actually applies. The raw all-cells fraction is
-    much larger and is reported as a finding in the SUMMARY -- it is low-count
-    Poisson discreteness, not a regression."""
+    RE-ANCHORED 2026-07-25. The v2.0 matrices were rebuilt on the unit
+    calibration slope (params.CALIB_SLOPE = 1.0), while the archived v1.0
+    stage1/ matrices are DELIBERATELY kept on the former eps = 0.5 axis (frozen
+    comparison baseline, fp-overwrite-v1-matrices). The count->energy constant C
+    therefore differs by exactly 2x between them, so a cell-by-cell R(E_rec|E_dep)
+    comparison would measure the calibration convention, not the grid/fold work
+    this regression exists to protect.
+
+    The scale-invariant quantity is the mean OBSERVED COUNT per deposit column,
+    mean(E_rec)/C: E_rec = C * N_obs, so dividing the per-column mean E_rec by
+    each matrix's own C removes the calibration and leaves the forward-model count
+    distribution the two share. That is compared here, restricted to
+    well-populated columns, where MC noise is small."""
     z, a = _ext(design), _arc(design)
     R_ext = z[f"R_{CANONICAL}"][:, 160:]
-    Ra, ea, ca = a[f"R_{CANONICAL}"], a[f"err_{CANONICAL}"], a[f"counts_{CANONICAL}"]
+    Ra, ca = a[f"R_{CANONICAL}"], a[f"counts_{CANONICAL}"]
     assert R_ext.shape == Ra.shape == (161, 584)
+    Ec = z["E_rec_centers_eV"]
+    assert np.allclose(Ec, a["E_rec_centers_eV"])          # shared E_rec grid
+    C_new = float(z["C_non_paralyzable_eV_per_event"])
+    C_old = float(a["C_non_paralyzable_eV_per_event"])
+    assert C_new / C_old == pytest.approx(2.0, rel=1e-6)   # the eps->1 rescale
 
-    well = (ca >= 1000) & np.isfinite(ea)
-    assert well.sum() > 500
-    dn = np.abs(R_ext[well] - Ra[well]) / (Ra[well] * ea[well])
-    # a difference of two INDEPENDENT estimates has sigma_diff ~ sqrt(2)*sigma,
-    # so the Gaussian expectation for |d|/sigma > 3 is ~2*(1-Phi(3/sqrt2)) ~ 3.4e-3
-    assert float(np.mean(dn > 3.0)) < 0.01, (
-        f"{design}: {np.mean(dn > 3.0):.4f} of well-populated cells beyond 3 sigma")
-    assert float(np.mean(dn > 3.0 * np.sqrt(2.0))) < 0.005
-    # the disagreement carries very little probability mass
-    tv = np.abs(R_ext - Ra).sum(axis=0)
-    assert float(np.median(tv)) < 1e-9      # most columns agree exactly
-    assert float(tv.max()) < 0.10
+    # mean observed count per column (deposit-space, scale cancels)
+    n_new = (R_ext * Ec[:, None]).sum(axis=0) / C_new
+    n_old = (Ra * Ec[:, None]).sum(axis=0) / C_old
+    well = ca.sum(axis=0) >= 1000
+    assert well.sum() > 400
+    rel = np.abs(n_new[well] - n_old[well]) / np.maximum(n_old[well], 1e-30)
+    # well-populated columns agree to MC noise once the 2x scale is removed
+    assert float(np.median(rel)) < 5e-3, f"{design}: median {np.median(rel):.2e}"
+    assert float(np.mean(rel > 0.05)) < 0.02, (
+        f"{design}: {np.mean(rel > 0.05):.4f} of well-populated columns disagree >5%")
 
 
 # --------------------------------------------------------------------------- #

@@ -351,7 +351,7 @@ Plans:
 
 ### Phase 13: Ge Neutron Fold from the Sea-Level Flux (P-TGT)
 
-**Status:** COMPLETE 2026-07-22. **RoI-band neutron rate (E_rec 10-100 eV, untriggered): Ta->Al 5430.29, Al->Hf 5485.15 counts/kg/day.** Recoil-axis in-RoI 4418.96. Sub-eV (E_rec < 1 eV): 5121.3/5126.2 untriggered, 2852.0/2856.9 triggered. Whole channel labelled **order_of_magnitude**.
+**Status:** COMPLETE 2026-07-22; **RoI figures REVISED 2026-07-25 (unit calibration slope §E.1). RoI-band neutron rate (E_rec 10-100 eV, untriggered): Ta->Al 4780.35, Al->Hf 4832.43 counts/kg/day** (was 5430.29 / 5485.15 on the eps=0.5 axis; the 10-100 eV reconstructed RoI now images a 10-100 eV deposit band, not 20-200). Recoil-axis in-RoI 4418.96 (deposit axis, unchanged). Whole channel labelled **order_of_magnitude**.
 
 **SC4: SUPERSEDED BY MEASUREMENT (mechanism); direction REVERSES against CaWO4.** The substitution E = (T/f)x gives dR/dT = n(C/T) * integral, in which the 1/f prefactor cancels against the T/f lower limit **for any sigma**; f survives only INSIDE sigma's argument, where it moves resonance features along T and never scales the rate. Measured spread across f in {0.0215, 0.0536, 0.0952, 0.2215}: **4.1997e-8**. The Ge/W ratio of 2.29-2.46 per kg is accounted for **entirely by atoms/kg (2.53339)**; flux shape supplies -3% to -9%; the kinematic part is <=1.4e-4. `f_Ge/f_W = 2.4925` and `n_Ge/n_W = 2.5334` agree to 1.6% because **both track A_W/A_Ge** -- SC4's ~2.5x was right for the wrong reason. **Ge/CaWO4 = 0.673-0.692: Ge is the BETTER target per kg by ~1.45x**, because O is 66.67% of CaWO4's atom count. Conditional on common-constant-sigma legs (only Ge has a resonance-resolved sigma here) -- stated, not buried.
 
@@ -523,16 +523,18 @@ Plans:
 
 **HEADLINE S/B_particle** -- 10-100 eV reconstructed RoI, trigger applied, veto credit **exactly 1.0 BY CONSTRUCTION**, configuration **NUCLEUS's-shielding-absent** (never "conservative"), at `order_of_magnitude` (band multiplier [10^-0.5, 10^+0.5]):
 
+**REVISED 2026-07-25 (unit calibration slope, CONVENTIONS §E.1; E_rec estimates the deposit). Old-axis values in parentheses.**
+
 | design | estimates only | estimates + bounds (**LOWER bound**) |
 |---|---|---|
-| Ta->Al | **1.33e-2** | **7.29e-3** |
-| Al->Hf | **1.32e-2** | **7.27e-3** |
+| Ta->Al | **1.31e-2** (was 1.33e-2) | **6.81e-3** (was 7.29e-3) |
+| Al->Hf | **1.31e-2** (was 1.32e-2) | **6.88e-3** (was 7.27e-3) |
 
-Sub-eV (E_rec <= 1 eV): 1.05e-3 / 4.11e-4 and 1.05e-3 / 4.12e-4. **The two designs are NOT distinguishable at the assembled label.** Reported as computed -- no target value carried, nothing adjusted.
+Sub-eV (E_rec <= 1 eV): 8.89e-4 / 6.47e-5 and 8.96e-4 / 6.53e-5. **The two designs are NOT distinguishable at the assembled label.** Reported as computed -- no target value carried, nothing adjusted.
 
-**In-RoI CEvNS signal, COMPUTED not substituted: 72.9214 / 73.1441** counts/kg/day. The 118.73 total is 1.63x larger and appears only under TOTAL-labelled fields.
+**In-RoI CEvNS signal, COMPUTED not substituted: 62.6289 / 63.6226** counts/kg/day (was 72.9214 / 73.1441). The 118.73 total is 1.90x larger and appears only under TOTAL-labelled fields.
 
-**Denominator (RoI, Ta->Al, counts/kg/day):** neutron elastic 5430.29 (54.3%) - prompt (n,gamma) capture <=4399.78 (44.0%, **full band**; thermal-only would understate 1.31x) - 71-Ge M line <=130.82 at saturation (1.3%; 7.6975 at t = 1 d) - Compton 34.25 - muon 7.47 - **total 10002.60**. Ge inelastic <=2666.83 EXCLUDED (-21.049% if added).
+**Denominator (RoI, Ta->Al, counts/kg/day):** neutron elastic 4780.35 (was 5430.29) - prompt (n,gamma) capture <=4399.78 (**full band**; thermal-only would understate 1.31x) - Compton 11.93 - muon 3.53 - **total 9195.55**. **71-Ge EC M line now contributes 0**: on the corrected axis it images at ~130 eV, ABOVE the 100 eV RoI (was <=130.82 in-RoI on the eps=0.5 half-scale); its 130.82 saturation bound survives as a shoulder total. Ge inelastic <=2666.83 EXCLUDED (-22.481% if added).
 
 **VALD-12: PARTIALLY CONFIRMED, WINDOW-CONDITIONAL.** Pre-registered 0.4-1 keV_ee -> ratio **5.278664e-4** against a pre-declared factor 2.0: **the pre-registered leg is a FAIL by 3.28 decades**. Declared alternate 160 eV_ee -> **8.333761e-1** at central quenching (bracket 0.401-1.765). Spread **4.504 decades**. Only 34.85% of the pre-registered window lies inside our kinematic support (measured edge 3031.6858 eV_nr). The Billard route agrees to 0.87% but its leverage was measured: only **4.7e-6** of its weight sits above that window's lower edge, so it does NOT reach there. **The ROADMAP backtracking trigger is LIVE and the gate travels on every downstream deliverable.**
 

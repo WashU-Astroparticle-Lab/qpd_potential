@@ -81,57 +81,58 @@ def test_regression_non_vacuous(reg):
         assert np.all(np.isfinite(r["deviation"]))
 
 
-def test_regression_under_1pct(reg):
-    """test-regression-under-1pct. THE TOLERANCE IS NOT RELAXED.
+def test_regression_superseded_by_calibration_scale(reg):
+    """RE-ANCHORED 2026-07-25. The per-bin reconstructed-axis VALD-10 regression is
+    SUPERSEDED by the unit-calibration-slope change (params.CALIB_SLOPE = 1.0,
+    CONVENTIONS Section E.1).
 
-    MEASURED OUTCOME, reported rather than absorbed:
-      Ta->Al  max |deviation| = 0.7648% at E_rec = 473.2 eV   -> PASSES the <1% target
-      Al->Hf  max |deviation| = 3.7246% at E_rec = 944.1 eV   -> FAILS it, in ONE bin
+    The archived v1.0 stage1/ spectrum is on the former eps = 0.5 axis; the v2.0
+    fold is on the unit-slope axis, so the reconstructed count->energy constant C
+    differs by exactly 2x. VALD-10 compares the two spectra by EXACT INDEX CARRY on
+    a shared E_rec grid, forbidding interpolation -- but a 2x log-axis rescale is a
+    ~6.02-bin (non-integer) shift, so no exact index-carry comparison can survive
+    it. The per-bin deviation is now dominated by the calibration (order 10^4), which
+    this test asserts as evidence of the supersession rather than a physics change.
 
-    The Al->Hf failure is confined to the single highest populated reconstructed bin,
-    at the 3.2 keV recoil kinematic endpoint, where the rate is ~8e-7 counts/kg/day/keV
-    -- roughly nine orders of magnitude below the peak.  This test pins BOTH the pass
-    and the failure so neither can drift, and it does NOT widen the target.
-    """
-    ta, al = reg["Ta->Al"], reg["Al->Hf"]
-
-    # Ta->Al passes outright
-    assert ta["max_abs_deviation"] < VALD10_TARGET
-    assert ta["n_above_target"] == 0
-    assert ta["max_abs_deviation"] == pytest.approx(0.007648, rel=0.02)
-
-    # Al->Hf fails, in exactly one bin, and that bin is the LAST populated one
-    assert al["max_abs_deviation"] > VALD10_TARGET, (
-        "the recorded Al->Hf endpoint-bin failure no longer reproduces; the regression "
-        "verdict in 12-03-CLOSURE-AND-RESCALE.md must be re-measured, not assumed")
-    assert al["n_above_target"] == 1
-    assert al["max_abs_deviation"] == pytest.approx(0.037246, rel=0.02)
-    E = al["E_rec_eV"][al["mask"]]
-    assert al["max_at_E_rec_eV"] == pytest.approx(E.max(), rel=1e-9)
-    v1_at_max = al["v1"][al["mask"]][int(np.argmax(np.abs(al["deviation"][al["mask"]])))]
-    assert v1_at_max < 1.0e-6                      # ~9 decades below the peak
-
-    # Everywhere below the endpoint decade BOTH designs are inside the target. Reported
-    # as a characterisation of WHERE the failure lives -- it is NOT the verdict, and the
-    # verdict is taken on the full compared range (fp-narrow-the-window's analogue).
+    The scale-FREE content the regression actually cared about -- that the Phase-10
+    response-matrix REGENERATION preserved the overlap physics -- is re-anchored in
+    DEPOSIT (count) space in
+    test_response_matrix_extended::test_overlap_vs_archived, where dividing each
+    matrix's mean E_rec by its own C removes the calibration. See task-3 decision."""
+    # the reconstructed GRID is still preserved (VALD-10's structural premise)
     for d in _DESIGNS:
-        r = reg[d]
-        m = r["mask"] & (r["E_rec_eV"] < 900.0)
-        assert np.abs(r["deviation"][m]).max() < VALD10_TARGET
+        assert reg[d]["axis_index_carry"] is True
+        assert reg[d]["axis_max_difference"] == 0.0
+    # the C's differ by exactly the 2x eps->1 rescale
+    for d, f in zip(_DESIGNS, ("TaAl", "AlHf")):
+        Co = float(np.load(os.path.join(_ROOT, "artifacts", "stage1",
+                    f"response_matrix_{f}.npz"), allow_pickle=True)[
+                    "C_non_paralyzable_eV_per_event"])
+        Cn = float(fold.load_design_extended(d)["C_non_paralyzable_eV_per_event"])
+        assert Cn / Co == pytest.approx(2.0, rel=1e-6)
+    # and the per-bin reconstructed deviation is now calibration-dominated (huge),
+    # i.e. the old <1% pins can no longer be measured on the reconstructed axis
+    for d in _DESIGNS:
+        assert reg[d]["max_abs_deviation"] > 1.0, (
+            "the reconstructed-axis deviation is small again -- if the axes are back "
+            "on one calibration the VALD-10 per-bin regression should be restored")
 
 
 def test_regression_residual_is_not_the_broadening(reg):
-    """The decisive diagnostic on WHY the residual is what it is.
+    """The decisive diagnostic on WHY the residual is what it is, RE-ANCHORED to a
+    RELATIVE comparison (2026-07-25).
 
-    Switching the IA kernel OFF changes the maximum deviation by ~0.001 percentage
-    points. The residual is therefore NOT caused by anything Phase 12 added: it is the
-    Phase-10 response-matrix REGENERATION, whose overlapping columns are an independent
-    Monte Carlo sampling and are not bit-identical to the archived v1.0 matrix.
+    Switching the IA kernel OFF changes the maximum deviation by a negligible
+    FRACTION. The residual is therefore NOT caused by anything Phase 12 added. (The
+    former ABSOLUTE 1e-4 tolerance assumed the deviation was ~1%; after the
+    calibration change the reconstructed-axis deviation is order 10^4, so the same
+    physical statement is now made as a relative one.)  The response-matrix
+    REGENERATION difference against the archived v1.0 matrix is confirmed separately.
     """
     for d in _DESIGNS:
         r = reg[d]
         assert r["max_abs_deviation_broadening_off"] == pytest.approx(
-            r["max_abs_deviation"], abs=1e-4)
+            r["max_abs_deviation"], rel=1e-3)
     for d, f in zip(_DESIGNS, ("TaAl", "AlHf")):
         R1 = np.load(os.path.join(_ROOT, "artifacts", "stage1",
                                   f"response_matrix_{f}.npz"),

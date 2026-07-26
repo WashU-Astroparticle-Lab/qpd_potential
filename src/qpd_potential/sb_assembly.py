@@ -4,7 +4,8 @@
 EVERY quantity here is on the shared RECONSTRUCTED axis (``axis == RECONSTRUCTED``),
 the 161-bin E_rec axis less the ``[0, 1e-3 eV)`` underflow catch-bin that Phases
 12/13/14/15 all drop identically.  The 71Ge M line's 158.7 eV is a DEPOSITED
-energy; its reconstructed image is at 65.0 / 63.0 eV and that is where it enters.
+energy; on the corrected unit-slope axis its reconstructed image is at 130.1 /
+125.9 eV -- ABOVE the RoI -- so it contributes 0 to the RoI denominator.
 
 THE OBSERVABLE IS NAMED ``S/B_particle``, ALWAYS.  The subscript records that the
 low-energy excess is excluded BY CONSTRUCTION, not overlooked.  Plan 16-03 owns
@@ -114,7 +115,10 @@ INELASTIC_GAMMA_RECOILS_eV = (2.576622, 5.185)   # 74Ge 596 keV, 72Ge 834 keV
 
 #: The 71Ge M line's DEPOSIT energy and its RECONSTRUCTED image.  Never confused.
 GE71_M_DEPOSIT_eV = 158.7
-GE71_M_EREC_IMAGE_eV = {"Ta->Al": 65.0, "Al->Hf": 63.0}
+# REVISED 2026-07-25 (unit calibration slope): the 158.7 eV M line images at ~130 /
+# ~126 eV, ABOVE the 10-100 eV RoI -- it no longer lands in the signal band. Was
+# 65.0 / 63.0 eV (inside RoI) on the former eps=0.5 half-scale.
+GE71_M_EREC_IMAGE_eV = {"Ta->Al": 130.10, "Al->Hf": 125.93}
 
 
 # =========================================================================== #
@@ -158,17 +162,23 @@ def band_integral(E_rec_eV, dRdErec, lo, hi, edges):
 
 #: Each channel's OWN published headline, and where it came from.  A channel
 #: whose artifact fails to reproduce its headline is BLOCKED from the sum.
+# RoI headlines REVISED 2026-07-25 for the unit calibration slope
+# (params.CALIB_SLOPE = 1.0, CONVENTIONS Section E.1). The 10-100 eV RECONSTRUCTED
+# RoI now images a 10-100 eV DEPOSIT band instead of the former 20-200 eV, so every
+# reconstructed-axis in-RoI integral moved. The TOTAL (cevns 118.73) is on the whole
+# axis and is scale-invariant. Old-axis values, for the record: cevns 72.9214/73.1441,
+# neutron 5430.287/5485.152, compton 34.2484/35.8616, muon 7.4656/7.7231.
 PUBLISHED_HEADLINES = {
     ("cevns", "TOTAL"): {"Ta->Al": 118.73, "Al->Hf": 118.73,
                          "source": "Phase 12 (12-03), whole reconstructed axis"},
-    ("cevns", "RoI_10_100eV"): {"Ta->Al": 72.9214, "Al->Hf": 73.1441,
-                                "source": "Phase 15 (15-04) orientation row"},
-    ("neutron", "RoI_10_100eV"): {"Ta->Al": 5430.287, "Al->Hf": 5485.152,
-                                  "source": "Phase 13 (13-03) Section 7"},
-    ("compton", "RoI_10_100eV"): {"Ta->Al": 34.2484, "Al->Hf": 35.8616,
-                                  "source": "Phase 15 (15-04)"},
-    ("muon", "RoI_10_100eV"): {"Ta->Al": 7.4656, "Al->Hf": 7.7231,
-                               "source": "Phase 15 (15-04)"},
+    ("cevns", "RoI_10_100eV"): {"Ta->Al": 62.6289, "Al->Hf": 63.6226,
+                                "source": "Phase 15 (15-04) orientation row; unit-slope axis"},
+    ("neutron", "RoI_10_100eV"): {"Ta->Al": 4780.352, "Al->Hf": 4832.425,
+                                  "source": "Phase 13 (13-03) Section 7; unit-slope axis"},
+    ("compton", "RoI_10_100eV"): {"Ta->Al": 11.9340, "Al->Hf": 12.5684,
+                                  "source": "Phase 15 (15-04); unit-slope axis"},
+    ("muon", "RoI_10_100eV"): {"Ta->Al": 3.5275, "Al->Hf": 3.6324,
+                               "source": "Phase 15 (15-04); unit-slope axis"},
 }
 
 #: (artifact stem, untriggered column, triggered column) per spectral channel.
@@ -496,11 +506,15 @@ def channel_inventory(design):
         "subev_untriggered": ge["subeV_le_1eV_untriggered"],
         "subev_triggered": ge["subeV_le_1eV_triggered"],
         "whole_axis_TOTAL_untriggered": ge["TOTAL_untriggered"],
-        "published_headline_roi": GE71_M_SATURATION_counts_kg_day,
-        "reproduction_residual_rel": abs(ge["RoI_10_100eV_untriggered"]
+        # On the corrected axis the line is OUT of the RoI, so its RoI headline is 0.
+        # The 130.82 saturation bound is now a WHOLE-AXIS (shoulder) total; the
+        # reproduction check compares the computed TOTAL to it, not the RoI.
+        "published_headline_roi": 0.0,
+        "reproduction_residual_rel": abs(ge["TOTAL_untriggered"]
                                          - GE71_M_SATURATION_counts_kg_day)
         / GE71_M_SATURATION_counts_kg_day,
-        "headline_reproduced": True, "published_headline_TOTAL": "",
+        "headline_reproduced": True,
+        "published_headline_TOTAL": GE71_M_SATURATION_counts_kg_day,
         "in_sum": True, "excluded_reason": "",
         "scenario_saturation_counts_kg_day": GE71_M_SATURATION_counts_kg_day,
         "scenario_t1day_counts_kg_day": GE71_M_T1DAY_counts_kg_day,
@@ -510,9 +524,11 @@ def channel_inventory(design):
         "note": ("A BOUND WITH A SCENARIO, and both scenarios travel together: 130.8197 "
                  "at SATURATION against 7.697512 at t = 1 d, a 17.0x spread that a bare "
                  "number would hide. The project does not own the exposure history. "
-                 "100% of it lands IN the RoI. Its 158.7 eV is a DEPOSITED energy; its "
-                 "RECONSTRUCTED image is at 65.0 / 63.0 eV (mapping slope 0.4099 / "
-                 "0.3967), and that is where it enters the sum."),
+                 "REVISED 2026-07-25 (unit calibration slope): its 158.7 eV DEPOSIT images "
+                 "to 130.10 / 125.93 eV_rec (mapping slope 0.8198 / 0.7935), ABOVE the 100 eV "
+                 "RoI top, so 0% of it lands in the RoI and it contributes 0 to the RoI "
+                 "denominator -- a shoulder line, not an in-band background. It was 65.0 / "
+                 "63.0 eV (100% in-RoI) only on the former eps=0.5 half-scale."),
     })
 
     rows.append({
@@ -823,7 +839,8 @@ def write_channel_inventory_csv(path=INVENTORY_CSV):
         "#",
         "# 158.7 eV IS A DEPOSITED ENERGY.  It appears only in the column",
         "#   deposit_energy_eV_DEPOSITED.  The 71Ge M line's RECONSTRUCTED image is in",
-        "#   erec_image_eV, at 65.0 / 63.0 eV, and that is where the line enters the sum.",
+        "#   erec_image_eV, at 130.1 / 125.9 eV on the corrected unit-slope axis -- ABOVE",
+        "#   the 100 eV RoI top -- so its in-RoI contribution is 0 (shoulder line).",
         "#",
         f"# LABEL PROPAGATION RULE: {lab['rule']}",
         f"#   input labels {lab['input_labels']} -> assembled {lab['assembled_label']}",
