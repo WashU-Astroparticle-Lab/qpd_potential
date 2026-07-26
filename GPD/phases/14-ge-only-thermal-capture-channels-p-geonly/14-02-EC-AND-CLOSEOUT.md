@@ -140,17 +140,23 @@ Monochromatic 158.7 eV deposit → `shared_energy_grid("v2.0-ext")` bin 256 (cen
 160.849678 eV) → `response_matrix_{TaAl,AlHf}_ext.npz` (161 × 744, columns summing to 1) →
 trigger on the **deposit** axis multiplying ε (CONVENTIONS §I).
 
+> **REVISED 2026-07-25 (unit calibration slope, CONVENTIONS §E.1).** The values below were
+> re-measured after `params.CALIB_SLOPE` moved 0.5 → 1.0, so that E_rec ESTIMATES the deposit
+> instead of carrying the physical ε ≈ 0.5 conversion fraction on the axis. The conclusion
+> **flips**: on the corrected axis the M line images at ~126–130 eV — **above** the 100 eV RoI
+> top — and its in-RoI fraction is **0**, not 1. The former "inside the RoI" reading was an
+> artifact of the ε = 0.5 half-scale. The pre-revision numbers are preserved in git.
+
 | quantity | Ta→Al | Al→Hf |
 |---|---:|---:|
-| matrix's own unbinned E_rec **mean** | **65.049 eV** | **62.964 eV** |
-| median | 65.045 eV | 62.971 eV |
-| p16 / p84 | 64.451 / 65.651 eV | 62.425 / 63.491 eV |
+| matrix's own unbinned E_rec **mean** | **130.098 eV** | **125.928 eV** |
+| median | 130.090 eV | 125.941 eV |
+| p16 / p84 | 128.902 / 131.302 eV | 124.849 / 126.983 eV |
 | response `rel_spread` | 0.9281 % | 0.8470 % |
-| **mapping slope E_rec / 158.7 eV** | **0.4099** | **0.3967** |
-| binned peak bin centre | 66.834 eV | 59.566 eV (59.3 % of counts) |
-| populated reconstructed bins | 1 | 2 |
+| **mapping slope E_rec / 158.7 eV** | **0.8198** | **0.7935** |
+| populated reconstructed bins | 1–2 | 1–2 |
 | one reconstructed bin here | 11.519 % | 11.519 % |
-| **in-RoI fraction, E_rec 10–100 eV** | **1.000000** | **1.000000** |
+| **in-RoI fraction, E_rec 10–100 eV** | **0.000000** | **0.000000** |
 | sub-eV (E_rec < 1 eV) fraction | 0.000000 | 0.000000 |
 
 **The image is narrower than one bin.** rel_spread 0.93 % against an 11.5 % bin, so the
@@ -158,28 +164,36 @@ apparent width of the reconstructed line is the **binning**, not the physics. Th
 for §1.5: the electron-side IA width that was *not* applied (0.518 bins) is larger than the
 response's own spread at this energy, so the exclusion decision is not cosmetic.
 
-**The mapping slope is not a constant 0.5.** The same chain maps a 1 eV deposit to
-0.5056 eV (Ta→Al) / 0.5032 eV (Al→Hf) — consistent with Phase 13's median-based sub-eV
-regime boundaries 0.497240 / 0.495855 eV, which are a slightly different statistic on the
-same curve — but at 158.7 eV the slope has fallen to 0.4099 / 0.3967. Assuming a constant
-0.5 would have placed the line at 79.4 eV; the measured values are 65.0 and 63.0 eV. Both
-readings land inside the RoI, so the conclusion is unchanged — but it is unchanged **by
-measurement**, not by the assumption.
+**The mapping slope is near 1 below saturation onset, falling with it.** The same chain maps
+a 1 eV deposit to 0.9945 eV (Ta→Al) / 0.9917 eV (Al→Hf) — E_rec estimating the deposit, as it
+must (CONVENTIONS §E.1) — and consistent with the Phase-13 median-based sub-eV regime
+boundaries 0.994480 / 0.991710 eV, a slightly different statistic on the same curve. At
+158.7 eV, above each design's 52.9 / 32.1 eV saturation onset, the slope has fallen to
+0.8198 / 0.7935 from mild response saturation, placing the line at 130.1 / 125.9 eV. Both
+readings land **above** the 100 eV RoI top, so the M line does **not** contaminate the RoI —
+the reverse of the pre-revision reading, and correct because the axis now estimates the
+deposit rather than halving it.
 
 ### 2.1 ROADMAP SC3 adjudication
 
-> **"…with the M-shell line landing inside the RoI"** — **CONFIRMED**, by measurement, and
-> for a reason the ROADMAP does not state.
+> **"…with the M-shell line landing inside the RoI"** — **REFUTED** by measurement on the
+> corrected (unit-slope) axis. It was CONFIRMED only on the former ε = 0.5 half-scale axis,
+> which is exactly the cross-axis artifact this clause is prone to.
 
 - On the **DEPOSIT** axis the clause is **false**: 158.7 eV > the 100 eV RoI top.
 - On the **RECONSTRUCTED** axis — the reported observable, and what the clause is actually
-  about — **100.0000 % of the line's reconstructed counts fall inside E_rec 10–100 eV**, for
-  both designs. The reason is the measured mapping slope ≈ 0.40, which carries the deposit
-  down to 65.0 / 63.0 eV.
-- **The ROADMAP asserts the conclusion without deriving it.** Had the slope been ≳ 0.63 the
-  clause would have been REFUTED, and nothing in the criterion's own text would have
-  revealed that. Phase 13 caught itself making exactly this cross-axis error once; this is
-  the same error avoided by measurement.
+  about — **0.0000 % of the line's reconstructed counts fall inside E_rec 10–100 eV**, for
+  both designs. The measured mapping slope ≈ 0.80 leaves the 158.7 eV deposit at 130.1 / 125.9
+  eV, still above the RoI top.
+- **The ROADMAP asserts the conclusion without deriving it, and the derivation now refutes it.**
+  On the ε = 0.5 axis the slope was ≈ 0.40 and the line fell to 65 / 63 eV (inside); correcting
+  the axis to estimate the deposit (slope ≈ 0.80) lifts it back above 100 eV. The clause held
+  only because the axis was mis-scaled. Phase 13 caught itself making a cross-axis error once;
+  this is the same class of error, surfaced by the energy-scale correction.
+- **Consequence for the background budget:** the cosmogenic EC M line (⁷¹Ge in-situ, and the
+  identical-energy ⁶⁸Ge cosmogenic line) contributes **nothing** to the 10–100 eV signal RoI
+  on the corrected axis. Its reconstructed image sits near 126–130 eV, in the shoulder above
+  the RoI.
 
 ### 2.2 Counts budget
 
@@ -221,17 +235,24 @@ The band integrator reproduces the committed headline numbers (CEvNS total 118.7
 
 | comparison, E_rec 10–100 eV, **saturation scenario** | Ta→Al | Al→Hf |
 |---|---:|---:|
-| ⁷¹Ge EC M-line **bound** | **130.82** | **130.82** counts kg⁻¹ day⁻¹ |
+| ⁷¹Ge EC M-line **bound** (total) | **130.82** | **130.82** counts kg⁻¹ day⁻¹ |
+| **M-line bound INSIDE the RoI** (corrected axis) | **0.00** | **0.00** counts kg⁻¹ day⁻¹ |
 | Phase-12 CEvNS in-RoI | 72.92 | 73.14 |
-| **ratio, M-line bound / CEvNS in-RoI** | **1.794×** | **1.789×** |
-| ratio, M-line bound / CEvNS **total** (118.73) | 1.102× | 1.102× |
-| Phase-13 neutron elastic in-RoI | 5430.29 | 5485.15 |
-| ratio, M-line bound / neutron in-RoI | 0.0241 | 0.0239 |
+| ratio, M-line bound (total) / CEvNS **total** (118.73) | 1.102× | 1.102× |
+| Phase-13 neutron elastic in-RoI (corrected axis) | 4780.35 | 4832.43 |
 
-**At saturation the M-line bound exceeds the CEvNS signal inside the RoI by ~1.8×**, and it
-lands there entirely. At t = 1 d the bound is 7.70 counts kg⁻¹ day⁻¹, ~11 % of the CEvNS
-in-RoI rate. **The scenario is the difference between "dominant" and "sub-dominant", which
-is exactly why `fp-saturation-unstated` is a real proxy.**
+> **REVISED 2026-07-25 (unit calibration slope, §2.1).** On the corrected axis the M line
+> images at ~126–130 eV, **above** the 10–100 eV RoI, so its **in-RoI contribution is zero**.
+> The former reading — "the M-line bound exceeds the CEvNS signal inside the RoI by ~1.8× and
+> lands there entirely" — held only on the ε = 0.5 half-scale, which folded the 158.7 eV line
+> down to 65 eV. **The correction REMOVES a background that had been comparable to the CEvNS
+> signal from the RoI budget entirely.** The 130.82 total bound still exists; it simply lands
+> in the shoulder above the RoI, not inside it.
+
+**The M line is out of the RoI, so the saturation scenario no longer moves it in or out of the
+signal band.** What `fp-saturation-unstated` guarded — the t-dependence of the bound turning a
+"dominant" in-RoI line into a "sub-dominant" one — is now moot for this line: at any t the M
+line's in-RoI contribution is zero. The bound is retained for the shoulder above the RoI.
 
 Figure: `artifacts/v2.0/capture_channel_bounds.pdf`, both designs, RoI shaded, sub-eV
 boundary drawn, the deposit-vs-reconstructed distinction annotated on each panel, and
@@ -245,7 +266,7 @@ boundary drawn, the deposit-vs-reconstructed distinction annotated on each panel
 |---|---|---|---|
 | **SC1** | ENDF MT=102 for five Ge isotopes **and** EGAF capture-γ line lists acquired and frozen as provenance-headed artifacts, Phase-7 pattern | **CONFIRMED** | `artifacts/v2.0/ge_capture_xs.csv`; `data/egaf/MANIFEST.md` (curl command, byte counts, SHA-256, all five product nuclei); `14-01-CAPTURE-BOUNDS.md` §1 |
 | **SC2** | Cascade recoil **bounded, not quantified**; single-γ limit never the cascade answer | **PARTIALLY CONFIRMED** | `artifacts/v2.0/capture_recoil_bounds.csv`; `14-01-CAPTURE-BOUNDS.md` §3 |
-| **SC3** | ⁷¹Ge EC inventory at 158.7 ± 1.4 / 1298.5 / 10368.3 eV, **M line landing inside the RoI**, folded through the response chain | **CONFIRMED** | `artifacts/v2.0/ge71_ec_lines.csv`, `ge71_ec_dRdErec_{TaAl,AlHf}.csv`, `capture_channel_bounds.pdf`; §2.1 above |
+| **SC3** | ⁷¹Ge EC inventory at 158.7 ± 1.4 / 1298.5 / 10368.3 eV folded through the response chain; the clause **"M line landing inside the RoI"** is **REFUTED** on the corrected unit-slope axis (it images at ~130 eV, above the RoI) | inventory **CONFIRMED**; in-RoI clause **REFUTED** (2026-07-25, §2.1) | `artifacts/v2.0/ge71_ec_lines.csv`, `ge71_ec_dRdErec_{TaAl,AlHf}.csv`, `capture_channel_bounds.pdf`; §2.1 above |
 | **SC4** | φ_th disposition explicit; never zero | **CONFIRMED**, discharged on **branch (a)** | §5 below; `14-01-CAPTURE-BOUNDS.md` §2.3 and §2.6 |
 | **SC5** | Ge inelastic (⁷⁴Ge 596 keV, ⁷²Ge 834 keV) at least bounded and named | **CONFIRMED** | `artifacts/v2.0/capture_recoil_bounds.csv`; `14-01-CAPTURE-BOUNDS.md` §3.5 |
 

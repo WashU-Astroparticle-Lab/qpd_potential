@@ -73,7 +73,8 @@ def test_integrator_reproduces_headlines():
         assert float(r["reproduction_residual_rel"]) <= HEADLINE_REL, r["channel"]
     # and the residual table is in the artifact header
     h = _header(INVENTORY)
-    for needle in ("5430.287", "72.9214", "34.2484", "7.4656", "118.73"):
+    # new-axis published headlines (unit calibration slope); 118.73 TOTAL is invariant
+    for needle in ("4780.35", "62.6289", "11.934", "3.5275", "118.73"):
         assert needle in h, needle
 
 
@@ -142,10 +143,13 @@ def test_axis_tag_on_every_operand():
     ge = [r for r in inv if r["channel"] == "ge71_ec_M_line"]
     for r in ge:
         assert float(r["deposit_energy_eV_DEPOSITED"]) == 158.7
-        assert float(r["erec_image_eV"]) in (65.0, 63.0)
-        # the line's RoI rate is the whole of it: 100% in-RoI
-        assert float(r["roi_untriggered"]) == pytest.approx(
-            float(r["whole_axis_TOTAL_untriggered"]), rel=1e-12)
+        # CORRECTED AXIS (unit calibration slope): the line images ABOVE the RoI
+        assert float(r["erec_image_eV"]) in (130.1, 125.93)
+        # ...so its RoI rate is 0 -- it does NOT land in the band any more, while
+        # its whole-axis total (the shoulder bound) is still 130.82.
+        assert float(r["roi_untriggered"]) == pytest.approx(0.0, abs=1e-9)
+        assert float(r["whole_axis_TOTAL_untriggered"]) == pytest.approx(
+            sb.GE71_M_SATURATION_counts_kg_day, rel=1e-3)
 
 
 def test_full_capture_band():
@@ -164,8 +168,10 @@ def test_full_capture_band():
     # and the value actually summed IS the full band
     a = sb.assemble("Ta->Al", "RoI_10_100eV")
     b_est = a["B_particle_estimates_only"]
+    # On the corrected axis the ⁷¹Ge M line is OUT of the RoI (0 in-band), so the
+    # bounds layer adds ONLY the capture bound -- not the former capture + M-line.
     assert a["B_particle_estimates_plus_bounds"] - b_est == pytest.approx(
-        sb.CAPTURE_BOUND_counts_kg_day + sb.GE71_M_SATURATION_counts_kg_day, rel=1e-3)
+        sb.CAPTURE_BOUND_counts_kg_day, rel=1e-3)
     text = open(REPORT, encoding="utf-8").read()
     assert "1.31" in text and "23.51" in text and "1034" in text
 
@@ -192,7 +198,8 @@ def test_single_baseline_credit_one():
 def test_numerator_computed_not_substituted():
     """test-numerator-computed-not-substituted.  118.73 is a TOTAL and appears
     only under a TOTAL label."""
-    for design, expect in (("Ta->Al", 72.9214), ("Al->Hf", 73.1441)):
+    # in-RoI CEvNS signal on the corrected unit-slope axis (was 72.9214 / 73.1441)
+    for design, expect in (("Ta->Al", 62.6289), ("Al->Hf", 63.6226)):
         a = sb.assemble(design, "RoI_10_100eV")
         assert a["S_counts_kg_day"] == pytest.approx(expect, rel=HEADLINE_REL)
         assert abs(a["S_counts_kg_day"] - 118.73) > 1.0

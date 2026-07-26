@@ -1676,7 +1676,12 @@ def inelastic_placement() -> dict:
 
 #: Comparison anchors, on the shared RECONSTRUCTED axis, from the committed
 #: prior-phase artifacts and closeouts.  Named so no comparison is anonymous.
-PHASE13_ELASTIC_INROI = {"Ta->Al": 5430.287, "Al->Hf": 5485.152}
+# Phase-13 neutron elastic in E_rec 10-100 eV. REVISED 2026-07-25 for the unit
+# calibration slope (params.CALIB_SLOPE = 1.0, CONVENTIONS Section E.1): the RoI
+# now images a 10-100 eV DEPOSIT band instead of the former 20-200 eV, so the
+# in-RoI integral moved 5430.287 -> 4780.352 (Ta->Al) and 5485.152 -> 4832.425
+# (Al->Hf). Recomputed from the regenerated neutron_dRdErec_ext CSVs.
+PHASE13_ELASTIC_INROI = {"Ta->Al": 4780.352, "Al->Hf": 4832.425}
 PHASE12_CEVNS_TOTAL = 118.73
 
 

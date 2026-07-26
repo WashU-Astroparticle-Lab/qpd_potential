@@ -329,6 +329,17 @@ _CALIB_REBUILD_2026_07_25 = (
     "artifacts/v2.0/ge71_ec_dRdErec_AlHf.csv",
     "artifacts/v2.0/ge71_ec_dRdErec_TaAl.csv",
     "artifacts/v2.0/al_hf_spectrum_AlHf.png",
+    # regenerated in the follow-up pass by the newly-committed emitters
+    # (fold.write_em_ext_spectrum, fold.write_em_dominance_table) and by the
+    # Phase-16 S/B_particle reassembly on the unit-slope axis (sb_assembly.write_all):
+    "artifacts/v2.0/em_dRdErec_ext_AlHf.csv",
+    "artifacts/v2.0/em_dRdErec_ext_TaAl.csv",
+    "artifacts/v2.0/em_inband_dominance.csv",
+    "artifacts/v2.0/sb_particle.csv",
+    "artifacts/v2.0/sb_leave_one_out.csv",
+    "artifacts/v2.0/channel_inventory.csv",
+    "artifacts/v2.0/channel_omissions.csv",
+    "artifacts/v2.0/cevns_v1_regression.csv",
 )
 
 

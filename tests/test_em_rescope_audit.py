@@ -341,9 +341,14 @@ def test_dominance_recomputed():
         roi = (E >= 10.0) & (E <= 100.0)
         assert int(roi.sum()) == 20
         mu_roi, co_roi, ce_roi = (float(np.sum(x[roi] * dE[roi])) for x in (mu, co, ce))
-        # THE ORDERING: Compton exceeds muon in the RoI, as v1.0 concluded
+        # THE ORDERING: Compton exceeds muon in the RoI, as v1.0 concluded.
+        # The MULTIPLE dropped from the old-axis 4-5.5x to ~3.4x under the unit
+        # calibration slope (params.CALIB_SLOPE = 1.0, CONVENTIONS Section E.1):
+        # the 10-100 eV_rec RoI now images a 10-100 eV DEPOSIT band instead of the
+        # former 20-200 eV, and muon and Compton have different slopes there. The
+        # qualitative conclusion (Compton is the larger of the two) is unchanged.
         assert co_roi > mu_roi
-        assert 4.0 < co_roi / mu_roi < 5.5, co_roi / mu_roi
+        assert 3.0 < co_roi / mu_roi < 4.0, co_roi / mu_roi
         # the CEvNS orientation curve is the Phase-12 one, cross-checked on its total
         assert float(np.sum(ce * dE)) == pytest.approx(118.730, rel=1e-4)
         # and the REFINEMENT: the muon channel is NOT absent from the band

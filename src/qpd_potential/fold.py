@@ -1585,3 +1585,272 @@ def run_em_fold_extended(
         "mc_entries": src["mc_entries"],
         "counts_budget": budget,
     }
+
+
+# --------------------------------------------------------------------------- #
+# Plan 15-03 CSV EMITTER (committed 2026-07-25).                               #
+#                                                                             #
+# The two em_dRdErec_ext_{TaAl,AlHf}.csv were originally written by a script   #
+# that was NEVER committed (the Plan 15-03 fold path landed, the emitter did   #
+# not), so the files could not be regenerated when the energy scale changed.   #
+# This function IS that emitter, reconstructed from run_em_fold_extended's     #
+# output and the curated provenance the files already carried, so the axis     #
+# recalibration (params.CALIB_SLOPE, CONVENTIONS Section E.1) could propagate  #
+# into them reproducibly. Same house style as neutron_recoil.write_ext_spectrum#
+# and cevns_subev.write_extended_spectrum.                                     #
+# --------------------------------------------------------------------------- #
+
+#: The two per-channel normalization bands, carried UNNARROWED. muon: the 30-35%
+#: inter-experiment Gaisser-Guan spread (encloses the PDG Leg A / Leg B bracket
+#: x0.8310..x1.2595, so it narrows nothing). compton: the factor-2 site band.
+#: Sourced from em_extended.{MUON,GAMMA}_ACCURACY_LABEL, named here so the emitted
+#: band columns cannot silently drift from the label prose that justifies them.
+EM_MUON_BAND = (0.65, 1.35)
+EM_COMPTON_BAND = (0.5, 2.0)
+
+
+def write_em_ext_spectrum(design: str, path: Optional[str] = None) -> str:
+    """Emit artifacts/v2.0/em_dRdErec_ext_{TaAl,AlHf}.csv (muon + Compton).
+
+    Both electron-recoil channels folded through the SAME extended response matrix
+    and trigger pipeline as :func:`run_em_fold_extended`, on the reconstructed axis.
+    The reconstructed energy is an ESTIMATOR of the deposit (unit calibration slope,
+    params.CALIB_SLOPE = 1.0, CONVENTIONS Section E.1); eps ~ 0.5 keeps its physical
+    role inside n_qp_yield and is NOT the energy scale. Saturation above the onset is
+    genuine information loss and is never unfolded.
+    """
+    from . import em_extended as _emx, params as _params, trigger as _trigger
+    import subprocess as _sp
+
+    if path is None:
+        path = os.path.join(EXT_ARTIFACT_DIR, EM_EXT_RECON_FILE[design])
+
+    folds = {ch: run_em_fold_extended(ch, design,
+                                      no_support_policy="exclude_and_record")
+             for ch in ("muon", "compton")}
+    mu, cp = folds["muon"], folds["compton"]
+
+    # The Plan 15-03 em tables carry ALL 161 E_rec bins, including bin 0 (the
+    # [0, 1e-3 eV) underflow representative) -- unlike the neutron/CEvNS writers,
+    # which drop it. Kept here to reproduce the committed em convention (and the
+    # len == 161 assertions in tests/test_em_fold.py).
+    sl = slice(None)
+    E_rec_eV = mu["E_rec_centers_eV"][sl]
+    E_rec_keV = E_rec_eV / 1.0e3
+    mu_u, mu_t = np.asarray(mu["dRdErec"])[sl], np.asarray(mu["dRdErec_trigger"])[sl]
+    cp_u, cp_t = np.asarray(cp["dRdErec"])[sl], np.asarray(cp["dRdErec_trigger"])[sl]
+    mu_lo, mu_hi = mu_u * EM_MUON_BAND[0], mu_u * EM_MUON_BAND[1]
+    cp_lo, cp_hi = cp_u * EM_COMPTON_BAND[0], cp_u * EM_COMPTON_BAND[1]
+
+    # regime flag: below the sub-eV boundary IMAGE the reported observable is the
+    # trigger probability, not dR/dE_rec (CONVENTIONS Section I). The boundary is
+    # imported at 1 eV DEPOSITED and imaged onto THIS design's reconstructed axis by
+    # the response matrix's own median mapping -- never assumed to be 0.5x anything.
+    boundary_eV = subev_boundary_Erec_eV(design)
+    regime = np.where(E_rec_eV < boundary_eV,
+                      "trigger_probability_regime", "differential_rate_regime")
+
+    head = _sp.run(["git", "rev-parse", "--short", "HEAD"],
+                   cwd=_PROJECT_ROOT, capture_output=True, text=True).stdout.strip() or "unknown"
+    e50 = _params.TRIGGER_E50.value
+    kdef = _params.TRIGGER_SHARPNESS.value
+    krange = _params.TRIGGER_SHARPNESS_RANGE
+    mb, cb = mu["counts_budget"], cp["counts_budget"]
+
+    hdr = [
+        f"# Phase-15 Plan 15-03: ELECTRON-RECOIL reconstructed-energy spectra, design {design}.",
+        f"# response_matrix = artifacts/v2.0/{EXT_DESIGN_FILE[design]} (744 columns, columns sum to 1)",
+        f"# repo_HEAD_at_execution = {head}; emitter fold.write_em_ext_spectrum",
+        "# deposit tables = muon_dRdEdep_ext.csv, compton_dRdEdep_ext.csv (Plan 15-02)",
+        "#",
+        "# ENERGY SCALE (2026-07-25): E_rec is an ESTIMATOR of the DEPOSIT, unit calibration",
+        "#   slope params.CALIB_SLOPE = 1.0 (CONVENTIONS Section E.1). The physical",
+        "#   deposit->quasiparticle conversion fraction eps ~ 0.5 is absorbed into the",
+        "#   count->energy constant C by on-detector calibration; it keeps its physical role",
+        "#   in energy_scale.n_qp_yield, the saturation onset and the trigger, but it is NOT",
+        "#   the energy axis. Saturation above the onset is genuine information loss and is",
+        "#   never unfolded (fp-unfold-saturation). SUPERSEDES the former eps=0.5 axis on",
+        "#   which the pre-2026-07-25 version of this file was written.",
+        "#",
+        "# broadening_verdict_applied = does_not_apply (Plan 15-01, read from em_recoil AT FOLD TIME)",
+        "#   NO broadening of any kind was applied to either channel; no rate was ever",
+        "#   multiplied by exp(-2W) (milestone-wide prohibition, CONVENTIONS Section J).",
+        "#   Because no broadening is applied there is no kernel leakage, so",
+        "#   residual_retained_plus_leaked and residual_retained_only COINCIDE BY",
+        "#   CONSTRUCTION and are ONE statement, not two independent confirmations.",
+        "#",
+        f"# trigger k = {kdef:g} (DEFAULT); E50 = {e50:g} eV exactly.",
+        "#   k is fixed by NO project artifact and no trigger threshold has ever been",
+        "#   measured for this device. Every triggered number here is a one-parameter family,",
+        f"#   and its sensitivity over the declared range k in ({krange[0]:g}, {krange[1]:g}) is frozen in",
+        "#   artifacts/v2.0/em_trigger_k_sensitivity.csv. A triggered quantity quoted",
+        "#   without its k or its k range is a fabricated device property (fp-hardcoded-width).",
+        "#   P_trig MULTIPLIES eps ~ 0.5 on the DEPOSIT axis; it never replaces it.",
+        "#",
+        f"# no_support_policy = exclude_and_record; excluded bins: muon {mu['n_excluded_bins']}, compton {cp['n_excluded_bins']}",
+        "#   Those deposit bins carried NaN in the Plan 15-02 tables because the Monte",
+        "#   Carlo had no support there. R is DENSE, so one NaN would poison every",
+        "#   reconstructed bin; they are EXCLUDED and counted, never zero-filled.",
+        "#   np.nan_to_num appears nowhere in this path (fp-nan-to-num).",
+        "#",
+        f"# regime boundary = trigger.SUBEV_REGIME_BOUNDARY_eV = {_trigger.SUBEV_REGIME_BOUNDARY_eV:g} eV DEPOSITED,",
+        f"#   imaged onto this design's reconstructed axis at {boundary_eV:.6f} eV by the response",
+        "#   matrix's OWN median mapping curve (fold.subev_boundary_Erec_eV) -- never assumed",
+        "#   to be 0.5 x anything. With the unit calibration slope the 1 eV deposit boundary now",
+        "#   images near 1 eV_rec, a consequence of the calibration, not an assumption. Below it",
+        "#   the reported observable is the trigger probability P_trig(E_dep), not dR/dE_rec: at",
+        "#   that scale dR/dE_rec presupposes the lumped eps ~ 0.5 collection efficiency",
+        "#   (CONVENTIONS Section E), not defensible for a deposit of a few optical-phonon quanta.",
+        "#",
+        f"# BANDS. muon_band = x{EM_MUON_BAND[0]:g} .. x{EM_MUON_BAND[1]:g}, the 30-35% inter-experiment Gaisser-Guan",
+        "#   normalization spread named in the v1.0 manuscript as this channel's weakest",
+        "#   anchor. It ENCLOSES the PDG Leg A / Leg B bracket x0.8310 .. x1.2595,",
+        f"#   so it narrows nothing. compton_band = x{EM_COMPTON_BAND[0]:g} .. x{EM_COMPTON_BAND[1]:g}, the factor-2 site band.",
+        "# NORMALIZATION: v1.0 sea-level, ZERO overburden, no shield, no veto; veto credit",
+        "#   exactly 1.0 BY CONSTRUCTION. Every multiplicative factor is exactly 1.0.",
+        "#",
+        f"# counts budget, muon:    deposit {mb['deposit_counts']:.6f}, reconstructed {mb['reconstructed_counts']:.6f}, residual_fold {mb['residual_fold']:.3e}",
+        f"# counts budget, compton: deposit {cb['deposit_counts']:.6f}, reconstructed {cb['reconstructed_counts']:.6f}, residual_fold {cb['residual_fold']:.3e}",
+        "#",
+        "# columns: E_rec_keV[keV], muon_dRdErec_untriggered[counts/kg/day/keV], "
+        "muon_dRdErec_triggered[counts/kg/day/keV], muon_band_lo[counts/kg/day/keV], "
+        "muon_band_hi[counts/kg/day/keV], compton_dRdErec_untriggered[counts/kg/day/keV], "
+        "compton_dRdErec_triggered[counts/kg/day/keV], compton_band_lo[counts/kg/day/keV], "
+        "compton_band_hi[counts/kg/day/keV], regime_flag, muon_accuracy_label, gamma_accuracy_label",
+    ]
+    col = ("E_rec_keV[keV],muon_dRdErec_untriggered[counts/kg/day/keV],"
+           "muon_dRdErec_triggered[counts/kg/day/keV],muon_band_lo[counts/kg/day/keV],"
+           "muon_band_hi[counts/kg/day/keV],compton_dRdErec_untriggered[counts/kg/day/keV],"
+           "compton_dRdErec_triggered[counts/kg/day/keV],compton_band_lo[counts/kg/day/keV],"
+           "compton_band_hi[counts/kg/day/keV],regime_flag,muon_accuracy_label,gamma_accuracy_label")
+
+    mlab, glab = _emx.MUON_ACCURACY_LABEL, _emx.GAMMA_ACCURACY_LABEL
+    lines = ["\n".join(hdr), col]
+    for i in range(E_rec_keV.size):
+        lines.append(
+            f"{E_rec_keV[i]:.9e},{mu_u[i]:.6e},{mu_t[i]:.6e},{mu_lo[i]:.6e},{mu_hi[i]:.6e},"
+            f"{cp_u[i]:.6e},{cp_t[i]:.6e},{cp_lo[i]:.6e},{cp_hi[i]:.6e},"
+            f"{regime[i]},\"{mlab}\",\"{glab}\"")
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines) + "\n")
+    return path
+
+
+#: Plan 15-04 in-band dominance re-check table. Same emitter-was-never-committed
+#: story as write_em_ext_spectrum; reconstructed here so the axis recalibration
+#: propagates. The CEvNS column is FOR ORIENTATION ONLY (the overlap question),
+#: never a signal-to-background ratio (that is Phase 16's terminal deliverable).
+EM_DOMINANCE_CSV = os.path.join(EXT_ARTIFACT_DIR, "em_inband_dominance.csv")
+
+
+def _inroi_10_100eV(E_rec_eV: np.ndarray, y_per_keV: np.ndarray) -> float:
+    """Log-bin integral of a dR/dE_rec [per keV] over the 10-100 eV_rec RoI [counts]."""
+    E = np.asarray(E_rec_eV, float)
+    lg = np.log(np.where(E > 0, E, np.nan))
+    ed = np.empty(E.size + 1)
+    ed[1:-1] = np.exp(0.5 * (lg[:-1] + lg[1:]))
+    ed[0] = E[0] ** 2 / ed[1]
+    ed[-1] = E[-1] ** 2 / ed[-2]
+    w = np.clip(np.minimum(ed[1:], 100.0) - np.maximum(ed[:-1], 10.0), 0.0, None)
+    return float(np.nansum(y_per_keV * w) / 1.0e3)   # eV width -> keV, matching per-keV y
+
+
+def write_em_dominance_table(path: Optional[str] = None) -> str:
+    """Emit artifacts/v2.0/em_inband_dominance.csv (both designs, 161 bins each).
+
+    Muon and Compton dR/dE_rec re-checked against each other in the 10-100 eV RoI,
+    with the CEvNS curve carried FOR ORIENTATION ONLY. Recomputed from the Plan
+    15-03 fold on the unit-calibration-slope axis (CONVENTIONS Section E.1); no
+    quantity here is a signal-to-background ratio.
+    """
+    from . import em_extended as _emx, neutron_recoil as _nr
+    import subprocess as _sp
+    if path is None:
+        path = EM_DOMINANCE_CSV
+
+    head = _sp.run(["git", "rev-parse", "--short", "HEAD"], cwd=_PROJECT_ROOT,
+                   capture_output=True, text=True).stdout.strip() or "unknown"
+
+    # neutron in-RoI cross-reference (context prose), recomputed on the new axis.
+    def _neutron_inroi(tag):
+        import csv as _csv
+        p = os.path.join(EXT_ARTIFACT_DIR, f"neutron_dRdErec_ext_{tag}.csv")
+        rr = list(_csv.DictReader(x for x in open(p) if not x.startswith("#")))
+        E = np.array([float(r["E_rec_keV"]) for r in rr]) * 1.0e3
+        y = np.array([float(r["dRdErec_central"]) for r in rr])
+        return _inroi_10_100eV(E, y)
+    n_taal, n_alhf = _neutron_inroi("TaAl"), _neutron_inroi("AlHf")
+
+    blocks, co_over_mu_by_design, compton_inroi = [], {}, {}
+    for design in ("Ta->Al", "Al->Hf"):
+        mu = np.asarray(run_em_fold_extended("muon", design,
+                        no_support_policy="exclude_and_record")["dRdErec"], float)
+        r_cp = run_em_fold_extended("compton", design,
+                                    no_support_policy="exclude_and_record")
+        co = np.asarray(r_cp["dRdErec"], float)
+        cev = np.asarray(run_cevns_fold_extended(design)["dRdErec"], float)
+        E_rec_eV = r_cp["E_rec_centers_eV"]
+        E_rec_keV = E_rec_eV / 1.0e3
+
+        supported = (mu > 0) & (co > 0)
+        sgn = np.where(supported, np.sign(mu - co), 0.0)
+        xover = np.zeros(mu.size, bool)
+        xover[1:] = supported[1:] & supported[:-1] & (sgn[1:] != sgn[:-1])
+        in_roi = (E_rec_eV >= 10.0) & (E_rec_eV <= 100.0)
+        compton_inroi[design] = _inroi_10_100eV(E_rec_eV, co)
+        co_over_mu_by_design[design] = (compton_inroi[design]
+                                        / _inroi_10_100eV(E_rec_eV, mu))
+        for i in range(E_rec_keV.size):
+            moc = (mu[i] / co[i]) if co[i] > 0 else float("nan")
+            blocks.append(
+                f"{design},{E_rec_keV[i]:.9e},{mu[i]:.6e},{co[i]:.6e},{moc:.6e},"
+                f"{cev[i]:.6e},{bool(in_roi[i])},{bool(xover[i])},"
+                f"\"{_emx.MUON_ACCURACY_LABEL}\",\"{_emx.GAMMA_ACCURACY_LABEL}\"")
+
+    hdr = [
+        "# Phase-15 Plan 15-04: in-band dominance RE-CHECK on the extended reconstructed axis.",
+        f"# repo_HEAD_at_execution = {head}; emitter fold.write_em_dominance_table",
+        "#",
+        "# ENERGY SCALE (2026-07-25): E_rec ESTIMATES the deposit, unit calibration slope",
+        "#   params.CALIB_SLOPE = 1.0 (CONVENTIONS Section E.1). eps ~ 0.5 is the physical",
+        "#   deposit->quasiparticle conversion fraction, absorbed into C by calibration, NOT",
+        "#   the energy axis. SUPERSEDES the pre-2026-07-25 eps=0.5 version of this file.",
+        "#",
+        "# RECOMPUTED from the Plan 15-03 artifacts, NOT quoted from the v1.0 manuscript.",
+        "# The v1.0 conclusion was that MeV muon deposits land ABOVE the CEvNS band while the",
+        "# environmental-gamma Compton continuum OVERLAPS it and is therefore the dominant",
+        "# reducible background of the two. This table re-checks it two decades lower.",
+        "#",
+        "# WHAT THIS IS NOT. The CEvNS column is present FOR ORIENTATION ONLY, so the overlap",
+        "# question can be asked at all. No quantity in this file is a signal-to-background",
+        "# ratio and none is named as one. Assembling that ratio is Phase 16's TERMINAL",
+        "# deliverable and it must carry the LEE band plus the order-of-magnitude-labelled",
+        "# neutron and capture channels, which this plan does not have.",
+        "#",
+        "# WHAT THIS TABLE DOES NOT BOUND. Only two of the milestone's background channels",
+        f"# appear here. The Phase-13 neutron channel alone integrates to {n_taal:.2f} (Ta->Al) and",
+        f"# {n_alhf:.2f} (Al->Hf) counts/kg/day over E_rec 10-100 eV -- roughly {n_taal / compton_inroi['Ta->Al']:.0f}x the Compton",
+        "# channel in the same band -- and carries an order_of_magnitude accuracy label. The",
+        "# neutron-capture channel is not in scope here either. NOTHING IN THIS FILE BOUNDS",
+        "# THE TOTAL BACKGROUND.",
+        "#",
+        "# EVERY ROW carries BOTH contributing channels' accuracy labels, because a ratio",
+        "# quoted without the labels of the quantities it is built from invites a precision",
+        "# its inputs do not support (fp-precision-inflation). The muon label always carries",
+        "# the Leg A citation AND the Leg A / Leg B bracketing disclosure.",
+        "#",
+        "# NORMALIZATION: v1.0 sea-level, ZERO overburden, no shield, no veto; veto credit",
+        "#   exactly 1.0 BY CONSTRUCTION. Every multiplicative factor is exactly 1.0.",
+        "#",
+        "# columns: design, E_rec_keV[keV], muon_dRdErec[counts/kg/day/keV], "
+        "compton_dRdErec[counts/kg/day/keV], muon_over_compton[dimensionless], "
+        "cevns_dRdErec_orientation_only[counts/kg/day/keV], in_roi_10_100eV[bool], "
+        "is_ordering_crossover[bool], muon_accuracy_label, gamma_accuracy_label",
+    ]
+    col = ("design,E_rec_keV[keV],muon_dRdErec[counts/kg/day/keV],"
+           "compton_dRdErec[counts/kg/day/keV],muon_over_compton[dimensionless],"
+           "cevns_dRdErec_orientation_only[counts/kg/day/keV],in_roi_10_100eV[bool],"
+           "is_ordering_crossover[bool],muon_accuracy_label,gamma_accuracy_label")
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(hdr) + "\n" + col + "\n" + "\n".join(blocks) + "\n")
+    return path
