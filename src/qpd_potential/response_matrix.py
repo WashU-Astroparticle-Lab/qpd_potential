@@ -19,7 +19,11 @@
 #     QuasiparticleBurstModel EMG template (via response.realize_event_train /
 #     censor_event_train) -- the tunneling-EVENT realization,
 #   * qpd_potential.response.calibrate_C           -- the single global per-design
-#     count->energy constant fixing the low-E slope dE_rec/dE_dep = 0.5,
+#     count->energy constant fixing the low-E slope dE_rec/dE_dep =
+#     params.CALIB_SLOPE = 1.0 (USER DECISION 2026-07-25; was eps = 0.5). E_rec
+#     ESTIMATES the deposit: on-detector calibration absorbs the physical
+#     deposit->QP conversion fraction eps into C, so a 10 eV deposit reconstructs
+#     at 10 eV. Saturation above the onset is still never unfolded.
 #   * qpd_potential.response.crossover_band / whole_array_plateau_energy -- the
 #     per-design saturation onset / plateau scales marked on the figure.
 #
@@ -702,7 +706,7 @@ def run_design(
             "ec_gt_ec_emg_max": "deep saturation, EMG event train infeasible (O(1e8) events); registered-count Poisson about analytic censored_count; relative spread negligible",
         },
         "secondary_tos": "time-over-saturation curve is a LABELED SECONDARY (unvalidated, tau_qp fixed); NEVER auto-switched into the baseline (fp-tos-autoswitch)",
-        "no_anchor_caveat": "the saturated-regime E_rec SHAPE has NO literature anchor at any energy; low-E 0.5 slope is calibration-consistency, not validation",
+        "no_anchor_caveat": "the saturated-regime E_rec SHAPE has NO literature anchor at any energy; the low-E UNIT slope (params.CALIB_SLOPE = 1.0, user decision 2026-07-25) is calibration-consistency, not validation",
         "units": "energy eV internal; R dimensionless probability per E_rec bin",
         "provenance": "qpd_potential.response_matrix.run_design; reuses Plan 05-01 qpd_potential.response + ref-qpd-repo QuasiparticleBurstModel EMG template",
     }

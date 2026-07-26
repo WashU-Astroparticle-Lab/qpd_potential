@@ -308,6 +308,29 @@ def test_erec_grid_bounds_untouched():
 _SUITE_CHURN = ("data/flux/reactor_flux_v1.0.csv",
                 "data/flux/reactor_flux_billard_variant.csv")
 
+#: DELIBERATELY REBUILT by the 2026-07-25 energy-scale recalibration (USER
+#: DECISION; CONVENTIONS Section E.1).  The count->energy constant C is now fixed
+#: by params.CALIB_SLOPE = 1.0 instead of eps = 0.5, so E_rec ESTIMATES the
+#: deposit rather than carrying the physical deposit->QP conversion fraction on
+#: the axis.  Every E_rec-axis artifact below is therefore a NEW-SCALE product and
+#: its modification is intended, not the freeze violation this test exists to
+#: catch.  They are exempted from the "unexpected" predicate ONLY -- they are NOT
+#: added to _SUITE_CHURN, because that tuple additionally asserts a header-only
+#: diff, which a rebuilt npz/png/CSV cannot satisfy.
+#: artifacts/stage1/ is deliberately NOT in this list: the v1.0 matrices are the
+#: frozen comparison baseline and were not rebuilt (fp-overwrite-v1-matrices).
+_CALIB_REBUILD_2026_07_25 = (
+    "artifacts/v2.0/response_matrix_AlHf_ext.npz",
+    "artifacts/v2.0/response_matrix_TaAl_ext.npz",
+    "artifacts/v2.0/cevns_dRdErec_ext_AlHf.csv",
+    "artifacts/v2.0/cevns_dRdErec_ext_TaAl.csv",
+    "artifacts/v2.0/neutron_dRdErec_ext_AlHf.csv",
+    "artifacts/v2.0/neutron_dRdErec_ext_TaAl.csv",
+    "artifacts/v2.0/ge71_ec_dRdErec_AlHf.csv",
+    "artifacts/v2.0/ge71_ec_dRdErec_TaAl.csv",
+    "artifacts/v2.0/al_hf_spectrum_AlHf.png",
+)
+
 
 def test_no_frozen_artifact_was_modified_by_this_plan():
     """git-level check: nothing under data/ or artifacts/ changed."""
@@ -320,7 +343,9 @@ def test_no_frozen_artifact_was_modified_by_this_plan():
     # artifacts/v2.0/ and tripped the over-broad predicate rather than the behaviour.
     changed = [ln for ln in out.splitlines()
                if not ln.startswith("??") and not ln.startswith("A ")]
-    unexpected = [ln for ln in changed if not any(c in ln for c in _SUITE_CHURN)]
+    unexpected = [ln for ln in changed
+                  if not any(c in ln for c in _SUITE_CHURN)
+                  and not any(c in ln for c in _CALIB_REBUILD_2026_07_25)]
     assert unexpected == [], f"frozen artifacts modified: {unexpected}"
     for path in _SUITE_CHURN:
         diff = subprocess.run(["git", "diff", "--unified=0", "--", path],

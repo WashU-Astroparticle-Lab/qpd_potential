@@ -97,7 +97,7 @@ $ python3 scripts/verify_phase5.py
 
 ### 3.4 The load-bearing pitfall — event-count mapping (Pitfall 1)
 - **Expected:** the Poisson mean fed to `QuasiparticleBurstModel.expected_n_qp` is the **tunneling-event count** ∫Γ_in dt = K·τ_qp·N_qp/v_tr, **not** the trapped-QP count N_qp. (For N_qp=10⁴: event count 300 (Al) / 80 (Hf), i.e. the factor 0.03 / 0.008 — *not* 10⁴.)
-- **Check:** `test_eventcount_mapping`; harness `[Pitfall-1]` rows; read `expected_event_count` in `response.py:203`.
+- **Check:** `test_eventcount_mapping`; harness `[Pitfall-1]` rows; read `expected_event_count` in `response.py:216`.
 - **Proves:** the saturation is scaled from the right quantity — feeding N_qp would mis-scale the entire response.
 
 ### 3.5 Crossover as a band — SIMU-01

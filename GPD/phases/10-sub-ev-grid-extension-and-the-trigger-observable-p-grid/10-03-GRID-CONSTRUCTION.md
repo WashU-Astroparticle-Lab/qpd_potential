@@ -146,7 +146,7 @@ Recorded command, re-run by
 grep -rn "shared_energy_grid(" --include=*.py src/ tests/
 ```
 
-**29 hits, 29 rows.** (28 at the end of plan 10-03; plan 10-04 added one prose hit at `response_matrix.py:604`, enumerated below.) (The `def shared_energy_grid(` line itself is excluded.)
+**29 hits, 29 rows.** (28 at the end of plan 10-03; plan 10-04 added one prose hit at `response_matrix.py:608`, enumerated below.) (The `def shared_energy_grid(` line itself is excluded.)
 
 ### 5.1 Raw output
 
@@ -155,8 +155,8 @@ src/nuclear/parse_endf_nGe.py:17:      (ENDF native  U  shared_energy_grid()) wi
 src/nuclear/parse_endf_nGe.py:278:    shared_energy_grid() (keV -> eV), clipped to the ENDF support."""
 src/nuclear/parse_endf_nGe.py:283:    shared_eV = shared_energy_grid("v1.0") * 1.0e3  # keV -> eV
 src/qpd_potential/compton_deposit.py:183:    edges = shared_energy_grid("v1.0")
-src/qpd_potential/response_matrix.py:133:    Centres are the GEOMETRIC MEANS of adjacent ``shared_energy_grid(version)``
-src/qpd_potential/response_matrix.py:152:    edges_keV = md.shared_energy_grid(version)
+src/qpd_potential/response_matrix.py:137:    Centres are the GEOMETRIC MEANS of adjacent ``shared_energy_grid(version)``
+src/qpd_potential/response_matrix.py:156:    edges_keV = md.shared_energy_grid(version)
 src/qpd_potential/parma_neutron_flux.py:296:#: Sub-eV table grid, DELIBERATELY NOT shared_energy_grid().  Phase 10 owns the
 src/qpd_potential/parma_neutron_flux.py:333:        "# ======================== THIS GRID IS NOT shared_energy_grid() ====================",
 src/qpd_potential/parma_neutron_flux.py:338:        "# It is DELIBERATELY NOT the project shared_energy_grid(), whose floor is 0.01 keV.",
@@ -191,9 +191,9 @@ tests/test_compton_channel.py:153:    assert np.array_equal(_SPEC.edges_kev, sha
 | `src/nuclear/parse_endf_nGe.py:278` | function docstring | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |
 | `src/nuclear/parse_endf_nGe.py:283` | union-grid construction — writes `data/endf_nGe_elastic_v1.1.csv` | **v1.0**, explicit | Frozen data-preparation script. The extension is irrelevant here anyway (the union grid is clipped to the ENDF support), but the pin is stated so the artifact's provenance does not depend on an implicit default. |
 | `src/qpd_potential/compton_deposit.py:205` | `spectrum()` — writes `data/compton_dRdEdep.csv` | **v1.0**, explicit | Phase-4 producer. Same reason: silent re-binning of an archived v1.x product is exactly what success criterion 2 forbids. LINE MOVED BY PLAN 15-02 (183 -> 205), which added a `grid_version` parameter DEFAULTING to `"v1.0"` and KEPT THIS LITERAL PIN as the default branch, so a caller that does not name a version still receives the 584-bin axis. |
-| `src/qpd_potential/response_matrix.py:133` | docstring of `E_dep_grid_from_shared_grid_eV` | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |
-| `src/qpd_potential/response_matrix.py:152` | `E_dep_grid_from_shared_grid_eV(version)` | **caller-supplied**, required argument | The decoupling point added by this plan. It has no default of its own: the caller must name the version, which is how plan 10-04 selects the 744-column axis while the v1.0 comparison rebuild selects 584. |
-| `src/qpd_potential/response_matrix.py:604` | `axis_source` provenance string in `run_design` | n/a — prose | Not a call site: an f-string recording which axis route the npz provenance header should name. ADDED BY PLAN 10-04; enumerated here rather than filtered out by a pattern tweak, so the grep count stays auditable. |
+| `src/qpd_potential/response_matrix.py:137` | docstring of `E_dep_grid_from_shared_grid_eV` | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |
+| `src/qpd_potential/response_matrix.py:156` | `E_dep_grid_from_shared_grid_eV(version)` | **caller-supplied**, required argument | The decoupling point added by this plan. It has no default of its own: the caller must name the version, which is how plan 10-04 selects the 744-column axis while the v1.0 comparison rebuild selects 584. |
+| `src/qpd_potential/response_matrix.py:608` | `axis_source` provenance string in `run_design` | n/a — prose | Not a call site: an f-string recording which axis route the npz provenance header should name. ADDED BY PLAN 10-04; enumerated here rather than filtered out by a pattern tweak, so the grep count stays auditable. |
 | `src/qpd_potential/parma_neutron_flux.py:296` | PHASE 9 FILE — comment stating its grid is deliberately NOT this one | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |
 | `src/qpd_potential/parma_neutron_flux.py:333` | PHASE 9 FILE — CSV header string | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |
 | `src/qpd_potential/parma_neutron_flux.py:338` | PHASE 9 FILE — CSV header string | n/a — prose | Not a call site: documentation or a string literal mentioning the function by name. Enumerated individually rather than filtered out by a pattern tweak, so the grep count stays auditable. |

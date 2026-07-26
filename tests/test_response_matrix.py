@@ -222,13 +222,13 @@ def test_variant_divergence_muon_end(design):
 
 @pytest.mark.parametrize("design", DESIGNS)
 def test_no_linear_ramp_fp_no_saturation(design):
-    """fp-no-saturation: muon-end E_rec is >=3 orders below 0.5*E_dep and bounded
+    """fp-no-saturation: muon-end E_rec is >=3 orders below the linear E_dep line and bounded
     to ~tens of keV -- NOT a linear ramp to tens of MeV."""
     d = _load(design)
     Ed = d["E_dep_centers_eV"]
     for v in VARIANTS:
         med = d[f"E_rec_median_{v}_eV"]
-        assert med[-1] < 1e-3 * (0.5 * Ed[-1]), f"{design}/{v} looks linear at the muon end"
+        assert med[-1] < 1e-3 * (params.CALIB_SLOPE.value * Ed[-1]), f"{design}/{v} looks linear at the muon end"
         assert med[-1] < 1.0e5, f"{design}/{v} E_rec unbounded (> 100 keV) at the muon end"
 
 

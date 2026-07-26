@@ -324,7 +324,24 @@ EPSILON = Param(
     "Deposited-to-signal efficiency baseline; CONVENTIONS Section E (imposed forward-model definition)",
     "MEDIUM",
     note="+/-10-20% design-dependent band; SAME baseline both designs. "
-    "Paper physical estimate eta_ce ~= 0.3 is an independent cross-reference, NOT baseline.",
+    "Paper physical estimate eta_ce ~= 0.3 is an independent cross-reference, NOT baseline. "
+    "EPSILON is the PHYSICAL deposit->quasiparticle conversion fraction and drives the "
+    "forward chain (yield, saturation onset, trigger). It is NOT the energy-scale "
+    "calibration slope -- see CALIB_SLOPE (USER DECISION 2026-07-25).",
+)
+CALIB_SLOPE = Param(
+    1.0,
+    "",
+    "Energy-scale calibration slope dE_rec/dE_dep in the LINEAR regime; CONVENTIONS Section E",
+    "HIGH",
+    note="USER DECISION 2026-07-25, supersedes the Phase-1 slope = EPSILON = 0.5. "
+    "E_rec is an ESTIMATOR of the deposited energy, not the collected signal: a real "
+    "detector is calibrated on a known line, which absorbs the deposit->QP conversion "
+    "fraction EPSILON into the count->energy constant C. A 10 eV deposit must therefore "
+    "reconstruct at 10 eV, not at 5 eV. This slope is DEFINITIONAL (unit slope by "
+    "calibration) and is NOT a validation of low-energy linearity. It corrects the SCALE "
+    "only: the sub-linear SATURATION above the onset is genuine information loss and is "
+    "NEVER unfolded away (fp-unfold-saturation).",
 )
 TAU_D = Param(
     40e-6,

@@ -74,10 +74,11 @@ def test_lowrate_linearity():
 
 
 def test_lowrate_erec_linear_placeholder():
-    """E_rec linear placeholder ~= 0.5*E_dep; default estimator is a Phase-5 stub."""
+    """E_rec linear placeholder ~= E_dep (unit calibration slope, CONVENTIONS E.1);
+    default estimator is a Phase-5 stub."""
     for E_dep in (10.0, 100.0, 1000.0):
         assert es.E_rec_estimator(E_dep, linear_placeholder=True) == pytest.approx(
-            0.5 * E_dep
+            params.CALIB_SLOPE.value * E_dep
         )
     # Default behaviour is the deliberate Phase-5 stub (not a real estimator).
     with pytest.raises(NotImplementedError):

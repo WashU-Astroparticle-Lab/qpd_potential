@@ -284,15 +284,21 @@ def E_rec_estimator(E_dep_eV: ArrayLike, *, linear_placeholder: bool = False) ->
 
     Default behaviour raises NotImplementedError. Passing
     ``linear_placeholder=True`` returns the clearly-marked LOW-ENERGY LINEAR
-    placeholder E_rec ~= eps*E_dep = 0.5*E_dep (CONVENTIONS Sections B/E test
+    placeholder E_rec ~= CALIB_SLOPE*E_dep = E_dep (CONVENTIONS Sections B/E test
     value). This placeholder is valid ONLY in the unsaturated linear regime and
     is NOT the final estimator -- do not use it where peak Gamma_in > 25 kHz.
+
+    The slope is params.CALIB_SLOPE = 1.0, NOT params.EPSILON (USER DECISION
+    2026-07-25). EPSILON is the physical deposit->quasiparticle conversion
+    fraction and still drives ``n_qp_yield`` and the saturation onset above; it is
+    absorbed into the count->energy constant by on-detector calibration and is
+    therefore not the energy scale. See ``response.calibrate_C``.
     """
     if not linear_placeholder:
         raise NotImplementedError(
             "E_rec estimator is deferred to Phase 5 (count-integral vs "
             "time-over-saturation vs hybrid). Pass linear_placeholder=True for "
-            "the low-energy linear placeholder E_rec ~= 0.5*E_dep, valid only "
+            "the low-energy linear placeholder E_rec ~= E_dep, valid only "
             "in the unsaturated regime."
         )
-    return params.EPSILON.value * E_dep_eV
+    return params.CALIB_SLOPE.value * E_dep_eV
