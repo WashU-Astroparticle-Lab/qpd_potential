@@ -29,6 +29,23 @@ apply the assumed suppression only at the point of assembly, so that the
 suppression factors remain explicit, separable modeling inputs rather than
 buried assumptions.
 
+Two further channels we examined are removed by this scenario and are
+therefore not carried into the budget. The first is the thermal-neutron
+family: radiative capture $(n,\gamma)$ on germanium and the in-situ
+production of $^{71}$Ge (by $^{70}$Ge$(n,\gamma)$, decaying by electron
+capture to the same gallium-daughter X-ray lines as the cosmogenic
+$^{68}$Ge below). Both are driven by the \emph{ambient thermal} neutron
+flux, which the boron-loaded moderator of the assumed shield absorbs
+directly through $^{10}$B$(n,\alpha)$; with the thermal flux gone, both
+channels vanish, and the identical-energy line they would have contributed
+survives only through the cosmogenic $^{68}$Ge, which no shield removes.
+The second is airborne $^{222}$Rn in the detector cavity, a standard
+low-background concern controlled by sealing and purging the inner volume
+(radon-scrubbed or boil-off nitrogen), as in operating germanium
+experiments~\cite{conus2025}; we treat it as an engineering-controlled
+term and do not model it. Neither omission is a physics approximation---
+each is a stated consequence of the shielded, sealed configuration.
+
 \subsection{Cosmic muons}
 
 We sample the sea-level muon intensity from the modified-Gaisser
@@ -206,11 +223,29 @@ epithermal flux is nearly $\phi\propto1/E_n$, the integrand behaves as
 $1/E_n^2$ and is peaked at its lower limit $E_{\min}(T)$, so the recoil rate
 in the $10$--$100$~eV region of interest is set by the neutron flux at
 $E_{\min}=T/f\approx0.19$--$1.9$~keV---the epithermal band, precisely the
-part of the spectrum most sensitive to the local environment. The resolved
-$^{73}$Ge resonance at $E_n=102.59$~eV imprints a kinematic edge at
-$T=f\,E_n\simeq5.5$~eV$_{\rm dep}$ (reconstructing to $\sim$5.3~eV): a
-neutron on that resonance can transfer at most $5.5$~eV, so the resonance's
-large contribution switches off sharply above it. Folded through the
+part of the spectrum most sensitive to the local environment.
+
+A sharp step in the deposited spectrum near $5.5$~eV deserves a word of
+explanation, because it is a purely kinematic feature and a useful check on
+the fold. In a single elastic collision a neutron of energy $E_n$ delivers a
+recoil that ranges from zero (a grazing scatter) up to a head-on maximum
+$T_{\max}=f\,E_n$, with $f=4A/(1+A)^2$. For a nucleus as heavy as germanium
+($A\simeq72.6$) this factor is only $f\simeq0.054$: a neutron can hand over
+at most a few percent of its energy per scatter, so a given recoil $T$ can
+only have come from neutrons of energy $E_n\ge T/f$. Superimposed on the
+smoothly falling epithermal flux, the natural-germanium elastic cross
+section is dominated near $100$~eV by a single narrow resonance in $^{73}$Ge
+at $E_n=102.59$~eV, where it spikes to thousands of barns against tens of
+barns off-resonance. Those resonant neutrons produce a flood of recoils---but
+by the kinematic ceiling, none above $T_{\max}=f\times102.59~{\rm eV}\simeq
+5.5$~eV. The result is a step: below $5.5$~eV$_{\rm dep}$ the resonance
+contributes its full weight, and just above it the resonance is
+kinematically forbidden and the rate drops abruptly. It is the
+neutron-elastic analogue of a Compton edge---the maximum energy a
+fixed-energy projectile can transfer in one scatter---made visible here
+because the cross section is concentrated at a single incident energy. On
+the calibrated reconstructed axis the edge maps to $\sim$5.3~eV. Folded
+through the
 response, the \emph{unshielded} channel integrates to $4.78\times10^{3}$
 (Ta$\to$Al) and $4.83\times10^{3}$ counts~kg$^{-1}$day$^{-1}$ in the
 reconstructed $10$--$100$~eV RoI. This is the largest background in the
