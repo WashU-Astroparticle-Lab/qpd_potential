@@ -3,13 +3,33 @@ rate prediction but as a map of \emph{where}, on the axis a
 bandwidth-limited QPD readout actually records, the reactor signal and each
 ambient background come to rest. That map is the deliverable of this work:
 it tells a would-be experiment which instrumental knob is decisive before
-any exposure is accumulated. Its interpretation, however, is bounded by four
+any exposure is accumulated. Its interpretation, however, is bounded by five
 modeling uncertainties of very different character and provenance, and an
 honest reading requires keeping them separate.
 
-\emph{Saturated-regime response shape.} The most consequential uncertainty
-is also the one with the least external support. Between the linear regime
-($E_{\rm rec}\approx0.5\,E_{\rm dep}$) and the fully saturated plateau, the
+\emph{Ambient neutron rate and its suppression.} The uncertainty that
+dominates the headline result is the one on the background that dominates the
+RoI. The ambient fast-neutron flux carries only an order-of-magnitude
+accuracy label: its $>10$~MeV integral is anchored to a measurement, but the
+eV--keV differential shape that sets the in-band recoil rate is not
+independently benchmarked and is moreover sensitive at the tens-of-percent
+level to the moderating material around the detector. On top of this, the
+$\gtrsim10^{2}$ neutron suppression is an \emph{assumed} shield performance
+taken from NUCLEUS, not a rejection we compute for this geometry, and
+reactor-correlated neutrons---which at a $25$~m standoff can rival the
+antineutrino flux and are removed only by the reactor's own bioshield---are
+omitted entirely. The reported $S/B\simeq2.6$ is therefore ``of order a
+few'' and could move by an order of magnitude in either direction; it is a
+statement about the scenario, not a measured ratio. What would tighten it is
+concrete: an in-situ neutron survey at the deployment site, an as-built
+shield simulation, and a reactor-neutron transport calculation for the
+specific core and standoff. Of the five, this is the uncertainty a real
+experiment must retire first.
+
+\emph{Saturated-regime response shape.} The uncertainty with the least
+external support acts on the muon and high-recoil channels. Between the
+linear regime ($E_{\rm rec}\approx E_{\rm dep}$) and the fully saturated
+plateau, the
 shape of $R(E_{\rm rec}\,|\,E_{\rm dep})$ has no published anchor at any
 energy; it is fixed only by its two limiting cases and by calibration
 consistency (Sec.~\ref{sec:response}). The direct consequence is that the
@@ -58,10 +78,16 @@ uncertainty is inherited only by the saturated backgrounds, whose pile-up
 energies shift with the band. A dedicated thin-wafer sensor-sharing
 measurement would fix $f_{\rm prompt}$ and $r$ and turn the band into a line.
 
-Read together, three of the four uncertainties act on the saturated
-backgrounds and leave the flagship result---that reactor CEvNS reconstructs
-to tens of eV---as the most robust feature of the analysis. This is the
-sense in which the reconstructed axis is informative despite the model risk.
+Read together, the uncertainties separate cleanly by what they touch. The
+neutron rate governs the \emph{signal-to-background} result and is the one to
+retire first; the saturated-response and crossover uncertainties act only on
+the muon and gamma backgrounds, spectrally displaced from the signal; and the
+gamma-normalization and low-energy-flux bands rescale rates without moving the
+signal off its tens-of-eV placement. The flagship qualitative statement---that
+reactor CEvNS reconstructs to tens of eV, into a band it shares with the
+ambient neutron recoils---is the most robust feature of the analysis. This is
+the sense in which the reconstructed axis is informative despite the model
+risk.
 
 The implications for a QPD reactor-CEvNS search follow directly and are
 mostly about detector design rather than statistics. First, \emph{threshold
@@ -77,12 +103,18 @@ sparse and spectrally displaced from the signal. A surface deployment would
 nonetheless benefit from muon tagging or an active veto, since the rare
 long-chord muon tail is the very driver of readout saturation and any
 misreconstruction leaks downward in energy. Third, and most limiting for a
-signal search, the environmental-gamma Compton continuum \emph{overlaps} the
-CEvNS region, at the level of $\sim$$10^{3}$ counts~kg$^{-1}$day$^{-1}$
-keV$^{-1}$; unlike the muons it sits directly on top of the signal and is the
-dominant reducible background. Its mitigation---passive shielding and,
-ultimately, underground or low-background siting---is therefore the primary
-lever for turning this forward model into a viable search. These conclusions
+signal search, the ambient neutron-elastic recoils sit \emph{directly on top
+of the signal}: they share its nuclear-recoil kinematics, populate the same
+tens-of-eV band, and---even under the assumed $\gtrsim10^{2}$ shield---are the
+dominant term in the RoI at $\sim$99\% of the residual background, giving
+$S/B\simeq2.6$. Unlike the muon and gamma continua, which are spectrally
+displaced or shieldable to negligibility, the neutron background is
+irreducible by kinematics alone; suppressing it---passive moderation and
+capture, an active neutron veto, overburden, and, decisively, siting away
+from reactor-correlated neutrons---is the primary lever for turning this
+forward model into a viable search. Beneath even a perfect neutron shield
+lies the Ge-intrinsic cosmogenic floor, which no external shield reaches and
+which minimizing surface exposure before deployment is the only way to lower. These conclusions
 place the QPD concept squarely within the reactor-CEvNS program pioneered at
 the ionization scale by CONUS+~\cite{conus2025}, the Dresden-II point-contact
 germanium result~\cite{dresden2022}, and the germanium rate benchmarks
@@ -97,8 +129,10 @@ regime forces. It does \emph{not} compute a sensitivity, and it makes no
 claim of detectability or discovery significance. Converting this map into a
 sensitivity would require an exposure model, a noise-and-resolution
 treatment of the reconstruction floor, and---above all---the measured inputs
-that the four caveats above call for: a QPD saturation calibration, an
-on-site gamma survey, a digitized low-energy reactor flux, and a thin-wafer
-sensor-sharing measurement. Each is a concrete, bounded next step, and
-together they define the path from the present feasibility map to a
-quantitative reactor-CEvNS reach.
+that the five caveats above call for: an in-situ neutron survey with an
+as-built shield and reactor-neutron transport calculation, a QPD saturation
+calibration, an on-site gamma survey, a digitized low-energy reactor flux,
+and a thin-wafer sensor-sharing measurement. Each is a concrete, bounded next
+step, and together they define the path from the present feasibility map to a
+quantitative reactor-CEvNS reach---one that, on the evidence here, will be set
+by the neutron background above all.
