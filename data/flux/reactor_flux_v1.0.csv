@@ -1,5 +1,5 @@
 # QPD Phase-2 Plan 02-02 -- FROZEN reactor antineutrino flux Phi(E_nu), version v1.0
-# generated: 2026-07-23   git_sha: 817d6d6
+# generated: 2026-07-25   git_sha: 360b7b6
 # Units: flux in nu-bar cm^-2 s^-1 MeV^-1 ; E_nu in MeV.
 # Normalization: P_th = 3 GW_th (THERMAL, not electric), standoff d = 25 m,
 #   point source 1/(4 pi d^2); <E_f> = 205.815 MeV effective thermal per fission

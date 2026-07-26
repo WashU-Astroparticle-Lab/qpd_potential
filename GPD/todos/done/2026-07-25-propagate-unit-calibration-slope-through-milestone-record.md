@@ -13,6 +13,13 @@ files:
   - paper/sections/results.tex
 ---
 
+> **RESOLVED 2026-07-25** — PRs #14 (calibration fix), #15 (milestone record: emitters,
+> S/B reassembly, v1.0-baseline re-anchor, ROADMAP/STATE), and #16 (paper: neutron +
+> Ge-cosmogenic, shielded scenario, corrected axis) all merged to main. Suite green.
+> Decisions taken: out-of-RoI M-line contributes 0; v1.0 baselines re-anchored in
+> deposit space. Remaining open: whether the paper leads with the shielded or the
+> unshielded scenario (user's call); reactor-correlated neutrons still unmodeled.
+
 ## Problem
 
 `params.CALIB_SLOPE` was introduced on 2026-07-25 (USER DECISION, CONVENTIONS §E.1) and set to
