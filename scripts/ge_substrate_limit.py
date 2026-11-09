@@ -6,7 +6,9 @@ Exploratory only (not in the EXP statement). Notes and results: notebooks/ge_sub
 (signal rate in ROI = background rate in ROI, exposure-independent, the QPD convention), plotted against the
 0.5 eV S = B curve; run the 0.5 eV case first.
 
-Background: neutron-elastic curve only (solid = reconstructed, plotted /200 -> x200), digitized from
+Background: neutron-elastic curve only (solid = reconstructed, trigger-weighted), taken AS PLOTTED, i.e. the
+assumed-shield scenario: '/200' in the legend is the assumed neutron-shield suppression factor of the qpd_potential
+paper, not a plotting scale (x200 would give the unshielded surface-wafer rate). Digitized from
 background_spectrum_2607.05834.webp (a slide plot citing arXiv:2607.05834; the paper itself has no sub-keV
 tables). Signal and background both integrated over the fixed ROI threshold - 1 keV.
 Signal: DarkELF Ge multiphonon (incl. impulse approximation), same halo as the QPD panel; the single coherent
@@ -44,7 +46,7 @@ EXPOSURES = {"1 kg day": 1.0, "1 kg yr": 365.25}  # kg day
 X0, XPD = 172.5, (1196.5 - 172.5) / 6
 Y0, YPD = 63.5, (693.5 - 63.5) / 7
 NEUTRON_RGB = (65, 38, 106)
-SCALE = 200  # plotted curve is neutron elastic / 200
+SCALE = 1  # plotted curve = shielded background (neutron suppression 200 already applied); 200 -> unshielded
 
 
 def digitize():
@@ -80,8 +82,8 @@ def digitize():
     rgrid = 10 ** np.interp(np.log10(egrid), np.log10(E), np.log10(R))
     out = os.path.join(DATA, f'neutron_elastic_bkg_digitized{SUF}.csv')
     np.savetxt(out, np.c_[egrid, rgrid], delimiter=',', fmt='%.5e',
-               header='E_rec_eV,dRdE_counts_per_kg_day_keV  neutron elastic, SOLID (reconstructed) curve, x200 '
-                      'applied; digitized from background_spectrum_2607.05834.webp, ROI ' + f'{E_THR:g} eV-1 keV')
+               header='E_rec_eV,dRdE_counts_per_kg_day_keV  neutron elastic, SOLID (reconstructed) curve as plotted '
+                      '= assumed shield (n suppression 200); digitized from background_spectrum_2607.05834.webp, ROI ' + f'{E_THR:g} eV-1 keV')
     return egrid, rgrid, (E, R)
 
 
